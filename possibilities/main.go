@@ -9,7 +9,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/scorer"
 )
 
-const numCards = 52
+const numCards = 10
 
 func main() {
 	// countAllHands()
