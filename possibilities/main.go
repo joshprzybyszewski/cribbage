@@ -85,26 +85,26 @@ func printPointCache(pointCache map[int8]map[int32]countedPoints) {
 	_, err = w.WriteString(`
 package scorer
 
-type countedPoints struct {
+type cp struct {
 	hand int
 	crib int
 }
 
-var pointCache = map[int8]map[int32]countedPoints{
+var pointCache = map[int8]map[int32]cp{
 `)
 	if err != nil {
 		panic(err)
 	}
 	w.Flush()
 	for l := int8(0); l < numCards; l++ {
-		_, err = w.WriteString(fmt.Sprintf("\t%d: map[int32]countedPoints{\n", l))
+		_, err = w.WriteString(fmt.Sprintf("\t%d: map[int32]cp{\n", l))
 		if err != nil {
 			panic(err)
 		}
 		w.Flush()
 
 		for handVal, cp := range pointCache[l] {
-			_, err = w.WriteString(fmt.Sprintf("\t\t%d: countedPoints{hand: %d, crib: %d},\n", handVal, cp.hand, cp.crib))
+			_, err = w.WriteString(fmt.Sprintf("\t\t%d: cp{%d, %d},\n", handVal, cp.hand, cp.crib))
 			if err != nil {
 				panic(err)
 			}
