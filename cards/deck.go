@@ -5,6 +5,8 @@ import (
 	"math/big"
 )
 
+const NumCardsPerDeck = 52
+
 type Deck struct {
 	cards    [52]Card
 	numDealt int
@@ -12,12 +14,9 @@ type Deck struct {
 
 func NewDeck() *Deck {
 	var cards [52]Card
-	i := 0
-	for s := Spades; s <= Hearts; s++ {
-		for v := 1; v <= 13; v++ {
-			cards[i] = NewCard(s, v)
-			i++
-		}
+
+	for i := 0; i < NumCardsPerDeck; i++ {
+		cards[i] = NewCardFromNumber(i)
 	}
 
 	return &Deck{

@@ -180,24 +180,3 @@ func TestPointsOddInteractions(t *testing.T) {
 		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
 	}
 }
-
-/*
-5S, 5C, 5D, JH, 5H: 29
-fifteen 2, 4, 6, 8, 10, 12, 14, 16
-  5S, 5C, 5D
-  5S, 5C, 5H
-  5S, 5H, 5D
-  5H, 5C, 5D
-  JH, 5S
-  JH, 5C
-  JH, 5D
-  JH, 5H
-pair 18, 20, 22, 24, 26, 28
-  5S, 5C
-  5S, 5D
-  5S, 5H
-  5C, 5D
-  5C, 5H
-  5D, 5H
-nobs 29
-*/
