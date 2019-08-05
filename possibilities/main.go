@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"../cards"
-	"../scorer"
+	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/scorer"
 )
 
 const numCards = 52

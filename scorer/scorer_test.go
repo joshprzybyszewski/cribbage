@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"../cards"
+	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
 func TestPointsStandardFunThings(t *testing.T) {

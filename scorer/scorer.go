@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"../cards"
+	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
 func HandPoints(lead cards.Card, hand []cards.Card) int {

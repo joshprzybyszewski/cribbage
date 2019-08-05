@@ -3,7 +3,7 @@ package scorer
 import (
 	"fmt"
 
-	"../cards"
+	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
 const LOG = false
