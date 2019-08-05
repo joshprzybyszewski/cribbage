@@ -28,6 +28,24 @@ func checkCache(lead cards.Card, hand []cards.Card, isCrib bool) int {
 	return -1
 }
 
+func addToCache(lead cards.Card, hand []cards.Card, isCrib bool, points int) {
+	l := cards.CardToInt8(lead)
+	h := cards.HandToInt32(hand)
+	if _, ok := pointCache[l]; !ok {
+		pointCache[l] = map[int32]cp{}
+	}
+	if _, ok := pointCache[l][h]; !ok {
+		pointCache[l][h] = cp{}
+	}
+
+	pc := pointCache[l][h]
+	if isCrib {
+		pc.crib = points
+	} else {
+		pc.hand = points
+	}
+}
+
 func points(lead cards.Card, hand []cards.Card, isCrib bool) int {
 	cachedScore := checkCache(lead, hand, isCrib)
 	if cachedScore >= 0 {
@@ -73,6 +91,8 @@ func points(lead cards.Card, hand []cards.Card, isCrib bool) int {
 		fmt.Printf("calced:    %d\n", totalPoints)
 		fmt.Printf("described: %d\n", numDescribedPoints)
 	}
+
+	addToCache(lead, hand, isCrib, totalPoints)
 
 	return totalPoints
 }
