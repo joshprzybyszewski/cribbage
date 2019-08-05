@@ -1,0 +1,2 @@
+# cribbage
+A cribbage scorer
