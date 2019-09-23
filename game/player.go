@@ -8,18 +8,23 @@ import (
 )
 
 type Player interface {
+	Name() string
+	Color() PegColor
+
 	TakeDeck(d *cards.Deck)
 	IsDealer() bool
 	Shuffle()
+
 	DealCard() (cards.Card, error)
 	AcceptCard(cards.Card) error
+	NeedsCard() bool
 
 	AddToCrib() []cards.Card
 	AcceptCrib([]cards.Card) error
 
 	Cut() float64
 
-	Peg(maxVal int) (played cards.Card, sayGo bool)
+	Peg(maxVal int) (played cards.Card, sayGo, canPlay bool)
 
 	HandScore(leadCard cards.Card) int
 
@@ -49,6 +54,14 @@ func newPlayer(name string, color PegColor) *player {
 	}
 }
 
+func (p *player) Name() string {
+	return p.name
+}
+
+func (p *player) Color() PegColor {
+	return p.color
+}
+
 func (p *player) TakeDeck(d *cards.Deck) {
 	p.deck = d
 }
@@ -66,12 +79,17 @@ func (p *player) DealCard() (cards.Card, error) {
 }
 
 func (p *player) AcceptCard(c cards.Card) error {
-	if len(p.hand) >= 6 {
+	if !p.NeedsCard() {
 		return errors.New(`cannot accept new card`)
 	}
 
 	p.hand = append(p.hand, c)
 	return nil
+}
+
+func (p *player) NeedsCard() bool {
+	// TODO this is only currently setup for 2 player games
+	return len(p.hand) < 6
 }
 
 func (p *player) AcceptCrib([]cards.Card) error {

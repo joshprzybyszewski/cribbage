@@ -6,6 +6,10 @@ import (
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
+const (
+	maxPeggingValue int = 31
+)
+
 type Round struct {
 	CurrentStage RoundStage
 
@@ -46,4 +50,43 @@ func newRound(cribCards []cards.Card, numPlayers int) *Round {
 		peggedCards:  make([]cards.Card, 0, 4*numPlayers),
 		currentPeg:   0,
 	}
+}
+
+func (r *Round) NextRound() error {
+	if r.CurrentStage != Done {
+		return errors.New(`cannot progress to next round when not done`)
+	}
+
+	r.CurrentStage = Deal
+	r.cribCards = r.cribCards[:0]
+	r.peggedCards = r.peggedCards[:0]
+	r.currentPeg = 0
+	return nil
+}
+
+func (r *Round) AcceptCribCards(c []cards.Card) error {
+	if len(r.cribCards)+len(c) > 4 {
+		return errors.New(`cannot accept cards -- crib would be too big`)
+	}
+
+	r.cribCards = append(r.cribCards, c...)
+	return nil
+}
+
+func (r *Round) Crib() []cards.Card {
+	return r.cribCards
+}
+
+func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
+	if r.currentPeg+c.PegValue() > maxPeggingValue {
+		return -1, errors.New(`cannot peg past 31`)
+	}
+	r.peggedCards = append(r.peggedCards, c)
+
+	// TODO need to return the points for this pegging
+	return 0, nil
+}
+
+func (r *Round) MaxValToPeg() int {
+	return maxPeggingValue - r.currentPeg
 }

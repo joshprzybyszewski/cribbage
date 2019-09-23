@@ -41,7 +41,11 @@ func (npc *dumbNPC) Cut() float64 {
 	return rand.Float64()
 }
 
-func (npc *dumbNPC) Peg(maxVal int) (cards.Card, bool) {
+func (npc *dumbNPC) Peg(maxVal int) (cards.Card, bool, bool) {
+	if len(npc.pegged) == 4 {
+		return cards.Card{}, false, false
+	}
+
 	cardToPlay := cards.Card{}
 	sayGo := true
 
@@ -58,8 +62,8 @@ func (npc *dumbNPC) Peg(maxVal int) (cards.Card, bool) {
 	}
 
 	if sayGo {
-		return cards.Card{}, true
+		return cards.Card{}, true, true
 	}
 
-	return cardToPlay, false
+	return cardToPlay, false, true
 }

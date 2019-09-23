@@ -1,5 +1,12 @@
 package main
 
+import (
+	"github.com/joshprzybyszewski/cribbage/play"
+)
+
 func main() {
-	println(`stub file at top level`)
+	err := play.PlayGame()
+	if err != nil {
+		panic(err)
+	}
 }

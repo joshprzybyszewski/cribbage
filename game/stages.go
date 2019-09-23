@@ -8,4 +8,6 @@ const (
 	Cut
 	Pegging
 	Counting
+	CribCounting
+	Done
 )

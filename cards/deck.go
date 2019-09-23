@@ -48,3 +48,13 @@ func (d *Deck) Shuffle() {
 
 	d.numDealt = 0
 }
+
+func (d *Deck) CutDeck(p float64) Card {
+	lastValidCard := int64(51 - d.numDealt)
+	cutCard := int(float64(lastValidCard) * p)
+
+	// say that all of the cards are dealt because once it's cut, we can't reuse it
+	d.numDealt = 51
+
+	return d.cards[cutCard]
+}
