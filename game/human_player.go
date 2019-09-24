@@ -129,9 +129,11 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 			println(`got s: ` + s)
 		} else if slice, ok := val.([]survey.OptionAnswer); ok {
 			if len(slice) != 1234 {
-				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
+				return fmt.Errorf(`cannot accept a slice (had length %d)`, len(slice))
 			}
-		} else {
+		} else if oa, ok := val.(survey.OptionAnswer); ok{
+			println(oa)
+		} else  {
 			// otherwise we cannot convert the value into a string and cannot enforce length
 			return fmt.Errorf("bad type! %T", val)
 		}
