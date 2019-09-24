@@ -23,11 +23,9 @@ func PlayGame() error {
 		d.TakeDeck(deck)
 
 		// shuffle
-		println(`shuffling`)
 		d.Shuffle()
 
 		// deal
-		println(`dealing`)
 		ps := g.PlayersToDealTo()
 		err := deal(d, ps)
 		if err != nil {
@@ -38,11 +36,9 @@ func PlayGame() error {
 		r := g.CurrentRound()
 
 		// build crib
-		println(`building crib`)
 		buildCrib(g, r, ps)
 
 		// cut
-		println(`cutting`)
 		behindDealer := ps[len(ps)-2]
 		err = g.CutAt(behindDealer.Cut())
 		if err != nil {
@@ -50,7 +46,6 @@ func PlayGame() error {
 		}
 
 		// peg
-		println(`pegging`)
 		peg(g, r, ps)
 
 		// count
@@ -61,12 +56,10 @@ func PlayGame() error {
 		}
 
 		// count crib
-		println(`counting crib`)
 		d.AcceptCrib(r.Crib())
 		d.CribScore(g.LeadCard())
 
 		// progress the round
-		println(`progressing`)
 		err = g.NextRound()
 		if err != nil {
 			return err
@@ -131,6 +124,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 			if sayGo {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
+					r.GoAround()
 					g.AddPoints(p.Color(), 1)
 				}
 				continue

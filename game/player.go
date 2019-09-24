@@ -146,21 +146,42 @@ func (p *player) AddToCrib(dealerColor PegColor, desired int) []cards.Card {
 	}
 
 	// remove those cards from our hand
-	for i, c := range p.hand {
-		for _, cc := range cribCards {
-			if c.String() == cc.String() {
-				if i == 0 {
-					p.hand = p.hand[1:]
-				} else if i == len(p.hand) - 1 {
-					p.hand = p.hand[:i]
-				} else {
-					p.hand = append(p.hand[0:i], p.hand[i+1:]...)
-				}
+	p.hand = removeCards(p.hand, cribCards)
+
+	return cribCards
+}
+
+func removeCards(before, without []cards.Card) []cards.Card {
+	cc := without[0]
+	after := make([]cards.Card, 0, len(before))
+	for i, c := range before {
+		if c.String() == cc.String() {
+			if i == 0 {
+				after = before[1:]
+			} else if i == len(before) - 1 {
+				after = before[:i]
+			} else {
+				after = append(before[0:i], before[i+1:]...)
 			}
 		}
 	}
+	if len(without) == 1 {
+		return after
+	}
 
-	return cribCards
+	cc = without[1]
+	for i, c := range after {
+		if c.String() == cc.String() {
+			if i == 0 {
+				after = after[1:]
+			} else if i == len(after) - 1 {
+				after = after[:i]
+			} else {
+				after = append(after[0:i], after[i+1:]...)
+			}
+		}
+	}
+	return after
 }
 
 func (p *player) Cut() float64 {

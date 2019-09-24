@@ -82,9 +82,14 @@ func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
 		return -1, errors.New(`cannot peg past 31`)
 	}
 	r.peggedCards = append(r.peggedCards, c)
+	r.currentPeg += c.PegValue()
 
 	// TODO need to return the points for this pegging
 	return 0, nil
+}
+
+func (r *Round) GoAround() {
+	r.currentPeg = 0
 }
 
 func (r *Round) PrevPeggedCards() []cards.Card {

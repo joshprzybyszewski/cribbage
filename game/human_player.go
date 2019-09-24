@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 
 	"github.com/AlecAivazis/survey"
 
@@ -119,30 +120,37 @@ func (p *terminalInteraction) AskForCut() float64 {
 }
 
 func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
-	cardChoices := make([]string, 0, len(hand))
+	pegChoices := make([]string, 0, len(hand)+1)
+	const sayGo = `Say Go!`
+	pegChoices = append(pegChoices, sayGo)
 	for _, c := range hand {
-		cardChoices = append(cardChoices, c.String())
+		pegChoices = append(pegChoices, c.String())
 	}
 
 	canPeg := func(val interface{}) error {
-		if s, ok := val.(string); ok {
-			println(`got s: ` + s)
-		} else if slice, ok := val.([]survey.OptionAnswer); ok {
-			if len(slice) != 1234 {
-				return fmt.Errorf(`cannot accept a slice (had length %d)`, len(slice))
+		if oa, ok := val.(survey.OptionAnswer); ok{
+			maxValToPeg := maxPeggingValue - curPeg
+			if oa.Value == sayGo {
+				for _, c := range hand {
+					if c.PegValue() <= maxValToPeg {
+						return fmt.Errorf("You cannot say go when you have cards to peg")
+					}
+				}
+			} else {
+				c := cards.NewCardFromString(oa.Value)
+				if c.PegValue() > maxValToPeg {
+					return fmt.Errorf("exceeds max peg value: %v", c.String())
+				}
+
 			}
-		} else if oa, ok := val.(survey.OptionAnswer); ok{
-			println(oa)
+			return nil
 		} else  {
 			// otherwise we cannot convert the value into a string and cannot enforce length
 			return fmt.Errorf("bad type! %T", val)
 		}
-
-		// the input is fine
-		return nil
 	}
 
-	msg := `The last cards peggged were: `
+	msg := `Pegging at: `+strconv.Itoa(curPeg) +`. The last cards peggged were: `
 	for i, c := range prevPegs {
 		msg += c.String()
 		if i < len(prevPegs) - 1 {
@@ -155,9 +163,9 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	pegCard := ``
 	prompt := &survey.Select{
 		Message: msg+"Which card to peg next?",
-		Options: cardChoices,
+		Options: pegChoices,
 	}
-	survey.AskOne(prompt, &pegCard, survey.WithValidator(canPeg))
+	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
 
 	return cards.NewCardFromString(pegCard), false
 }
