@@ -6,64 +6,38 @@ import (
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
-var _ Player = (*dumbNPC)(nil)
+var _ PlayerInteraction = (*dumbNPCInteraction)(nil)
 
-type dumbNPC struct {
-	*player
+type dumbNPCInteraction struct {
 }
 
 func NewDumbNPC(color PegColor) Player {
-	return &dumbNPC{
-		player: newPlayer(`dumb NPC`, color),
-	}
+	dumb := &dumbNPCInteraction{}
+	return newPlayer(dumb, `dumb NPC`, color)
 }
 
-func (npc *dumbNPC) Shuffle() {
-	if !npc.IsDealer() {
-		return
-	}
-
-	npc.deck.Shuffle()
-	for rand.Intn(100) < 50 {
-		npc.deck.Shuffle()
-	}
+func (npc *dumbNPCInteraction) AskToShuffle() bool {
+	return rand.Intn(100) < 50
 }
 
-func (npc *dumbNPC) AddToCrib() []cards.Card {
-	c := npc.hand[0:2]
-
-	npc.hand = npc.hand[2:]
+func (npc *dumbNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+	c := hand[0:2]
 
 	return c
 }
 
-func (npc *dumbNPC) Cut() float64 {
+func (npc *dumbNPCInteraction) AskForCut() float64 {
 	return rand.Float64()
 }
 
-func (npc *dumbNPC) Peg(maxVal int) (cards.Card, bool, bool) {
-	if len(npc.pegged) == 4 {
-		return cards.Card{}, false, false
-	}
-
-	cardToPlay := cards.Card{}
-	sayGo := true
-
-	for _, c := range npc.hand {
-		if _, ok := npc.pegged[c]; ok {
-			continue
-		}
+func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
+	maxVal := maxPeggingValue - curPeg
+	for _, c := range hand {
 		if c.PegValue() > maxVal {
 			continue
 		}
-		cardToPlay = c
-		sayGo = false
-		break
+		return c, false
 	}
 
-	if sayGo {
-		return cards.Card{}, true, true
-	}
-
-	return cardToPlay, false, true
+	return cards.Card{}, true
 }

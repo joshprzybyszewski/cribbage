@@ -23,9 +23,11 @@ func PlayGame() error {
 		d.TakeDeck(deck)
 
 		// shuffle
+		println(`shuffling`)
 		d.Shuffle()
 
 		// deal
+		println(`dealing`)
 		ps := g.PlayersToDealTo()
 		err := deal(d, ps)
 		if err != nil {
@@ -36,9 +38,11 @@ func PlayGame() error {
 		r := g.CurrentRound()
 
 		// build crib
-		buildCrib(r, ps)
+		println(`building crib`)
+		buildCrib(g, r, ps)
 
 		// cut
+		println(`cutting`)
 		behindDealer := ps[len(ps)-2]
 		err = g.CutAt(behindDealer.Cut())
 		if err != nil {
@@ -46,6 +50,7 @@ func PlayGame() error {
 		}
 
 		// peg
+		println(`pegging`)
 		peg(g, r, ps)
 
 		// count
@@ -56,10 +61,12 @@ func PlayGame() error {
 		}
 
 		// count crib
+		println(`counting crib`)
 		d.AcceptCrib(r.Crib())
 		d.CribScore(g.LeadCard())
 
 		// progress the round
+		println(`progressing`)
 		err = g.NextRound()
 		if err != nil {
 			return err
@@ -87,33 +94,26 @@ func deal(d game.Player, ps []game.Player) error {
 	return nil
 }
 
-func buildCrib(r *game.Round, ps []game.Player) error {
-	waitingOn := map[game.Player]struct{}{}
+func buildCrib(g *game.Game, r *game.Round, ps []game.Player) error {
 	var wg sync.WaitGroup
 	var err error
 
 	for _, p := range ps {
-		waitingOn[p] = struct{}{}
 		wg.Add(1)
 
-		go func() {
-			err = r.AcceptCribCards(p.AddToCrib())
-			delete(waitingOn, p)
-			printCribWaitingNames(waitingOn)
-		}()
+		go func(pcopy game.Player) {
+			desired := 2
+			if len(ps) > 2 {
+				desired = 1
+			}
+			err = r.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired))
+			println(`completed for ` + pcopy.Name())
+			wg.Done()
+		}(p)
 	}
 
 	wg.Wait()
 	return err
-}
-
-func printCribWaitingNames(ps map[game.Player]struct{}) {
-	// TODO this is very rough
-	str := `waiting on `
-	for p := range ps {
-		str += p.Name() + ` `
-	}
-	println(str)
 }
 
 func peg(g *game.Game, r *game.Round, ps []game.Player) error {
@@ -122,8 +122,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 	for someoneCanPlay {
 		someoneCanPlay = false
 		for _, p := range ps {
-			maxValToPlay := r.MaxValToPeg()
-			c, sayGo, canPlay := p.Peg(maxValToPlay)
+			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
 			if canPlay {
 				someoneCanPlay = true
 			} else {

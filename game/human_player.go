@@ -2,16 +2,17 @@ package game
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/AlecAivazis/survey"
 
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
-var _ Player = (*humanPlayer)(nil)
+var _ PlayerInteraction = (*terminalInteraction)(nil)
 
-type humanPlayer struct {
-	*player
+type terminalInteraction struct {
+	myColor PegColor
 }
 
 func NewHumanPlayer(color PegColor) Player {
@@ -33,36 +34,34 @@ func NewHumanPlayer(color PegColor) Player {
 
 	name := answers.Name
 
-	return &humanPlayer{
-		player: newPlayer(name, color),
-	}
+	return newPlayer(&terminalInteraction{}, name, color)
 }
 
-func (p *humanPlayer) Shuffle() {
-	for cont := true; cont; {
+func (p *terminalInteraction) AskToShuffle() bool {
+	cont := true
 		prompt := &survey.Confirm{
 			Message: "You're the dealer. Continue Shuffling?",
 			Default: true,
 		}
 
 		survey.AskOne(prompt, &cont)
-	}
+		return cont
 }
 
-func (p *humanPlayer) AddToCrib() []cards.Card {
-	cardChoices := make([]string, 0, len(p.hand))
-	for _, c := range p.hand {
+func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+	cardChoices := make([]string, 0, len(hand))
+	for _, c := range hand {
 		cardChoices = append(cardChoices, c.String())
 	}
 
 	correctCountValidator := func(val interface{}) error {
 		if slice, ok := val.([]string); ok {
-			if len(slice) > 2 {
-				return fmt.Errorf(`cannot accept a slice with more than length 2 (had length %d)`, len(slice))
+			if len(slice) != desired {
+				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
 			}
 		} else if slice, ok := val.([]survey.OptionAnswer); ok {
-			if len(slice) > 2 {
-				return fmt.Errorf(`cannot accept a slice with more than length 2 (had length %d)`, len(slice))
+			if len(slice) != desired {
+				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
 			}
 		} else {
 			// otherwise we cannot convert the value into a string and cannot enforce length
@@ -73,23 +72,20 @@ func (p *humanPlayer) AddToCrib() []cards.Card {
 		return nil
 	}
 
+	msg := `Crib goes to you. `
+	if p.myColor != dealerColor {
+		msg = `Crib does not go to you. `
+	}
 	cribCards := []string{}
 	prompt := &survey.MultiSelect{
-		Message: "Which cards to place in the crib?",
+		Message: msg+"Which cards to place in the crib?",
 		Options: cardChoices,
 	}
 	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
 
-	if len(cribCards) > 2 {
+	if len(cribCards) != desired {
 		println(`bad time! never choose more than 2 cards`)
-	}
-	for i, c := range p.hand {
-		for _, cc := range cribCards {
-			if c.String() == cc {
-				// TODO verify this actually works
-				p.hand = append(p.hand[0:i], p.hand[i+1:]...)
-			}
-		}
+		return nil
 	}
 
 	crib := make([]cards.Card, len(cribCards))
@@ -99,13 +95,55 @@ func (p *humanPlayer) AddToCrib() []cards.Card {
 	return crib
 }
 
-func (p *humanPlayer) Cut() float64 {
-	// TODO Ask the user how far down the deck they wanna cut
-	return 0
+func (p *terminalInteraction) AskForCut() float64 {
+	const thin = `thin`
+	const middle = `middle`
+	const thick = `thick`
+	cutChoice := ``
+	prompt := &survey.Select{
+		Message: "How would you like to cut?",
+		Options: []string{thin, middle, thick},
+	}
+	survey.AskOne(prompt, &cutChoice)
+
+	switch cutChoice {
+	case thin:
+		return (rand.Float64() + 0) / 3
+	case middle:
+		return (rand.Float64() + 1) / 3
+	case thick:
+		return (rand.Float64() + 2) / 3
+	}
+	
+	return 0.500
 }
 
-func (p *humanPlayer) Peg(maxVal int) (cards.Card, bool, bool) {
+func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
 	// TODO ask the user which of their cards they would like to peg
-	// TODO validate they can peg that
-	return cards.Card{}, false, true
+	cardChoices := make([]string, 0, len(hand))
+	for _, c := range hand {
+		cardChoices = append(cardChoices, c.String())
+	}
+
+	msg := `The last `
+
+	cribCards := []string{}
+	prompt := &survey.Select{
+		Message: msg+" Which card to peg?",
+		Options: cardChoices,
+	}
+	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
+
+	if len(cribCards) != desired {
+		println(`bad time! never choose more than 2 cards`)
+		return nil
+	}
+
+	crib := make([]cards.Card, len(cribCards))
+	for i, cc := range cribCards {
+		crib[i] = cards.NewCardFromString(cc)
+	}
+	return crib
+
+	return cards.Card{}, false
 }

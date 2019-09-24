@@ -27,16 +27,20 @@ func NewDeck() *Deck {
 
 func (d *Deck) Deal() Card {
 	lastValidCard := int64(51 - d.numDealt)
-	randBigInt, err := rand.Int(rand.Reader, big.NewInt(lastValidCard))
-	if err != nil {
-		// rand.Int should never fail
-		panic(err)
+	if lastValidCard > 0 {
+		randBigInt, err := rand.Int(rand.Reader, big.NewInt(lastValidCard))
+		if err != nil {
+			// rand.Int should never fail
+			panic(err)
+		}
+		randomIndex := randBigInt.Int64()
+		d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
 	}
-	randomIndex := randBigInt.Int64()
-
-	d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
 
 	d.numDealt++
+	if d.numDealt > 52 {
+		println(`bad time`)
+	}
 
 	return d.cards[lastValidCard]
 }

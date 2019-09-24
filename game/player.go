@@ -19,12 +19,12 @@ type Player interface {
 	AcceptCard(cards.Card) error
 	NeedsCard() bool
 
-	AddToCrib() []cards.Card
+	AddToCrib(dealer PegColor, desired int) []cards.Card
 	AcceptCrib([]cards.Card) error
 
 	Cut() float64
 
-	Peg(maxVal int) (played cards.Card, sayGo, canPlay bool)
+	Peg(prevPegs []cards.Card, curPeg int) (played cards.Card, sayGo, canPlay bool)
 
 	HandScore(leadCard cards.Card) int
 
@@ -36,6 +36,7 @@ type Player interface {
 type player struct {
 	name  string
 	color PegColor
+	interaction PlayerInteraction
 
 	deck *cards.Deck
 
@@ -44,13 +45,15 @@ type player struct {
 	crib   []cards.Card
 }
 
-func newPlayer(name string, color PegColor) *player {
+func newPlayer(interaction PlayerInteraction, name string, color PegColor) *player {
 	return &player{
+		interaction: interaction,
 		name:  name,
 		color: color,
 		deck:  nil,
 		hand:  make([]cards.Card, 0, 6),
 		crib:  make([]cards.Card, 0, 4),
+		pegged: make(map[cards.Card]struct{}, 4),
 	}
 }
 
@@ -125,4 +128,62 @@ func (p *player) PassDeck() error {
 	p.crib = p.crib[:0]
 
 	return nil
+}
+
+// interactions
+
+func (p *player) Shuffle() {
+	for p.interaction.AskToShuffle() {
+		p.deck.Shuffle()
+	}
+}
+
+func (p *player) AddToCrib(dealerColor PegColor, desired int) []cards.Card {
+	cribCards := p.interaction.AskForCribCards(dealerColor, desired, p.hand)
+	if len(cribCards) != desired {
+		println(`bad time! never choose more than 2 cards`)
+		return nil
+	}
+
+	// remove those cards from our hand
+	for i, c := range p.hand {
+		for _, cc := range cribCards {
+			if c.String() == cc.String() {
+				if i == 0 {
+					p.hand = p.hand[1:]
+				} else if i == len(p.hand) - 1 {
+					p.hand = p.hand[:i]
+				} else {
+					p.hand = append(p.hand[0:i], p.hand[i+1:]...)
+				}
+			}
+		}
+	}
+
+	return cribCards
+}
+
+func (p *player) Cut() float64 {
+	return p.interaction.AskForCut()
+}
+
+func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool) {
+	if len(p.pegged) == len(p.hand) {
+		return cards.Card{}, false, true
+	}
+
+	opts := make([]cards.Card, 0, len(p.hand))
+	for _, c := range p.hand {
+		if _, ok := p.pegged[c]; !ok {
+			opts = append(opts, c)
+		}
+	}
+	c, sayGo := p.interaction.AskToPeg(opts, prevPegs, curPeg)
+	if sayGo {
+		// TODO validate they cannot peg
+		return cards.Card{}, true, true
+	}
+	p.pegged[c] = struct{}{}
+	
+	return c, false, true
 }

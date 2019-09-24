@@ -87,6 +87,10 @@ func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
 	return 0, nil
 }
 
-func (r *Round) MaxValToPeg() int {
-	return maxPeggingValue - r.currentPeg
+func (r *Round) PrevPeggedCards() []cards.Card {
+	return r.peggedCards
+}
+
+func (r *Round) CurrentPeg() int {
+	return r.currentPeg
 }
