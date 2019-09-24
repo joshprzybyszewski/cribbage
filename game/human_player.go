@@ -119,31 +119,43 @@ func (p *terminalInteraction) AskForCut() float64 {
 }
 
 func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
-	// TODO ask the user which of their cards they would like to peg
 	cardChoices := make([]string, 0, len(hand))
 	for _, c := range hand {
 		cardChoices = append(cardChoices, c.String())
 	}
 
-	msg := `The last `
+	canPeg := func(val interface{}) error {
+		if s, ok := val.(string); ok {
+			println(`got s: ` + s)
+		} else if slice, ok := val.([]survey.OptionAnswer); ok {
+			if len(slice) != 1234 {
+				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
+			}
+		} else {
+			// otherwise we cannot convert the value into a string and cannot enforce length
+			return fmt.Errorf("bad type! %T", val)
+		}
 
-	cribCards := []string{}
-	prompt := &survey.Select{
-		Message: msg+" Which card to peg?",
-		Options: cardChoices,
-	}
-	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
-
-	if len(cribCards) != desired {
-		println(`bad time! never choose more than 2 cards`)
+		// the input is fine
 		return nil
 	}
 
-	crib := make([]cards.Card, len(cribCards))
-	for i, cc := range cribCards {
-		crib[i] = cards.NewCardFromString(cc)
+	msg := `The last cards peggged were: `
+	for i, c := range prevPegs {
+		msg += c.String()
+		if i < len(prevPegs) - 1 {
+			msg += `, `
+		} else {
+			msg += `. `
+		}
 	}
-	return crib
 
-	return cards.Card{}, false
+	pegCard := ``
+	prompt := &survey.Select{
+		Message: msg+"Which card to peg next?",
+		Options: cardChoices,
+	}
+	survey.AskOne(prompt, &pegCard, survey.WithValidator(canPeg))
+
+	return cards.NewCardFromString(pegCard), false
 }
