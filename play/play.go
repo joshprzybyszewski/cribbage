@@ -128,7 +128,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					g.AddPoints(p.Color(), 1)
+					alertColorOfPegPoints(g, ps, p.Color(), 1)
 				}
 				continue
 			}
@@ -139,12 +139,21 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				return err
 			}
 
-			g.AddPoints(p.Color(), pts)
+			alertColorOfPegPoints(g, ps, p.Color(), pts)
 		}
 	}
 
 	// give a point for last card
-	g.AddPoints(lastPegger.Color(), 1)
+	alertColorOfPegPoints(g, ps, lastPegger.Color(), 1)
 
 	return nil
+}
+
+func alertColorOfPegPoints(g *game.Game, ps []game.Player, c game.PegColor, n int)  {
+	g.AddPoints(c, n)
+	for _, p := range ps {
+		if p.Color() == c {
+			p.ReceivePegPoints(n)
+		}
+	}
 }

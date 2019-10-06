@@ -84,8 +84,18 @@ func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
 	r.peggedCards = append(r.peggedCards, c)
 	r.currentPeg += c.PegValue()
 
-	// TODO need to return the points for this pegging
-	return 0, nil
+	cardPoints := 0
+
+	// TODO need to analyze the last cards played to see if this card is worth more
+
+	if 15 == r.currentPeg {
+		cardPoints += 2
+	} else 	if 31 == r.currentPeg {
+		cardPoints += 2
+		r.currentPeg = 0
+	}
+
+	return cardPoints, nil
 }
 
 func (r *Round) GoAround() {

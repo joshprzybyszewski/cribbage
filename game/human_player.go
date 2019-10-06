@@ -132,7 +132,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	}
 
 	canPeg := func(val interface{}) error {
-		if oa, ok := val.(survey.OptionAnswer); ok{
+		if oa, ok := val.(survey.OptionAnswer); ok {
 			maxValToPeg := maxPeggingValue - curPeg
 			if oa.Value == sayGo {
 				for _, c := range hand {
@@ -170,6 +170,10 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 		Options: pegChoices,
 	}
 	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
+
+	if pegCard == sayGo {
+		return cards.Card{}, true
+	}
 
 	return cards.NewCardFromString(pegCard), false
 }
