@@ -119,6 +119,10 @@ func (p *terminalInteraction) AskForCut() float64 {
 	return 0.500
 }
 
+func (p *terminalInteraction) TellAboutCut(c cards.Card) {
+	fmt.Printf("Card cut: %+v\n", c.String())
+}
+
 func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGo = `Say Go!`
@@ -168,4 +172,8 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
 
 	return cards.NewCardFromString(pegCard), false
+}
+
+func (p *terminalInteraction) TellAboutPegPoints(n int) {
+	fmt.Printf("Received %d points for pegging\n", n)
 }

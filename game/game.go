@@ -105,6 +105,7 @@ func (g *Game) CutAt(p float64) error {
 
 	g.cutCard = g.deck.CutDeck(p)
 
+	g.hasCut = true
 	return nil
 }
 

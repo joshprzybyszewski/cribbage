@@ -45,6 +45,10 @@ func PlayGame() error {
 			return err
 		}
 
+		for _, p := range ps {
+			p.TellAboutCut(g.LeadCard())
+		}
+
 		// peg
 		peg(g, r, ps)
 
@@ -100,7 +104,6 @@ func buildCrib(g *game.Game, r *game.Round, ps []game.Player) error {
 				desired = 1
 			}
 			err = r.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired))
-			println(`completed for ` + pcopy.Name())
 			wg.Done()
 		}(p)
 	}

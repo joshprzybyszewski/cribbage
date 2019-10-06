@@ -23,8 +23,10 @@ type Player interface {
 	AcceptCrib([]cards.Card) error
 
 	Cut() float64
+	TellAboutCut(cards.Card)
 
 	Peg(prevPegs []cards.Card, curPeg int) (played cards.Card, sayGo, canPlay bool)
+	ReceivePegPoints(int)
 
 	HandScore(leadCard cards.Card) int
 
@@ -188,6 +190,10 @@ func (p *player) Cut() float64 {
 	return p.interaction.AskForCut()
 }
 
+func (p *player) TellAboutCut(c cards.Card) {
+	p.interaction.TellAboutCut(c)
+}
+
 func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool) {
 	if len(p.pegged) == len(p.hand) {
 		return cards.Card{}, false, true
@@ -207,4 +213,8 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 	p.pegged[c] = struct{}{}
 	
 	return c, false, true
+}
+
+func (p *player) ReceivePegPoints(n int) {
+	p.interaction.TellAboutPegPoints(n)
 }

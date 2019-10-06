@@ -30,6 +30,8 @@ func (npc *dumbNPCInteraction) AskForCut() float64 {
 	return rand.Float64()
 }
 
+func (npc *dumbNPCInteraction) TellAboutCut(cards.Card) {}
+
 func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
 	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
@@ -41,3 +43,5 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int)
 
 	return cards.Card{}, true
 }
+
+func (npc *dumbNPCInteraction) TellAboutPegPoints(int) {}
