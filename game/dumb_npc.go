@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/joshprzybyszewski/cribbage/cards"
@@ -38,10 +39,14 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int)
 		if c.PegValue() > maxVal {
 			continue
 		}
+		fmt.Printf("Dumb NPC pegged %+v\n", c.String())
 		return c, false
 	}
 
+	fmt.Printf("Dumb NPC says go\n")
 	return cards.Card{}, true
 }
 
-func (npc *dumbNPCInteraction) TellAboutPegPoints(int) {}
+func (npc *dumbNPCInteraction) TellAboutPegPoints(n int) {
+	fmt.Printf("Dump NPC received %d points for pegging\n", n)
+}

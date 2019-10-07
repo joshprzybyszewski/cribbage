@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/pegging"
 )
 
 const (
@@ -79,23 +80,22 @@ func (r *Round) Crib() []cards.Card {
 
 func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
 	if r.currentPeg+c.PegValue() > maxPeggingValue {
-		return -1, errors.New(`cannot peg past 31`)
+		return 0, errors.New(`cannot peg past 31`)
 	}
+	
+	pts, err := pegging.PointsForCard(r.peggedCards, c)
+	if err != nil {
+		return 0, err
+	}
+
 	r.peggedCards = append(r.peggedCards, c)
 	r.currentPeg += c.PegValue()
 
-	cardPoints := 0
-
-	// TODO need to analyze the last cards played to see if this card is worth more
-
-	if 15 == r.currentPeg {
-		cardPoints += 2
-	} else 	if 31 == r.currentPeg {
-		cardPoints += 2
+	if 31 == r.currentPeg {
 		r.currentPeg = 0
 	}
 
-	return cardPoints, nil
+	return pts, nil
 }
 
 func (r *Round) GoAround() {
