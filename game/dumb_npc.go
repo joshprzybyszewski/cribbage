@@ -10,6 +10,7 @@ import (
 var _ PlayerInteraction = (*dumbNPCInteraction)(nil)
 
 type dumbNPCInteraction struct {
+	numShuffles int
 }
 
 func NewDumbNPC(color PegColor) Player {
@@ -18,7 +19,18 @@ func NewDumbNPC(color PegColor) Player {
 }
 
 func (npc *dumbNPCInteraction) AskToShuffle() bool {
-	return rand.Intn(100) < 50
+	npc.numShuffles++
+
+	if npc.numShuffles <= 1 {
+		return true
+	}
+
+	shouldContinue := rand.Intn(100) < npc.numShuffles
+	if !shouldContinue {
+		npc.numShuffles = 0
+	}
+	
+	return shouldContinue
 }
 
 func (npc *dumbNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {

@@ -46,6 +46,8 @@ func (d *Deck) Deal() Card {
 }
 
 func (d *Deck) Shuffle() {
+	d.numDealt = 0
+	
 	for i := 0; i < 52; i++ {
 		d.Deal()
 	}

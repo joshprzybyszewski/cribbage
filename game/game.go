@@ -20,7 +20,7 @@ const (
 
 type GameConfig struct {
 	Players        []Player
-	StartingDealer Player
+	StartingDealer int
 	StartingCrib   []cards.Card
 }
 
@@ -36,7 +36,7 @@ type Game struct {
 	round *Round
 
 	// The dealer who also gets the crib
-	dealer Player
+	dealer int
 
 	// An ordered list of players
 	players []Player
@@ -77,17 +77,15 @@ func (g *Game) IsOver() bool {
 }
 
 func (g *Game) Dealer() Player {
-	return g.dealer
+	return g.players[g.dealer]
 }
 
 func (g *Game) PlayersToDealTo() []Player {
-	for i, p := range g.players {
-		if p == g.Dealer() {
-			return append(g.players[i+1:], g.players[0:i+1]...)
-		}
+	if g.dealer == len(g.players) - 1 {
+		return g.players
 	}
 
-	return nil
+	return append(g.players[g.dealer+1:], g.players[:g.dealer+1]...)
 }
 
 func (g *Game) Deck() *cards.Deck {
@@ -124,7 +122,7 @@ func (g *Game) NextRound() error {
 	}
 
 	g.hasCut = false
-	g.dealer = nil // TODO next dealer
+	g.dealer = (g.dealer+1)%len(g.players)
 
 	return nil
 }

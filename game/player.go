@@ -196,7 +196,7 @@ func (p *player) TellAboutCut(c cards.Card) {
 
 func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool) {
 	if len(p.pegged) == len(p.hand) {
-		return cards.Card{}, false, true
+		return cards.Card{}, false, false
 	}
 
 	opts := make([]cards.Card, 0, len(p.hand))

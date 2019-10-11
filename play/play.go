@@ -11,13 +11,16 @@ func PlayGame() error {
 	npc := game.NewDumbNPC(game.Red)
 	cfg := game.GameConfig{
 		Players:        []game.Player{human, npc},
-		StartingDealer: human,
+		StartingDealer: 0,
 	}
 
 	g := game.New(cfg)
 	deck := g.Deck()
 
 	for !g.IsOver() {
+		// shuffle the deck at least once
+		deck.Shuffle()
+
 		// init dealer
 		d := g.Dealer()
 		d.TakeDeck(deck)
@@ -39,6 +42,7 @@ func PlayGame() error {
 		buildCrib(g, r, ps)
 
 		// cut
+		r.CurrentStage = game.Cut
 		behindDealer := ps[len(ps)-2]
 		err = g.CutAt(behindDealer.Cut())
 		if err != nil {
@@ -53,6 +57,7 @@ func PlayGame() error {
 		peg(g, r, ps)
 
 		// count
+		r.CurrentStage = game.Counting
 		for _, p := range ps {
 			s := p.HandScore(g.LeadCard())
 			g.AddPoints(p.Color(), s)
@@ -60,8 +65,11 @@ func PlayGame() error {
 		}
 
 		// count crib
+		r.CurrentStage = game.CribCounting
 		d.AcceptCrib(r.Crib())
 		d.CribScore(g.LeadCard())
+
+		r.CurrentStage = game.Done
 
 		// progress the round
 		err = g.NextRound()
@@ -92,6 +100,7 @@ func deal(d game.Player, ps []game.Player) error {
 }
 
 func buildCrib(g *game.Game, r *game.Round, ps []game.Player) error {
+	r.CurrentStage = game.BuildCrib
 	var wg sync.WaitGroup
 	var err error
 
@@ -113,17 +122,22 @@ func buildCrib(g *game.Game, r *game.Round, ps []game.Player) error {
 }
 
 func peg(g *game.Game, r *game.Round, ps []game.Player) error {
+	r.CurrentStage = game.Pegging
 	someoneCanPlay := true
 	var lastPegger game.Player
 	for someoneCanPlay {
 		someoneCanPlay = false
 		for _, p := range ps {
 			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
-			if canPlay {
-				someoneCanPlay = true
-			} else {
+			if !canPlay {
+				if lastPegger == p {
+					// the goes went all the way around -- take a point
+					r.GoAround()
+					alertColorOfPegPoints(g, ps, p.Color(), 1)
+				}
 				continue
 			}
+			someoneCanPlay = true
 			if sayGo {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
