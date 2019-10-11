@@ -39,7 +39,8 @@ func (d *Deck) Deal() Card {
 
 	d.numDealt++
 	if d.numDealt > 52 {
-		println(`bad time`)
+		// This is a :badtime:
+		return Card{}
 	}
 
 	return d.cards[lastValidCard]
