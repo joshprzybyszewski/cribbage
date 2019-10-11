@@ -13,3 +13,6 @@
 
 # emacs temp files
 *~
+
+# go mod stuff
+vendor/
