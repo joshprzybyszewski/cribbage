@@ -216,9 +216,25 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 			opts = append(opts, c)
 		}
 	}
-	c, sayGo := p.interaction.AskToPeg(opts, prevPegs, curPeg)
+	var c cards.Card
+	var sayGo bool
+	for ;; {
+		c, sayGo = p.interaction.AskToPeg(opts, prevPegs, curPeg)
+		if sayGo {
+			for _, o := range opts {
+				if o.PegValue() <= maxPeggingValue - curPeg {
+					continue
+				}
+			}
+		} else {
+			if c.PegValue() <= maxPeggingValue - curPeg {
+				continue
+			}
+		}
+
+		break
+	}
 	if sayGo {
-		// TODO validate they cannot peg
 		return cards.Card{}, true, true
 	}
 	p.pegged[c] = struct{}{}
