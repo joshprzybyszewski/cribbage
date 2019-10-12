@@ -145,7 +145,7 @@ func TestPointsErrorCase(t *testing.T) {
 		expVal:     0,
 		expErr:     errSameCardTwice,
 	}, {
-		msg:        `definitely two many cards`,
+		msg:        `definitely too many cards`,
 		inputCards: []string{`1S`, `1C`, `1D`, `1H`, `2S`, `2C`, `2D`, `2H`, `3S`, `3C`, `3D`, `3H`, `4S`, `4C`, `4D`, `4H`},
 		inputCard:  `5S`,
 		expVal:     0,
