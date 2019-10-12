@@ -31,7 +31,7 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	cardsToAnalyze := prevCards[indexOfCardsToUse:]
 
 	points := 0
-	runPoints, err := scorePeggingRun(cardsToAnalyze, c)
+	runPoints, err := scoreRun(cardsToAnalyze, c)
 	if err != nil {
 		return 0, err
 	}
@@ -50,7 +50,7 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	return points, nil
 }
 
-func scorePeggingRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check for runs
+func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check for runs
 	runLen := 0
 	for i := len(cardsToAnalyze) - 1; i >= 0; i-- {
 		// Make a slice of the first i+1 cards in new memory
