@@ -118,7 +118,7 @@ func (p *player) AcceptCrib(crib []cards.Card) error {
 }
 
 func (p *player) HandScore(leadCard cards.Card) (string, int) {
-	msg := fmt.Sprintf("score for hand (%s %s %s %s)", p.hand[0], p.hand[1], p.hand[2], p.hand[3])
+	msg := fmt.Sprintf("hand (%s %s %s %s)", p.hand[0], p.hand[1], p.hand[2], p.hand[3])
 	return msg, scorer.CribPoints(leadCard, p.hand)
 }
 
@@ -129,7 +129,7 @@ func (p *player) CribScore(leadCard cards.Card) (string, int, error) {
 		return ``, 0, errors.New(`expected to have crib, but missing!`)
 	}
 
-	msg := fmt.Sprintf("score for crib (%s %s %s %s)", p.crib[0], p.crib[1], p.crib[2], p.crib[3])
+	msg := fmt.Sprintf("crib (%s %s %s %s)", p.crib[0], p.crib[1], p.crib[2], p.crib[3])
 	return msg, scorer.CribPoints(leadCard, p.crib), nil
 }
 
