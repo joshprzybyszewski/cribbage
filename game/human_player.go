@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/AlecAivazis/survey"
+	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
