@@ -10,7 +10,7 @@ import (
 var (
 	errSameCardTwice = errors.New(`it's impossible to peg the same card twice`)
 	errTooManyCards  = errors.New(`it's impossible to have this many cards pegged ever`)
-	errRunTooLong = errors.New(`we cannot have a run of 8 in pegging`)
+	errRunTooLong    = errors.New(`we cannot have a run of 8 in pegging`)
 )
 
 // PointsForCard needs a real comment to make the linter happier
@@ -45,20 +45,22 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	if points > 0 {
 		return points, nil
 	}
-	sortedCards := make([]cards.Card, 0, len(cardsToAnalyze) + 1)
-	for _, c := range cardsToAnalyze {
-		sortedCards = append(sortedCards, c)
-	}
-	sortedCards = append(sortedCards, c)
-	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].Value > sortedCards[j].Value
-	})
+	// Check for runs
 	runLen := 0
-	for i := 1; i < len(sortedCards); i++ {
-		if sortedCards[i-1].Value == sortedCards[i].Value+1 {
-			runLen = i+1
-		} else {
-			break
+	for i := len(cardsToAnalyze) - 1; i >= 0; i-- {
+		// Make a slice of the first i+1 cards in new memory
+		sortedCards := make([]cards.Card, 0, i+1)
+		sortedCards = append(sortedCards, cardsToAnalyze[i:]...)
+		sortedCards = append(sortedCards, c)
+		sort.Slice(sortedCards, func(i, j int) bool {
+			return sortedCards[i].Value > sortedCards[j].Value
+		})
+		for j := 1; j < len(sortedCards); j++ {
+			if sortedCards[j-1].Value == sortedCards[j].Value+1 {
+				runLen = j + 1
+			} else {
+				break
+			}
 		}
 	}
 	if runLen >= 8 {
