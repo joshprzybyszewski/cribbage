@@ -15,7 +15,7 @@ var _ PlayerInteraction = (*terminalInteraction)(nil)
 type terminalInteraction struct {
 	myColor PegColor
 
-	scoresByColor map[PegColor]int
+	scoresByColor   map[PegColor]int
 	lagScoreByColor map[PegColor]int
 }
 
@@ -43,13 +43,13 @@ func NewHumanPlayer(color PegColor) Player {
 
 func (p *terminalInteraction) AskToShuffle() bool {
 	cont := true
-		prompt := &survey.Confirm{
-			Message: "You're the dealer. Continue Shuffling?",
-			Default: true,
-		}
+	prompt := &survey.Confirm{
+		Message: "You're the dealer. Continue Shuffling?",
+		Default: true,
+	}
 
-		survey.AskOne(prompt, &cont)
-		return cont
+	survey.AskOne(prompt, &cont)
+	return cont
 }
 
 func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
@@ -82,7 +82,7 @@ func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int,
 	}
 	cribCards := []string{}
 	prompt := &survey.MultiSelect{
-		Message: msg+"Which cards to place in the crib?",
+		Message: msg + "Which cards to place in the crib?",
 		Options: cardChoices,
 	}
 	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
@@ -118,7 +118,7 @@ func (p *terminalInteraction) AskForCut() float64 {
 	case thick:
 		return (rand.Float64() + 2) / 3
 	}
-	
+
 	return 0.500
 }
 
@@ -151,16 +151,16 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 
 			}
 			return nil
-		} else  {
+		} else {
 			// otherwise we cannot convert the value into a string and cannot enforce length
 			return fmt.Errorf("bad type! %T", val)
 		}
 	}
 
-	msg := `Pegging at: `+strconv.Itoa(curPeg) +`. The last cards peggged were: `
+	msg := `Pegging at: ` + strconv.Itoa(curPeg) + `. The last cards peggged were: `
 	for i, c := range prevPegs {
 		msg += c.String()
-		if i < len(prevPegs) - 1 {
+		if i < len(prevPegs)-1 {
 			msg += `, `
 		} else {
 			msg += `. `
@@ -169,7 +169,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 
 	pegCard := ``
 	prompt := &survey.Select{
-		Message: msg+"Which card to peg next?",
+		Message: msg + "Which card to peg next?",
 		Options: pegChoices,
 	}
 	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))

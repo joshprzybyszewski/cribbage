@@ -36,8 +36,8 @@ type Player interface {
 }
 
 type player struct {
-	name  string
-	color PegColor
+	name        string
+	color       PegColor
 	interaction PlayerInteraction
 
 	deck *cards.Deck
@@ -46,19 +46,19 @@ type player struct {
 	pegged map[cards.Card]struct{}
 	crib   []cards.Card
 
-	scoresByColor map[PegColor]int
+	scoresByColor   map[PegColor]int
 	lagScoreByColor map[PegColor]int
 }
 
 func newPlayer(interaction PlayerInteraction, name string, color PegColor) *player {
 	return &player{
 		interaction: interaction,
-		name:  name,
-		color: color,
-		deck:  nil,
-		hand:  make([]cards.Card, 0, 6),
-		crib:  make([]cards.Card, 0, 4),
-		pegged: make(map[cards.Card]struct{}, 4),
+		name:        name,
+		color:       color,
+		deck:        nil,
+		hand:        make([]cards.Card, 0, 6),
+		crib:        make([]cards.Card, 0, 4),
+		pegged:      make(map[cards.Card]struct{}, 4),
 	}
 }
 
@@ -169,7 +169,7 @@ func removeCards(before, without []cards.Card) []cards.Card {
 		if c.String() == cc.String() {
 			if i == 0 {
 				after = before[1:]
-			} else if i == len(before) - 1 {
+			} else if i == len(before)-1 {
 				after = before[:i]
 			} else {
 				after = append(before[0:i], before[i+1:]...)
@@ -185,7 +185,7 @@ func removeCards(before, without []cards.Card) []cards.Card {
 		if c.String() == cc.String() {
 			if i == 0 {
 				after = after[1:]
-			} else if i == len(after) - 1 {
+			} else if i == len(after)-1 {
 				after = after[:i]
 			} else {
 				after = append(after[0:i], after[i+1:]...)
@@ -220,6 +220,6 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 		return cards.Card{}, true, true
 	}
 	p.pegged[c] = struct{}{}
-	
+
 	return c, false, true
 }

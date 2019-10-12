@@ -82,7 +82,7 @@ func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
 	if r.currentPeg+c.PegValue() > maxPeggingValue {
 		return 0, errors.New(`cannot peg past 31`)
 	}
-	
+
 	pts, err := pegging.PointsForCard(r.peggedCards, c)
 	if err != nil {
 		return 0, err

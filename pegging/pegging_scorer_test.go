@@ -9,78 +9,78 @@ import (
 )
 
 func TestPointsForCard(t *testing.T) {
-	testCases := []struct{
-		msg string
+	testCases := []struct {
+		msg        string
 		inputCards []string
-		inputCard string
-		expVal int
-		expErr error
+		inputCard  string
+		expVal     int
+		expErr     error
 	}{{
-		msg: `no points`,
+		msg:        `no points`,
 		inputCards: []string{`10C`},
-		inputCard: `4C`,
-		expVal: 0,
-		expErr: nil,
+		inputCard:  `4C`,
+		expVal:     0,
+		expErr:     nil,
 	}, {
-		msg: `hits fifteen`,
+		msg:        `hits fifteen`,
 		inputCards: []string{`10C`},
-		inputCard: `5C`,
-		expVal: 2,
-		expErr: nil,
+		inputCard:  `5C`,
+		expVal:     2,
+		expErr:     nil,
 	}, {
-		msg: `hits 31`,
+		msg:        `hits 31`,
 		inputCards: []string{`10C`, `10D`, `10H`},
-		inputCard: `1C`,
-		expVal: 2,
-		expErr: nil,
+		inputCard:  `1C`,
+		expVal:     2,
+		expErr:     nil,
 	}, {
-		msg: `hits pair`,
+		msg:        `hits pair`,
 		inputCards: []string{`10C`},
-		inputCard: `10D`,
-		expVal: 2,
-		expErr: nil,
+		inputCard:  `10D`,
+		expVal:     2,
+		expErr:     nil,
 	}, {
-		msg: `hits triplet`,
+		msg:        `hits triplet`,
 		inputCards: []string{`10C`, `10D`},
-		inputCard: `10H`,
-		expVal: 6,
-		expErr: nil,
+		inputCard:  `10H`,
+		expVal:     6,
+		expErr:     nil,
 	}, {
-		msg: `hits quad`,
+		msg:        `hits quad`,
 		inputCards: []string{`2C`, `2D`, `2S`},
-		inputCard: `2H`,
-		expVal: 12,
-		expErr: nil,
+		inputCard:  `2H`,
+		expVal:     12,
+		expErr:     nil,
 	}, {
-		msg: `run of three`,
+		msg:        `run of three`,
 		inputCards: []string{`1C`, `3D`},
-		inputCard: `2H`,
-		expVal: 3,
-		expErr: nil,
+		inputCard:  `2H`,
+		expVal:     3,
+		expErr:     nil,
 	}, {
-		msg: `run of four`,
+		msg:        `run of four`,
 		inputCards: []string{`1C`, `2D`, `4H`},
-		inputCard: `3H`,
-		expVal: 4,
-		expErr: nil,
+		inputCard:  `3H`,
+		expVal:     4,
+		expErr:     nil,
 	}, {
-		msg: `run of five`,
+		msg:        `run of five`,
 		inputCards: []string{`6C`, `2D`, `4H`, `5H`},
-		inputCard: `3H`,
-		expVal: 5,
-		expErr: nil,
+		inputCard:  `3H`,
+		expVal:     5,
+		expErr:     nil,
 	}, {
-		msg: `run of 6`,
+		msg:        `run of 6`,
 		inputCards: []string{`1C`, `2D`, `4H`, `5H`, `6H`},
-		inputCard: `3H`,
-		expVal: 6,
-		expErr: nil,
+		inputCard:  `3H`,
+		expVal:     6,
+		expErr:     nil,
 	}, {
-		msg: `run of 7`,
+		msg:        `run of 7`,
 		inputCards: []string{`1C`, `2D`, `4H`, `5H`, `6H`, `7H`},
-		inputCard: `3H`,
-		expVal: 7,
-		expErr: nil,
+		inputCard:  `3H`,
+		expVal:     7,
+		expErr:     nil,
 	}}
 
 	for _, tc := range testCases {
@@ -96,30 +96,30 @@ func TestPointsForCard(t *testing.T) {
 }
 
 func TestPointsErrorCase(t *testing.T) {
-	testCases := []struct{
-		msg string
+	testCases := []struct {
+		msg        string
 		inputCards []string
-		inputCard string
-		expVal int
-		expErr error
+		inputCard  string
+		expVal     int
+		expErr     error
 	}{{
-		msg: `same card twice`,
+		msg:        `same card twice`,
 		inputCards: []string{`10C`, `10C`},
-		inputCard: `4C`,
-		expVal: 0,
-		expErr: errSameCardTwice,
+		inputCard:  `4C`,
+		expVal:     0,
+		expErr:     errSameCardTwice,
 	}, {
-		msg: `same card twice -- one in the input card`,
+		msg:        `same card twice -- one in the input card`,
 		inputCards: []string{`10C`},
-		inputCard: `10C`,
-		expVal: 0,
-		expErr: errSameCardTwice,
+		inputCard:  `10C`,
+		expVal:     0,
+		expErr:     errSameCardTwice,
 	}, {
-		msg: `definitely two many cards`,
+		msg:        `definitely two many cards`,
 		inputCards: []string{`1S`, `1C`, `1D`, `1H`, `2S`, `2C`, `2D`, `2H`, `3S`, `3C`, `3D`, `3H`, `4S`, `4C`, `4D`, `4H`},
-		inputCard: `5S`,
-		expVal: 0,
-		expErr: errTooManyCards,
+		inputCard:  `5S`,
+		expVal:     0,
+		expErr:     errTooManyCards,
 	}}
 
 	for _, tc := range testCases {

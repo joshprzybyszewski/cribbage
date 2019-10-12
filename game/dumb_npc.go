@@ -29,7 +29,7 @@ func (npc *dumbNPCInteraction) AskToShuffle() bool {
 	if !shouldContinue {
 		npc.numShuffles = 0
 	}
-	
+
 	return shouldContinue
 }
 

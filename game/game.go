@@ -93,7 +93,7 @@ func (g *Game) Dealer() Player {
 }
 
 func (g *Game) PlayersToDealTo() []Player {
-	if g.dealer == len(g.players) - 1 {
+	if g.dealer == len(g.players)-1 {
 		return g.players
 	}
 
@@ -134,7 +134,7 @@ func (g *Game) NextRound() error {
 	}
 
 	g.hasCut = false
-	g.dealer = (g.dealer+1)%len(g.players)
+	g.dealer = (g.dealer + 1) % len(g.players)
 
 	return nil
 }
