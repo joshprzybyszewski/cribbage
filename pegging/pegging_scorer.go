@@ -46,20 +46,19 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	}
 	sortedCards := append(cardsToAnalyze, c)
 	sort.Slice(sortedCards, func(i, j int) bool {
-		return sortedCards[i].Value < sortedCards[j].Value
+		return sortedCards[i].Value > sortedCards[j].Value
 	})
-	for i := len(sortedCards) - 1; i >= 1; i-- {
-		if sortedCards[i].Value == sortedCards[i-1].Value+1 {
-			points++
+	for i := 1; i < len(sortedCards); i++ {
+		if sortedCards[0].Value == sortedCards[i].Value+i {
+			points = i + 1
 		} else {
 			break
 		}
 	}
-	if points == 0 {
+	if points < 3 {
 		return 0, nil
 	}
-	// Add a point for the extra card in the run
-	return points + 1, nil
+	return points, nil
 }
 
 func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
