@@ -29,7 +29,7 @@ func TestDeckDealing(t *testing.T) {
 			t.Fatalf("Should not have dealt the same card twice: %s", c.String())
 		}
 		dealtCards[c.String()] = struct{}{}
-		if i < NumCardsPerDeck {
+		if i >= NumCardsPerDeck {
 			assert.Equal(t, Card{}, c)
 		} else {
 			assert.NotEqual(t, Card{}, c)
