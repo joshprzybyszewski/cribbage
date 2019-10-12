@@ -82,7 +82,19 @@ func TestPointsForCard(t *testing.T) {
 		expVal:     7,
 		expErr:     nil,
 	}, {
-		msg: `run of three (after run of three)`,
+		msg:        `run with 15`,
+		inputCards: []string{`1C`, `2D`, `4H`, `5H`},
+		inputCard:  `3H`,
+		expVal:     7,
+		expErr:     nil,
+	}, {
+		msg:        `run with 31`,
+		inputCards: []string{`10C`, `10D`, `2H`, `2C`, `4H`},
+		inputCard:  `3H`,
+		expVal:     5,
+		expErr:     nil,
+	}, {
+		msg:        `run of three (after run of three)`,
 		inputCards: []string{`1C`, `3D`, `2D`},
 		inputCard:  `1H`,
 		expVal:     3,
