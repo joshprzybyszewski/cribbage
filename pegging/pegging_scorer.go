@@ -77,7 +77,7 @@ func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check
 }
 
 func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
-	if len(prevCards) > 4*4 {
+	if len(prevCards) >= 4*4 {
 		// 4 players can each peg four cards. that's our max
 		return errTooManyCards
 	}
