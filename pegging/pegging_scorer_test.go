@@ -81,6 +81,12 @@ func TestPointsForCard(t *testing.T) {
 		inputCard:  `3H`,
 		expVal:     7,
 		expErr:     nil,
+	}, {
+		msg: `run of three (after run of three)`,
+		inputCards: []string{`1C`, `3D`, `2D`},
+		inputCard:  `1H`,
+		expVal:     3,
+		expErr:     nil,
 	}}
 
 	for _, tc := range testCases {
@@ -120,6 +126,12 @@ func TestPointsErrorCase(t *testing.T) {
 		inputCard:  `5S`,
 		expVal:     0,
 		expErr:     errTooManyCards,
+	}, {
+		msg:        `run of 8`,
+		inputCards: []string{`1C`, `2D`, `4H`, `5H`, `6H`, `7H`, `3H`},
+		inputCard:  `8H`,
+		expVal:     0,
+		expErr:     errRunTooLong,
 	}}
 
 	for _, tc := range testCases {
