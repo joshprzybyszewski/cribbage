@@ -14,6 +14,18 @@ const (
 	Green
 )
 
+func (c PegColor) String() string {
+	switch c {
+	case Blue:
+		return `blue`
+	case Red:
+		return `red`
+	case Green:
+		return `green`
+	}
+	return `wat`
+}
+
 const (
 	winningScore int = 121
 )

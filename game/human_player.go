@@ -187,7 +187,7 @@ func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int) {
 			if c == p.myColor {
 				fmt.Printf("You scored %d points\n", n)
 			} else {
-				fmt.Printf("%s scored %d points\n", s, n)
+				fmt.Printf("%s scored %d points\n", c.String(), n)
 			}
 		}
 	}
