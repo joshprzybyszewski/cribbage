@@ -120,7 +120,7 @@ func (p *terminalInteraction) AskForCut() float64 {
 }
 
 func (p *terminalInteraction) TellAboutCut(c cards.Card) {
-	fmt.Printf("Card cut: %+v\n", c.String())
+	fmt.Printf("Card cut: %s\n", c.String())
 }
 
 func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {

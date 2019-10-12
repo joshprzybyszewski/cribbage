@@ -59,7 +59,7 @@ func points(lead cards.Card, hand []cards.Card, isCrib bool) int {
 		ptValues[i] = c.PegValue()
 	}
 	values[4] = lead.Value
-	ptValues[5] = lead.PegValue()
+	ptValues[4] = lead.PegValue()
 
 	sort.Ints(values)
 	sort.Ints(ptValues)

@@ -6,6 +6,11 @@ import (
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
+var (
+	errSameCardTwice = errors.New(`it's impossible to peg the same card twice`)
+	errTooManyCards = errors.New(`it's impossible to have this many cards pegged ever`)
+)
+
 func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	if err := validatePrevCards(prevCards, c); err != nil {
 		return 0, err
@@ -39,11 +44,16 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 }
 
 func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
+	if len(prevCards) > 4 * 4 {
+		// 4 players can each peg four cards. that's our max
+		return errTooManyCards
+	}
+
 	existingCards := map[string]struct{}{}
 	existingCards[c.String()] = struct{}{}
 	for _, pc := range prevCards {
 		if _, ok := existingCards[pc.String()]; ok {
-			return errors.New(`it's impossible to peg the same card twice`)
+			return errSameCardTwice
 		}
 		existingCards[pc.String()] = struct{}{}
 	}
