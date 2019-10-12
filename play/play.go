@@ -160,7 +160,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					over := g.AddPoints(p.Color(), 1, `for the go`)
+					over := g.AddPoints(p.Color(), 1, `the go`)
 					if over {
 						return nil
 					}
@@ -172,7 +172,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					over := g.AddPoints(p.Color(), 1, `for the go`)
+					over := g.AddPoints(p.Color(), 1, `the go`)
 					if over {
 						return nil
 					}
@@ -186,7 +186,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				return err
 			}
 
-			over := g.AddPoints(p.Color(), pts, `for pegging`)
+			over := g.AddPoints(p.Color(), pts, `pegging`)
 			if over {
 				return nil
 			}
