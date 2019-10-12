@@ -20,11 +20,12 @@ func TestDeckShuffling(t *testing.T) {
 
 func TestDeckDealing(t *testing.T) {
 	d := NewDeck()
+	fakeCard := Card{}
 
 	dealtCards := map[string]struct{}{}
 	for i := 0; i < 55; i++ {
 		c := d.Deal()
-		if _, ok := dealtCards[c.String()]; ok && c != Card{} {
+		if _, ok := dealtCards[c.String()]; ok && c != fakeCard {
 			t.Fatalf("Should not have dealt the same card twice: %s", c.String())
 		}
 		dealtCards[c.String()] = struct{}{}
