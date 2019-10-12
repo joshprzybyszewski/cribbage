@@ -10,6 +10,7 @@ import (
 type Player interface {
 	Name() string
 	Color() PegColor
+	TellAboutScores(cur, lag map[PegColor]int)
 
 	TakeDeck(d *cards.Deck)
 	IsDealer() bool
@@ -26,7 +27,6 @@ type Player interface {
 	TellAboutCut(cards.Card)
 
 	Peg(prevPegs []cards.Card, curPeg int) (played cards.Card, sayGo, canPlay bool)
-	ReceivePegPoints(int)
 
 	HandScore(leadCard cards.Card) int
 
@@ -45,6 +45,9 @@ type player struct {
 	hand   []cards.Card
 	pegged map[cards.Card]struct{}
 	crib   []cards.Card
+
+	scoresByColor map[PegColor]int
+	lagScoreByColor map[PegColor]int
 }
 
 func newPlayer(interaction PlayerInteraction, name string, color PegColor) *player {
@@ -65,6 +68,12 @@ func (p *player) Name() string {
 
 func (p *player) Color() PegColor {
 	return p.color
+}
+
+func (p *player) TellAboutScores(cur, lag map[PegColor]int) {
+	p.scoresByColor = cur
+	p.lagScoreByColor = lag
+	p.interaction.TellAboutScores(cur, lag)
 }
 
 func (p *player) TakeDeck(d *cards.Deck) {
@@ -213,8 +222,4 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 	p.pegged[c] = struct{}{}
 	
 	return c, false, true
-}
-
-func (p *player) ReceivePegPoints(n int) {
-	p.interaction.TellAboutPegPoints(n)
 }

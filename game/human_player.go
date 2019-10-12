@@ -14,6 +14,9 @@ var _ PlayerInteraction = (*terminalInteraction)(nil)
 
 type terminalInteraction struct {
 	myColor PegColor
+
+	scoresByColor map[PegColor]int
+	lagScoreByColor map[PegColor]int
 }
 
 func NewHumanPlayer(color PegColor) Player {
@@ -178,6 +181,16 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	return cards.NewCardFromString(pegCard), false
 }
 
-func (p *terminalInteraction) TellAboutPegPoints(n int) {
-	fmt.Printf("Received %d points for pegging\n", n)
+func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int) {
+	for c, s := range cur {
+		if n := s - p.scoresByColor[c]; n != 0 {
+			if c == p.myColor {
+				fmt.Printf("You scored %d points\n", n)
+			} else {
+				fmt.Printf("%s scored %d points\n", s, n)
+			}
+		}
+	}
+	p.scoresByColor = cur
+	p.lagScoreByColor = lag
 }

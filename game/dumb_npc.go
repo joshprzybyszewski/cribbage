@@ -59,6 +59,4 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int)
 	return cards.Card{}, true
 }
 
-func (npc *dumbNPCInteraction) TellAboutPegPoints(n int) {
-	fmt.Printf("Dump NPC received %d points for pegging\n", n)
-}
+func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[PegColor]int) {}

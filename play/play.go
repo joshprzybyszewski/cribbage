@@ -1,6 +1,7 @@
 package play
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/joshprzybyszewski/cribbage/game"
@@ -54,20 +55,41 @@ func PlayGame() error {
 		}
 
 		// peg
-		peg(g, r, ps)
+		err = peg(g, r, ps)
+		if err != nil {
+			return err
+		}
+		if g.IsOver() {
+			break
+		}
 
 		// count
 		r.CurrentStage = game.Counting
 		for _, p := range ps {
 			s := p.HandScore(g.LeadCard())
-			g.AddPoints(p.Color(), s)
-			// TODO check for a winner
+			over := g.AddPoints(p.Color(), s)
+			if over {
+				break
+			}
+		}
+		if g.IsOver() {
+			break
 		}
 
 		// count crib
 		r.CurrentStage = game.CribCounting
-		d.AcceptCrib(r.Crib())
-		d.CribScore(g.LeadCard())
+		err = d.AcceptCrib(r.Crib())
+		if err != nil {
+			return err
+		}
+		pts, err := d.CribScore(g.LeadCard())
+		if err != nil {
+			return err
+		}
+		over := g.AddPoints(d.Color(), pts)
+		if over {
+			break
+		}
 
 		r.CurrentStage = game.Done
 
@@ -77,6 +99,8 @@ func PlayGame() error {
 			return err
 		}
 	}
+
+	fmt.Printf("game over!\n")
 
 	return nil
 }
@@ -133,7 +157,10 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					alertColorOfPegPoints(g, ps, p.Color(), 1)
+					over := g.AddPoints(p.Color(), 1)
+					if over {
+						return nil
+					}
 				}
 				continue
 			}
@@ -142,7 +169,10 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					alertColorOfPegPoints(g, ps, p.Color(), 1)
+					over := g.AddPoints(p.Color(), 1)
+					if over {
+						return nil
+					}
 				}
 				continue
 			}
@@ -153,21 +183,18 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				return err
 			}
 
-			alertColorOfPegPoints(g, ps, p.Color(), pts)
+			over := g.AddPoints(p.Color(), pts)
+			if over {
+				return nil
+			}
 		}
 	}
 
 	// give a point for last card
-	alertColorOfPegPoints(g, ps, lastPegger.Color(), 1)
+	over := g.AddPoints(lastPegger.Color(), 1)
+	if over {
+		return nil
+	}
 
 	return nil
-}
-
-func alertColorOfPegPoints(g *game.Game, ps []game.Player, c game.PegColor, n int)  {
-	g.AddPoints(c, n)
-	for _, p := range ps {
-		if p.Color() == c {
-			p.ReceivePegPoints(n)
-		}
-	}
 }
