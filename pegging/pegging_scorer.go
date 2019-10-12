@@ -28,24 +28,29 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 			indexOfCardsToUse = i
 		}
 	}
+	cardsToAnalyze := prevCards[indexOfCardsToUse:]
 
 	points := 0
+	runPoints, err := scorePeggingRun(cardsToAnalyze, c)
+	if err != nil {
+		return 0, err
+	}
+	points += runPoints
 	switch totalPegged + c.PegValue() {
 	case 15, 31:
 		points += 2
 	}
 
-	cardsToAnalyze := prevCards[indexOfCardsToUse:]
 	for i := len(cardsToAnalyze) - 1; i >= 0; i-- {
 		if cardsToAnalyze[i].Value != c.Value {
 			break
 		}
 		points += 2 * (len(cardsToAnalyze) - i)
 	}
-	if points > 0 {
-		return points, nil
-	}
-	// Check for runs
+	return points, nil
+}
+
+func scorePeggingRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check for runs
 	runLen := 0
 	for i := len(cardsToAnalyze) - 1; i >= 0; i-- {
 		// Make a slice of the first i+1 cards in new memory
@@ -66,9 +71,9 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	if runLen >= 8 {
 		return 0, errRunTooLong
 	} else if runLen >= 3 {
-		points += runLen
+		return runLen, nil
 	}
-	return points, nil
+	return 0, nil
 }
 
 func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
