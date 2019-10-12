@@ -87,6 +87,12 @@ func TestPointsForCard(t *testing.T) {
 		inputCard:  `1H`,
 		expVal:     3,
 		expErr:     nil,
+	}, {
+		msg: `run of three (after run of three)`,
+		inputCards: []string{`3C`, `1D`, `2D`},
+		inputCard:  `3H`,
+		expVal:     3,
+		expErr:     nil,
 	}}
 
 	for _, tc := range testCases {
