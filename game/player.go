@@ -218,7 +218,10 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 	}
 	var c cards.Card
 	var sayGo bool
-	for ;; {
+	for i := 0; ; i++ {
+		if i == 10 {
+			panic(errors.New(`the user is being very dumb`))
+		}
 		c, sayGo = p.interaction.AskToPeg(opts, prevPegs, curPeg)
 		if sayGo {
 			for _, o := range opts {
