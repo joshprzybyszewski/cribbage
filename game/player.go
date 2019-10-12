@@ -106,10 +106,12 @@ func (p *player) NeedsCard() bool {
 	return len(p.hand) < 6
 }
 
-func (p *player) AcceptCrib([]cards.Card) error {
+func (p *player) AcceptCrib(crib []cards.Card) error {
 	if !p.IsDealer() {
 		return errors.New(`attempted to receive a crib when not the dealer`)
 	}
+
+	p.crib = crib
 
 	return nil
 }
