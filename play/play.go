@@ -63,11 +63,12 @@ func PlayGame() error {
 			break
 		}
 
-		// count
+		// count hand
+		fmt.Printf("Counting players hands\n")
 		r.CurrentStage = game.Counting
 		for _, p := range ps {
-			s := p.HandScore(g.LeadCard())
-			over := g.AddPoints(p.Color(), s)
+			msg, s := p.HandScore(g.LeadCard())
+			over := g.AddPoints(p.Color(), s, msg)
 			if over {
 				break
 			}
@@ -77,16 +78,18 @@ func PlayGame() error {
 		}
 
 		// count crib
+		fmt.Printf("Counting the crib\n")
+		fmt.Printf("Crib is: %s %s %s %s\n", r.Crib()[0], r.Crib()[1], r.Crib()[2], r.Crib()[3])
 		r.CurrentStage = game.CribCounting
 		err = d.AcceptCrib(r.Crib())
 		if err != nil {
 			return err
 		}
-		pts, err := d.CribScore(g.LeadCard())
+		msg, pts, err := d.CribScore(g.LeadCard())
 		if err != nil {
 			return err
 		}
-		over := g.AddPoints(d.Color(), pts)
+		over := g.AddPoints(d.Color(), pts, msg)
 		if over {
 			break
 		}
@@ -157,7 +160,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					over := g.AddPoints(p.Color(), 1)
+					over := g.AddPoints(p.Color(), 1, `for the go`)
 					if over {
 						return nil
 					}
@@ -169,7 +172,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
-					over := g.AddPoints(p.Color(), 1)
+					over := g.AddPoints(p.Color(), 1, `for the go`)
 					if over {
 						return nil
 					}
@@ -183,7 +186,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 				return err
 			}
 
-			over := g.AddPoints(p.Color(), pts)
+			over := g.AddPoints(p.Color(), pts, `for pegging`)
 			if over {
 				return nil
 			}
@@ -191,7 +194,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 	}
 
 	// give a point for last card
-	over := g.AddPoints(lastPegger.Color(), 1)
+	over := g.AddPoints(lastPegger.Color(), 1, `last card`)
 	if over {
 		return nil
 	}

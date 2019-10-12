@@ -2,6 +2,7 @@ package game
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/cards"
 	"github.com/joshprzybyszewski/cribbage/scorer"
@@ -10,7 +11,7 @@ import (
 type Player interface {
 	Name() string
 	Color() PegColor
-	TellAboutScores(cur, lag map[PegColor]int)
+	TellAboutScores(cur, lag map[PegColor]int, msgs ...string)
 
 	TakeDeck(d *cards.Deck)
 	IsDealer() bool
@@ -28,9 +29,9 @@ type Player interface {
 
 	Peg(prevPegs []cards.Card, curPeg int) (played cards.Card, sayGo, canPlay bool)
 
-	HandScore(leadCard cards.Card) int
+	HandScore(leadCard cards.Card) (string, int)
 
-	CribScore(leadCard cards.Card) (int, error)
+	CribScore(leadCard cards.Card) (string, int, error)
 
 	PassDeck() error
 }
@@ -70,10 +71,10 @@ func (p *player) Color() PegColor {
 	return p.color
 }
 
-func (p *player) TellAboutScores(cur, lag map[PegColor]int) {
+func (p *player) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {
 	p.scoresByColor = cur
 	p.lagScoreByColor = lag
-	p.interaction.TellAboutScores(cur, lag)
+	p.interaction.TellAboutScores(cur, lag, msgs...)
 }
 
 func (p *player) TakeDeck(d *cards.Deck) {
@@ -116,18 +117,20 @@ func (p *player) AcceptCrib(crib []cards.Card) error {
 	return nil
 }
 
-func (p *player) HandScore(leadCard cards.Card) int {
-	return scorer.CribPoints(leadCard, p.hand)
+func (p *player) HandScore(leadCard cards.Card) (string, int) {
+	msg := fmt.Sprintf("score for hand (%s %s %s %s)", p.hand[0], p.hand[1], p.hand[2], p.hand[3])
+	return msg, scorer.CribPoints(leadCard, p.hand)
 }
 
-func (p *player) CribScore(leadCard cards.Card) (int, error) {
+func (p *player) CribScore(leadCard cards.Card) (string, int, error) {
 	if !p.IsDealer() {
-		return 0, errors.New(`Cannot score crib when not the dealer`)
+		return ``, 0, errors.New(`Cannot score crib when not the dealer`)
 	} else if len(p.crib) == 0 {
-		return 0, errors.New(`expected to have crib, but missing!`)
+		return ``, 0, errors.New(`expected to have crib, but missing!`)
 	}
 
-	return scorer.CribPoints(leadCard, p.crib), nil
+	msg := fmt.Sprintf("score for crib (%s %s %s %s)", p.crib[0], p.crib[1], p.crib[2], p.crib[3])
+	return msg, scorer.CribPoints(leadCard, p.crib), nil
 }
 
 func (p *player) PassDeck() error {

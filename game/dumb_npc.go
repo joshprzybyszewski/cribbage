@@ -59,4 +59,4 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int)
 	return cards.Card{}, true
 }
 
-func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[PegColor]int) {}
+func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}

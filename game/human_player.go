@@ -185,13 +185,13 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	return cards.NewCardFromString(pegCard), false
 }
 
-func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int) {
+func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {
 	for c, s := range cur {
 		if n := s - p.scoresByColor[c]; n != 0 {
 			if c == p.myColor {
-				fmt.Printf("You scored %d points\n", n)
+				fmt.Printf("You scored %d points for %v\n", n, msgs)
 			} else {
-				fmt.Printf("%s scored %d points\n", c.String(), n)
+				fmt.Printf("%s scored %d points for %v\n", c.String(), n, msgs)
 			}
 		}
 		p.scoresByColor[c] = cur[c]

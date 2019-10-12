@@ -10,5 +10,5 @@ type PlayerInteraction interface {
 	AskForCut() float64
 	TellAboutCut(cards.Card)
 	AskToPeg(hand, prevPegs []cards.Card, curPeg int) (c cards.Card, sayGo bool)
-	TellAboutScores(cur, lag map[PegColor]int)
+	TellAboutScores(cur, lag map[PegColor]int, msgs ...string)
 }
