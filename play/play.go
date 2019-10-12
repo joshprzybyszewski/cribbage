@@ -157,7 +157,7 @@ func peg(g *game.Game, r *game.Round, ps []game.Player) error {
 		for _, p := range ps {
 			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
 			if !canPlay {
-				if lastPegger == p {
+				if lastPegger == p && canPlay {
 					// the goes went all the way around -- take a point
 					r.GoAround()
 					over := g.AddPoints(p.Color(), 1, `the go`)
