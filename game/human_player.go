@@ -37,8 +37,12 @@ func NewHumanPlayer(color PegColor) Player {
 	}
 
 	name := answers.Name
+	ti := terminalInteraction{
+		scoresByColor:   map[PegColor]int{},
+		lagScoreByColor: map[PegColor]int{},
+	}
 
-	return newPlayer(&terminalInteraction{}, name, color)
+	return newPlayer(&ti, name, color)
 }
 
 func (p *terminalInteraction) AskToShuffle() bool {
@@ -190,7 +194,7 @@ func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int) {
 				fmt.Printf("%s scored %d points\n", c.String(), n)
 			}
 		}
+		p.scoresByColor[c] = cur[c]
+		p.lagScoreByColor[c] = lag[c]
 	}
-	p.scoresByColor = cur
-	p.lagScoreByColor = lag
 }

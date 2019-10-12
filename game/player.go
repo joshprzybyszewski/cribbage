@@ -230,7 +230,7 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 				}
 			}
 		} else {
-			if c.PegValue() <= maxPeggingValue - curPeg {
+			if c.PegValue() > maxPeggingValue - curPeg {
 				continue
 			}
 		}
