@@ -106,10 +106,12 @@ func (p *player) NeedsCard() bool {
 	return len(p.hand) < 6
 }
 
-func (p *player) AcceptCrib([]cards.Card) error {
+func (p *player) AcceptCrib(crib []cards.Card) error {
 	if !p.IsDealer() {
 		return errors.New(`attempted to receive a crib when not the dealer`)
 	}
+
+	p.crib = crib
 
 	return nil
 }
@@ -214,9 +216,28 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 			opts = append(opts, c)
 		}
 	}
-	c, sayGo := p.interaction.AskToPeg(opts, prevPegs, curPeg)
+	var c cards.Card
+	var sayGo bool
+	for i := 0; ; i++ {
+		if i == 10 {
+			panic(errors.New(`the user is being very dumb`))
+		}
+		c, sayGo = p.interaction.AskToPeg(opts, prevPegs, curPeg)
+		if sayGo {
+			for _, o := range opts {
+				if o.PegValue() <= maxPeggingValue - curPeg {
+					continue
+				}
+			}
+		} else {
+			if c.PegValue() <= maxPeggingValue - curPeg {
+				continue
+			}
+		}
+
+		break
+	}
 	if sayGo {
-		// TODO validate they cannot peg
 		return cards.Card{}, true, true
 	}
 	p.pegged[c] = struct{}{}
