@@ -136,6 +136,13 @@ func (g *Game) NextRound() error {
 	g.hasCut = false
 	g.dealer = (g.dealer + 1) % len(g.players)
 
+	for _, p := range g.players {
+		err = p.ReturnCards()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

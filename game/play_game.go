@@ -9,7 +9,7 @@ func (g *Game) Play() error {
 	for !g.IsOver() {
 		var err error
 		switch g.round.CurrentStage {
-		case Deal: 
+		case Deal:
 			err = g.dealPhase()
 			g.round.CurrentStage = BuildCrib
 		case BuildCrib:
@@ -41,7 +41,7 @@ func (g *Game) Play() error {
 	return nil
 }
 
-func (g *Game) dealPhase() error{
+func (g *Game) dealPhase() error {
 	// shuffle the deck at least once
 	g.Deck().Shuffle()
 

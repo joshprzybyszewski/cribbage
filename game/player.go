@@ -33,7 +33,7 @@ type Player interface {
 
 	CribScore(leadCard cards.Card) (string, int, error)
 
-	PassDeck() error
+	ReturnCards() error
 }
 
 type player struct {
@@ -102,6 +102,19 @@ func (p *player) AcceptCard(c cards.Card) error {
 	return nil
 }
 
+func (p *player) ReturnCards() error {
+	if len(p.hand) == 0 || len(p.pegged) == 0 {
+		return errors.New(`no cards to relinquish`)
+	}
+	p.hand = p.hand[:0]
+	p.crib = p.crib[:0]
+	for k := range p.pegged {
+		delete(p.pegged, k)
+	}
+
+	return nil
+}
+
 func (p *player) NeedsCard() bool {
 	// TODO this is only currently setup for 2 player games
 	return len(p.hand) < 6
@@ -131,19 +144,6 @@ func (p *player) CribScore(leadCard cards.Card) (string, int, error) {
 
 	msg := fmt.Sprintf("crib (%s %s %s %s) with lead (%s)", p.crib[0], p.crib[1], p.crib[2], p.crib[3], leadCard)
 	return msg, scorer.CribPoints(leadCard, p.crib), nil
-}
-
-func (p *player) PassDeck() error {
-	if p.IsDealer() {
-		return errors.New(`cannot pass the deck when not the dealer`)
-	} else if p.deck == nil {
-		return errors.New(`didn't have deck!`)
-	}
-
-	p.deck = nil
-	p.crib = p.crib[:0]
-
-	return nil
 }
 
 // interactions
