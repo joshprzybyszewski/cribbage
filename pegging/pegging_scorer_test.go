@@ -117,6 +117,12 @@ func TestPointsForCard(t *testing.T) {
 		inputCard:  `AC`,
 		expVal:     2,
 		expErr:     nil,
+	}, {
+		msg:        `looks like a run, but over a 31`,
+		inputCards: []string{`4♠︎`, `J♦`, `K♥︎`, `A♦`, `9♣︎`, `7♣︎`, `8♠︎`},
+		inputCard:  `9D`,
+		expVal:     0,
+		expErr:     nil,
 	}}
 
 	for _, tc := range testCases {
