@@ -6,91 +6,72 @@ import (
 )
 
 func (g *Game) Play() error {
-	deck := g.Deck()
-
 	for !g.IsOver() {
-		// shuffle the deck at least once
-		deck.Shuffle()
+		var err error
+		switch g.round.CurrentStage {
+		case Deal: 
+			err = g.dealPhase()
+			g.round.CurrentStage = BuildCrib
+		case BuildCrib:
+			err = g.buildCrib()
+			g.round.CurrentStage = Cut
+		case Cut:
+			err = g.cutPhase()
+			g.round.CurrentStage = Pegging
+		case Pegging:
+			err = g.peg()
+			g.round.CurrentStage = Counting
+		case Counting:
+			fmt.Printf("Counting players hands\n")
+			err = g.countHands()
+			g.round.CurrentStage = CribCounting
+		case CribCounting:
+			fmt.Printf("Counting the crib\n")
+			g.countCrib()
+			g.round.CurrentStage = Done
+		case Done:
+			err = g.NextRound()
+		}
 
-		// init dealer
-		d := g.Dealer()
-		d.TakeDeck(deck)
-
-		// shuffle
-		d.Shuffle()
-
-		// deal
-		ps := g.PlayersToDealTo()
-		err := deal(d, ps)
 		if err != nil {
 			return err
 		}
+	}
 
-		// start the round
-		r := g.CurrentRound()
+	return nil
+}
 
-		// build crib
-		g.buildCrib(r, ps)
+func (g *Game) dealPhase() error{
+	// shuffle the deck at least once
+	g.Deck().Shuffle()
 
-		// cut
-		r.CurrentStage = Cut
-		behindDealer := ps[len(ps)-2]
-		err = g.CutAt(behindDealer.Cut())
-		if err != nil {
-			return err
-		}
+	// init dealer
+	d := g.Dealer()
+	d.TakeDeck(g.Deck())
 
-		for _, p := range ps {
-			p.TellAboutCut(g.LeadCard())
-		}
+	// shuffle
+	d.Shuffle()
 
-		// peg
-		err = g.peg(r, ps)
-		if err != nil {
-			return err
-		}
-		if g.IsOver() {
-			break
-		}
+	// deal
+	ps := g.PlayersToDealTo()
+	err := deal(d, ps)
+	if err != nil {
+		return err
+	}
 
-		// count hand
-		fmt.Printf("Counting players hands\n")
-		r.CurrentStage = Counting
-		for _, p := range ps {
-			msg, s := p.HandScore(g.LeadCard())
-			g.AddPoints(p.Color(), s, msg)
-			if g.IsOver() {
-				break
-			}
-		}
-		if g.IsOver() {
-			break
-		}
+	return nil
+}
 
-		// count crib
-		fmt.Printf("Counting the crib\n")
-		fmt.Printf("Crib is: %s %s %s %s\n", r.Crib()[0], r.Crib()[1], r.Crib()[2], r.Crib()[3])
-		r.CurrentStage = CribCounting
-		err = d.AcceptCrib(r.Crib())
-		if err != nil {
-			return err
-		}
-		msg, pts, err := d.CribScore(g.LeadCard())
-		if err != nil {
-			return err
-		}
-		g.AddPoints(d.Color(), pts, msg)
-		if g.IsOver() {
-			break
-		}
+func (g *Game) cutPhase() error {
+	ps := g.PlayersToDealTo()
+	behindDealer := ps[len(ps)-2]
+	err := g.CutAt(behindDealer.Cut())
+	if err != nil {
+		return err
+	}
 
-		r.CurrentStage = Done
-
-		// progress the round
-		err = g.NextRound()
-		if err != nil {
-			return err
-		}
+	for _, p := range ps {
+		p.TellAboutCut(g.LeadCard())
 	}
 
 	return nil
@@ -114,8 +95,8 @@ func deal(d Player, ps []Player) error {
 	return nil
 }
 
-func (g *Game) buildCrib(r *Round, ps []Player) error {
-	r.CurrentStage = BuildCrib
+func (g *Game) buildCrib() error {
+	ps := g.PlayersToDealTo()
 	var wg sync.WaitGroup
 	var err error
 
@@ -127,7 +108,7 @@ func (g *Game) buildCrib(r *Round, ps []Player) error {
 			if len(ps) > 2 {
 				desired = 1
 			}
-			err = r.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired))
+			err = g.round.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired))
 			wg.Done()
 		}(p)
 	}
@@ -136,8 +117,9 @@ func (g *Game) buildCrib(r *Round, ps []Player) error {
 	return err
 }
 
-func (g *Game) peg(r *Round, ps []Player) error {
-	r.CurrentStage = Pegging
+func (g *Game) peg() error {
+	r := g.round
+	ps := g.PlayersToDealTo()
 	someoneCanPlay := true
 	var lastPegger Player
 	for someoneCanPlay {
@@ -186,6 +168,36 @@ func (g *Game) peg(r *Round, ps []Player) error {
 	if g.IsOver() {
 		return nil
 	}
+
+	return nil
+}
+
+func (g *Game) countHands() error {
+	ps := g.PlayersToDealTo()
+	for _, p := range ps {
+		msg, s := p.HandScore(g.LeadCard())
+		g.AddPoints(p.Color(), s, msg)
+		if g.IsOver() {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (g *Game) countCrib() error {
+	r := g.round
+	d := g.Dealer()
+	fmt.Printf("Crib is: %s %s %s %s\n", r.Crib()[0], r.Crib()[1], r.Crib()[2], r.Crib()[3])
+	err := d.AcceptCrib(r.Crib())
+	if err != nil {
+		return err
+	}
+	msg, pts, err := d.CribScore(g.LeadCard())
+	if err != nil {
+		return err
+	}
+	g.AddPoints(d.Color(), pts, msg)
 
 	return nil
 }
