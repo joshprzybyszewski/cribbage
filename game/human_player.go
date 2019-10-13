@@ -191,9 +191,9 @@ func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ..
 	for c, s := range cur {
 		if n := s - p.scoresByColor[c]; n != 0 {
 			if c == p.myColor {
-				fmt.Printf("You scored %d points for %v\n", n, msgs)
+				fmt.Printf("You   scored %2d points for %v\n", n, msgs)
 			} else {
-				fmt.Printf("%s scored %d points for %v\n", c.String(), n, msgs)
+				fmt.Printf("%-5s scored %2d points for %v\n", c.String(), n, msgs)
 			}
 		}
 		p.scoresByColor[c] = cur[c]
@@ -205,12 +205,12 @@ func (p *terminalInteraction) printCurrentScore() {
 	if len(p.scoresByColor) != 2 {
 		return
 	}
-	fmt.Println(`------------`)
-	fmt.Printf("  You: %3d\n", p.scoresByColor[p.myColor])
+	fmt.Println(`----------`)
+	fmt.Printf("You  : %3d\n", p.scoresByColor[p.myColor])
 	for c, s := range p.scoresByColor {
 		if c != p.myColor {
-			fmt.Printf("%5s: %3d\n", c.String(), s)
+			fmt.Printf("%-5s: %3d\n", c.String(), s)
 		}
 	}
-	fmt.Println(`------------`)
+	fmt.Println(`----------`)
 }

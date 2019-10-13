@@ -127,7 +127,7 @@ func (g *Game) peg() error {
 		for _, p := range ps {
 			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
 			if !canPlay {
-				if lastPegger == p && canPlay {
+				if lastPegger == p && (canPlay || someoneCanPlay) {
 					// the goes went all the way around -- take a point
 					r.GoAround()
 					g.AddPoints(p.Color(), 1, `the go`)
@@ -188,7 +188,6 @@ func (g *Game) countHands() error {
 func (g *Game) countCrib() error {
 	r := g.round
 	d := g.Dealer()
-	fmt.Printf("Crib is: %s %s %s %s\n", r.Crib()[0], r.Crib()[1], r.Crib()[2], r.Crib()[3])
 	err := d.AcceptCrib(r.Crib())
 	if err != nil {
 		return err
