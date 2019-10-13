@@ -28,6 +28,9 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 			indexOfCardsToUse = i
 		}
 	}
+	if totalPegged+c.Value > 31 {
+		return 0, nil
+	}
 	cardsToAnalyze := prevCards[indexOfCardsToUse:]
 
 	points := 0
