@@ -50,23 +50,13 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	return points, nil
 }
 
-func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check for runs
+func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) {
 	runLen := 0
-	for i := len(cardsToAnalyze) - 1; i >= 0; i-- {
-		// Make a slice of the first i+1 cards in new memory
-		sortedCards := make([]cards.Card, 0, i+1)
-		sortedCards = append(sortedCards, cardsToAnalyze[i:]...)
-		sortedCards = append(sortedCards, c)
-		sort.Slice(sortedCards, func(i, j int) bool {
-			return sortedCards[i].Value > sortedCards[j].Value
-		})
-		for j := 1; j < len(sortedCards); j++ {
-			if sortedCards[j-1].Value == sortedCards[j].Value+1 {
-				runLen = j + 1
-			} else {
-				break
-			}
+	for i := len(cardsToAnalyze) - 2; i >= 0; i-- {
+		if !isRun(append(cardsToAnalyze[i:], c)) {
+			continue
 		}
+		runLen = (len(cardsToAnalyze) - i) + 1
 	}
 	if runLen >= 8 {
 		return 0, errRunTooLong
@@ -74,6 +64,22 @@ func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) { // Check
 		return runLen, nil
 	}
 	return 0, nil
+}
+
+func isRun(c []cards.Card) bool {
+	sortedCards := make([]cards.Card, 0, len(c))
+	for _, card := range c {
+		sortedCards = append(sortedCards, cards.NewCardFromString(card.String()))
+	}
+	sort.Slice(sortedCards, func(i, j int) bool {
+		return sortedCards[i].Value > sortedCards[j].Value
+	})
+	for i := 1; i < len(sortedCards); i++ {
+		if sortedCards[i-1].Value != sortedCards[i].Value+1 {
+			return false
+		}
+	}
+	return true
 }
 
 func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
