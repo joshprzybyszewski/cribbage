@@ -139,11 +139,10 @@ func (g *Game) NextRound() error {
 	return nil
 }
 
-func (g *Game) AddPoints(pc PegColor, p int, msgs ...string) bool {
+func (g *Game) AddPoints(pc PegColor, p int, msgs ...string) {
 	g.LagScoreByColor[pc] = g.ScoresByColor[pc]
 	g.ScoresByColor[pc] = g.ScoresByColor[pc] + p
 	for _, p := range g.players {
 		p.TellAboutScores(g.ScoresByColor, g.LagScoreByColor, msgs...)
 	}
-	return g.ScoresByColor[pc] >= winningScore
 }
