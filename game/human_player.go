@@ -57,6 +57,7 @@ func (p *terminalInteraction) AskToShuffle() bool {
 }
 
 func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+	p.printCurrentScore()
 	cardChoices := make([]string, 0, len(hand))
 	for _, c := range hand {
 		cardChoices = append(cardChoices, c.String())
@@ -131,6 +132,7 @@ func (p *terminalInteraction) TellAboutCut(c cards.Card) {
 }
 
 func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
+	p.printCurrentScore()
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGo = `Say Go!`
 	pegChoices = append(pegChoices, sayGo)
@@ -197,4 +199,18 @@ func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ..
 		p.scoresByColor[c] = cur[c]
 		p.lagScoreByColor[c] = lag[c]
 	}
+}
+
+func (p *terminalInteraction) printCurrentScore() {
+	if len(p.scoresByColor) != 2 {
+		return
+	}
+	fmt.Println(`------------`)
+	fmt.Printf("  You: %3d\n", p.scoresByColor[p.myColor])
+	for c, s := range p.scoresByColor {
+		if c != p.myColor {
+			fmt.Printf("%5s: %3d\n", c.String(), s)
+		}
+	}
+	fmt.Println(`------------`)
 }

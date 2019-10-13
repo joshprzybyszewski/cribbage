@@ -37,14 +37,14 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	}
 	points += runPoints
 
-	pairPoints := scorePairs(cardsToAnalyze, c) 
+	pairPoints := scorePairs(cardsToAnalyze, c)
 	points += pairPoints
 
 	switch totalPegged + c.PegValue() {
 	case 15, 31:
 		points += 2
 	}
-	
+
 	return points, nil
 }
 
@@ -80,7 +80,7 @@ func isRun(c []cards.Card) bool {
 	return true
 }
 
-func scorePairs(prevCards []cards.Card, c cards.Card) (int) {
+func scorePairs(prevCards []cards.Card, c cards.Card) int {
 	points := 0
 	for i := len(prevCards) - 1; i >= 0; i-- {
 		if prevCards[i].Value != c.Value {
