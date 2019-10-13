@@ -62,21 +62,6 @@ func (g *Game) dealPhase() error{
 	return nil
 }
 
-func (g *Game) cutPhase() error {
-	ps := g.PlayersToDealTo()
-	behindDealer := ps[len(ps)-2]
-	err := g.CutAt(behindDealer.Cut())
-	if err != nil {
-		return err
-	}
-
-	for _, p := range ps {
-		p.TellAboutCut(g.LeadCard())
-	}
-
-	return nil
-}
-
 func deal(d Player, ps []Player) error {
 	for everyoneIsHappy := false; !everyoneIsHappy; {
 		everyoneIsHappy = true
@@ -90,6 +75,21 @@ func deal(d Player, ps []Player) error {
 				everyoneIsHappy = false
 			}
 		}
+	}
+
+	return nil
+}
+
+func (g *Game) cutPhase() error {
+	ps := g.PlayersToDealTo()
+	behindDealer := ps[len(ps)-2]
+	err := g.CutAt(behindDealer.Cut())
+	if err != nil {
+		return err
+	}
+
+	for _, p := range ps {
+		p.TellAboutCut(g.LeadCard())
 	}
 
 	return nil
