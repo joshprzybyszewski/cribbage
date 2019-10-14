@@ -132,7 +132,7 @@ func (p *player) AcceptCrib(crib []cards.Card) error {
 
 func (p *player) HandScore(leadCard cards.Card) (string, int) {
 	msg := fmt.Sprintf("hand (%s %s %s %s) with lead (%s)", p.hand[0], p.hand[1], p.hand[2], p.hand[3], leadCard)
-	return msg, scorer.CribPoints(leadCard, p.hand)
+	return msg, scorer.HandPoints(leadCard, p.hand)
 }
 
 func (p *player) CribScore(leadCard cards.Card) (string, int, error) {
