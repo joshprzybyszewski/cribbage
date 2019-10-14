@@ -120,25 +120,11 @@ func (g *Game) buildCrib() error {
 func (g *Game) peg() error {
 	r := g.round
 	ps := g.PlayersToDealTo()
-	someoneCanPlay := true
 	var lastPegger Player
-	for someoneCanPlay {
-		someoneCanPlay = false
+	for len(r.PrevPeggedCards()) < 4 * len(ps) {
 		for _, p := range ps {
 			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
-			if !canPlay {
-				if lastPegger == p && (canPlay || someoneCanPlay) {
-					// the goes went all the way around -- take a point
-					r.GoAround()
-					g.AddPoints(p.Color(), 1, `the go`)
-					if g.IsOver() {
-						return nil
-					}
-				}
-				continue
-			}
-			someoneCanPlay = true
-			if sayGo {
+			if !canPlay || sayGo {
 				if lastPegger == p {
 					// the goes went all the way around -- take a point
 					r.GoAround()
