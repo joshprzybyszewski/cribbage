@@ -28,16 +28,14 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 			indexOfCardsToUse = i
 		}
 	}
-	if totalPegged+c.Value > 31 {
-		return 0, nil
-	}
 	cardsToAnalyze := prevCards[indexOfCardsToUse:]
+	if totalPegged+c.PegValue() > 31 {
+		// If this card pushes us over 31, then don't consider any previous cards
+		cardsToAnalyze = cardsToAnalyze[:0]
+	}
 
 	points := 0
-	runPoints, err := scoreRun(cardsToAnalyze, c)
-	if err != nil {
-		return 0, err
-	}
+	runPoints := scoreRun(cardsToAnalyze, c)
 	points += runPoints
 
 	pairPoints := scorePairs(cardsToAnalyze, c)
@@ -51,7 +49,7 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	return points, nil
 }
 
-func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) {
+func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int) {
 	runLen := 0
 	for i := len(cardsToAnalyze) - 2; i >= 0; i-- {
 		if !isRun(append(cardsToAnalyze[i:], c)) {
@@ -59,12 +57,10 @@ func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int, error) {
 		}
 		runLen = (len(cardsToAnalyze) - i) + 1
 	}
-	if runLen >= 8 {
-		return 0, errRunTooLong
-	} else if runLen >= 3 {
-		return runLen, nil
+	if runLen >= 3 {
+		return runLen
 	}
-	return 0, nil
+	return 0
 }
 
 func isRun(c []cards.Card) bool {
@@ -89,6 +85,8 @@ func scorePairs(prevCards []cards.Card, c cards.Card) int {
 		if prevCards[i].Value != c.Value {
 			break
 		}
+		// this will add the correct number of points for pairs
+		// the first time 2, then 4, then 6
 		points += 2 * (len(prevCards) - i)
 	}
 	return points

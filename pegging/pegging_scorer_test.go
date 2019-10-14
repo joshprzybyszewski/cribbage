@@ -123,6 +123,18 @@ func TestPointsForCard(t *testing.T) {
 		inputCard:  `9D`,
 		expVal:     0,
 		expErr:     nil,
+	}, {
+		msg:        `looks like a pair, but over a 31`,
+		inputCards: []string{`4♠︎`, `J♦`, `K♥︎`, `A♦`, `9♣︎`, `7♣︎`, `8♠︎`},
+		inputCard:  `8D`,
+		expVal:     0,
+		expErr:     nil,
+	}, {
+		msg:        `check peg value, not vale`,
+		inputCards: []string{`K♠︎`, `K♦`},
+		inputCard:  `KH`,
+		expVal:     6,
+		expErr:     nil,
 	}}
 
 	for _, tc := range testCases {
