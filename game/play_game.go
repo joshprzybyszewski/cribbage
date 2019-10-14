@@ -121,7 +121,7 @@ func (g *Game) peg() error {
 	r := g.round
 	ps := g.PlayersToDealTo()
 	var lastPegger Player
-	for len(r.PrevPeggedCards()) < 4 * len(ps) {
+	for len(r.PrevPeggedCards()) < 4*len(ps) {
 		for _, p := range ps {
 			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
 			if !canPlay || sayGo {

@@ -48,7 +48,7 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	return points, nil
 }
 
-func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) (int) {
+func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) int {
 	runLen := 0
 	for i := len(cardsToAnalyze) - 2; i >= 0; i-- {
 		if !isRun(append(cardsToAnalyze[i:], c)) {
