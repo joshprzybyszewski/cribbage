@@ -10,7 +10,6 @@ import (
 var (
 	errSameCardTwice = errors.New(`it's impossible to peg the same card twice`)
 	errTooManyCards  = errors.New(`it's impossible to have this many cards pegged ever`)
-	errRunTooLong    = errors.New(`we cannot have a run of 8 in pegging`)
 )
 
 // PointsForCard needs a real comment to make the linter happier

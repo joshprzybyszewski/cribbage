@@ -174,12 +174,6 @@ func TestPointsErrorCase(t *testing.T) {
 		inputCard:  `5S`,
 		expVal:     0,
 		expErr:     errTooManyCards,
-	}, {
-		msg:        `run of 8`,
-		inputCards: []string{`1C`, `2D`, `4H`, `5H`, `6H`, `7H`, `3H`},
-		inputCard:  `8H`,
-		expVal:     0,
-		expErr:     errRunTooLong,
 	}}
 
 	for _, tc := range testCases {
