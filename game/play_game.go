@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -22,11 +21,9 @@ func (g *Game) Play() error {
 			err = g.peg()
 			g.round.CurrentStage = Counting
 		case Counting:
-			fmt.Printf("Counting players hands\n")
 			err = g.countHands()
 			g.round.CurrentStage = CribCounting
 		case CribCounting:
-			fmt.Printf("Counting the crib\n")
 			g.countCrib()
 			g.round.CurrentStage = Done
 		case Done:
