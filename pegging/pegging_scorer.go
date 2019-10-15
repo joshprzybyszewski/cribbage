@@ -12,7 +12,7 @@ var (
 	errTooManyCards  = errors.New(`it's impossible to have this many cards pegged ever`)
 )
 
-// PointsForCard needs a real comment to make the linter happier
+// PointsForCard returns how many points are received for the given card, provided the previously pegged cards
 func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	if err := validatePrevCards(prevCards, c); err != nil {
 		return 0, err
