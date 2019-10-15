@@ -17,19 +17,13 @@ func CribPoints(lead cards.Card, crib []cards.Card) int {
 
 func points(lead cards.Card, hand []cards.Card, isCrib bool) int {
 	values := make([]int, 5)
+	ptValues := make([]int, 5)
 	for i, c := range hand {
 		values[i] = c.Value
+		ptValues[i] = c.PegValue()
 	}
 	values[4] = lead.Value
-
-	ptValues := make([]int, 5)
-	for i, v := range values {
-		if v >= 10 {
-			ptValues[i] = 10
-		} else {
-			ptValues[i] = v
-		}
-	}
+	ptValues[4] = lead.PegValue()
 
 	sort.Ints(values)
 	sort.Ints(ptValues)

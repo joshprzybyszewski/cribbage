@@ -125,3 +125,39 @@ func TestNewCardFromStringWithWeirdInput(t *testing.T) {
 		assert.Equal(t, tc.expCard, NewCardFromString(tc.input), tc.desc)
 	}
 }
+
+func TestPegValue(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		input    string
+		expValue int
+	}{{
+		desc:     `ace of hearts`,
+		input:    `A♡`,
+		expValue: 1,
+	}, {
+		desc:     `two of diamonds`,
+		input:    `2♢`,
+		expValue: 2,
+	}, {
+		desc:     `10 of spades`,
+		input:    `10s`,
+		expValue: 10,
+	}, {
+		desc:     `Jack of Clubs`,
+		input:    `11c`,
+		expValue: 10,
+	}, {
+		desc:     `Queen of Hearts`,
+		input:    `12♥︎`,
+		expValue: 10,
+	}, {
+		desc:     `King of Diamonds`,
+		input:    `13♦`,
+		expValue: 10,
+	}}
+
+	for _, tc := range testCases {
+		assert.Equal(t, tc.expValue, NewCardFromString(tc.input).PegValue(), tc.desc)
+	}
+}

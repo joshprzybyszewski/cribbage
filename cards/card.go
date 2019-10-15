@@ -113,3 +113,10 @@ func (c Card) String() string {
 
 	return val
 }
+
+func (c Card) PegValue() int {
+	if c.Value >= 10 {
+		return 10
+	}
+	return c.Value
+}
