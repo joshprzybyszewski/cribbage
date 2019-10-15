@@ -66,11 +66,11 @@ func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int,
 	correctCountValidator := func(val interface{}) error {
 		if slice, ok := val.([]string); ok {
 			if len(slice) != desired {
-				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
+				return fmt.Errorf(`Asked for %d cards. (You gave us %d)`, desired, len(slice))
 			}
 		} else if slice, ok := val.([]survey.OptionAnswer); ok {
 			if len(slice) != desired {
-				return fmt.Errorf(`cannot accept a slice with more than length %d (had length %d)`, desired, len(slice))
+				return fmt.Errorf(`Asked for %d cards. (You gave us %d)`, desired, len(slice))
 			}
 		} else {
 			// otherwise we cannot convert the value into a string and cannot enforce length
@@ -93,7 +93,7 @@ func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int,
 	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
 
 	if len(cribCards) != desired {
-		println(`bad time! never choose more than 2 cards`)
+		fmt.Printf(`bad time! expected %d cards, received %d`, desired, len(cribCards))
 		return nil
 	}
 
@@ -112,6 +112,7 @@ func (p *terminalInteraction) AskForCut() float64 {
 	prompt := &survey.Select{
 		Message: "How would you like to cut?",
 		Options: []string{thin, middle, thick},
+		Filter:  func(filter string, value string, index int) bool { return true },
 	}
 	survey.AskOne(prompt, &cutChoice)
 
@@ -152,7 +153,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 			} else {
 				c := cards.NewCardFromString(oa.Value)
 				if c.PegValue() > maxValToPeg {
-					return fmt.Errorf("exceeds max peg value: %v", c.String())
+					return fmt.Errorf("Card (%v) exceeds max peg value (%d)", c.String(), maxValToPeg)
 				}
 
 			}
@@ -177,6 +178,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	prompt := &survey.Select{
 		Message: msg + "Which card to peg next?",
 		Options: pegChoices,
+		Filter:  func(filter string, value string, index int) bool { return true },
 	}
 	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
 
