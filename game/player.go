@@ -157,44 +157,30 @@ func (p *player) Shuffle() {
 func (p *player) AddToCrib(dealerColor PegColor, desired int) []cards.Card {
 	cribCards := p.interaction.AskForCribCards(dealerColor, desired, p.hand)
 	if len(cribCards) != desired {
-		println(`bad time! never choose more than 2 cards`)
+		fmt.Printf(`bad time! Expected %d cards chosen, but was %d (%v)\n`, desired, len(cribCards), cribCards)
 		return nil
 	}
 
+	inCrib := map[cards.Card]struct{}{}
+	for _, cc := range cribCards {
+		inCrib[cc] = struct{}{}
+	}
+	shouldRemove := func(c cards.Card) bool {
+		_, ok := inCrib[c]
+		return ok
+	}
+
 	// remove those cards from our hand
-	p.hand = removeCards(p.hand, cribCards)
+	p.hand = removeCards(p.hand, shouldRemove)
 
 	return cribCards
 }
 
-func removeCards(before, without []cards.Card) []cards.Card {
-	cc := without[0]
+func removeCards(before []cards.Card, shouldRemove func(cards.Card) bool) []cards.Card {
 	after := make([]cards.Card, 0, len(before))
-	for i, c := range before {
-		if c.String() == cc.String() {
-			if i == 0 {
-				after = before[1:]
-			} else if i == len(before)-1 {
-				after = before[:i]
-			} else {
-				after = append(before[0:i], before[i+1:]...)
-			}
-		}
-	}
-	if len(without) == 1 {
-		return after
-	}
-
-	cc = without[1]
-	for i, c := range after {
-		if c.String() == cc.String() {
-			if i == 0 {
-				after = after[1:]
-			} else if i == len(after)-1 {
-				after = after[:i]
-			} else {
-				after = append(after[0:i], after[i+1:]...)
-			}
+	for _, c := range before {
+		if !shouldRemove(c) {
+			after = append(after, c)
 		}
 	}
 	return after
