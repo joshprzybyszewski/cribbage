@@ -50,28 +50,36 @@ func (g *Game) dealPhase() error {
 	d.Shuffle()
 
 	// deal
-	ps := g.PlayersToDealTo()
-	err := deal(d, ps)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return g.deal()
 }
 
-func deal(d Player, ps []Player) error {
-	for everyoneIsHappy := false; !everyoneIsHappy; {
-		everyoneIsHappy = true
+func (g *Game) deal() error {
+	d := g.Dealer()
+	ps := g.PlayersToDealTo()
+
+	numCardsToDeal := 6 * 2
+	if len(ps) == 3 {
+		numCardsToDeal = 5 * 3
+	} else if len(ps) == 4 {
+		numCardsToDeal = 4 * 4
+	}
+	for i := 0; i < numCardsToDeal; i++ {
 		for _, p := range ps {
 			c, err := d.DealCard()
 			if err != nil {
 				return err
 			}
 			p.AcceptCard(c)
-			if p.NeedsCard() {
-				everyoneIsHappy = false
-			}
 		}
+	}
+
+	// For three player games, we need to deal another card to the crib
+	if len(ps) == 3 {
+		c, err := d.DealCard()
+		if err != nil {
+			return err
+		}
+		g.round.AcceptCribCards(c)
 	}
 
 	return nil
@@ -105,7 +113,7 @@ func (g *Game) buildCrib() error {
 			if len(ps) > 2 {
 				desired = 1
 			}
-			err = g.round.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired))
+			err = g.round.AcceptCribCards(pcopy.AddToCrib(g.Dealer().Color(), desired)...)
 			wg.Done()
 		}(p)
 	}

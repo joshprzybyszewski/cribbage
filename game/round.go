@@ -65,7 +65,7 @@ func (r *Round) NextRound() error {
 	return nil
 }
 
-func (r *Round) AcceptCribCards(c []cards.Card) error {
+func (r *Round) AcceptCribCards(c ...cards.Card) error {
 	if len(r.cribCards)+len(c) > 4 {
 		return errors.New(`cannot accept cards -- crib would be too big`)
 	}
