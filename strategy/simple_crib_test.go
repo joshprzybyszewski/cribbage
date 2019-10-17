@@ -18,6 +18,11 @@ func TestAvoidCribFifteens(t *testing.T) {
 		inputHand:    []string{`5s`, `5c`, `5d`, `5h`, `2h`, `1s`},
 		canAvoid:     true,
 	}, {
+		msg:          `obvious case still passses when requesting one card`,
+		inputDesired: 1,
+		inputHand:    []string{`5s`, `5c`, `5d`, `5h`, `2h`, `1s`},
+		canAvoid:     true,
+	}, {
 		msg:          `lots of tens`,
 		inputDesired: 2,
 		inputHand:    []string{`5s`, `JS`, `10s`, `10c`, `10d`, `10h`},
@@ -70,6 +75,11 @@ func TestGiveCribFifteens(t *testing.T) {
 		inputHand:    []string{`5s`, `10c`, `8d`, `9h`, `2h`, `1s`},
 		canGive:      true,
 	}, {
+		msg:          `obvious case doesn't work when requesting one card`,
+		inputDesired: 1,
+		inputHand:    []string{`5s`, `10c`, `8d`, `9h`, `2h`, `1s`},
+		canGive:      false,
+	}, {
 		msg:          `lots of tens`,
 		inputDesired: 2,
 		inputHand:    []string{`5s`, `JS`, `10s`, `10c`, `10d`, `10h`},
@@ -112,7 +122,7 @@ func TestGiveCribFifteens(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := AvoidCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
+		actHand := GiveCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
 		sum := 0
 		for _, c := range actHand {
 			sum += c.PegValue()
@@ -164,6 +174,9 @@ func TestAvoidCribPairs(t *testing.T) {
 			assert.Equal(t, actHand[0].Value, actHand[1].Value)
 		}
 	}
+
+	actHand := AvoidCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	assert.Len(t, actHand, 1)
 }
 
 func TestGiveCribPairs(t *testing.T) {
@@ -206,11 +219,14 @@ func TestGiveCribPairs(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := AvoidCribPairs(2, strToCards(tc.inputHand))
+		actHand := GiveCribPairs(2, strToCards(tc.inputHand))
 		if tc.canGive {
 			assert.Equal(t, actHand[0].Value, actHand[1].Value)
 		} else {
 			assert.NotEqual(t, actHand[0].Value, actHand[1].Value)
 		}
 	}
+
+	actHand := GiveCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	assert.Len(t, actHand, 1)
 }
