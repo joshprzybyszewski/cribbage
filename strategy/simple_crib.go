@@ -52,5 +52,5 @@ func determineCribCards(desired int, hand []cards.Card, objectiveFunc func(c1, c
 			}
 		}
 	}
-	return append(cribCards, hand[0], hand[1])
+	return hand[:2]
 }
