@@ -33,3 +33,13 @@ func prioritize(c cards.Card, value int) int {
 	}
 	return 0
 }
+
+func AvoidCribPairs(desired int, hand []cards.Card) []cards.Card {
+
+	return nil
+}
+
+func GiveCribPairs(desired int, hand []cards.Card) []cards.Card {
+
+	return nil
+}
