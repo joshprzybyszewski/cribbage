@@ -56,9 +56,9 @@ func TestAvoidCribFifteens(t *testing.T) {
 			sum += c.PegValue()
 		}
 		if tc.canAvoid {
-			assert.NotEqual(t, 15, sum)
+			assert.NotEqual(t, 15, sum, tc.msg)
 		} else {
-			assert.Equal(t, 15, sum)
+			assert.Equal(t, 15, sum, tc.msg)
 		}
 	}
 }
