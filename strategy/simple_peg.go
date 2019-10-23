@@ -1,6 +1,8 @@
 package strategy
 
 import (
+	"sort"
+
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
@@ -34,12 +36,11 @@ func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card,
 // PegToPair returns a card from the hand iff that card makes a pair and does not push the count over 31
 func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
 	ct := 0
-	lastCard := []rune(prevPegs[len(prevPegs)-1].String())
+	lastCard := prevPegs[len(prevPegs)-1]
 	for _, c := range hand {
-		handCard := []rune(c.String())
 		if curPeg+c.PegValue() > 31 {
 			ct++
-		} else if handCard[0] == lastCard[0] {
+		} else if c.Value == lastCard.Value {
 			return c, false
 		}
 	}
@@ -49,6 +50,23 @@ func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo boo
 	return hand[0], false
 }
 
+// PegToRun returns a card that forms the longest run if one is possible
 func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
+	peg := curPeg
+	index := 0
+	for i := len(prevPegs) - 1; i > 0; i-- {
+		peg -= prevPegs[i].PegValue()
+		if peg <= 0 {
+			index = i
+			break
+		}
+	}
+	cardsToAnalyze := prevPegs[index:]
+	for i := range cardsToAnalyze {
+		cards := cardsToAnalyze[i:]
+		sort.Slice(cards, func(i, j int) bool {
+			return cards[i].Value < cards[j].Value
+		})
+	}
 	return cards.Card{}, true
 }
