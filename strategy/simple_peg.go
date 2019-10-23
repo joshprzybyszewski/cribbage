@@ -31,8 +31,22 @@ func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card,
 	return hand[0], false
 }
 
+// PegToPair returns a card from the hand iff that card makes a pair and does not push the count over 31
 func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
-	return cards.Card{}, true
+	ct := 0
+	lastCard := []rune(prevPegs[len(prevPegs)-1].String())
+	for _, c := range hand {
+		handCard := []rune(c.String())
+		if curPeg+c.PegValue() > 31 {
+			ct++
+		} else if handCard[0] == lastCard[0] {
+			return c, false
+		}
+	}
+	if ct == len(hand) {
+		return cards.Card{}, true
+	}
+	return hand[0], false
 }
 
 func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
