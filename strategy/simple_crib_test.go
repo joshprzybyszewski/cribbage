@@ -157,11 +157,11 @@ func TestAvoidCribPairs(t *testing.T) {
 	}, {
 		msg:       `only 7s and 8s`,
 		inputHand: []string{`7s`, `7c`, `7d`, `8s`, `8c`, `8d`},
-		canAvoid:  false,
+		canAvoid:  true,
 	}, {
 		msg:       `lots of 5s and 10s`,
 		inputHand: []string{`5s`, `5c`, `5d`, `5h`, `10s`, `10c`},
-		canAvoid:  false,
+		canAvoid:  true,
 	}, {
 		msg:       `lots of 5s with 7 and 8`,
 		inputHand: []string{`5s`, `5c`, `5d`, `5h`, `7s`, `8c`},
