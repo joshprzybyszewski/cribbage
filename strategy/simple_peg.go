@@ -1,8 +1,6 @@
 package strategy
 
 import (
-	"sort"
-
 	"github.com/joshprzybyszewski/cribbage/cards"
 )
 
@@ -61,17 +59,15 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	// TODO make this not use an ugly-as-heck triple-nested for loop...
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
-			cards := make([]cards.Card, 0)
-			cards = append(cards, cardsToAnalyze[i:]...)
-			cards = append(cards, c)
-			sort.Slice(cards, func(i, j int) bool {
-				return cards[i].Value < cards[j].Value
-			})
-			for j := 0; j < len(cards)-1; j++ {
-				if cards[j].Value != cards[j+1].Value-1 {
+			runCards := make([]cards.Card, 0)
+			runCards = append(runCards, cardsToAnalyze[i:]...)
+			runCards = append(runCards, c)
+			cards.SortByValue(runCards, false)
+			for j := 0; j < len(runCards)-1; j++ {
+				if runCards[j].Value != runCards[j+1].Value-1 {
 					break
 				}
-				if j == len(cards)-2 {
+				if j == len(runCards)-2 {
 					return c, false
 				}
 			}
