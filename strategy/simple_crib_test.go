@@ -54,11 +54,12 @@ func TestAvoidCribFifteens(t *testing.T) {
 		sum := 0
 		for _, c := range actHand {
 			sum += c.PegValue()
+			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
 		if tc.canAvoid {
-			assert.NotEqual(t, 15, sum)
+			assert.NotEqual(t, 15, sum, tc.msg)
 		} else {
-			assert.Equal(t, 15, sum)
+			assert.Equal(t, 15, sum, tc.msg)
 		}
 	}
 }
@@ -126,11 +127,12 @@ func TestGiveCribFifteens(t *testing.T) {
 		sum := 0
 		for _, c := range actHand {
 			sum += c.PegValue()
+			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
 		if tc.canGive {
-			assert.Equal(t, 15, sum)
+			assert.Equal(t, 15, sum, tc.msg)
 		} else {
-			assert.NotEqual(t, 15, sum)
+			assert.NotEqual(t, 15, sum, tc.msg)
 		}
 	}
 }
@@ -168,10 +170,13 @@ func TestAvoidCribPairs(t *testing.T) {
 
 	for _, tc := range testCases {
 		actHand := AvoidCribPairs(2, strToCards(tc.inputHand))
+		for _, c := range actHand {
+			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
+		}
 		if tc.canAvoid {
-			assert.NotEqual(t, actHand[0].Value, actHand[1].Value)
+			assert.NotEqual(t, actHand[0].Value, actHand[1].Value, tc.msg)
 		} else {
-			assert.Equal(t, actHand[0].Value, actHand[1].Value)
+			assert.Equal(t, actHand[0].Value, actHand[1].Value, tc.msg)
 		}
 	}
 
@@ -220,10 +225,13 @@ func TestGiveCribPairs(t *testing.T) {
 
 	for _, tc := range testCases {
 		actHand := GiveCribPairs(2, strToCards(tc.inputHand))
+		for _, c := range actHand {
+			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
+		}
 		if tc.canGive {
-			assert.Equal(t, actHand[0].Value, actHand[1].Value)
+			assert.Equal(t, actHand[0].Value, actHand[1].Value, tc.msg)
 		} else {
-			assert.NotEqual(t, actHand[0].Value, actHand[1].Value)
+			assert.NotEqual(t, actHand[0].Value, actHand[1].Value, tc.msg)
 		}
 	}
 
