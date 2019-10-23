@@ -47,6 +47,7 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	if mustSayGo(hand, curPeg) {
 		return cards.Card{}, true
 	}
+	// Runs reset at 31 or go, so only look at the cards since one of those have happened
 	peg := curPeg
 	index := 0
 	for i := len(prevPegs) - 1; i > 0; i-- {
@@ -57,14 +58,22 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 		}
 	}
 	cardsToAnalyze := prevPegs[index:]
+	// TODO make this not use an ugly-as-heck triple-nested for loop...
 	for i := range cardsToAnalyze {
-		cards := cardsToAnalyze[i:]
-		sort.Slice(cards, func(i, j int) bool {
-			return cards[i].Value < cards[j].Value
-		})
 		for _, c := range hand {
-			if c.Value == cards[0].Value-1 || c.Value == cards[len(cards)-1].Value+1 {
-				return c, false
+			cards := make([]cards.Card, 0)
+			cards = append(cards, cardsToAnalyze[i:]...)
+			cards = append(cards, c)
+			sort.Slice(cards, func(i, j int) bool {
+				return cards[i].Value < cards[j].Value
+			})
+			for j := 0; j < len(cards)-1; j++ {
+				if cards[j].Value != cards[j+1].Value-1 {
+					break
+				}
+				if j == len(cards)-2 {
+					return c, false
+				}
 			}
 		}
 	}
