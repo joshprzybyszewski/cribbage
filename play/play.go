@@ -8,7 +8,9 @@ import (
 
 func PlayGame() error {
 	human := game.NewHumanPlayer(game.Blue)
-	npc := game.NewDumbNPC(game.Red)
+	// TODO ask the user for a difficulty...
+	// npc := game.NewDumbNPC(game.Red)
+	npc := game.NewSimpleNPC(game.Red)
 	cfg := game.GameConfig{
 		Players:        []game.Player{human, npc},
 		StartingDealer: 0,
