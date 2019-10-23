@@ -2,6 +2,7 @@ package cards
 
 import (
 	"errors"
+	"sort"
 	"strconv"
 )
 
@@ -26,13 +27,13 @@ func NewCardFromString(card string) Card {
 
 	suitStr := string(card[1:])
 	switch string(card[0]) {
-	case `A`:
+	case `A`, `a`:
 		value = 1
-	case `J`:
+	case `J`, `j`:
 		value = 11
-	case `Q`:
+	case `Q`, `q`:
 		value = 12
-	case `K`:
+	case `K`, `k`:
 		value = 13
 	case `1`:
 		// try parsing 10, 11, 12, or 13
@@ -119,4 +120,14 @@ func (c Card) PegValue() int {
 		return 10
 	}
 	return c.Value
+}
+
+// SortByValue sorts a slice of cards either ascending or descending by their rank order
+func SortByValue(cards []Card, descending bool) {
+	sort.Slice(cards, func(i, j int) bool {
+		if descending {
+			return cards[i].Value > cards[j].Value
+		}
+		return cards[i].Value < cards[j].Value
+	})
 }

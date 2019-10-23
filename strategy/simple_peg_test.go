@@ -134,6 +134,13 @@ func TestPegToPair(t *testing.T) {
 		inputCurPeg:   30,
 		expCard:       cards.Card{},
 		expSayGo:      true,
+	}, {
+		msg:           `says go when can't play even if a pair seems possible`,
+		inputHand:     []string{`8s`, `10c`, `9s`},
+		inputPrevPegs: []string{`9d`, `9h`, `10d`},
+		inputCurPeg:   28,
+		expCard:       cards.Card{},
+		expSayGo:      true,
 	}}
 
 	for _, tc := range testCases {
