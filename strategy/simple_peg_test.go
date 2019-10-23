@@ -31,6 +31,13 @@ func TestPegToFifteen(t *testing.T) {
 		expCard:       cards.NewCardFromString(`10c`),
 		expSayGo:      false,
 	}, {
+		msg:           `when can't, still returns a card that is valid`,
+		inputHand:     []string{`kh`, `1s`, `1d`},
+		inputPrevPegs: []string{`10s`, `10c`, `9h`},
+		inputCurPeg:   29,
+		expCard:       cards.NewCardFromString(`1s`), // the first valid card it can play
+		expSayGo:      false,
+	}, {
 		msg:           `says go when can't play`,
 		inputHand:     []string{`3s`, `2h`, `4s`},
 		inputPrevPegs: []string{`10s`, `10h`, `10d`},
@@ -74,6 +81,13 @@ func TestPegToThirtyOne(t *testing.T) {
 		inputPrevPegs: []string{`10s`, `3c`, `4d`, `5s`, `6h`, `3h`, `2h`},
 		inputCurPeg:   2,
 		expCard:       cards.NewCardFromString(`10c`),
+		expSayGo:      false,
+	}, {
+		msg:           `when can't, still returns a card that is valid`,
+		inputHand:     []string{`kh`, `1s`, `1d`},
+		inputPrevPegs: []string{`10s`, `10c`, `9h`},
+		inputCurPeg:   29,
+		expCard:       cards.NewCardFromString(`1s`), // the first valid card it can play
 		expSayGo:      false,
 	}, {
 		msg:           `distinguishes between 10s`,
