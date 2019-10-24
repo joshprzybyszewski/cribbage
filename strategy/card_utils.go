@@ -37,7 +37,7 @@ func otherOptions(desired int, avoid map[cards.Card]struct{}) [][]cards.Card {
 }
 
 func chooseFrom(desired int, hand []cards.Card) [][]cards.Card {
-	if desired > 2 || desired <= 0 {
+	if desired > len(hand) || desired > 4 || desired <= 0 {
 		return nil
 	}
 	// 6 choose 2 = 15, our largest number of potential deposits to the crib
@@ -50,7 +50,24 @@ func chooseFrom(desired int, hand []cards.Card) [][]cards.Card {
 		}
 		for j := i + 1; j < len(hand); j++ {
 			c2 := hand[j]
-			allDeposits = append(allDeposits, []cards.Card{c1, c2})
+			if desired == 2 {
+				allDeposits = append(allDeposits, []cards.Card{c1, c2})
+				continue
+			}
+			for k := i + 1; k < len(hand); k++ {
+				c3 := hand[k]
+				if desired == 3 {
+					allDeposits = append(allDeposits, []cards.Card{c1, c2, c3})
+					continue
+				}
+				for l := i + 1; l < len(hand); l++ {
+					c4 := hand[l]
+					if desired == 4 {
+						allDeposits = append(allDeposits, []cards.Card{c1, c2, c3, c4})
+						continue
+					}
+				}
+			}
 		}
 	}
 	return allDeposits
