@@ -23,8 +23,13 @@ func getBestPotential(hand []cards.Card, isBetter func(old, new float64) bool) [
 
 	allDeposits := getDeposits(hand)
 
+	seen := map[cards.Card]struct{}{}
+	for _, c := range hand {
+		seen[c] = struct{}{}
+	}
+
 	for i, dep := range allDeposits {
-		p := getPotentialForDeposit(dep)
+		p := getPotentialForDeposit(seen, dep)
 		if i == 0 || isBetter(bestPotential, p) {
 			bestCrib = bestCrib[:0]
 			bestCrib = append(bestCrib, dep...)
@@ -56,10 +61,9 @@ func getDeposits(hand []cards.Card) [][]cards.Card {
 	return allDeposits
 }
 
-func getPotentialForDeposit(myCrib []cards.Card) float64 {
-	myCards := map[string]struct{}{}
-	for _, c := range myCrib {
-		myCards[c.String()] = struct{}{}
+func getPotentialForDeposit(seen map[cards.Card]struct{}, cribDeposit []cards.Card) float64 {
+	for _, c := range cribDeposit {
+		seen[c] = struct{}{}
 	}
 
 	totalCribPoints := 0
@@ -67,48 +71,20 @@ func getPotentialForDeposit(myCrib []cards.Card) float64 {
 
 	for i := 0; i < 52; i++ {
 		lead := cards.NewCardFromNumber(i)
-		if _, ok := myCards[lead.String()]; ok {
+		if _, ok := seen[lead]; ok {
 			continue
 		}
 
-		for o1 := 0; o1 < 52; o1++ {
-			if i == o1 {
-				continue
-			}
-			oc1 := cards.NewCardFromNumber(o1)
-			if _, ok := myCards[oc1.String()]; ok {
-				continue
-			}
-			for o2 := o1 + 1; o2 < 52; o2++ {
-				if i == o2 {
-					continue
-				}
-				oc2 := cards.NewCardFromNumber(o2)
-				if _, ok := myCards[oc2.String()]; ok {
-					continue
-				}
+		seen[lead] = struct{}{}
 
-				if len(myCards) == 2 {
-					totalCribPoints += scorer.CribPoints(lead, append(myCrib, oc1, oc2))
-					totalHands++
-					continue
-				}
+		options := otherOptions(4-len(cribDeposit), seen)
 
-				for o3 := o2 + 1; o3 < 52; o3++ {
-					if i == o3 {
-						continue
-					}
-
-					oc3 := cards.NewCardFromNumber(o3)
-					if _, ok := myCards[oc3.String()]; ok {
-						continue
-					}
-
-					totalCribPoints += scorer.CribPoints(lead, append(myCrib, oc1, oc2, oc3))
-					totalHands++
-				}
-			}
+		for _, o := range options {
+			totalCribPoints += scorer.CribPoints(lead, append(o, cribDeposit...))
+			totalHands++
 		}
+
+		delete(seen, lead)
 	}
 
 	return float64(totalCribPoints) / float64(totalHands)
