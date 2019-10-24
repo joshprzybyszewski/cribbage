@@ -11,22 +11,27 @@ import (
 )
 
 func main() {
-	qs := []*survey.Question{
-		{
-			Name:      "inputHand",
-			Prompt:    &survey.Input{Message: "What is your dealt hand?"},
-			Validate:  survey.Required,
-			Transform: survey.Title,
-		},
-	}
-	var inputHand string
-	err := survey.Ask(qs, &inputHand)
-	if err != nil {
-		fmt.Printf("got error: %+v\n", err)
-	}
-	inputCards := strings.Split(inputHand, `,`)
+	for {
+		qs := []*survey.Question{
+			{
+				Name:      "inputHand",
+				Prompt:    &survey.Input{Message: "What is your dealt hand?"},
+				Validate:  survey.Required,
+				Transform: survey.Title,
+			},
+		}
+		var inputHand string
+		err := survey.Ask(qs, &inputHand)
+		if err != nil {
+			fmt.Printf("got error: %+v\n", err)
+		}
+		if inputHand == `exit` || inputHand == `quit` {
+			os.Exit(0)
+		}
+		inputCards := strings.Split(inputHand, `,`)
 
-	reportAboutHand(inputCards)
+		reportAboutHand(inputCards)
+	}
 }
 
 func reportAboutHand(cstrs []string) {
