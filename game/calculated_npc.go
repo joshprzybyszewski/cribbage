@@ -58,8 +58,7 @@ func (npc *calcNPCInteraction) AskForCut() float64 {
 func (npc *calcNPCInteraction) TellAboutCut(cards.Card) {}
 
 func (npc *calcNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
-	// TODO
-	return strategy.PegToRun(hand, prevPegs, curPeg)
+	return strategy.PegHighestCardNow(hand, prevPegs, curPeg)
 }
 
 func (npc *calcNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}
