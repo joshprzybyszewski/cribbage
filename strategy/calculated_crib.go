@@ -8,16 +8,16 @@ import (
 // GiveCribHighestPotential gives the crib the highest potential pointed crib
 func GiveCribHighestPotential(_ int, hand []cards.Card) []cards.Card {
 	isBetter := func(old, new float64) bool { return new > old }
-	return getBestPotential(hand, isBetter)
+	return getBestPotentialCrib(hand, isBetter)
 }
 
 // GiveCribLowestPotential gives the crib the lowest potential pointed hand
 func GiveCribLowestPotential(_ int, hand []cards.Card) []cards.Card {
 	isBetter := func(old, new float64) bool { return new < old }
-	return getBestPotential(hand, isBetter)
+	return getBestPotentialCrib(hand, isBetter)
 }
 
-func getBestPotential(hand []cards.Card, isBetter func(old, new float64) bool) []cards.Card {
+func getBestPotentialCrib(hand []cards.Card, isBetter func(old, new float64) bool) []cards.Card {
 	if len(hand) > 6 || len(hand) <= 4 {
 		return nil
 	}
@@ -45,7 +45,11 @@ func getBestPotential(hand []cards.Card, isBetter func(old, new float64) bool) [
 	return bestCrib
 }
 
-func getPotentialForDeposit(seen map[cards.Card]struct{}, cribDeposit []cards.Card) float64 {
+func getPotentialForDeposit(prevSeen map[cards.Card]struct{}, cribDeposit []cards.Card) float64 {
+	seen := map[cards.Card]struct{}{}
+	for k := range prevSeen {
+		seen[k] = struct{}{}
+	}
 	for _, c := range cribDeposit {
 		seen[c] = struct{}{}
 	}

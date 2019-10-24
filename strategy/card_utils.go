@@ -72,3 +72,19 @@ func chooseFrom(desired int, hand []cards.Card) [][]cards.Card {
 	}
 	return allDeposits
 }
+
+// without returns the cards in superset minus the subsetToRemove
+func without(superset, subsetToRemove []cards.Card) []cards.Card {
+	removed := make([]cards.Card, 0, len(superset)-len(subsetToRemove))
+	rem := make(map[cards.Card]struct{}, len(subsetToRemove))
+	for _, s := range subsetToRemove {
+		rem[s] = struct{}{}
+	}
+	for _, c := range superset {
+		if _, ok := rem[c]; ok {
+			continue
+		}
+		removed = append(removed, c)
+	}
+	return removed
+}
