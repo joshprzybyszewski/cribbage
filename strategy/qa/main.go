@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	survey "github.com/AlecAivazis/survey/v2"
@@ -25,7 +26,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("got error: %+v\n", err)
 		}
-		if inputHand == `exit` || inputHand == `quit` {
+		if inputHand == `Exit` || inputHand == `Quit` || inputHand == `Q` {
 			os.Exit(0)
 		}
 		inputCards := strings.Split(inputHand, `,`)
