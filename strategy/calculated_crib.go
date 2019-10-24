@@ -18,10 +18,15 @@ func GiveCribLowestPotential(_ int, hand []cards.Card) []cards.Card {
 }
 
 func getBestPotential(hand []cards.Card, isBetter func(old, new float64) bool) []cards.Card {
-	bestCrib := make([]cards.Card, 0, len(hand)-4)
+	if len(hand) > 6 || len(hand) <= 4 {
+		return nil
+	}
+
+	lenDeposit := len(hand) - 4
+	bestCrib := make([]cards.Card, 0, lenDeposit)
 	bestPotential := 0.0
 
-	allDeposits := getDeposits(hand)
+	allDeposits := chooseFrom(lenDeposit, hand)
 
 	seen := map[cards.Card]struct{}{}
 	for _, c := range hand {
@@ -38,27 +43,6 @@ func getBestPotential(hand []cards.Card, isBetter func(old, new float64) bool) [
 	}
 
 	return bestCrib
-}
-
-func getDeposits(hand []cards.Card) [][]cards.Card {
-	if len(hand) > 6 || len(hand) <= 4 {
-		return nil
-	}
-
-	// 6 choose 2 = 15, our largest number of potential deposits to the crib
-	allDeposits := make([][]cards.Card, 0, 15)
-	for i, c1 := range hand {
-		if len(hand) == 5 {
-			// it's a three or four player game, return one card
-			allDeposits = append(allDeposits, []cards.Card{c1})
-			continue
-		}
-		for j := i + 1; j < len(hand); j++ {
-			c2 := hand[j]
-			allDeposits = append(allDeposits, []cards.Card{c1, c2})
-		}
-	}
-	return allDeposits
 }
 
 func getPotentialForDeposit(seen map[cards.Card]struct{}, cribDeposit []cards.Card) float64 {
