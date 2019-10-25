@@ -135,6 +135,13 @@ func TestPegToPair(t *testing.T) {
 		expCard:       cards.NewCardFromString(`10c`),
 		expSayGo:      false,
 	}, {
+		msg:           `when can't, still returns a valid card`,
+		inputHand:     []string{`4c`, `7s`, `as`, `9c`},
+		inputPrevPegs: []string{`10c`, `10s`, `8d`},
+		inputCurPeg:   28,
+		expCard:       cards.NewCardFromString(`as`),
+		expSayGo:      false,
+	}, {
 		msg:           `distinguishes between 10s`,
 		inputHand:     []string{`10c`, `jd`, `qh`, `ks`},
 		inputPrevPegs: []string{`qs`},
