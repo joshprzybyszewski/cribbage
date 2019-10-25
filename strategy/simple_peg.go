@@ -23,10 +23,10 @@ func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card,
 			return c, false
 		}
 	}
-	return anyValidCard(hand, curPeg)
+	return firstValidCard(hand, curPeg)
 }
 
-func anyValidCard(hand []cards.Card, curPeg int) (cards.Card, bool) {
+func firstValidCard(hand []cards.Card, curPeg int) (cards.Card, bool) {
 	for _, c := range hand {
 		if c.PegValue()+curPeg <= 31 {
 			return c, false
@@ -46,7 +46,7 @@ func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo boo
 			return c, false
 		}
 	}
-	return anyValidCard(hand, curPeg)
+	return firstValidCard(hand, curPeg)
 }
 
 // PegToRun returns a card that forms the longest run if one is possible
@@ -66,7 +66,7 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	}
 	cardsToAnalyze := prevPegs[index:]
 	if len(cardsToAnalyze) < 2 {
-		return anyValidCard(hand, curPeg)
+		return firstValidCard(hand, curPeg)
 	}
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
