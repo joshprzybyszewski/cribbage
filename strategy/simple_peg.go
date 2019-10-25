@@ -23,7 +23,16 @@ func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card,
 			return c, false
 		}
 	}
-	return hand[0], false
+	return anyValidCard(hand, curPeg)
+}
+
+func anyValidCard(hand []cards.Card, curPeg int) (cards.Card, bool) {
+	for _, c := range hand {
+		if c.PegValue()+curPeg <= 31 {
+			return c, false
+		}
+	}
+	return cards.Card{}, true
 }
 
 // PegToPair returns a card from the hand iff that card makes a pair and does not push the count over 31
@@ -33,11 +42,11 @@ func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo boo
 	}
 	lastCard := prevPegs[len(prevPegs)-1]
 	for _, c := range hand {
-		if c.Value == lastCard.Value {
+		if c.Value == lastCard.Value && curPeg+c.PegValue() <= 31 {
 			return c, false
 		}
 	}
-	return hand[0], false
+	return anyValidCard(hand, curPeg)
 }
 
 // PegToRun returns a card that forms the longest run if one is possible
@@ -56,7 +65,9 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 		}
 	}
 	cardsToAnalyze := prevPegs[index:]
-	// TODO make this not use an ugly-as-heck triple-nested for loop...
+	if len(cardsToAnalyze) < 2 {
+		return anyValidCard(hand, curPeg)
+	}
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
 			runCards := make([]cards.Card, 0)
