@@ -2,7 +2,6 @@ package cards
 
 import (
 	"errors"
-	"sort"
 	"strconv"
 )
 
@@ -120,14 +119,4 @@ func (c Card) PegValue() int {
 		return 10
 	}
 	return c.Value
-}
-
-// SortByValue sorts a slice of cards either ascending or descending by their rank order
-func SortByValue(cards []Card, descending bool) {
-	sort.Slice(cards, func(i, j int) bool {
-		if descending {
-			return cards[i].Value > cards[j].Value
-		}
-		return cards[i].Value < cards[j].Value
-	})
 }

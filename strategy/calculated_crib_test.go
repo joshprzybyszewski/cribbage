@@ -48,7 +48,7 @@ func TestGiveCribLowestPotential(t *testing.T) {
 		msg:          `obvious case still passses when requesting one card`,
 		inputDesired: 1,
 		inputHand:    []string{`5s`, `5c`, `5d`, `5h`, `1s`},
-		expHand:      []string{ `1s`},
+		expHand:      []string{`1s`},
 	}}
 
 	for _, tc := range testCases {

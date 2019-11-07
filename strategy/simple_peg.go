@@ -70,10 +70,8 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	}
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
-			runCards := make([]cards.Card, 0)
-			runCards = append(runCards, cardsToAnalyze[i:]...)
-			runCards = append(runCards, c)
-			cards.SortByValue(runCards, false)
+			handCopy := append([]cards.Card{c}, cardsToAnalyze[i:]...)
+			runCards := cards.SortByValue(handCopy, false)
 			for j := 0; j < len(runCards)-1; j++ {
 				if runCards[j].Value != runCards[j+1].Value-1 {
 					break
