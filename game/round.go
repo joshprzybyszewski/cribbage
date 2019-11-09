@@ -3,8 +3,8 @@ package game
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
-	"github.com/joshprzybyszewski/cribbage/pegging"
+	"github.com/joshprzybyszewski/cribbage/logic/pegging"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 const (
@@ -12,24 +12,50 @@ const (
 )
 
 type Round struct {
-	CurrentStage RoundStage
+	CurrentStage model.Phase
 
 	// the cards that have been placed in the crib for this round
-	cribCards []cards.Card
+	cribCards []model.Card
 
 	// the ordered list of cards which is added to as players play a card during pegging
-	peggedCards []cards.Card
+	peggedCards []model.PeggedCard
 
 	// the number we are currently at in pegging
 	currentPeg int
+}
+
+func NewRoundFromModelGame(mg model.Game) *Round {
+	r := Round{}
+
+	r.CurrentStage = mg.Phase
+
+	r.cribCards = make([]model.Card, 4)
+	for i, mgcc := range mg.Crib {
+		r.cribCards[i] = mgcc
+	}
+
+	currentPeg := 0
+	pc := make([]model.PeggedCard, 0, 4*len(mg.Players))
+	for _, c := range mg.PeggedCards {
+		pc = append(pc, c)
+
+		currentPeg += c.PegValue()
+		if currentPeg > maxPeggingValue {
+			currentPeg = c.PegValue()
+		}
+	}
+	r.peggedCards = pc
+	r.currentPeg = currentPeg
+
+	return &r
 }
 
 func NewTwoPlayerRound() *Round {
 	return newRound(nil, 2)
 }
 
-func NewThreePlayerRound(cribCard cards.Card) *Round {
-	cc := make([]cards.Card, 0, 4)
+func NewThreePlayerRound(cribCard model.Card) *Round {
+	cc := make([]model.Card, 0, 4)
 	cc = append(cc, cribCard)
 
 	return newRound(cc, 3)
@@ -39,33 +65,33 @@ func NewFourPlayerRound() *Round {
 	return newRound(nil, 4)
 }
 
-func newRound(cribCards []cards.Card, numPlayers int) *Round {
-	cc := make([]cards.Card, 0, 4)
+func newRound(cribCards []model.Card, numPlayers int) *Round {
+	cc := make([]model.Card, 0, 4)
 	if cribCards != nil {
 		cc = append(cc, cribCards...)
 	}
 
 	return &Round{
-		CurrentStage: Deal,
+		CurrentStage: model.Deal,
 		cribCards:    cc,
-		peggedCards:  make([]cards.Card, 0, 4*numPlayers),
+		peggedCards:  make([]model.PeggedCard, 0, 4*numPlayers),
 		currentPeg:   0,
 	}
 }
 
 func (r *Round) NextRound() error {
-	if r.CurrentStage != Done {
+	if r.CurrentStage != model.Done {
 		return errors.New(`cannot progress to next round when not done`)
 	}
 
-	r.CurrentStage = Deal
+	r.CurrentStage = model.Deal
 	r.cribCards = r.cribCards[:0]
 	r.peggedCards = r.peggedCards[:0]
 	r.currentPeg = 0
 	return nil
 }
 
-func (r *Round) AcceptCribCards(c ...cards.Card) error {
+func (r *Round) AcceptCribCards(c ...model.Card) error {
 	if len(r.cribCards)+len(c) > 4 {
 		return errors.New(`cannot accept cards -- crib would be too big`)
 	}
@@ -74,21 +100,24 @@ func (r *Round) AcceptCribCards(c ...cards.Card) error {
 	return nil
 }
 
-func (r *Round) Crib() []cards.Card {
+func (r *Round) Crib() []model.Card {
 	return r.cribCards
 }
 
-func (r *Round) AcceptPegCard(c cards.Card) (int, error) {
+func (r *Round) AcceptPegCard(c model.Card) (int, error) {
 	if r.currentPeg+c.PegValue() > maxPeggingValue {
 		return 0, errors.New(`cannot peg past 31`)
 	}
+	var pID model.PlayerID
 
 	pts, err := pegging.PointsForCard(r.peggedCards, c)
 	if err != nil {
 		return 0, err
 	}
 
-	r.peggedCards = append(r.peggedCards, c)
+	pc := model.NewPeggedCard(pID, c)
+
+	r.peggedCards = append(r.peggedCards, pc)
 	r.currentPeg += c.PegValue()
 
 	if 31 == r.currentPeg {
@@ -102,7 +131,7 @@ func (r *Round) GoAround() {
 	r.currentPeg = 0
 }
 
-func (r *Round) PrevPeggedCards() []cards.Card {
+func (r *Round) PrevPeggedCards() []model.PeggedCard {
 	return r.peggedCards
 }
 

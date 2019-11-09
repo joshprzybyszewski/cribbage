@@ -3,28 +3,8 @@ package game
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
-
-type PegColor int
-
-const (
-	Blue PegColor = iota
-	Red
-	Green
-)
-
-func (c PegColor) String() string {
-	switch c {
-	case Blue:
-		return `blue`
-	case Red:
-		return `red`
-	case Green:
-		return `green`
-	}
-	return `wat`
-}
 
 const (
 	winningScore int = 121
@@ -33,15 +13,15 @@ const (
 type GameConfig struct {
 	Players        []Player
 	StartingDealer int
-	StartingCrib   []cards.Card
+	StartingCrib   []model.Card
 }
 
 type Game struct {
 	// The deck of cards
-	deck *cards.Deck
+	deck model.Deck
 
 	// The card that has been cut
-	cutCard cards.Card
+	cutCard model.Card
 	hasCut  bool
 
 	// The current "round" of cribbage
@@ -54,10 +34,10 @@ type Game struct {
 	players []Player
 
 	// The current scores per color
-	ScoresByColor map[PegColor]int
+	ScoresByColor map[model.PlayerColor]int
 
 	// The previous scores per color
-	LagScoreByColor map[PegColor]int
+	LagScoreByColor map[model.PlayerColor]int
 }
 
 func New(cfg GameConfig) *Game {
@@ -70,12 +50,44 @@ func New(cfg GameConfig) *Game {
 	}
 
 	return &Game{
-		deck:            cards.NewDeck(),
+		deck:            model.NewDeck(),
 		dealer:          cfg.StartingDealer,
 		round:           r,
 		players:         cfg.Players,
-		ScoresByColor:   map[PegColor]int{Blue: 0, Red: 0},
-		LagScoreByColor: map[PegColor]int{Blue: -1, Red: -1},
+		ScoresByColor:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScoreByColor: map[model.PlayerColor]int{model.Blue: -1, model.Red: -1},
+	}
+}
+
+func NewGameFromModel(mg model.Game) *Game {
+	r := NewRoundFromModelGame(mg)
+
+	dealerIndex := 0
+	gp := make([]Player, len(mg.Players))
+	for i, p := range mg.Players {
+		if p.ID == mg.CurrentDealer {
+			dealerIndex = i
+		}
+		gp[i] = NewPlayerFromModel(p)
+	}
+
+	sbc := make(map[model.PlayerColor]int, len(mg.CurrentScores))
+	for c, s := range mg.CurrentScores {
+		sbc[c] = int(s)
+	}
+
+	lsbc := make(map[model.PlayerColor]int, len(mg.LagScores))
+	for c, s := range mg.LagScores {
+		lsbc[c] = int(s)
+	}
+
+	return &Game{
+		deck:            model.NewDeck(),
+		dealer:          dealerIndex,
+		round:           r,
+		players:         gp,
+		ScoresByColor:   sbc,
+		LagScoreByColor: lsbc,
 	}
 }
 
@@ -100,7 +112,7 @@ func (g *Game) PlayersToDealTo() []Player {
 	return append(g.players[g.dealer+1:], g.players[:g.dealer+1]...)
 }
 
-func (g *Game) Deck() *cards.Deck {
+func (g *Game) Deck() model.Deck {
 	return g.deck
 }
 
@@ -119,9 +131,9 @@ func (g *Game) CutAt(p float64) error {
 	return nil
 }
 
-func (g *Game) LeadCard() cards.Card {
+func (g *Game) LeadCard() model.Card {
 	if !g.hasCut {
-		return cards.Card{}
+		return model.Card{}
 	}
 
 	return g.cutCard
@@ -146,7 +158,7 @@ func (g *Game) NextRound() error {
 	return nil
 }
 
-func (g *Game) AddPoints(pc PegColor, p int, msgs ...string) {
+func (g *Game) AddPoints(pc model.PlayerColor, p int, msgs ...string) {
 	g.LagScoreByColor[pc] = g.ScoresByColor[pc]
 	g.ScoresByColor[pc] = g.ScoresByColor[pc] + p
 	for _, p := range g.players {

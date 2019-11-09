@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func TestPointsStandardFunThings(t *testing.T) {
@@ -89,12 +89,12 @@ func TestPointsStandardFunThings(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		lead := cards.NewCardFromString(tc.leadCard)
-		hand := make([]cards.Card, 4)
+		lead := model.NewCardFromString(tc.leadCard)
+		hand := make([]model.Card, 4)
 		cardStrs := strings.Split(tc.hand, `,`)
 		require.Len(t, cardStrs, 4)
 		for i, c := range cardStrs {
-			hand[i] = cards.NewCardFromString(c)
+			hand[i] = model.NewCardFromString(c)
 		}
 
 		actPoints := HandPoints(lead, hand)
@@ -136,12 +136,12 @@ func TestPointsForFifteens(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		lead := cards.NewCardFromString(tc.leadCard)
-		hand := make([]cards.Card, 4)
+		lead := model.NewCardFromString(tc.leadCard)
+		hand := make([]model.Card, 4)
 		cardStrs := strings.Split(tc.hand, `,`)
 		require.Len(t, cardStrs, 4)
 		for i, c := range cardStrs {
-			hand[i] = cards.NewCardFromString(c)
+			hand[i] = model.NewCardFromString(c)
 		}
 
 		actPoints := HandPoints(lead, hand)
@@ -173,12 +173,12 @@ func TestPointsOddInteractions(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		lead := cards.NewCardFromString(tc.leadCard)
-		hand := make([]cards.Card, 4)
+		lead := model.NewCardFromString(tc.leadCard)
+		hand := make([]model.Card, 4)
 		cardStrs := strings.Split(tc.hand, `,`)
 		require.Len(t, cardStrs, 4)
 		for i, c := range cardStrs {
-			hand[i] = cards.NewCardFromString(c)
+			hand[i] = model.NewCardFromString(c)
 		}
 
 		actPoints := HandPoints(lead, hand)

@@ -1,24 +1,10 @@
-package cards
+package model
 
 import (
 	"errors"
+	"sort"
 	"strconv"
 )
-
-type Suit int
-
-const (
-	Spades Suit = iota
-	Clubs
-	Diamonds
-	Hearts
-)
-
-type Card struct {
-	Suit      Suit
-	Value     int
-	deckValue int
-}
 
 func NewCardFromString(card string) Card {
 	value := 0
@@ -79,9 +65,8 @@ func NewCardFromNumber(val int) Card {
 
 func NewCard(suit Suit, value int) Card {
 	return Card{
-		Suit:      suit,
-		Value:     value,
-		deckValue: (int(suit) * 13) + (value - 1),
+		Suit:  suit,
+		Value: value,
 	}
 }
 
@@ -119,4 +104,25 @@ func (c Card) PegValue() int {
 		return 10
 	}
 	return c.Value
+}
+
+// SortByValue sorts a slice of cards either ascending or descending by their rank order
+func SortByValue(input []Card, descending bool) []Card {
+	retCards := make([]Card, len(input))
+	for i, c := range input {
+		retCards[i] = c
+	}
+	sort.Slice(retCards, func(i, j int) bool {
+		if retCards[i].Value == retCards[j].Value {
+			if descending {
+				return retCards[i].Suit > retCards[j].Suit
+			}
+			return retCards[i].Suit < retCards[j].Suit
+		}
+		if descending {
+			return retCards[i].Value > retCards[j].Value
+		}
+		return retCards[i].Value < retCards[j].Value
+	})
+	return retCards
 }

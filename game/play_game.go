@@ -2,37 +2,51 @@ package game
 
 import (
 	"sync"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func (g *Game) Play() error {
+func PlayEntireGame(g *Game) error {
 	for !g.IsOver() {
-		var err error
-		switch g.round.CurrentStage {
-		case Deal:
-			err = g.dealPhase()
-			g.round.CurrentStage = BuildCrib
-		case BuildCrib:
-			err = g.buildCrib()
-			g.round.CurrentStage = Cut
-		case Cut:
-			err = g.cutPhase()
-			g.round.CurrentStage = Pegging
-		case Pegging:
-			err = g.peg()
-			g.round.CurrentStage = Counting
-		case Counting:
-			err = g.countHands()
-			g.round.CurrentStage = CribCounting
-		case CribCounting:
-			g.countCrib()
-			g.round.CurrentStage = Done
-		case Done:
-			err = g.NextRound()
-		}
-
+		err := PlayOneStep(g)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func PlayOneStep(g *Game) error {
+	if g.IsOver() {
+		return nil
+	}
+
+	var err error
+	switch g.round.CurrentStage {
+	case model.Deal:
+		err = g.dealPhase()
+		g.round.CurrentStage = model.BuildCrib
+	case model.BuildCrib:
+		err = g.buildCrib()
+		g.round.CurrentStage = model.Cut
+	case model.Cut:
+		err = g.cutPhase()
+		g.round.CurrentStage = model.Pegging
+	case model.Pegging:
+		err = g.peg()
+		g.round.CurrentStage = model.Counting
+	case model.Counting:
+		err = g.countHands()
+		g.round.CurrentStage = model.CribCounting
+	case model.CribCounting:
+		g.countCrib()
+		g.round.CurrentStage = model.Done
+		err = g.NextRound()
+	}
+
+	if err != nil {
+		return err
 	}
 
 	return nil

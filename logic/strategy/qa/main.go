@@ -7,8 +7,8 @@ import (
 
 	survey "github.com/AlecAivazis/survey/v2"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
-	"github.com/joshprzybyszewski/cribbage/strategy"
+	"github.com/joshprzybyszewski/cribbage/logic/strategy"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func main() {
@@ -44,10 +44,10 @@ func reportAboutHand(cstrs []string) {
 	fmt.Printf("GiveCribHighestPotential: %+v\n", highCrib)
 }
 
-func strToCards(s []string) []cards.Card {
-	c := make([]cards.Card, len(s))
+func strToCards(s []string) []model.Card {
+	c := make([]model.Card, len(s))
 	for i, str := range s {
-		c[i] = cards.NewCardFromString(str)
+		c[i] = model.NewCardFromString(str)
 	}
 	return c
 }

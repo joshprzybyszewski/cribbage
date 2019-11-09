@@ -1,37 +1,43 @@
-package cards
+package model
 
 import (
 	"crypto/rand"
+	"fmt"
 	"math/big"
 )
 
-const NumCardsPerDeck = 52
+type Deck interface {
+	Deal() Card
+	Shuffle()
+	CutDeck(p float64) Card
+}
 
-type Deck struct {
+type deck struct {
 	cards    [52]Card
 	numDealt int
 }
 
-func NewDeck() *Deck {
+func NewDeck() Deck {
 	var cards [52]Card
 
 	for i := 0; i < NumCardsPerDeck; i++ {
 		cards[i] = NewCardFromNumber(i)
 	}
 
-	return &Deck{
+	return &deck{
 		cards:    cards,
 		numDealt: 0,
 	}
 }
 
-func (d *Deck) Deal() Card {
+func (d *deck) Deal() Card {
 	lastValidCard := int64(51 - d.numDealt)
 	if lastValidCard > 0 {
 		randBigInt, err := rand.Int(rand.Reader, big.NewInt(lastValidCard))
 		if err != nil {
 			// rand.Int should never fail
-			panic(err)
+			fmt.Printf("Deal got error: %+v\n", err)
+			return Card{}
 		}
 		randomIndex := randBigInt.Int64()
 		d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
@@ -46,7 +52,7 @@ func (d *Deck) Deal() Card {
 	return d.cards[lastValidCard]
 }
 
-func (d *Deck) Shuffle() {
+func (d *deck) Shuffle() {
 	d.numDealt = 0
 
 	for i := 0; i < 52; i++ {
@@ -56,7 +62,7 @@ func (d *Deck) Shuffle() {
 	d.numDealt = 0
 }
 
-func (d *Deck) CutDeck(p float64) Card {
+func (d *deck) CutDeck(p float64) Card {
 	lastValidCard := int64(51 - d.numDealt)
 	cutCard := int(float64(lastValidCard) * p)
 

@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func HandPoints(lead cards.Card, hand []cards.Card) int {
+func HandPoints(lead model.Card, hand []model.Card) int {
 	return points(lead, hand, false)
 }
 
-func CribPoints(lead cards.Card, crib []cards.Card) int {
+func CribPoints(lead model.Card, crib []model.Card) int {
 	return points(lead, crib, true)
 }
 
-func points(lead cards.Card, hand []cards.Card, isCrib bool) int {
+func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	values := make([]int, 5)
 	ptValues := make([]int, 5)
 	for i, c := range hand {
@@ -272,7 +272,7 @@ func scoreRunsAndPairs(values []int) (scoreType, int) {
 	return st, pts
 }
 
-func scoreFlushesAndNobs(lead cards.Card, hand []cards.Card, isCrib bool) (scoreType, int) {
+func scoreFlushesAndNobs(lead model.Card, hand []model.Card, isCrib bool) (scoreType, int) {
 	var st scoreType
 	pts := 0
 	handSuit := hand[0].Suit

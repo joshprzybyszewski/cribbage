@@ -4,62 +4,75 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
-	"github.com/joshprzybyszewski/cribbage/scorer"
+	"github.com/joshprzybyszewski/cribbage/logic/scorer"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 type Player interface {
 	Name() string
-	Color() PegColor
-	TellAboutScores(cur, lag map[PegColor]int, msgs ...string)
+	Color() model.PlayerColor
+	TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string)
 
-	TakeDeck(d *cards.Deck)
+	TakeDeck(d model.Deck)
 	IsDealer() bool
 	Shuffle()
 
-	DealCard() (cards.Card, error)
-	AcceptCard(cards.Card) error
+	DealCard() (model.Card, error)
+	AcceptCard(model.Card) error
 	NeedsCard() bool
 
-	AddToCrib(dealer PegColor, desired int) []cards.Card
-	AcceptCrib([]cards.Card) error
+	AddToCrib(dealer model.PlayerColor, desired int) []model.Card
+	AcceptCrib([]model.Card) error
 
 	Cut() float64
-	TellAboutCut(cards.Card)
+	TellAboutCut(model.Card)
 
-	Peg(prevPegs []cards.Card, curPeg int) (played cards.Card, sayGo, canPlay bool)
+	Peg(prevPegs []model.PeggedCard, curPeg int) (played model.Card, sayGo, canPlay bool)
 
-	HandScore(leadCard cards.Card) (string, int)
+	HandScore(leadCard model.Card) (string, int)
 
-	CribScore(leadCard cards.Card) (string, int, error)
+	CribScore(leadCard model.Card) (string, int, error)
 
 	ReturnCards() error
 }
 
-type player struct {
-	name        string
-	color       PegColor
-	interaction PlayerInteraction
-
-	deck *cards.Deck
-
-	hand   []cards.Card
-	pegged map[cards.Card]struct{}
-	crib   []cards.Card
-
-	scoresByColor   map[PegColor]int
-	lagScoreByColor map[PegColor]int
+func NewPlayerFromModel(mp model.Player) Player {
+	var interaction PlayerInteraction // TODO figure this out
+	return &player{
+		interaction: interaction,
+		name:        mp.Name,
+		color:       mp.Color,
+		deck:        nil,
+		hand:        make([]model.Card, 0, 6),
+		crib:        make([]model.Card, 0, 4),
+		pegged:      make(map[model.Card]struct{}, 4),
+	}
 }
 
-func newPlayer(interaction PlayerInteraction, name string, color PegColor) *player {
+type player struct {
+	name        string
+	color       model.PlayerColor
+	interaction PlayerInteraction
+
+	deck model.Deck
+
+	hand   []model.Card
+	pegged map[model.Card]struct{}
+	crib   []model.Card
+
+	scoresByColor   map[model.PlayerColor]int
+	lagScoreByColor map[model.PlayerColor]int
+}
+
+func newPlayer(interaction PlayerInteraction, name string, color model.PlayerColor) *player {
 	return &player{
 		interaction: interaction,
 		name:        name,
 		color:       color,
 		deck:        nil,
-		hand:        make([]cards.Card, 0, 6),
-		crib:        make([]cards.Card, 0, 4),
-		pegged:      make(map[cards.Card]struct{}, 4),
+		hand:        make([]model.Card, 0, 6),
+		crib:        make([]model.Card, 0, 4),
+		pegged:      make(map[model.Card]struct{}, 4),
 	}
 }
 
@@ -67,17 +80,17 @@ func (p *player) Name() string {
 	return p.name
 }
 
-func (p *player) Color() PegColor {
+func (p *player) Color() model.PlayerColor {
 	return p.color
 }
 
-func (p *player) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {
+func (p *player) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {
 	p.scoresByColor = cur
 	p.lagScoreByColor = lag
 	p.interaction.TellAboutScores(cur, lag, msgs...)
 }
 
-func (p *player) TakeDeck(d *cards.Deck) {
+func (p *player) TakeDeck(d model.Deck) {
 	p.deck = d
 }
 
@@ -85,15 +98,15 @@ func (p *player) IsDealer() bool {
 	return p.deck != nil
 }
 
-func (p *player) DealCard() (cards.Card, error) {
+func (p *player) DealCard() (model.Card, error) {
 	if !p.IsDealer() {
-		return cards.Card{}, errors.New(`cannot deal a card if not the dealer`)
+		return model.Card{}, errors.New(`cannot deal a card if not the dealer`)
 	}
 
 	return p.deck.Deal(), nil
 }
 
-func (p *player) AcceptCard(c cards.Card) error {
+func (p *player) AcceptCard(c model.Card) error {
 	if !p.NeedsCard() {
 		return errors.New(`cannot accept new card`)
 	}
@@ -120,7 +133,7 @@ func (p *player) NeedsCard() bool {
 	return len(p.hand) < 6
 }
 
-func (p *player) AcceptCrib(crib []cards.Card) error {
+func (p *player) AcceptCrib(crib []model.Card) error {
 	if !p.IsDealer() {
 		return errors.New(`attempted to receive a crib when not the dealer`)
 	}
@@ -130,12 +143,12 @@ func (p *player) AcceptCrib(crib []cards.Card) error {
 	return nil
 }
 
-func (p *player) HandScore(leadCard cards.Card) (string, int) {
+func (p *player) HandScore(leadCard model.Card) (string, int) {
 	msg := fmt.Sprintf("hand (%s %s %s %s) with lead (%s)", p.hand[0], p.hand[1], p.hand[2], p.hand[3], leadCard)
 	return msg, scorer.HandPoints(leadCard, p.hand)
 }
 
-func (p *player) CribScore(leadCard cards.Card) (string, int, error) {
+func (p *player) CribScore(leadCard model.Card) (string, int, error) {
 	if !p.IsDealer() {
 		return ``, 0, errors.New(`Cannot score crib when not the dealer`)
 	} else if len(p.crib) == 0 {
@@ -154,18 +167,18 @@ func (p *player) Shuffle() {
 	}
 }
 
-func (p *player) AddToCrib(dealerColor PegColor, desired int) []cards.Card {
+func (p *player) AddToCrib(dealerColor model.PlayerColor, desired int) []model.Card {
 	cribCards := p.interaction.AskForCribCards(dealerColor, desired, p.hand)
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! Expected %d cards chosen, but was %d (%v)\n`, desired, len(cribCards), cribCards)
 		return nil
 	}
 
-	inCrib := map[cards.Card]struct{}{}
+	inCrib := map[model.Card]struct{}{}
 	for _, cc := range cribCards {
 		inCrib[cc] = struct{}{}
 	}
-	shouldRemove := func(c cards.Card) bool {
+	shouldRemove := func(c model.Card) bool {
 		_, ok := inCrib[c]
 		return ok
 	}
@@ -176,8 +189,8 @@ func (p *player) AddToCrib(dealerColor PegColor, desired int) []cards.Card {
 	return cribCards
 }
 
-func removeCards(before []cards.Card, shouldRemove func(cards.Card) bool) []cards.Card {
-	after := make([]cards.Card, 0, len(before))
+func removeCards(before []model.Card, shouldRemove func(model.Card) bool) []model.Card {
+	after := make([]model.Card, 0, len(before))
 	for _, c := range before {
 		if !shouldRemove(c) {
 			after = append(after, c)
@@ -190,22 +203,22 @@ func (p *player) Cut() float64 {
 	return p.interaction.AskForCut()
 }
 
-func (p *player) TellAboutCut(c cards.Card) {
+func (p *player) TellAboutCut(c model.Card) {
 	p.interaction.TellAboutCut(c)
 }
 
-func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool) {
+func (p *player) Peg(prevPegs []model.PeggedCard, curPeg int) (model.Card, bool, bool) {
 	if len(p.pegged) == len(p.hand) {
-		return cards.Card{}, false, false
+		return model.Card{}, false, false
 	}
 
-	opts := make([]cards.Card, 0, len(p.hand))
+	opts := make([]model.Card, 0, len(p.hand))
 	for _, c := range p.hand {
 		if _, ok := p.pegged[c]; !ok {
 			opts = append(opts, c)
 		}
 	}
-	var c cards.Card
+	var c model.Card
 	var sayGo bool
 	for i := 0; ; i++ {
 		if i == 10 {
@@ -227,7 +240,7 @@ func (p *player) Peg(prevPegs []cards.Card, curPeg int) (cards.Card, bool, bool)
 		break
 	}
 	if sayGo {
-		return cards.Card{}, true, true
+		return model.Card{}, true, true
 	}
 	p.pegged[c] = struct{}{}
 
