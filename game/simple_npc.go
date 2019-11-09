@@ -56,7 +56,7 @@ func (npc *simpleNPCInteraction) AskForCut() float64 {
 
 func (npc *simpleNPCInteraction) TellAboutCut(model.Card) {}
 
-func (npc *simpleNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+func (npc *simpleNPCInteraction) AskToPeg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	switch rand.Int() % 4 {
 	case 0:
 		return strategy.PegToFifteen(hand, prevPegs, curPeg)

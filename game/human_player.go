@@ -132,7 +132,7 @@ func (p *terminalInteraction) TellAboutCut(c model.Card) {
 	fmt.Printf("Card cut: %s\n", c.String())
 }
 
-func (p *terminalInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+func (p *terminalInteraction) AskToPeg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	p.printCurrentScore()
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGo = `Say Go!`

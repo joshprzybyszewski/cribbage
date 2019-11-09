@@ -27,7 +27,7 @@ type Player interface {
 	Cut() float64
 	TellAboutCut(model.Card)
 
-	Peg(prevPegs []model.Card, curPeg int) (played model.Card, sayGo, canPlay bool)
+	Peg(prevPegs []model.PeggedCard, curPeg int) (played model.Card, sayGo, canPlay bool)
 
 	HandScore(leadCard model.Card) (string, int)
 
@@ -207,7 +207,7 @@ func (p *player) TellAboutCut(c model.Card) {
 	p.interaction.TellAboutCut(c)
 }
 
-func (p *player) Peg(prevPegs []model.Card, curPeg int) (model.Card, bool, bool) {
+func (p *player) Peg(prevPegs []model.PeggedCard, curPeg int) (model.Card, bool, bool) {
 	if len(p.pegged) == len(p.hand) {
 		return model.Card{}, false, false
 	}

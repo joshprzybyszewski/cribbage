@@ -45,7 +45,7 @@ func (npc *dumbNPCInteraction) AskForCut() float64 {
 
 func (npc *dumbNPCInteraction) TellAboutCut(model.Card) {}
 
-func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+func (npc *dumbNPCInteraction) AskToPeg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
 		if c.PegValue() > maxVal {

@@ -18,7 +18,7 @@ type Round struct {
 	cribCards []model.Card
 
 	// the ordered list of cards which is added to as players play a card during pegging
-	peggedCards []model.Card
+	peggedCards []model.PeggedCard
 
 	// the number we are currently at in pegging
 	currentPeg int
@@ -35,16 +35,13 @@ func NewRoundFromModelGame(mg model.Game) *Round {
 	}
 
 	currentPeg := 0
-	pc := make([]model.Card, len(mg.PeggedCards))
+	pc := make([]model.PeggedCard, 0, 4 * len(mg.Players))
 	for i, c := range mg.PeggedCards {
-		// TODO make the round's pegged cards a PegCard struct
-		println(c.String())
-		// pc[i] = c
-		pc[i] = model.Card{}
+		pc = append(pc, c)
 
-		currentPeg += pc[i].PegValue()
+		currentPeg += c.PegValue()
 		if currentPeg > maxPeggingValue {
-			currentPeg = pc[i].PegValue()
+			currentPeg = c.PegValue()
 		}
 	}
 	r.peggedCards = pc
@@ -77,7 +74,7 @@ func newRound(cribCards []model.Card, numPlayers int) *Round {
 	return &Round{
 		CurrentStage: model.Deal,
 		cribCards:    cc,
-		peggedCards:  make([]model.Card, 0, 4*numPlayers),
+		peggedCards:  make([]model.PeggedCard, 0, 4*numPlayers),
 		currentPeg:   0,
 	}
 }
@@ -111,13 +108,16 @@ func (r *Round) AcceptPegCard(c model.Card) (int, error) {
 	if r.currentPeg+c.PegValue() > maxPeggingValue {
 		return 0, errors.New(`cannot peg past 31`)
 	}
+	var pID model.PlayerID
 
 	pts, err := pegging.PointsForCard(r.peggedCards, c)
 	if err != nil {
 		return 0, err
 	}
 
-	r.peggedCards = append(r.peggedCards, c)
+	pc := model.NewPeggedCard(pID, c)
+
+	r.peggedCards = append(r.peggedCards, pc)
 	r.currentPeg += c.PegValue()
 
 	if 31 == r.currentPeg {
@@ -131,7 +131,7 @@ func (r *Round) GoAround() {
 	r.currentPeg = 0
 }
 
-func (r *Round) PrevPeggedCards() []model.Card {
+func (r *Round) PrevPeggedCards() []model.PeggedCard {
 	return r.peggedCards
 }
 

@@ -57,7 +57,7 @@ func (npc *calcNPCInteraction) AskForCut() float64 {
 
 func (npc *calcNPCInteraction) TellAboutCut(model.Card) {}
 
-func (npc *calcNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+func (npc *calcNPCInteraction) AskToPeg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	return strategy.PegHighestCardNow(hand, prevPegs, curPeg)
 }
 
