@@ -59,6 +59,44 @@ func New(cfg GameConfig) *Game {
 	}
 }
 
+func NewGameFromModel(mg model.Game) *Game {
+	var r *Round
+	switch len(mg.Players) {
+	case 2:
+		r = NewTwoPlayerRound()
+	default:
+		return nil
+	}
+
+	dealerIndex := 0
+	gp := make([]Player, len(mg.Players))
+	for i, p := range mg.Players {
+		if p.ID == mg.CurrentDealer {
+			dealerIndex = i
+		}
+		gp[i] = NewPlayerFromModel(p)
+	}
+
+	sbc := make(map[model.PlayerColor]int, len(mg.CurrentScores))
+	for c, s := range mg.CurrentScores {
+		sbc[c] = int(s)
+	}
+	
+	lsbc := make(map[model.PlayerColor]int, len(mg.LagScores))
+	for c, s := range mg.LagScores {
+		lsbc[c] = int(s)
+	}
+
+	return &Game{
+		deck:            model.NewDeck(),
+		dealer:          dealerIndex,
+		round:           r,
+		players:         gp,
+		ScoresByColor:   sbc,
+		LagScoreByColor: lsbc,
+	}
+}
+
 func (g *Game) IsOver() bool {
 	for _, score := range g.ScoresByColor {
 		if score >= winningScore {

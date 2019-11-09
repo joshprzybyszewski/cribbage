@@ -39,12 +39,8 @@ func (c PlayerColor) String() string {
 }
 
 type Player struct {
-	ID   PlayerID
-	Name string
-}
-
-type GamePlayer struct {
 	ID    PlayerID
+	Name string
 	Color PlayerColor
 }
 
