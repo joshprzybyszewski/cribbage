@@ -35,7 +35,7 @@ func NewRoundFromModelGame(mg model.Game) *Round {
 	}
 
 	currentPeg := 0
-	pc := make([]model.PeggedCard, 0, 4 * len(mg.Players))
+	pc := make([]model.PeggedCard, 0, 4*len(mg.Players))
 	for i, c := range mg.PeggedCards {
 		pc = append(pc, c)
 

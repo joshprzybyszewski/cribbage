@@ -2,7 +2,7 @@ package model
 
 func NewPeggedCard(pID PlayerID, c Card) PeggedCard {
 	return PeggedCard{
-		Card: c,
+		Card:     c,
 		PlayerID: pID,
 	}
 }
