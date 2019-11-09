@@ -164,7 +164,7 @@ func (p *terminalInteraction) AskToPeg(hand []model.Card, prevPegs []model.Pegge
 		}
 	}
 
-	msg := `Pegging at: ` + strconv.Itoa(curPeg) + `. The last cards peggged were: `
+	msg := `Pegging at: ` + strconv.Itoa(curPeg) + `. The last cards pegged were: `
 	for i, c := range prevPegs {
 		msg += c.String()
 		if i < len(prevPegs)-1 {
