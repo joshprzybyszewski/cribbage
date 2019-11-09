@@ -41,6 +41,7 @@ func PlayOneStep(g *Game) error {
 		g.round.CurrentStage = model.CribCounting
 	case model.CribCounting:
 		g.countCrib()
+		g.round.CurrentStage = model.Done
 		err = g.NextRound()
 	}
 
