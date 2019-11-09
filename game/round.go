@@ -24,6 +24,35 @@ type Round struct {
 	currentPeg int
 }
 
+func NewRoundFromModelGame(mg model.Game) *Round {
+	r := Round{}
+
+	// TODO get rid of round stages for model.phase
+	// r.CurrentStage = mg.Phase
+	r.cribCards = make([]model.Card, 4)
+	for i, mgcc := range mg.Crib {
+		r.cribCards[i] = mgcc
+	}
+
+	currentPeg := 0
+	pc := make([]model.Card, len(mg.PeggedCards))
+	for i, c := range mg.PeggedCards {
+		// TODO make the round's pegged cards a PegCard struct
+		println(c.String())
+		// pc[i] = c
+		pc[i] = model.Card{}
+		
+		currentPeg += pc[i].PegValue()
+		if currentPeg > maxPeggingValue {
+			currentPeg = pc[i].PegValue()
+		}
+	}
+	r.peggedCards = pc
+	r.currentPeg = currentPeg
+
+	return &r
+}
+
 func NewTwoPlayerRound() *Round {
 	return newRound(nil, 2)
 }

@@ -16,6 +16,11 @@ type Card struct {
 
 const NumCardsPerDeck = 52
 
+type PeggedCard struct {
+	Card
+	PlayerID PlayerID
+}
+
 type PlayerID int64
 type GameID int64
 
@@ -67,4 +72,5 @@ type Game struct {
 	Hands         map[PlayerID][]Card
 	cutCard       Card
 	Crib          []Card
+	PeggedCards   []PeggedCard
 }

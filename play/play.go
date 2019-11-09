@@ -20,7 +20,7 @@ func PlayGame() error {
 
 	g := game.New(cfg)
 
-	err := g.Play()
+	err := PlayEntireGame(g)
 	if err != nil {
 		return err
 	}

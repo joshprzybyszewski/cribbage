@@ -60,13 +60,7 @@ func New(cfg GameConfig) *Game {
 }
 
 func NewGameFromModel(mg model.Game) *Game {
-	var r *Round
-	switch len(mg.Players) {
-	case 2:
-		r = NewTwoPlayerRound()
-	default:
-		return nil
-	}
+	r := NewRoundFromModelGame(mg)
 
 	dealerIndex := 0
 	gp := make([]Player, len(mg.Players))

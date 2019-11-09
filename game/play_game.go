@@ -4,35 +4,46 @@ import (
 	"sync"
 )
 
-func (g *Game) Play() error {
+func PlayEntireGame(g *Game) error {
 	for !g.IsOver() {
-		var err error
-		switch g.round.CurrentStage {
-		case Deal:
-			err = g.dealPhase()
-			g.round.CurrentStage = BuildCrib
-		case BuildCrib:
-			err = g.buildCrib()
-			g.round.CurrentStage = Cut
-		case Cut:
-			err = g.cutPhase()
-			g.round.CurrentStage = Pegging
-		case Pegging:
-			err = g.peg()
-			g.round.CurrentStage = Counting
-		case Counting:
-			err = g.countHands()
-			g.round.CurrentStage = CribCounting
-		case CribCounting:
-			g.countCrib()
-			g.round.CurrentStage = Done
-		case Done:
-			err = g.NextRound()
-		}
-
+		err := PlayOneStep(g)
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func PlayOneStep(g *Game) error {
+	if g.IsOver() {
+		return nil
+	}
+
+	var err error
+	switch g.round.CurrentStage {
+	case Deal:
+		err = g.dealPhase()
+		g.round.CurrentStage = BuildCrib
+	case BuildCrib:
+		err = g.buildCrib()
+		g.round.CurrentStage = Cut
+	case Cut:
+		err = g.cutPhase()
+		g.round.CurrentStage = Pegging
+	case Pegging:
+		err = g.peg()
+		g.round.CurrentStage = Counting
+	case Counting:
+		err = g.countHands()
+		g.round.CurrentStage = CribCounting
+	case CribCounting:
+		g.countCrib()
+		err = g.NextRound()
+	}
+
+	if err != nil {
+		return err
 	}
 
 	return nil
