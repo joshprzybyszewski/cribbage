@@ -47,7 +47,7 @@ func TestPegToFifteen(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actCard, actSayGo := PegToFifteen(strToCards(tc.inputHand), strToCards(tc.inputPrevPegs), tc.inputCurPeg)
+		actCard, actSayGo := PegToFifteen(strToCards(tc.inputHand), strToPeggedCards(tc.inputPrevPegs), tc.inputCurPeg)
 		assert.Equal(t, tc.expSayGo, actSayGo, tc.msg)
 		assert.Equal(t, tc.expCard, actCard, tc.msg)
 	}
@@ -106,7 +106,7 @@ func TestPegToThirtyOne(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actCard, actSayGo := PegToThirtyOne(strToCards(tc.inputHand), strToCards(tc.inputPrevPegs), tc.inputCurPeg)
+		actCard, actSayGo := PegToThirtyOne(strToCards(tc.inputHand), strToPeggedCards(tc.inputPrevPegs), tc.inputCurPeg)
 		assert.Equal(t, tc.expSayGo, actSayGo, tc.msg)
 		assert.Equal(t, tc.expCard, actCard, tc.msg)
 	}
@@ -172,7 +172,7 @@ func TestPegToPair(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actCard, actSayGo := PegToPair(strToCards(tc.inputHand), strToCards(tc.inputPrevPegs), tc.inputCurPeg)
+		actCard, actSayGo := PegToPair(strToCards(tc.inputHand), strToPeggedCards(tc.inputPrevPegs), tc.inputCurPeg)
 		assert.Equal(t, tc.expSayGo, actSayGo, tc.msg)
 		assert.Equal(t, tc.expCard, actCard, tc.msg)
 	}
@@ -231,7 +231,7 @@ func TestPegToRun(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actCard, actSayGo := PegToRun(strToCards(tc.inputHand), strToCards(tc.inputPrevPegs), tc.inputCurPeg)
+		actCard, actSayGo := PegToRun(strToCards(tc.inputHand), strToPeggedCards(tc.inputPrevPegs), tc.inputCurPeg)
 		assert.Equal(t, tc.expSayGo, actSayGo, tc.msg)
 		assert.Equal(t, tc.expCard, actCard, tc.msg)
 	}

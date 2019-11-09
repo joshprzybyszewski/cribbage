@@ -5,16 +5,16 @@ import (
 )
 
 // PegToFifteen returns a card that yields a fifteen if it can
-func PegToFifteen(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
+func PegToFifteen(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) {
 	return pegToTarget(hand, prevPegs, curPeg, 15)
 }
 
 // PegToThirtyOne returns a card that yields 31 if it can
-func PegToThirtyOne(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
+func PegToThirtyOne(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) {
 	return pegToTarget(hand, prevPegs, curPeg, 31)
 }
 
-func pegToTarget(hand, prevPegs []model.Card, curPeg, target int) (_ model.Card, sayGo bool) {
+func pegToTarget(hand []model.Card, prevPegs []model.PeggedCard, curPeg, target int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}
@@ -36,7 +36,7 @@ func firstValidCard(hand []model.Card, curPeg int) (model.Card, bool) {
 }
 
 // PegToPair returns a card from the hand iff that card makes a pair and does not push the count over 31
-func PegToPair(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
+func PegToPair(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}
@@ -50,7 +50,7 @@ func PegToPair(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo boo
 }
 
 // PegToRun returns a card that forms the longest run if one is possible
-func PegToRun(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
+func PegToRun(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}
@@ -70,7 +70,11 @@ func PegToRun(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool
 	}
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
-			handCopy := append([]model.Card{c}, cardsToAnalyze[i:]...)
+			handCopy := make([]model.Card, 0, len(cardsToAnalyze)-i+1)
+			handCopy = append(handCopy, c)
+			for _, pc := range cardsToAnalyze[i:] {
+				handCopy = append(handCopy, pc.Card)
+			}
 			runCards := model.SortByValue(handCopy, false)
 			for j := 0; j < len(runCards)-1; j++ {
 				if runCards[j].Value != runCards[j+1].Value-1 {

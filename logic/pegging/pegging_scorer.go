@@ -13,7 +13,7 @@ var (
 )
 
 // PointsForCard returns how many points are received for the given card, provided the previously pegged cards
-func PointsForCard(prevCards []model.Card, c model.Card) (int, error) {
+func PointsForCard(prevCards []model.PeggedCard, c model.Card) (int, error) {
 	if err := validatePrevCards(prevCards, c); err != nil {
 		return 0, err
 	}
@@ -27,7 +27,10 @@ func PointsForCard(prevCards []model.Card, c model.Card) (int, error) {
 			indexOfCardsToUse = i
 		}
 	}
-	cardsToAnalyze := prevCards[indexOfCardsToUse:]
+	cardsToAnalyze := make([]model.Card, 0, len(prevCards)-indexOfCardsToUse)
+	for _, pc := range prevCards[indexOfCardsToUse:] {
+		cardsToAnalyze = append(cardsToAnalyze, pc.Card)
+	}
 	if totalPegged+c.PegValue() > 31 {
 		// If this card pushes us over 31, then don't consider any previous cards
 		cardsToAnalyze = cardsToAnalyze[:0]
@@ -91,7 +94,7 @@ func scorePairs(prevCards []model.Card, c model.Card) int {
 	return points
 }
 
-func validatePrevCards(prevCards []model.Card, c model.Card) error {
+func validatePrevCards(prevCards []model.PeggedCard, c model.Card) error {
 	if len(prevCards) >= 4*4 {
 		// 4 players can each peg four cards. that's our max
 		return errTooManyCards

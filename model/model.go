@@ -47,7 +47,7 @@ func (c PlayerColor) String() string {
 type Player struct {
 	ID    PlayerID
 	Name  string
-	Color PlayerColor
+	Color PlayerColor // TODO map[GameID]PlayerColor
 }
 
 type Phase uint8

@@ -5,7 +5,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func PegHighestCardNow(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+func PegHighestCardNow(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	bestCard := model.Card{}
 	bestPoints := 0
 
