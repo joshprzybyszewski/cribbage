@@ -27,9 +27,9 @@ type GameID int64
 type PlayerColor int8
 
 const (
-	Blue PlayerColor = iota
+	Green PlayerColor = iota
+	Blue
 	Red
-	Green
 )
 
 func (c PlayerColor) String() string {
