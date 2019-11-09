@@ -26,13 +26,13 @@ func NewCardFromString(card string) Card {
 
 	suitStr := string(card[1:])
 	switch string(card[0]) {
-	case `A`:
+	case `A`, `a`:
 		value = 1
-	case `J`:
+	case `J`, `j`:
 		value = 11
-	case `Q`:
+	case `Q`, `q`:
 		value = 12
-	case `K`:
+	case `K`, `k`:
 		value = 13
 	case `1`:
 		// try parsing 10, 11, 12, or 13
