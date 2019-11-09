@@ -4,7 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/strategy"
+	"github.com/joshprzybyszewski/cribbage/logic/strategy"
 )
 
 var _ PlayerInteraction = (*calcNPCInteraction)(nil)

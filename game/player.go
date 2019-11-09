@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/scorer"
+	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 )
 
 type Player interface {

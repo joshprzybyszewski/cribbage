@@ -67,5 +67,6 @@ type Game struct {
 	LagScores     map[PlayerColor]uint8
 	Phase         Phase
 	Hands         map[PlayerID][]Card
+	cutCard 	  Card
 	Crib          []Card
 }

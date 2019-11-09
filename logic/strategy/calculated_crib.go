@@ -2,7 +2,7 @@ package strategy
 
 import (
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/scorer"
+	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 )
 
 // GiveCribHighestPotential gives the crib the highest potential pointed crib
