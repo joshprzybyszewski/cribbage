@@ -106,6 +106,9 @@ func (g *Game) cutPhase() error {
 	if err != nil {
 		return err
 	}
+	if g.LeadCard().Value == 11 {
+		g.AddPoints(g.Dealer().Color(), 2, `nobs`)
+	}
 
 	for _, p := range ps {
 		p.TellAboutCut(g.LeadCard())
