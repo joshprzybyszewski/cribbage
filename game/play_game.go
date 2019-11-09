@@ -2,6 +2,8 @@ package game
 
 import (
 	"sync"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func PlayEntireGame(g *Game) error {
@@ -22,22 +24,22 @@ func PlayOneStep(g *Game) error {
 
 	var err error
 	switch g.round.CurrentStage {
-	case Deal:
+	case model.Deal:
 		err = g.dealPhase()
-		g.round.CurrentStage = BuildCrib
-	case BuildCrib:
+		g.round.CurrentStage = model.BuildCrib
+	case model.BuildCrib:
 		err = g.buildCrib()
-		g.round.CurrentStage = Cut
-	case Cut:
+		g.round.CurrentStage = model.Cut
+	case model.Cut:
 		err = g.cutPhase()
-		g.round.CurrentStage = Pegging
-	case Pegging:
+		g.round.CurrentStage = model.Pegging
+	case model.Pegging:
 		err = g.peg()
-		g.round.CurrentStage = Counting
-	case Counting:
+		g.round.CurrentStage = model.Counting
+	case model.Counting:
 		err = g.countHands()
-		g.round.CurrentStage = CribCounting
-	case CribCounting:
+		g.round.CurrentStage = model.CribCounting
+	case model.CribCounting:
 		g.countCrib()
 		err = g.NextRound()
 	}

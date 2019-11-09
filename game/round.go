@@ -12,7 +12,7 @@ const (
 )
 
 type Round struct {
-	CurrentStage RoundStage
+	CurrentStage model.Phase
 
 	// the cards that have been placed in the crib for this round
 	cribCards []model.Card
@@ -27,8 +27,8 @@ type Round struct {
 func NewRoundFromModelGame(mg model.Game) *Round {
 	r := Round{}
 
-	// TODO get rid of round stages for model.phase
-	// r.CurrentStage = mg.Phase
+	r.CurrentStage = mg.Phase
+
 	r.cribCards = make([]model.Card, 4)
 	for i, mgcc := range mg.Crib {
 		r.cribCards[i] = mgcc
@@ -41,7 +41,7 @@ func NewRoundFromModelGame(mg model.Game) *Round {
 		println(c.String())
 		// pc[i] = c
 		pc[i] = model.Card{}
-		
+
 		currentPeg += pc[i].PegValue()
 		if currentPeg > maxPeggingValue {
 			currentPeg = pc[i].PegValue()
@@ -75,7 +75,7 @@ func newRound(cribCards []model.Card, numPlayers int) *Round {
 	}
 
 	return &Round{
-		CurrentStage: Deal,
+		CurrentStage: model.Deal,
 		cribCards:    cc,
 		peggedCards:  make([]model.Card, 0, 4*numPlayers),
 		currentPeg:   0,
@@ -83,11 +83,11 @@ func newRound(cribCards []model.Card, numPlayers int) *Round {
 }
 
 func (r *Round) NextRound() error {
-	if r.CurrentStage != Done {
+	if r.CurrentStage != model.Done {
 		return errors.New(`cannot progress to next round when not done`)
 	}
 
-	r.CurrentStage = Deal
+	r.CurrentStage = model.Deal
 	r.cribCards = r.cribCards[:0]
 	r.peggedCards = r.peggedCards[:0]
 	r.currentPeg = 0
