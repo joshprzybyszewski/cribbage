@@ -17,7 +17,26 @@ type Card struct {
 const NumCardsPerDeck = 52
 
 type PlayerID int64
-type PlayerColor string
+
+type PlayerColor int8
+
+const (
+	Blue PlayerColor = iota
+	Red
+	Green
+)
+
+func (c PlayerColor) String() string {
+	switch c {
+	case Blue:
+		return `blue`
+	case Red:
+		return `red`
+	case Green:
+		return `green`
+	}
+	return `notacolor`
+}
 
 type Player struct {
 	ID   PlayerID

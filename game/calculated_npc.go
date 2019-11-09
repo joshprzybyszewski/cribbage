@@ -11,10 +11,10 @@ var _ PlayerInteraction = (*calcNPCInteraction)(nil)
 
 type calcNPCInteraction struct {
 	numShuffles int
-	myColor     PegColor
+	myColor     model.PlayerColor
 }
 
-func NewCalcNPC(color PegColor) Player {
+func NewCalcNPC(color model.PlayerColor) Player {
 	simple := &calcNPCInteraction{
 		myColor: color,
 	}
@@ -36,7 +36,7 @@ func (npc *calcNPCInteraction) AskToShuffle() bool {
 	return shouldContinue
 }
 
-func (npc *calcNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
+func (npc *calcNPCInteraction) AskForCribCards(dealerColor model.PlayerColor, desired int, hand []model.Card) []model.Card {
 	if dealerColor == npc.myColor {
 		if rand.Int()%2 == 0 {
 			// We might not want this, but it is a form of calculation
@@ -61,4 +61,4 @@ func (npc *calcNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int)
 	return strategy.PegHighestCardNow(hand, prevPegs, curPeg)
 }
 
-func (npc *calcNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}
+func (npc *calcNPCInteraction) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {}

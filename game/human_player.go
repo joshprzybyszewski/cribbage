@@ -13,13 +13,13 @@ import (
 var _ PlayerInteraction = (*terminalInteraction)(nil)
 
 type terminalInteraction struct {
-	myColor PegColor
+	myColor model.PlayerColor
 
-	scoresByColor   map[PegColor]int
-	lagScoreByColor map[PegColor]int
+	scoresByColor   map[model.PlayerColor]int
+	lagScoreByColor map[model.PlayerColor]int
 }
 
-func NewHumanPlayer(color PegColor) Player {
+func NewHumanPlayer(color model.PlayerColor) Player {
 	qs := []*survey.Question{
 		{
 			Name:      "name",
@@ -38,8 +38,8 @@ func NewHumanPlayer(color PegColor) Player {
 
 	name := answers.Name
 	ti := terminalInteraction{
-		scoresByColor:   map[PegColor]int{},
-		lagScoreByColor: map[PegColor]int{},
+		scoresByColor:   map[model.PlayerColor]int{},
+		lagScoreByColor: map[model.PlayerColor]int{},
 	}
 
 	return newPlayer(&ti, name, color)
@@ -56,7 +56,7 @@ func (p *terminalInteraction) AskToShuffle() bool {
 	return cont
 }
 
-func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
+func (p *terminalInteraction) AskForCribCards(dealerColor model.PlayerColor, desired int, hand []model.Card) []model.Card {
 	p.printCurrentScore()
 	cardChoices := make([]string, 0, len(hand))
 	for _, c := range hand {
@@ -189,7 +189,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) 
 	return model.NewCardFromString(pegCard), false
 }
 
-func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {
+func (p *terminalInteraction) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {
 	for c, s := range cur {
 		if n := s - p.scoresByColor[c]; n != 0 {
 			if c == p.myColor {

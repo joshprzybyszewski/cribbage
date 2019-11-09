@@ -13,7 +13,7 @@ type dumbNPCInteraction struct {
 	numShuffles int
 }
 
-func NewDumbNPC(color PegColor) Player {
+func NewDumbNPC(color model.PlayerColor) Player {
 	dumb := &dumbNPCInteraction{}
 	return newPlayer(dumb, `dumb NPC`, color)
 }
@@ -33,7 +33,7 @@ func (npc *dumbNPCInteraction) AskToShuffle() bool {
 	return shouldContinue
 }
 
-func (npc *dumbNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
+func (npc *dumbNPCInteraction) AskForCribCards(dealerColor model.PlayerColor, desired int, hand []model.Card) []model.Card {
 	c := hand[0:2]
 
 	return c
@@ -59,4 +59,4 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int)
 	return model.Card{}, true
 }
 
-func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}
+func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {}

@@ -6,26 +6,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-type PegColor int
-
-const (
-	Blue PegColor = iota
-	Red
-	Green
-)
-
-func (c PegColor) String() string {
-	switch c {
-	case Blue:
-		return `blue`
-	case Red:
-		return `red`
-	case Green:
-		return `green`
-	}
-	return `wat`
-}
-
 const (
 	winningScore int = 121
 )
@@ -54,10 +34,10 @@ type Game struct {
 	players []Player
 
 	// The current scores per color
-	ScoresByColor map[PegColor]int
+	ScoresByColor map[model.PlayerColor]int
 
 	// The previous scores per color
-	LagScoreByColor map[PegColor]int
+	LagScoreByColor map[model.PlayerColor]int
 }
 
 func New(cfg GameConfig) *Game {
@@ -74,8 +54,8 @@ func New(cfg GameConfig) *Game {
 		dealer:          cfg.StartingDealer,
 		round:           r,
 		players:         cfg.Players,
-		ScoresByColor:   map[PegColor]int{Blue: 0, Red: 0},
-		LagScoreByColor: map[PegColor]int{Blue: -1, Red: -1},
+		ScoresByColor:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScoreByColor: map[model.PlayerColor]int{model.Blue: -1, model.Red: -1},
 	}
 }
 
@@ -146,7 +126,7 @@ func (g *Game) NextRound() error {
 	return nil
 }
 
-func (g *Game) AddPoints(pc PegColor, p int, msgs ...string) {
+func (g *Game) AddPoints(pc model.PlayerColor, p int, msgs ...string) {
 	g.LagScoreByColor[pc] = g.ScoresByColor[pc]
 	g.ScoresByColor[pc] = g.ScoresByColor[pc] + p
 	for _, p := range g.players {

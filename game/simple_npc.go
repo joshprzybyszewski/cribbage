@@ -11,10 +11,10 @@ var _ PlayerInteraction = (*simpleNPCInteraction)(nil)
 
 type simpleNPCInteraction struct {
 	numShuffles int
-	myColor     PegColor
+	myColor     model.PlayerColor
 }
 
-func NewSimpleNPC(color PegColor) Player {
+func NewSimpleNPC(color model.PlayerColor) Player {
 	simple := &simpleNPCInteraction{
 		myColor: color,
 	}
@@ -36,7 +36,7 @@ func (npc *simpleNPCInteraction) AskToShuffle() bool {
 	return shouldContinue
 }
 
-func (npc *simpleNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
+func (npc *simpleNPCInteraction) AskForCribCards(dealerColor model.PlayerColor, desired int, hand []model.Card) []model.Card {
 	if dealerColor == npc.myColor {
 		if rand.Int()%2 == 0 {
 			return strategy.GiveCribFifteens(desired, hand)
@@ -68,4 +68,4 @@ func (npc *simpleNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg in
 	return strategy.PegToRun(hand, prevPegs, curPeg)
 }
 
-func (npc *simpleNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}
+func (npc *simpleNPCInteraction) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {}

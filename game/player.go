@@ -10,8 +10,8 @@ import (
 
 type Player interface {
 	Name() string
-	Color() PegColor
-	TellAboutScores(cur, lag map[PegColor]int, msgs ...string)
+	Color() model.PlayerColor
+	TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string)
 
 	TakeDeck(d model.Deck)
 	IsDealer() bool
@@ -21,7 +21,7 @@ type Player interface {
 	AcceptCard(model.Card) error
 	NeedsCard() bool
 
-	AddToCrib(dealer PegColor, desired int) []model.Card
+	AddToCrib(dealer model.PlayerColor, desired int) []model.Card
 	AcceptCrib([]model.Card) error
 
 	Cut() float64
@@ -38,7 +38,7 @@ type Player interface {
 
 type player struct {
 	name        string
-	color       PegColor
+	color       model.PlayerColor
 	interaction PlayerInteraction
 
 	deck model.Deck
@@ -47,11 +47,11 @@ type player struct {
 	pegged map[model.Card]struct{}
 	crib   []model.Card
 
-	scoresByColor   map[PegColor]int
-	lagScoreByColor map[PegColor]int
+	scoresByColor   map[model.PlayerColor]int
+	lagScoreByColor map[model.PlayerColor]int
 }
 
-func newPlayer(interaction PlayerInteraction, name string, color PegColor) *player {
+func newPlayer(interaction PlayerInteraction, name string, color model.PlayerColor) *player {
 	return &player{
 		interaction: interaction,
 		name:        name,
@@ -67,11 +67,11 @@ func (p *player) Name() string {
 	return p.name
 }
 
-func (p *player) Color() PegColor {
+func (p *player) Color() model.PlayerColor {
 	return p.color
 }
 
-func (p *player) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {
+func (p *player) TellAboutScores(cur, lag map[model.PlayerColor]int, msgs ...string) {
 	p.scoresByColor = cur
 	p.lagScoreByColor = lag
 	p.interaction.TellAboutScores(cur, lag, msgs...)
@@ -154,7 +154,7 @@ func (p *player) Shuffle() {
 	}
 }
 
-func (p *player) AddToCrib(dealerColor PegColor, desired int) []model.Card {
+func (p *player) AddToCrib(dealerColor model.PlayerColor, desired int) []model.Card {
 	cribCards := p.interaction.AskForCribCards(dealerColor, desired, p.hand)
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! Expected %d cards chosen, but was %d (%v)\n`, desired, len(cribCards), cribCards)

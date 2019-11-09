@@ -6,11 +6,12 @@ import (
 	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/game"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func PlayGame() error {
-	human := game.NewHumanPlayer(game.Blue)
-	npc := getOpponent(game.Red)
+	human := game.NewHumanPlayer(model.Blue)
+	npc := getOpponent(model.Red)
 
 	cfg := game.GameConfig{
 		Players:        []game.Player{human, npc},
@@ -29,7 +30,7 @@ func PlayGame() error {
 	return nil
 }
 
-func getOpponent(color game.PegColor) game.Player {
+func getOpponent(color model.PlayerColor) game.Player {
 	const dumb = `dumb`
 	const simple = `simple`
 	const calculated = `calculated`
