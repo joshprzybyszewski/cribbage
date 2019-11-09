@@ -3,20 +3,20 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func strToCards(s []string) []cards.Card {
-	c := make([]cards.Card, len(s))
+func strToCards(s []string) []model.Card {
+	c := make([]model.Card, len(s))
 	for i, str := range s {
-		c[i] = cards.NewCardFromString(str)
+		c[i] = model.NewCardFromString(str)
 	}
 	return c
 }
 
-func containsCard(cs []string, c cards.Card) bool {
+func containsCard(cs []string, c model.Card) bool {
 	for _, cstr := range cs {
-		if cards.NewCardFromString(cstr).String() == c.String() {
+		if model.NewCardFromString(cstr).String() == c.String() {
 			return true
 		}
 	}

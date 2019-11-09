@@ -1,34 +1,34 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/scorer"
 )
 
 // GiveCribHighestPotential gives the crib the highest potential pointed crib
-func GiveCribHighestPotential(_ int, hand []cards.Card) []cards.Card {
+func GiveCribHighestPotential(_ int, hand []model.Card) []model.Card {
 	isBetter := func(old, new float64) bool { return new > old }
 	return getBestPotentialCrib(hand, isBetter)
 }
 
 // GiveCribLowestPotential gives the crib the lowest potential pointed hand
-func GiveCribLowestPotential(_ int, hand []cards.Card) []cards.Card {
+func GiveCribLowestPotential(_ int, hand []model.Card) []model.Card {
 	isBetter := func(old, new float64) bool { return new < old }
 	return getBestPotentialCrib(hand, isBetter)
 }
 
-func getBestPotentialCrib(hand []cards.Card, isBetter func(old, new float64) bool) []cards.Card {
+func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) bool) []model.Card {
 	if len(hand) > 6 || len(hand) <= 4 {
 		return nil
 	}
 
 	lenDeposit := len(hand) - 4
-	bestCrib := make([]cards.Card, 0, lenDeposit)
+	bestCrib := make([]model.Card, 0, lenDeposit)
 	bestPotential := 0.0
 
 	allDeposits := chooseFrom(lenDeposit, hand)
 
-	seen := map[cards.Card]struct{}{}
+	seen := map[model.Card]struct{}{}
 	for _, c := range hand {
 		seen[c] = struct{}{}
 	}
@@ -45,8 +45,8 @@ func getBestPotentialCrib(hand []cards.Card, isBetter func(old, new float64) boo
 	return bestCrib
 }
 
-func getPotentialForDeposit(prevSeen map[cards.Card]struct{}, cribDeposit []cards.Card) float64 {
-	seen := map[cards.Card]struct{}{}
+func getPotentialForDeposit(prevSeen map[model.Card]struct{}, cribDeposit []model.Card) float64 {
+	seen := map[model.Card]struct{}{}
 	for k := range prevSeen {
 		seen[k] = struct{}{}
 	}
@@ -58,7 +58,7 @@ func getPotentialForDeposit(prevSeen map[cards.Card]struct{}, cribDeposit []card
 	totalHands := 0
 
 	for i := 0; i < 52; i++ {
-		lead := cards.NewCardFromNumber(i)
+		lead := model.NewCardFromNumber(i)
 		if _, ok := seen[lead]; ok {
 			continue
 		}

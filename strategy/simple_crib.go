@@ -1,44 +1,44 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 // AvoidCribFifteens tries to return a set of cards which does not add up to 15
-func AvoidCribFifteens(desired int, hand []cards.Card) []cards.Card {
-	objFunc := func(c1, c2 cards.Card) bool {
+func AvoidCribFifteens(desired int, hand []model.Card) []model.Card {
+	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() != 15
 	}
 	return determineCribCards(desired, hand, objFunc)
 }
 
 // GiveCribFifteens tries to return a set of cards which adds up to 15
-func GiveCribFifteens(desired int, hand []cards.Card) []cards.Card {
-	objFunc := func(c1, c2 cards.Card) bool {
+func GiveCribFifteens(desired int, hand []model.Card) []model.Card {
+	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() == 15
 	}
 	return determineCribCards(desired, hand, objFunc)
 }
 
 // AvoidCribPairs tries to return a set of cards which does not make a pair (unequal value)
-func AvoidCribPairs(desired int, hand []cards.Card) []cards.Card {
-	objFunc := func(c1, c2 cards.Card) bool {
+func AvoidCribPairs(desired int, hand []model.Card) []model.Card {
+	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value != c2.Value
 	}
 	return determineCribCards(desired, hand, objFunc)
 }
 
 // GiveCribPairs tries to return a set of cards that makes a pair (equal value)
-func GiveCribPairs(desired int, hand []cards.Card) []cards.Card {
-	objFunc := func(c1, c2 cards.Card) bool {
+func GiveCribPairs(desired int, hand []model.Card) []model.Card {
+	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value == c2.Value
 	}
 	return determineCribCards(desired, hand, objFunc)
 }
 
-func determineCribCards(desired int, hand []cards.Card, objectiveFunc func(c1, c2 cards.Card) bool) []cards.Card {
+func determineCribCards(desired int, hand []model.Card, objectiveFunc func(c1, c2 model.Card) bool) []model.Card {
 	// Currently this function uses a very piecewise solution... but it passes the tests :)
-	cribCards := make([]cards.Card, 0, desired)
+	cribCards := make([]model.Card, 0, desired)
 	if desired == 1 {
 		cribCards = append(cribCards, hand[0])
 		return cribCards

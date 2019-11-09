@@ -1,22 +1,22 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 // PegToFifteen returns a card that yields a fifteen if it can
-func PegToFifteen(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
+func PegToFifteen(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
 	return pegToTarget(hand, prevPegs, curPeg, 15)
 }
 
 // PegToThirtyOne returns a card that yields 31 if it can
-func PegToThirtyOne(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
+func PegToThirtyOne(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
 	return pegToTarget(hand, prevPegs, curPeg, 31)
 }
 
-func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card, sayGo bool) {
+func pegToTarget(hand, prevPegs []model.Card, curPeg, target int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
-		return cards.Card{}, true
+		return model.Card{}, true
 	}
 	for _, c := range hand {
 		if c.PegValue()+curPeg == target {
@@ -26,19 +26,19 @@ func pegToTarget(hand, prevPegs []cards.Card, curPeg, target int) (_ cards.Card,
 	return firstValidCard(hand, curPeg)
 }
 
-func firstValidCard(hand []cards.Card, curPeg int) (cards.Card, bool) {
+func firstValidCard(hand []model.Card, curPeg int) (model.Card, bool) {
 	for _, c := range hand {
 		if c.PegValue()+curPeg <= 31 {
 			return c, false
 		}
 	}
-	return cards.Card{}, true
+	return model.Card{}, true
 }
 
 // PegToPair returns a card from the hand iff that card makes a pair and does not push the count over 31
-func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
+func PegToPair(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
-		return cards.Card{}, true
+		return model.Card{}, true
 	}
 	lastCard := prevPegs[len(prevPegs)-1]
 	for _, c := range hand {
@@ -50,9 +50,9 @@ func PegToPair(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo boo
 }
 
 // PegToRun returns a card that forms the longest run if one is possible
-func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool) {
+func PegToRun(hand, prevPegs []model.Card, curPeg int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
-		return cards.Card{}, true
+		return model.Card{}, true
 	}
 	// Runs reset at 31 or go, so only look at the cards since one of those have happened
 	peg := curPeg
@@ -70,8 +70,8 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	}
 	for i := range cardsToAnalyze {
 		for _, c := range hand {
-			handCopy := append([]cards.Card{c}, cardsToAnalyze[i:]...)
-			runCards := cards.SortByValue(handCopy, false)
+			handCopy := append([]model.Card{c}, cardsToAnalyze[i:]...)
+			runCards := model.SortByValue(handCopy, false)
 			for j := 0; j < len(runCards)-1; j++ {
 				if runCards[j].Value != runCards[j+1].Value-1 {
 					break
@@ -85,7 +85,7 @@ func PegToRun(hand, prevPegs []cards.Card, curPeg int) (_ cards.Card, sayGo bool
 	return hand[0], false
 }
 
-func mustSayGo(hand []cards.Card, curPeg int) bool {
+func mustSayGo(hand []model.Card, curPeg int) bool {
 	ct := 0
 	for _, c := range hand {
 		if curPeg+c.PegValue() > 31 {

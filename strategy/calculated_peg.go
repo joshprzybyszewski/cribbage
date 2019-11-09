@@ -1,12 +1,12 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/pegging"
 )
 
-func PegHighestCardNow(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
-	bestCard := cards.Card{}
+func PegHighestCardNow(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
+	bestCard := model.Card{}
 	bestPoints := 0
 
 	for _, c := range hand {
@@ -16,7 +16,7 @@ func PegHighestCardNow(hand, prevPegs []cards.Card, curPeg int) (cards.Card, boo
 
 		p, err := pegging.PointsForCard(prevPegs, c)
 		if err != nil {
-			return cards.Card{}, false
+			return model.Card{}, false
 		}
 
 		if p > bestPoints {
@@ -25,5 +25,5 @@ func PegHighestCardNow(hand, prevPegs []cards.Card, curPeg int) (cards.Card, boo
 		}
 	}
 
-	return bestCard, bestCard == cards.Card{}
+	return bestCard, bestCard == model.Card{}
 }

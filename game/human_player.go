@@ -7,7 +7,7 @@ import (
 
 	survey "github.com/AlecAivazis/survey/v2"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 var _ PlayerInteraction = (*terminalInteraction)(nil)
@@ -56,7 +56,7 @@ func (p *terminalInteraction) AskToShuffle() bool {
 	return cont
 }
 
-func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
 	p.printCurrentScore()
 	cardChoices := make([]string, 0, len(hand))
 	for _, c := range hand {
@@ -97,9 +97,9 @@ func (p *terminalInteraction) AskForCribCards(dealerColor PegColor, desired int,
 		return nil
 	}
 
-	crib := make([]cards.Card, len(cribCards))
+	crib := make([]model.Card, len(cribCards))
 	for i, cc := range cribCards {
-		crib[i] = cards.NewCardFromString(cc)
+		crib[i] = model.NewCardFromString(cc)
 	}
 	return crib
 }
@@ -128,11 +128,11 @@ func (p *terminalInteraction) AskForCut() float64 {
 	return 0.500
 }
 
-func (p *terminalInteraction) TellAboutCut(c cards.Card) {
+func (p *terminalInteraction) TellAboutCut(c model.Card) {
 	fmt.Printf("Card cut: %s\n", c.String())
 }
 
-func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
+func (p *terminalInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
 	p.printCurrentScore()
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGo = `Say Go!`
@@ -151,7 +151,7 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 					}
 				}
 			} else {
-				c := cards.NewCardFromString(oa.Value)
+				c := model.NewCardFromString(oa.Value)
 				if c.PegValue() > maxValToPeg {
 					return fmt.Errorf("Card (%v) exceeds max peg value (%d)", c.String(), maxValToPeg)
 				}
@@ -183,10 +183,10 @@ func (p *terminalInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) 
 	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
 
 	if pegCard == sayGo {
-		return cards.Card{}, true
+		return model.Card{}, true
 	}
 
-	return cards.NewCardFromString(pegCard), false
+	return model.NewCardFromString(pegCard), false
 }
 
 func (p *terminalInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {

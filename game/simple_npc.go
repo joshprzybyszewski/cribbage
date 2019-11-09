@@ -3,7 +3,7 @@ package game
 import (
 	"math/rand"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/strategy"
 )
 
@@ -36,7 +36,7 @@ func (npc *simpleNPCInteraction) AskToShuffle() bool {
 	return shouldContinue
 }
 
-func (npc *simpleNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+func (npc *simpleNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
 	if dealerColor == npc.myColor {
 		if rand.Int()%2 == 0 {
 			return strategy.GiveCribFifteens(desired, hand)
@@ -54,9 +54,9 @@ func (npc *simpleNPCInteraction) AskForCut() float64 {
 	return rand.Float64()
 }
 
-func (npc *simpleNPCInteraction) TellAboutCut(cards.Card) {}
+func (npc *simpleNPCInteraction) TellAboutCut(model.Card) {}
 
-func (npc *simpleNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
+func (npc *simpleNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
 	switch rand.Int() % 4 {
 	case 0:
 		return strategy.PegToFifteen(hand, prevPegs, curPeg)

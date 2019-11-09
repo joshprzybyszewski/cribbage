@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 var (
@@ -13,7 +13,7 @@ var (
 )
 
 // PointsForCard returns how many points are received for the given card, provided the previously pegged cards
-func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
+func PointsForCard(prevCards []model.Card, c model.Card) (int, error) {
 	if err := validatePrevCards(prevCards, c); err != nil {
 		return 0, err
 	}
@@ -48,7 +48,7 @@ func PointsForCard(prevCards []cards.Card, c cards.Card) (int, error) {
 	return points, nil
 }
 
-func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) int {
+func scoreRun(cardsToAnalyze []model.Card, c model.Card) int {
 	runLen := 0
 	for i := len(cardsToAnalyze) - 2; i >= 0; i-- {
 		if !isRun(append(cardsToAnalyze[i:], c)) {
@@ -62,10 +62,10 @@ func scoreRun(cardsToAnalyze []cards.Card, c cards.Card) int {
 	return 0
 }
 
-func isRun(c []cards.Card) bool {
-	sortedCards := make([]cards.Card, 0, len(c))
+func isRun(c []model.Card) bool {
+	sortedCards := make([]model.Card, 0, len(c))
 	for _, card := range c {
-		sortedCards = append(sortedCards, cards.NewCardFromString(card.String()))
+		sortedCards = append(sortedCards, model.NewCardFromString(card.String()))
 	}
 	sort.Slice(sortedCards, func(i, j int) bool {
 		return sortedCards[i].Value > sortedCards[j].Value
@@ -78,7 +78,7 @@ func isRun(c []cards.Card) bool {
 	return true
 }
 
-func scorePairs(prevCards []cards.Card, c cards.Card) int {
+func scorePairs(prevCards []model.Card, c model.Card) int {
 	points := 0
 	for i := len(prevCards) - 1; i >= 0; i-- {
 		if prevCards[i].Value != c.Value {
@@ -91,7 +91,7 @@ func scorePairs(prevCards []cards.Card, c cards.Card) int {
 	return points
 }
 
-func validatePrevCards(prevCards []cards.Card, c cards.Card) error {
+func validatePrevCards(prevCards []model.Card, c model.Card) error {
 	if len(prevCards) >= 4*4 {
 		// 4 players can each peg four cards. that's our max
 		return errTooManyCards

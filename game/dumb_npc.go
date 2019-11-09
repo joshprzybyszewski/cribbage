@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 var _ PlayerInteraction = (*dumbNPCInteraction)(nil)
@@ -33,7 +33,7 @@ func (npc *dumbNPCInteraction) AskToShuffle() bool {
 	return shouldContinue
 }
 
-func (npc *dumbNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []cards.Card) []cards.Card {
+func (npc *dumbNPCInteraction) AskForCribCards(dealerColor PegColor, desired int, hand []model.Card) []model.Card {
 	c := hand[0:2]
 
 	return c
@@ -43,9 +43,9 @@ func (npc *dumbNPCInteraction) AskForCut() float64 {
 	return rand.Float64()
 }
 
-func (npc *dumbNPCInteraction) TellAboutCut(cards.Card) {}
+func (npc *dumbNPCInteraction) TellAboutCut(model.Card) {}
 
-func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int) (cards.Card, bool) {
+func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {
 	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
 		if c.PegValue() > maxVal {
@@ -56,7 +56,7 @@ func (npc *dumbNPCInteraction) AskToPeg(hand, prevPegs []cards.Card, curPeg int)
 	}
 
 	fmt.Printf("Dumb NPC says go\n")
-	return cards.Card{}, true
+	return model.Card{}, true
 }
 
 func (npc *dumbNPCInteraction) TellAboutScores(cur, lag map[PegColor]int, msgs ...string) {}

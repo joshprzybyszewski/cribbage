@@ -3,7 +3,7 @@ package game
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 type PegColor int
@@ -33,15 +33,15 @@ const (
 type GameConfig struct {
 	Players        []Player
 	StartingDealer int
-	StartingCrib   []cards.Card
+	StartingCrib   []model.Card
 }
 
 type Game struct {
 	// The deck of cards
-	deck *cards.Deck
+	deck model.Deck
 
 	// The card that has been cut
-	cutCard cards.Card
+	cutCard model.Card
 	hasCut  bool
 
 	// The current "round" of cribbage
@@ -70,7 +70,7 @@ func New(cfg GameConfig) *Game {
 	}
 
 	return &Game{
-		deck:            cards.NewDeck(),
+		deck:            model.NewDeck(),
 		dealer:          cfg.StartingDealer,
 		round:           r,
 		players:         cfg.Players,
@@ -100,7 +100,7 @@ func (g *Game) PlayersToDealTo() []Player {
 	return append(g.players[g.dealer+1:], g.players[:g.dealer+1]...)
 }
 
-func (g *Game) Deck() *cards.Deck {
+func (g *Game) Deck() model.Deck {
 	return g.deck
 }
 
@@ -119,9 +119,9 @@ func (g *Game) CutAt(p float64) error {
 	return nil
 }
 
-func (g *Game) LeadCard() cards.Card {
+func (g *Game) LeadCard() model.Card {
 	if !g.hasCut {
-		return cards.Card{}
+		return model.Card{}
 	}
 
 	return g.cutCard

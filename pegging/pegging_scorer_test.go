@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/joshprzybyszewski/cribbage/cards"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func TestPointsForCard(t *testing.T) {
@@ -138,11 +138,11 @@ func TestPointsForCard(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		c := make([]cards.Card, len(tc.inputCards))
+		c := make([]model.Card, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = cards.NewCardFromString(ic)
+			c[i] = model.NewCardFromString(ic)
 		}
-		next := cards.NewCardFromString(tc.inputCard)
+		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)
 		assert.Equal(t, tc.expErr, actErr, `unexpected error for test "%s"`, tc.msg)
 		assert.Equal(t, tc.expVal, actVal, `unexpected value for test "%s"`, tc.msg)
@@ -177,11 +177,11 @@ func TestPointsErrorCase(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		c := make([]cards.Card, len(tc.inputCards))
+		c := make([]model.Card, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = cards.NewCardFromString(ic)
+			c[i] = model.NewCardFromString(ic)
 		}
-		next := cards.NewCardFromString(tc.inputCard)
+		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)
 		assert.Equal(t, tc.expErr, actErr, `unexpected error for test "%s"`, tc.msg)
 		assert.Equal(t, tc.expVal, actVal, `unexpected value for test "%s"`, tc.msg)
