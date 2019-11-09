@@ -81,7 +81,7 @@ func NewGameFromModel(mg model.Game) *Game {
 	for c, s := range mg.CurrentScores {
 		sbc[c] = int(s)
 	}
-	
+
 	lsbc := make(map[model.PlayerColor]int, len(mg.LagScores))
 	for c, s := range mg.LagScores {
 		lsbc[c] = int(s)

@@ -1,8 +1,8 @@
 package strategy
 
 import (
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/pegging"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func PegHighestCardNow(hand, prevPegs []model.Card, curPeg int) (model.Card, bool) {

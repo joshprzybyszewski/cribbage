@@ -3,8 +3,8 @@ package game
 import (
 	"math/rand"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/strategy"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 var _ PlayerInteraction = (*calcNPCInteraction)(nil)

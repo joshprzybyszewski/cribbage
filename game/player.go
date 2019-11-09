@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 type Player interface {

@@ -3,8 +3,8 @@ package game
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/pegging"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 const (

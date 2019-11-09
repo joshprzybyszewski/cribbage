@@ -7,8 +7,8 @@ import (
 
 	survey "github.com/AlecAivazis/survey/v2"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/strategy"
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func main() {
