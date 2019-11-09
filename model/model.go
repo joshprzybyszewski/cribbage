@@ -17,6 +17,7 @@ type Card struct {
 const NumCardsPerDeck = 52
 
 type PlayerID int64
+type GameID int64
 
 type PlayerColor int8
 
@@ -40,7 +41,7 @@ func (c PlayerColor) String() string {
 
 type Player struct {
 	ID    PlayerID
-	Name string
+	Name  string
 	Color PlayerColor
 }
 
@@ -57,12 +58,13 @@ const (
 )
 
 type Game struct {
+	ID            GameID
 	Players       []Player
 	CurrentDealer PlayerID
 	CurrentScores map[PlayerColor]uint8
 	LagScores     map[PlayerColor]uint8
 	Phase         Phase
 	Hands         map[PlayerID][]Card
-	cutCard 	  Card
+	cutCard       Card
 	Crib          []Card
 }
