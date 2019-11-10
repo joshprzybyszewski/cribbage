@@ -50,7 +50,44 @@ type Player struct {
 	Color PlayerColor // TODO map[GameID]PlayerColor
 }
 
-type Phase uint8
+type BlockingPlayer struct {
+	ID    PlayerID
+	Reason Blocker
+}
+
+type Blocker int
+
+const (
+	DealCards Blocker = iota
+	CribCard
+	CutCard
+	PegCard
+	CountHand
+	CountCrib
+)
+
+type CribBlocker struct {
+	Desired int
+	Dealer PlayerID
+	PlayerColors map[PlayerID]PlayerColor
+}
+
+type PlayerAction struct {
+	GameID GameID
+	ID PlayerID
+	Overcomes Blocker
+	Action interface{}
+}
+
+type DealAction struct {
+	NumShuffles int
+}
+
+type BuildCribAction struct {
+	Cards []Card
+}
+
+type Phase int
 
 const (
 	Deal Phase = iota
@@ -62,15 +99,22 @@ const (
 	Done
 )
 
+const (
+	WinningScore int = 121
+)
+
 type Game struct {
-	ID            GameID
-	Players       []Player
-	CurrentDealer PlayerID
-	CurrentScores map[PlayerColor]uint8
-	LagScores     map[PlayerColor]uint8
-	Phase         Phase
-	Hands         map[PlayerID][]Card
-	cutCard       Card
-	Crib          []Card
-	PeggedCards   []PeggedCard
+	ID              GameID
+	Players         []Player
+	Deck		Deck
+	BlockingPlayers []BlockingPlayer
+	CurrentDealer   PlayerID
+	PlayerColors    map[PlayerID]PlayerColor
+	CurrentScores   map[PlayerColor]int
+	LagScores       map[PlayerColor]int
+	Phase           Phase
+	Hands           map[PlayerID][]Card
+	CutCard         Card
+	Crib            []Card
+	PeggedCards     []PeggedCard
 }
