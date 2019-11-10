@@ -25,22 +25,22 @@ func PlayOneStep(g *Game) error {
 	var err error
 	switch g.round.CurrentStage {
 	case model.Deal:
-		err = g.dealPhase()
+		err = dealPhase(g)
 		g.round.CurrentStage = model.BuildCrib
 	case model.BuildCrib:
-		err = g.buildCrib()
+		err = buildCrib(g)
 		g.round.CurrentStage = model.Cut
 	case model.Cut:
-		err = g.cutPhase()
+		err = cutPhase(g)
 		g.round.CurrentStage = model.Pegging
 	case model.Pegging:
-		err = g.peg()
+		err = peg(g)
 		g.round.CurrentStage = model.Counting
 	case model.Counting:
-		err = g.countHands()
+		err = countHands(g)
 		g.round.CurrentStage = model.CribCounting
 	case model.CribCounting:
-		g.countCrib()
+		countCrib(g)
 		g.round.CurrentStage = model.Done
 		err = g.NextRound()
 	}
@@ -52,7 +52,7 @@ func PlayOneStep(g *Game) error {
 	return nil
 }
 
-func (g *Game) dealPhase() error {
+func dealPhase(g *Game) error {
 	// shuffle the deck at least once
 	g.Deck().Shuffle()
 
@@ -64,10 +64,10 @@ func (g *Game) dealPhase() error {
 	d.Shuffle()
 
 	// deal
-	return g.deal()
+	return deal(g)
 }
 
-func (g *Game) deal() error {
+func deal(g *Game) error {
 	d := g.Dealer()
 	ps := g.PlayersToDealTo()
 
@@ -99,7 +99,7 @@ func (g *Game) deal() error {
 	return nil
 }
 
-func (g *Game) cutPhase() error {
+func cutPhase(g *Game) error {
 	ps := g.PlayersToDealTo()
 	behindDealer := ps[len(ps)-2]
 	err := g.CutAt(behindDealer.Cut())
@@ -117,7 +117,7 @@ func (g *Game) cutPhase() error {
 	return nil
 }
 
-func (g *Game) buildCrib() error {
+func buildCrib(g *Game) error {
 	ps := g.PlayersToDealTo()
 	var wg sync.WaitGroup
 	var err error
@@ -139,7 +139,7 @@ func (g *Game) buildCrib() error {
 	return err
 }
 
-func (g *Game) peg() error {
+func peg(g *Game) error {
 	r := g.round
 	ps := g.PlayersToDealTo()
 	var lastPegger Player
@@ -180,7 +180,7 @@ func (g *Game) peg() error {
 	return nil
 }
 
-func (g *Game) countHands() error {
+func countHands(g *Game) error {
 	ps := g.PlayersToDealTo()
 	for _, p := range ps {
 		msg, s := p.HandScore(g.LeadCard())
@@ -193,7 +193,7 @@ func (g *Game) countHands() error {
 	return nil
 }
 
-func (g *Game) countCrib() error {
+func countCrib(g *Game) error {
 	r := g.round
 	d := g.Dealer()
 	err := d.AcceptCrib(r.Crib())
