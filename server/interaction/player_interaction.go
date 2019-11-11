@@ -7,5 +7,5 @@ import (
 type Player interface {
 	NotifyBlocking(model.Blocker, interface{})
 	NotifyMessage(interface{})
-	NotifyScoreUpdate(CurrentScores, LagScores   map[model.PlayerColor]int)
+	NotifyScoreUpdate(CurrentScores, LagScores   map[model.PlayerColor]int, msgs ...string)
 }

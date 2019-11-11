@@ -87,6 +87,10 @@ type BuildCribAction struct {
 	Cards []Card
 }
 
+type CutDeckAction struct {
+	Percentage float64
+}
+
 type Phase int
 
 const (

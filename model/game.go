@@ -8,13 +8,3 @@ func (g *Game) IsOver() bool {
 	}
 	return false
 }
-
-func (g *Game) AddPoints(pc PlayerColor, p int, msgs ...string) {
-	g.LagScores[pc] = g.CurrentScores[pc]
-	g.CurrentScores[pc] = g.CurrentScores[pc] + p
-	/* TODO tell all of the players about score updates
-	for _, p := range g.Players {
-		p.TellAboutScores(g.CurrentScores, g.LagScores, msgs...)
-	}
-	*/
-}

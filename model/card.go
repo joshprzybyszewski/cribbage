@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"log"
 	"sort"
 	"strconv"
 )
@@ -47,7 +48,7 @@ func NewCardFromString(card string) Card {
 	}
 
 	if err != nil {
-		println(`got an error! ` + err.Error())
+		log.Printf(`NewCardFromString got an error! %+v`, err)
 		return Card{}
 	}
 
@@ -56,7 +57,7 @@ func NewCardFromString(card string) Card {
 
 func NewCardFromNumber(val int) Card {
 	if val < 0 || val > 51 {
-		println(`cannot support this val`)
+		log.Printf(`NewCardFromNumber got bad value! %+v`, val)
 		return Card{}
 	}
 

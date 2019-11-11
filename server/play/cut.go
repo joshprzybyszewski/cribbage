@@ -1,25 +1,59 @@
 package play
 
 import (
-	"sync"
-
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func cutPhase(g *Game) error {
-	ps := g.PlayersToDealTo()
-	behindDealer := ps[len(ps)-2]
-	err := g.CutAt(behindDealer.Cut())
-	if err != nil {
-		return err
-	}
-	if g.LeadCard().Value == 11 {
-		g.AddPoints(g.Dealer().Color(), 2, `nobs`)
-	}
+func cutPhase(g *model.Game) error {
+	behindDealer := roundCutter(g)
 
-	for _, p := range ps {
-		p.TellAboutCut(g.LeadCard())
-	}
+	cutterAPI := pAPIs[behindDealer]
+	cutterAPI.NotifyBlocking(model.CutCard, nil)
 
 	return nil
+}
+
+func handleCut(g *model.Game, cutAction PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if cutAction.Overcomes != model.CutCard {
+		return errors.New(`Does not attempt to cut deck`)
+	}
+	if err := isWaitingForPlayer(g, cutAction); err != nil {
+		return err
+	}
+	if cutAction.ID != roundCutter(g) {
+		return errors.New(`Wrong player is cutting`)
+	}
+
+	cda, ok := cutAction.(model.CutDeckAction)
+	if !ok {
+		return errors.New(`tried dealing with a different action`)
+	}
+
+	if cda.Percentage < 0 || cda.Percentage > 1 {
+		dAPI.NotifyBlocking(model.CutCard, `Needs cut value between 0 and 1`)
+		return nil
+	}
+
+	if len(g.BlockingPlayers) != 1 {
+		log.Errorf("Expected one blocker for cut, but had: %+v\n", g.BlockingPlayers)
+	}
+	removePlayerFromBlockers(g, cutAction)
+
+	// cut the deck
+	return cut(g, cda.Percentage, pAPIs)
+}
+
+func cut(g *model.Game, cutPercent float64, pAPIs map[model.PlayerID]interaction.Player) error {
+	c := g.Deck.CutDeck(cutPercent)
+
+	if jack := model.NewCardFromString(`jh`); c.Value == jack.Value {
+		// Check if the dealer was cut a jack
+		addPoints(g, g.CurrentDealer, 2, pAPIs, `his nibs`)
+	}
+
+	g.CutCard = c
+
+	for _, pAPI := range pAPIs {
+		pAPI.NotifyMessage("Cut card", g.CutCard.String())
+	}
 }

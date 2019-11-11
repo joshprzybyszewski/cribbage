@@ -60,3 +60,18 @@ func removePlayerFromBlockers(g *model.Game, action PlayerAction) {
 		}
 	}
 }
+
+func roundCutter(g *model.Game) model.PlayerID {
+	pIDs := playersToDealTo(g)
+	return pIDs[len(pIDs)-2]
+}
+
+func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.PlayerID]interaction.Player, msgs ...string) {
+	pc := g.PlayerColors[pID]
+	g.LagScores[pc] = g.CurrentScores[pc]
+	g.CurrentScores[pc] = g.CurrentScores[pc] + pts
+	
+	for _, pAPI := range pAPIs {
+		pAPI.NotifyScoreUpdate(g.CurrentScores, g.LagScores, msgs...)
+	}
+}
