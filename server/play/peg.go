@@ -1,12 +1,11 @@
 package play
 
 import (
-	"sync"
-
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func peg(g *Game) error {
+func peg(g *model.Game) error {
 	r := g.round
 	ps := g.PlayersToDealTo()
 	var lastPegger Player
@@ -45,4 +44,43 @@ func peg(g *Game) error {
 	}
 
 	return nil
+}
+
+func handlePeg(g *model.Game, pegAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	// TODO before the pegging round starts, clear out the g.PeggedCards var
+	if pegAction.Overcomes != model.PegCard {
+		return errors.New(`Does not attempt to peg`)
+	}
+	if err := isWaitingForPlayer(g, pegAction); err != nil {
+		return err
+	}
+
+	pa, ok := pegAction.Action.(model.PegAction)
+	if !ok {
+		return errors.New(`tried dealing with a different action`)
+	}
+
+	pID := pegAction.ID
+	pAPI := pAPIs[pID]
+	if pa.SayGo {
+		// TODO check if the player has a card in their hand that they can play that hasn't been pegged
+	} else {
+		if handContains(g.Hands[pID], pa.Card) {
+			pAPI.NotifyBlocking(model.PegCard, `Cannot peg card you don't have`)
+			return nil
+		}
+	
+		if hasBeenPegged(g.PeggedCards, pa.Card) {
+			pAPI.NotifyBlocking(model.PegCard, `Cannot peg same card twice`)
+			return nil
+		}
+	}
+	
+
+	if len(g.BlockingPlayers) != 1 {
+		log.Printf("Expected one blocker for pegging, but had: %+v\n", g.BlockingPlayers)
+	}
+	removePlayerFromBlockers(g, pegAction)
+
+	// TODO logic and add new blocker
 }

@@ -17,7 +17,7 @@ func dealPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error
 	return nil
 }
 
-func handleDeal(g *model.Game, dealAction PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func handleDeal(g *model.Game, dealAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
 	if dealAction.Overcomes != model.DealCards {
 		return errors.New(`Does not attempt to deal`)
 	}
@@ -28,7 +28,7 @@ func handleDeal(g *model.Game, dealAction PlayerAction, pAPIs map[model.PlayerID
 		return errors.New(`Wrong player is dealing`)
 	}
 
-	da, ok := dealAction.(model.DealAction)
+	da, ok := dealAction.Action.(model.DealAction)
 	if !ok {
 		return errors.New(`tried dealing with a different action`)
 	}

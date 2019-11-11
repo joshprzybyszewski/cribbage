@@ -32,7 +32,7 @@ func handleCribBuild(g *model.Game, buildCribAction model.PlayerAction, pAPIs ma
 		return err
 	}
 
-	bca, ok := buildCribAction.(model.BuildCribAction)
+	bca, ok := buildCribAction.Action.(model.BuildCribAction)
 	if !ok {
 		return errors.New(`tried building crib with a different action`)
 	}

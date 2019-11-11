@@ -25,7 +25,7 @@ func handleCut(g *model.Game, cutAction model.PlayerAction, pAPIs map[model.Play
 		return errors.New(`Wrong player is cutting`)
 	}
 
-	cda, ok := cutAction.(model.CutDeckAction)
+	cda, ok := cutAction.Action.(model.CutDeckAction)
 	if !ok {
 		return errors.New(`tried dealing with a different action`)
 	}

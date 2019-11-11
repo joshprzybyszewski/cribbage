@@ -91,6 +91,11 @@ type CutDeckAction struct {
 	Percentage float64
 }
 
+type PegAction struct {
+	Card Card
+	SayGo bool
+}
+
 type Phase int
 
 const (

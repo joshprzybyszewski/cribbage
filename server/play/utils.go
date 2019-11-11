@@ -108,3 +108,13 @@ func removeSubset(super, sub []model.Card) []model.Card {
 	}
 	return ret
 }
+
+func handContains(hand []model.Card, c model.Card) bool {
+	// TODO
+	return false
+}
+
+func hasBeenPegged(pegged []model.PeggedCard, c model.Card) bool {
+	// TODO
+	return true
+}
