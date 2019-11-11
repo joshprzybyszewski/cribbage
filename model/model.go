@@ -50,11 +50,6 @@ type Player struct {
 	Color PlayerColor // TODO map[GameID]PlayerColor
 }
 
-type BlockingPlayer struct {
-	ID    PlayerID
-	Reason Blocker
-}
-
 type Blocker int
 
 const (
@@ -110,13 +105,14 @@ const (
 
 const (
 	WinningScore int = 121
+	MaxPeggingValue int = 31
 )
 
 type Game struct {
 	ID              GameID
 	Players         []Player
 	Deck		Deck
-	BlockingPlayers []BlockingPlayer
+	BlockingPlayers map[PlayerID]Blocker
 	CurrentDealer   PlayerID
 	PlayerColors    map[PlayerID]PlayerColor
 	CurrentScores   map[PlayerColor]int

@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 func playersToDealTo(g *model.Game) []model.PlayerID {
@@ -25,10 +26,10 @@ func playersToDealTo(g *model.Game) []model.PlayerID {
 	return append(pIDs[dealerIndex+1:], pIDs[:dealerIndex+1]...)
 }
 
-func isWaitingForPlayer(g *model.Game, action PlayerAction) error {
+func isWaitingForPlayer(g *model.Game, action model.PlayerAction) error {
 	isWaitingForThisPlayer := false
-	for _, bp := range g.BlockingPlayers {
-		if action.ID == bp.ID {
+	for bpID := range g.BlockingPlayers {
+		if action.ID == bpID {
 			isWaitingForThisPlayer = true
 		}
 	}
@@ -39,25 +40,22 @@ func isWaitingForPlayer(g *model.Game, action PlayerAction) error {
 	return nil
 }
 
-func removePlayerFromBlockers(g *model.Game, action PlayerAction) {
-	if len(g.BlockingPlayers) == 1 && g.BlockingPlayers[0].ID == action.ID {
-		g.BlockingPlayers = g.BlockingPlayers[:0]
-		return
+func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msgs ...string) {
+	if br, ok := g.BlockingPlayers[pID]; ok && br != reason {
+			log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
+	}
+	g.BlockingPlayers[pID] = reason
+	pAPI := pAPIs[pID]
+	pAPI.NotifyBlocking(reason, msgs...)
+}
+
+func removePlayerFromBlockers(g *model.Game, action model.PlayerAction) {
+	if br, ok := g.BlockingPlayers[action.ID]; ok && br == action.Overcomes {
+		delete(g.BlockingPlayers, action.ID)
+	} else if !ok {
+		log.Printf(`Did not find player "%+v" in list of blocking players (%+v)`, action.ID, g.BlockingPlayers)
 	} else {
-		blockIndex := -1
-		for i, bp := range g.BlockingPlayers {
-			if bp.ID == action.ID {
-				blockIndex = i
-				break
-			}
-		}
-		if blockIndex == len(g.BlockingPlayers) - 1 {
-			g.BlockingPlayers = g.BlockingPlayers[:i]
-		} else if blockIndex >= 0{
-			g.BlockingPlayers = append(g.BlockingPlayers[:i], g.BlockingPlayers[i+1:]...)
-		} else {
-			log.Errorf(`Did not find player "%+v" in list of blocking players (%+v)`, action.ID, g.BlockingPlayers)
-		}
+		log.Printf(`Player was not blocked by "%v", but rather "%v"`, action.Overcomes, br)
 	}
 }
 
@@ -67,6 +65,13 @@ func roundCutter(g *model.Game) model.PlayerID {
 }
 
 func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.PlayerID]interaction.Player, msgs ...string) {
+	if pts == 0 {
+		return
+	} else if pts < 0 {
+		log.Printf(`Attempted to score %d points for player %v`, pts, pID)
+		return
+	}
+
 	pc := g.PlayerColors[pID]
 	g.LagScores[pc] = g.CurrentScores[pc]
 	g.CurrentScores[pc] = g.CurrentScores[pc] + pts
@@ -110,11 +115,37 @@ func removeSubset(super, sub []model.Card) []model.Card {
 }
 
 func handContains(hand []model.Card, c model.Card) bool {
-	// TODO
+	for _, hc := range hand {
+		if hc == c {
+			return true
+		}
+	}
 	return false
 }
 
 func hasBeenPegged(pegged []model.PeggedCard, c model.Card) bool {
-	// TODO
+	for _, pc := range pegged {
+		if pc.Card == c {
+			return true
+		}
+	}
 	return true
+}
+
+func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {
+	peggedMap := make(map[model.Card]struct{}, len(sub))
+	for _, pc := range pegged {
+		peggedMap[pc.Card] = struct{}{}
+	}
+
+	min := model.MaxPeggingValue
+	for _, hc := range hand {
+		if _, ok := peggedMap[hc]; ok {
+			continue
+		}
+		if pv := hc.PegValue(); pv < min {
+			min = pv
+		}
+	}
+	return min
 }

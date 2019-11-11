@@ -7,24 +7,27 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func HandleAction(g *model.Game, action PlayerAction) (error) {
+func HandleAction(g *model.Game, action model.PlayerAction) (error) {
 	if g.ID != action.GameID {
-		return nil, errors.New(`action not for this game`)
+		return errors.New(`action not for this game`)
 	}
 
 	canFulfill := false
-	for _, bp := range g.BlockingPlayers {
-		if bp.ID == action.ID && bp.Reason == action.Overcomes {
+	for bpID, br := range g.BlockingPlayers {
+		if bpID == action.ID && br == action.Overcomes {
 			canFulfill = true
 		}
 	}
 	if !canFulfill {
-		return nil, errors.New(`action does not overcome appropriate blocker`)
+		return errors.New(`action does not overcome appropriate blocker`)
 	}
 
-	return g, nil
+	// TODO add a switch based on what it overcomes?
+
+	return  nil
 }
 
+// TODO remove this. It's confusing
 func PlayOneStep(g *model.Game) error {
 	if g.IsOver() {
 		return nil

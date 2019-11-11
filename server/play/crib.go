@@ -1,6 +1,8 @@
 package play
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
@@ -13,7 +15,7 @@ func buildCrib(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error
 	pIDs := playersToDealTo(g)
 	desired := numDesiredCribCards(g)
 
-	for _, pId := range pIDs {
+	for _, pID := range pIDs {
 		pAPIs[pID].NotifyBlocking(model.CribCard, model.CribBlocker{
 			Desired: desired,
 			Dealer: g.CurrentDealer,
@@ -21,36 +23,38 @@ func buildCrib(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error
 		})
 	}
 
-	return err
+	return nil
 }
 
-func handleCribBuild(g *model.Game, buildCribAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	if buildCribAction.Overcomes != model.CribCard {
+func handleCribBuild(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if action.Overcomes != model.CribCard {
 		return errors.New(`Does not attempt to build crib`)
 	}
-	if err := isWaitingForPlayer(g, buildCribAction); err != nil {
+	if err := isWaitingForPlayer(g, action); err != nil {
 		return err
 	}
 
-	bca, ok := buildCribAction.Action.(model.BuildCribAction)
+	bca, ok := action.Action.(model.BuildCribAction)
 	if !ok {
 		return errors.New(`tried building crib with a different action`)
 	}
 
 	if len(bca.Cards) != numDesiredCribCards(g) {
-		pAPIs[buildCribAction.ID].NotifyBlocking(model.CribCard, `Need to submit all required cards at once`)
+		pAPIs[action.ID].NotifyBlocking(model.CribCard, `Need to submit all required cards at once`)
 		return nil
 	}
-	if !isSuperSet(g.Hands[bca.ID], bca.Cards) {
-		pAPIs[buildCribAction.ID].NotifyBlocking(model.CribCard, `Cannot submit cards that are not in your hand`)
+	if !isSuperSet(g.Hands[action.ID], bca.Cards) {
+		pAPIs[action.ID].NotifyBlocking(model.CribCard, `Cannot submit cards that are not in your hand`)
 		return nil
 	}
 
-	removePlayerFromBlockers(g, buildCribAction)
+	removePlayerFromBlockers(g, action)
 
 	// Put the player's cards from their hand into the crib
 	g.Crib = append(g.Crib, bca.Cards...)
-	g.Hands[bca.ID] = removeSubset(g.Hands[bca.ID], bca.Cards)
+	g.Hands[action.ID] = removeSubset(g.Hands[action.ID], bca.Cards)
+
+	return nil
 }
 
 func numDesiredCribCards(g *model.Game) int {

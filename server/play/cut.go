@@ -1,11 +1,14 @@
 package play
 
 import (
+	"errors"
+	"log"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func cutPhase(g *model.Game) error {
+func cutPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	behindDealer := roundCutter(g)
 
 	cutterAPI := pAPIs[behindDealer]
@@ -14,31 +17,31 @@ func cutPhase(g *model.Game) error {
 	return nil
 }
 
-func handleCut(g *model.Game, cutAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	if cutAction.Overcomes != model.CutCard {
+func handleCut(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if action.Overcomes != model.CutCard {
 		return errors.New(`Does not attempt to cut deck`)
 	}
-	if err := isWaitingForPlayer(g, cutAction); err != nil {
+	if err := isWaitingForPlayer(g, action); err != nil {
 		return err
 	}
-	if cutAction.ID != roundCutter(g) {
+	if action.ID != roundCutter(g) {
 		return errors.New(`Wrong player is cutting`)
 	}
 
-	cda, ok := cutAction.Action.(model.CutDeckAction)
+	cda, ok := action.Action.(model.CutDeckAction)
 	if !ok {
 		return errors.New(`tried dealing with a different action`)
 	}
 
 	if cda.Percentage < 0 || cda.Percentage > 1 {
-		dAPI.NotifyBlocking(model.CutCard, `Needs cut value between 0 and 1`)
+		addPlayerToBlocker(g, action.ID, model.CutCard,pAPIs, `Needs cut value between 0 and 1`)
 		return nil
 	}
 
 	if len(g.BlockingPlayers) != 1 {
-		log.Errorf("Expected one blocker for cut, but had: %+v\n", g.BlockingPlayers)
+		log.Printf("Expected one blocker for cut, but had: %+v\n", g.BlockingPlayers)
 	}
-	removePlayerFromBlockers(g, cutAction)
+	removePlayerFromBlockers(g, action)
 
 	// cut the deck
 	return cut(g, cda.Percentage, pAPIs)
@@ -55,6 +58,8 @@ func cut(g *model.Game, cutPercent float64, pAPIs map[model.PlayerID]interaction
 	g.CutCard = c
 
 	for _, pAPI := range pAPIs {
-		pAPI.NotifyMessage("Cut card", g.CutCard.String())
+		pAPI.NotifyMessage("Cut card " + g.CutCard.String())
 	}
+
+	return nil
 }

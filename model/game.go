@@ -8,3 +8,15 @@ func (g *Game) IsOver() bool {
 	}
 	return false
 }
+
+func (g *Game) CurrentPeg() int {
+	cur := 0
+	for _, pc := range g.PeggedCards {
+		pv :=  pc.Card.PegValue()
+		cur += pv
+		if pv > MaxPeggingValue {
+			cur = pv
+		}
+	}
+	return cur
+}

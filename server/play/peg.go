@@ -2,76 +2,45 @@ package play
 
 import (
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/logic/pegging"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func peg(g *model.Game) error {
-	r := g.round
-	ps := g.PlayersToDealTo()
-	var lastPegger Player
-	for len(r.PrevPeggedCards()) < 4*len(ps) {
-		for _, p := range ps {
-			c, sayGo, canPlay := p.Peg(r.PrevPeggedCards(), r.CurrentPeg())
-			if !canPlay || sayGo {
-				if lastPegger == p {
-					// the goes went all the way around -- take a point
-					r.GoAround()
-					g.AddPoints(p.Color(), 1, `the go`)
-					if g.IsOver() {
-						return nil
-					}
-				}
-				continue
-			}
-
-			lastPegger = p
-			pts, err := r.AcceptPegCard(c)
-			if err != nil {
-				return err
-			}
-
-			g.AddPoints(p.Color(), pts, `pegging`)
-			if g.IsOver() {
-				return nil
-			}
-		}
-	}
-
-	// give a point for last card
-	g.AddPoints(lastPegger.Color(), 1, `last card`)
-	if g.IsOver() {
-		return nil
-	}
+func startPeggingPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+	// TODO before the pegging round starts, clear out the g.PeggedCards var
 
 	return nil
 }
 
-func handlePeg(g *model.Game, pegAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	// TODO before the pegging round starts, clear out the g.PeggedCards var
-	if pegAction.Overcomes != model.PegCard {
+func handlePeg(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if action.Overcomes != model.PegCard {
 		return errors.New(`Does not attempt to peg`)
 	}
-	if err := isWaitingForPlayer(g, pegAction); err != nil {
+	if err := isWaitingForPlayer(g, action); err != nil {
 		return err
 	}
 
-	pa, ok := pegAction.Action.(model.PegAction)
+	pa, ok := action.Action.(model.PegAction)
 	if !ok {
 		return errors.New(`tried dealing with a different action`)
 	}
 
-	pID := pegAction.ID
-	pAPI := pAPIs[pID]
+	pID := action.ID
 	if pa.SayGo {
-		// TODO check if the player has a card in their hand that they can play that hasn't been pegged
+		curPeg := g.CurrentPeg()
+		minCardVal := minUnpeggedValue(g.Hands[pID], g.PeggedCards)
+		if curPeg + minCardVal <= model.MaxPeggingValue {
+			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot say go when has unpegged playable card`)
+			return nil
+		}
 	} else {
 		if handContains(g.Hands[pID], pa.Card) {
-			pAPI.NotifyBlocking(model.PegCard, `Cannot peg card you don't have`)
+			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card you don't have`)
 			return nil
 		}
 	
 		if hasBeenPegged(g.PeggedCards, pa.Card) {
-			pAPI.NotifyBlocking(model.PegCard, `Cannot peg same card twice`)
+			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg same card twice`)
 			return nil
 		}
 	}
@@ -80,7 +49,78 @@ func handlePeg(g *model.Game, pegAction model.PlayerAction, pAPIs map[model.Play
 	if len(g.BlockingPlayers) != 1 {
 		log.Printf("Expected one blocker for pegging, but had: %+v\n", g.BlockingPlayers)
 	}
-	removePlayerFromBlockers(g, pegAction)
+	removePlayerFromBlockers(g, action)
 
-	// TODO logic and add new blocker
+	if pa.SayGo {
+		err := doSayGo(g, action, pAPIs)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := doPeg(g, action, pa, pAPIs)
+		if err != nil {
+			return err
+		}
+	}
+
+	if g.IsOver() {
+		return nil
+	}
+
+	if len(g.PeggedCards) == 4 * len(g.Players) {
+		// This was the last card: give one point to this player.
+		addPoints(g, action.ID, 1, pAPIs, `last card`)
+		// TODO ensure the phase moves on to counting
+		return nil
+	}
+
+	if g.IsOver() {
+		return nil
+	}
+
+	// Set the next player to peg as the blocker
+	nextPlayerIndex := -1
+	for i, pID := range g.Players {
+		if pID == action.ID {
+			nextPlayerIndex = (i + 1) % len(g.Players)
+			break
+		}
+	}
+
+	bpID := g.Players[nextPlayerIndex]
+	addPlayerToBlocker(g, bpID, model.PegCard,pAPIs)
+
+	return nil
+}
+
+func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	pIDs := playersToDealTo(g)
+
+	pts, err := pegging.PointsForCard(g.PeggedCards, pa.Card)
+	if err != nil {
+		return 0, err
+	}
+
+	addPoints(g, action.ID, pts, pAPIs, `pegging`)
+
+	g.PeggedCards = append(g.PeggedCards, model.PeggedCard{
+		Card: pa.Card,
+		PlayerID: action.ID,
+	})
+
+	return nil
+}
+
+func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if len(g.PeggedCards) == 0 {
+		return nil
+	}
+	
+	lastPeggerID := g.PeggedCards[len(g.PeggedCards)-1].ID
+	if lastPeggerID == action.ID {
+		// The go's went all the way around. Take a point
+		addPoints(g, action.ID, 1, pAPIs, `the go`)
+	}
+
+	return nil
 }
