@@ -75,3 +75,36 @@ func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.Playe
 		pAPI.NotifyScoreUpdate(g.CurrentScores, g.LagScores, msgs...)
 	}
 }
+
+// isSuperSet returns true if all of the cards in sub exist in super
+func isSuperSet(super, sub []model.Card) bool {
+	superMap := make(map[model.Card]struct{}, len(super))
+	for _, c := range super {
+		superMap[c] = struct{}{}
+	}
+	for _, c := range sub {
+		if _, ok := superMap[c]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
+// removeSubset returns a new slice which is made from super and does not have
+// and cards from sub in it. It does not check if sub is a subset of super, but
+// assumes you have already done so
+func removeSubset(super, sub []model.Card) []model.Card {
+	subMap := make(map[model.Card]struct{}, len(sub))
+	for _, c := range sub {
+		subMap[c] = struct{}{}
+	}
+
+	ret := make([]model.Card,0,len(super))
+	for _, c := range super {
+		if _, ok := subMap[c]; ok {
+			continue
+		}
+		ret = append(ret, c)
+	}
+	return ret
+}

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 func dealPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
@@ -38,7 +39,7 @@ func handleDeal(g *model.Game, dealAction PlayerAction, pAPIs map[model.PlayerID
 	}
 
 	if len(g.BlockingPlayers) != 1 {
-		log.Errorf("Expected one blocker for deal, but had: %+v\n", g.BlockingPlayers)
+		log.Printf("Expected one blocker for deal, but had: %+v\n", g.BlockingPlayers)
 	}
 	removePlayerFromBlockers(g, dealAction)
 

@@ -2,6 +2,7 @@ package play
 
 import (
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 func cutPhase(g *model.Game) error {
@@ -13,7 +14,7 @@ func cutPhase(g *model.Game) error {
 	return nil
 }
 
-func handleCut(g *model.Game, cutAction PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func handleCut(g *model.Game, cutAction model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
 	if cutAction.Overcomes != model.CutCard {
 		return errors.New(`Does not attempt to cut deck`)
 	}
