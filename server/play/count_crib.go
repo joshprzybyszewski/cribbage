@@ -41,8 +41,7 @@ func (*cribCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 		return nil
 	}
 
-	// TODO add the crib to the msgs?
-	addPoints(g, pID, pts, pAPIs, `crib`)
+	addPoints(g, pID, pts, pAPIs, `crib (`+leadCard.String()+`: `+handString(crib) +`)`)
 
 	if g.IsOver() {
 		return nil

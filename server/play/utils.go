@@ -149,3 +149,14 @@ func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {
 	}
 	return min
 }
+
+func handString(hand []model.Card) string {
+	handStr := ``
+		for _, c := range hand {
+			if len(handStr) > 0 {
+				handStr += `, `
+			}
+			handStr += c.String()
+		}
+		return handStr
+}

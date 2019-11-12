@@ -39,25 +39,26 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 		return nil
 	}
 
-	// TODO add the hand to the msgs?
-	addPoints(g, pID, pts, pAPIs, `hand`)
+	addPoints(g, pID, pts, pAPIs, `hand (`+leadCard.String()+`: `+handString(hand) +`)`)
 
 	if g.IsOver() {
 		return nil
 	}
 
 	pIDs := playersToDealTo(g)
-	nextHandScorer := -1
+	nextScorerIndex := len(pIDs) // invalid index
 	for i, id := range pIDs {
 		if id == pID {
-			nextHandScorer = i +1
+			nextScorerIndex = i +1
 			break
 		}
 	}
 	
-	if nextHandScorer <= len(pIDs)-1 {
-		nextID := pIDs[nextHandScorer]
+	if nextScorerIndex <= len(pIDs)-1 {
+		nextID := pIDs[nextScorerIndex]
 		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs)
+	} else {
+		g.Phase++
 	}
 
 	return nil

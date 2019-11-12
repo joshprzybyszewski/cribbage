@@ -1,6 +1,9 @@
 package play
 
 import (
+	"errors"
+	"log"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/pegging"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -70,7 +73,9 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	if len(g.PeggedCards) == 4 * len(g.Players) {
 		// This was the last card: give one point to this player.
 		addPoints(g, action.ID, 1, pAPIs, `last card`)
-		// TODO ensure the phase moves on to counting
+		if !g.IsOver() {
+			g.Phase++
+		}
 		return nil
 	}
 
@@ -78,17 +83,18 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 		return nil
 	}
 
+	// TODO this might need to be the next player with cards still to peg
 	// Set the next player to peg as the blocker
 	nextPlayerIndex := -1
-	for i, pID := range g.Players {
-		if pID == action.ID {
+	for i, p := range g.Players {
+		if p.ID == action.ID {
 			nextPlayerIndex = (i + 1) % len(g.Players)
 			break
 		}
 	}
 
-	bpID := g.Players[nextPlayerIndex]
-	addPlayerToBlocker(g, bpID, model.PegCard,pAPIs)
+	bp := g.Players[nextPlayerIndex]
+	addPlayerToBlocker(g, bp.ID, model.PegCard,pAPIs)
 
 	return nil
 }
@@ -98,7 +104,7 @@ func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs m
 
 	pts, err := pegging.PointsForCard(g.PeggedCards, pa.Card)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	addPoints(g, action.ID, pts, pAPIs, `pegging`)
@@ -116,7 +122,7 @@ func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]
 		return nil
 	}
 	
-	lastPeggerID := g.PeggedCards[len(g.PeggedCards)-1].ID
+	lastPeggerID := g.PeggedCards[len(g.PeggedCards)-1].PlayerID
 	if lastPeggerID == action.ID {
 		// The go's went all the way around. Take a point
 		addPoints(g, action.ID, 1, pAPIs, `the go`)

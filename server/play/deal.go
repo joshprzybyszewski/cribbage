@@ -16,7 +16,6 @@ func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	for pID := range g.Hands {
 		g.Hands[pID] = g.Hands[pID][:0]
 	}
-	g.Crib = g.Crib[:0]
 
 	// shuffle the deck at least once
 	g.Deck.Shuffle()
@@ -56,7 +55,13 @@ func (*dealingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	}
 
 	// deal
-	return deal(g, pAPIs)
+	if err := deal(g, pAPIs); err != nil {
+		return err
+	}
+
+	g.Phase++
+
+	return nil
 }
 
 func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
@@ -87,13 +92,7 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 
 	// Now that the hands are all dealt, tell everyone about what they have
 	for pID, hand := range g.Hands {
-		handStr := ``
-		for _, c := range hand {
-			if len(handStr) > 0 {
-				handStr += `, `
-			}
-			handStr += c.String()
-		}
+		handStr := handString(hand)
 		pAPIs[pID].NotifyMessage(`Received Hand `+handStr)
 	}
 

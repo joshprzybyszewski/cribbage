@@ -54,6 +54,13 @@ func (*cribBuildingHandler) HandleAction(g *model.Game, action model.PlayerActio
 	g.Crib = append(g.Crib, bca.Cards...)
 	g.Hands[action.ID] = removeSubset(g.Hands[action.ID], bca.Cards)
 
+	if len(g.BlockingPlayers) == 0 {
+		if len(g.Crib) != 4 {
+			return errors.New(`no remaining blockers, but not enough cards in the crib`)
+		}
+		g.Phase++
+	}
+
 	return nil
 }
 
