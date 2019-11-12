@@ -8,20 +8,20 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func cutPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+var _ PhaseHandler = (*cuttingHandler)(nil)
+type cuttingHandler struct {}
+
+func (*cuttingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+
 	behindDealer := roundCutter(g)
 
-	cutterAPI := pAPIs[behindDealer]
-	cutterAPI.NotifyBlocking(model.CutCard, nil)
+	addPlayerToBlocker(g, behindDealer, model.CutCard,pAPIs)
 
 	return nil
 }
 
-func handleCut(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	if action.Overcomes != model.CutCard {
-		return errors.New(`Does not attempt to cut deck`)
-	}
-	if err := isWaitingForPlayer(g, action); err != nil {
+func (*cuttingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if err := validateAction(g, action, model.CutCard); err != nil {
 		return err
 	}
 	if action.ID != roundCutter(g) {
@@ -44,13 +44,10 @@ func handleCut(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerI
 	removePlayerFromBlockers(g, action)
 
 	// cut the deck
-	return cut(g, cda.Percentage, pAPIs)
-}
-
-func cut(g *model.Game, cutPercent float64, pAPIs map[model.PlayerID]interaction.Player) error {
+	cutPercent := cda.Percentage
 	c := g.Deck.CutDeck(cutPercent)
 
-	if jack := model.NewCardFromString(`jh`); c.Value == jack.Value {
+	if c.Value == model.JackValue {
 		// Check if the dealer was cut a jack
 		addPoints(g, g.CurrentDealer, 2, pAPIs, `his nibs`)
 	}

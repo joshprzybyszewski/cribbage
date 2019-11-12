@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestJackValue(t *testing.T) {
+	assert.Equal(t, JackValue, NewCardFromString(`jh`).Value)
+}
+
 func TestNewCardFromString(t *testing.T) {
 	testCases := []struct {
 		desc    string

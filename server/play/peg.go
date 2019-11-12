@@ -6,17 +6,17 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func startPeggingPhase(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
-	// TODO before the pegging round starts, clear out the g.PeggedCards var
+var _ PhaseHandler = (*peggingHandler)(nil)
+type peggingHandler struct {}
+
+func (*peggingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+	g.PeggedCards = g.PeggedCards[:0]
 
 	return nil
 }
 
-func handlePeg(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	if action.Overcomes != model.PegCard {
-		return errors.New(`Does not attempt to peg`)
-	}
-	if err := isWaitingForPlayer(g, action); err != nil {
+func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if err := validateAction(g, action, model.PegCard); err != nil {
 		return err
 	}
 

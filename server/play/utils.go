@@ -40,7 +40,7 @@ func isWaitingForPlayer(g *model.Game, action model.PlayerAction) error {
 	return nil
 }
 
-func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msgs ...string) {
+func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msgs ...interface{}) {
 	if br, ok := g.BlockingPlayers[pID]; ok && br != reason {
 			log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
 	}

@@ -7,16 +7,19 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func buildCrib(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+var _ PhaseHandler = (*cribBuildingHandler)(nil)
+type cribBuildingHandler struct {}
+
+func (*cribBuildingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Clear out the previous crib before we start building this one
 	g.Crib = g.Crib[:0]
 
-	// Dell all of the players they need to give us the desired number of cards
+	// Tell all of the players they need to give us the desired number of cards
 	pIDs := playersToDealTo(g)
 	desired := numDesiredCribCards(g)
 
 	for _, pID := range pIDs {
-		pAPIs[pID].NotifyBlocking(model.CribCard, model.CribBlocker{
+		addPlayerToBlocker(g, pID, model.CribCard, pAPIs, model.CribBlocker{
 			Desired: desired,
 			Dealer: g.CurrentDealer,
 			PlayerColors: g.PlayerColors,
@@ -26,11 +29,8 @@ func buildCrib(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error
 	return nil
 }
 
-func handleCribBuild(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	if action.Overcomes != model.CribCard {
-		return errors.New(`Does not attempt to build crib`)
-	}
-	if err := isWaitingForPlayer(g, action); err != nil {
+func (*cribBuildingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+	if err := validateAction(g, action, model.CribCard); err != nil {
 		return err
 	}
 
@@ -40,11 +40,11 @@ func handleCribBuild(g *model.Game, action model.PlayerAction, pAPIs map[model.P
 	}
 
 	if len(bca.Cards) != numDesiredCribCards(g) {
-		pAPIs[action.ID].NotifyBlocking(model.CribCard, `Need to submit all required cards at once`)
+		addPlayerToBlocker(g, action.ID, model.CribCard, pAPIs,  `Need to submit all required cards at once`)
 		return nil
 	}
 	if !isSuperSet(g.Hands[action.ID], bca.Cards) {
-		pAPIs[action.ID].NotifyBlocking(model.CribCard, `Cannot submit cards that are not in your hand`)
+		addPlayerToBlocker(g, action.ID, model.CribCard, pAPIs, `Cannot submit cards that are not in your hand`)
 		return nil
 	}
 

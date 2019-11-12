@@ -15,6 +15,7 @@ type Card struct {
 }
 
 const NumCardsPerDeck = 52
+const JackValue = 11 // Ace is 1, King is 13
 
 type PeggedCard struct {
 	Card
@@ -89,6 +90,14 @@ type CutDeckAction struct {
 type PegAction struct {
 	Card Card
 	SayGo bool
+}
+
+type CountHandAction struct {
+	Pts int
+}
+
+type CountCribAction struct {
+	Pts int
 }
 
 type Phase int
