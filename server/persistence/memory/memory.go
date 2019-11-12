@@ -12,20 +12,18 @@ import (
 var _ persistence.DB = (*memory)(nil)
 
 type memory struct {
-	games        map[model.GameID]model.Game
-	gameLocks    map[model.GameID]*sync.Mutex
+	games     map[model.GameID]model.Game
+	gameLocks map[model.GameID]*sync.Mutex
 
-	players      map[model.PlayerID]model.Player
-	playerLocks  map[model.PlayerID]*sync.Mutex
+	players     map[model.PlayerID]model.Player
+	playerLocks map[model.PlayerID]*sync.Mutex
 
-	interactions map[model.PlayerID]interaction.Player
+	interactions     map[model.PlayerID]interaction.Player
 	interactionLocks map[model.PlayerID]*sync.Mutex
 }
 
 func New() persistence.DB {
-	return &memory{
-		
-	}
+	return &memory{}
 }
 
 func (m *memory) GetGame(id model.GameID) (model.Game, error) {
@@ -64,19 +62,19 @@ func (m *memory) GetInteraction(id model.PlayerID) (interaction.Player, error) {
 	return nil, errors.New(`does not have player`)
 }
 
-func (m *memory) SaveGame(g model.Game) (error) {
+func (m *memory) SaveGame(g model.Game) error {
 	m.games[g.ID] = g
 	m.gameLocks[g.ID].Unlock()
 	return nil
 }
 
-func (m *memory) SavePlayer(p model.Player) (error) {
+func (m *memory) SavePlayer(p model.Player) error {
 	m.players[p.ID] = p
 	m.playerLocks[p.ID].Unlock()
 	return nil
 }
 
-func (m *memory) SaveInteraction(i interaction.Player) (error) {
+func (m *memory) SaveInteraction(i interaction.Player) error {
 	m.interactions[i.ID()] = i
 	m.interactionLocks[i.ID()].Unlock()
 	return nil
