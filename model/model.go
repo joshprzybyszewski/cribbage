@@ -48,7 +48,7 @@ func (c PlayerColor) String() string {
 type Player struct {
 	ID    PlayerID
 	Name  string
-	Color PlayerColor // TODO map[GameID]PlayerColor
+	Games map[GameID]PlayerColor
 }
 
 type Blocker int
