@@ -42,7 +42,7 @@ func isWaitingForPlayer(g *model.Game, action model.PlayerAction) error {
 
 func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msgs ...interface{}) {
 	if br, ok := g.BlockingPlayers[pID]; ok && br != reason {
-			log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
+		log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
 	}
 	g.BlockingPlayers[pID] = reason
 	pAPI := pAPIs[pID]
@@ -75,7 +75,7 @@ func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.Playe
 	pc := g.PlayerColors[pID]
 	g.LagScores[pc] = g.CurrentScores[pc]
 	g.CurrentScores[pc] = g.CurrentScores[pc] + pts
-	
+
 	for _, pAPI := range pAPIs {
 		pAPI.NotifyScoreUpdate(g.CurrentScores, g.LagScores, msgs...)
 	}
@@ -104,7 +104,7 @@ func removeSubset(super, sub []model.Card) []model.Card {
 		subMap[c] = struct{}{}
 	}
 
-	ret := make([]model.Card,0,len(super))
+	ret := make([]model.Card, 0, len(super))
 	for _, c := range super {
 		if _, ok := subMap[c]; ok {
 			continue
@@ -152,11 +152,11 @@ func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {
 
 func handString(hand []model.Card) string {
 	handStr := ``
-		for _, c := range hand {
-			if len(handStr) > 0 {
-				handStr += `, `
-			}
-			handStr += c.String()
+	for _, c := range hand {
+		if len(handStr) > 0 {
+			handStr += `, `
 		}
-		return handStr
+		handStr += c.String()
+	}
+	return handStr
 }

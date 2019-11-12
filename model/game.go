@@ -12,7 +12,7 @@ func (g *Game) IsOver() bool {
 func (g *Game) CurrentPeg() int {
 	cur := 0
 	for _, pc := range g.PeggedCards {
-		pv :=  pc.Card.PegValue()
+		pv := pc.Card.PegValue()
 		cur += pv
 		if pv > MaxPeggingValue {
 			cur = pv

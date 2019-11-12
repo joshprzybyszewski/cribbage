@@ -9,7 +9,8 @@ import (
 )
 
 var _ PhaseHandler = (*dealingHandler)(nil)
-type dealingHandler struct {}
+
+type dealingHandler struct{}
 
 func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Ensure all of the players hands are cleared before we start dealing
@@ -93,7 +94,7 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Now that the hands are all dealt, tell everyone about what they have
 	for pID, hand := range g.Hands {
 		handStr := handString(hand)
-		pAPIs[pID].NotifyMessage(`Received Hand `+handStr)
+		pAPIs[pID].NotifyMessage(`Received Hand ` + handStr)
 	}
 
 	return nil

@@ -9,13 +9,14 @@ import (
 )
 
 var _ PhaseHandler = (*cuttingHandler)(nil)
-type cuttingHandler struct {}
+
+type cuttingHandler struct{}
 
 func (*cuttingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 
 	behindDealer := roundCutter(g)
 
-	addPlayerToBlocker(g, behindDealer, model.CutCard,pAPIs)
+	addPlayerToBlocker(g, behindDealer, model.CutCard, pAPIs)
 
 	return nil
 }
@@ -34,7 +35,7 @@ func (*cuttingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	}
 
 	if cda.Percentage < 0 || cda.Percentage > 1 {
-		addPlayerToBlocker(g, action.ID, model.CutCard,pAPIs, `Needs cut value between 0 and 1`)
+		addPlayerToBlocker(g, action.ID, model.CutCard, pAPIs, `Needs cut value between 0 and 1`)
 		return nil
 	}
 

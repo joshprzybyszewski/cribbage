@@ -63,16 +63,16 @@ const (
 )
 
 type CribBlocker struct {
-	Desired int
-	Dealer PlayerID
+	Desired      int
+	Dealer       PlayerID
 	PlayerColors map[PlayerID]PlayerColor
 }
 
 type PlayerAction struct {
-	GameID GameID
-	ID PlayerID
+	GameID    GameID
+	ID        PlayerID
 	Overcomes Blocker
-	Action interface{}
+	Action    interface{}
 }
 
 type DealAction struct {
@@ -88,7 +88,7 @@ type CutDeckAction struct {
 }
 
 type PegAction struct {
-	Card Card
+	Card  Card
 	SayGo bool
 }
 
@@ -118,14 +118,14 @@ const (
 )
 
 const (
-	WinningScore int = 121
+	WinningScore    int = 121
 	MaxPeggingValue int = 31
 )
 
 type Game struct {
 	ID              GameID
 	Players         []Player
-	Deck		Deck
+	Deck            Deck
 	BlockingPlayers map[PlayerID]Blocker
 	CurrentDealer   PlayerID
 	PlayerColors    map[PlayerID]PlayerColor

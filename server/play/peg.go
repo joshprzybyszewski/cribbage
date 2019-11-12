@@ -4,13 +4,14 @@ import (
 	"errors"
 	"log"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/logic/pegging"
+	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 var _ PhaseHandler = (*peggingHandler)(nil)
-type peggingHandler struct {}
+
+type peggingHandler struct{}
 
 func (*peggingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	g.PeggedCards = g.PeggedCards[:0]
@@ -32,7 +33,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	if pa.SayGo {
 		curPeg := g.CurrentPeg()
 		minCardVal := minUnpeggedValue(g.Hands[pID], g.PeggedCards)
-		if curPeg + minCardVal <= model.MaxPeggingValue {
+		if curPeg+minCardVal <= model.MaxPeggingValue {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot say go when has unpegged playable card`)
 			return nil
 		}
@@ -41,13 +42,12 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card you don't have`)
 			return nil
 		}
-	
+
 		if hasBeenPegged(g.PeggedCards, pa.Card) {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg same card twice`)
 			return nil
 		}
 	}
-	
 
 	if len(g.BlockingPlayers) != 1 {
 		log.Printf("Expected one blocker for pegging, but had: %+v\n", g.BlockingPlayers)
@@ -70,7 +70,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 		return nil
 	}
 
-	if len(g.PeggedCards) == 4 * len(g.Players) {
+	if len(g.PeggedCards) == 4*len(g.Players) {
 		// This was the last card: give one point to this player.
 		addPoints(g, action.ID, 1, pAPIs, `last card`)
 		if !g.IsOver() {
@@ -94,7 +94,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	}
 
 	bp := g.Players[nextPlayerIndex]
-	addPlayerToBlocker(g, bp.ID, model.PegCard,pAPIs)
+	addPlayerToBlocker(g, bp.ID, model.PegCard, pAPIs)
 
 	return nil
 }
@@ -110,7 +110,7 @@ func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs m
 	addPoints(g, action.ID, pts, pAPIs, `pegging`)
 
 	g.PeggedCards = append(g.PeggedCards, model.PeggedCard{
-		Card: pa.Card,
+		Card:     pa.Card,
 		PlayerID: action.ID,
 	})
 
@@ -121,7 +121,7 @@ func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]
 	if len(g.PeggedCards) == 0 {
 		return nil
 	}
-	
+
 	lastPeggerID := g.PeggedCards[len(g.PeggedCards)-1].PlayerID
 	if lastPeggerID == action.ID {
 		// The go's went all the way around. Take a point

@@ -3,13 +3,14 @@ package play
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 var _ PhaseHandler = (*handCountingHandler)(nil)
-type handCountingHandler struct {}
+
+type handCountingHandler struct{}
 
 func (*handCountingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	pIDs := playersToDealTo(g)
@@ -39,7 +40,7 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 		return nil
 	}
 
-	addPoints(g, pID, pts, pAPIs, `hand (`+leadCard.String()+`: `+handString(hand) +`)`)
+	addPoints(g, pID, pts, pAPIs, `hand (`+leadCard.String()+`: `+handString(hand)+`)`)
 
 	if g.IsOver() {
 		return nil
@@ -49,11 +50,11 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 	nextScorerIndex := len(pIDs) // invalid index
 	for i, id := range pIDs {
 		if id == pID {
-			nextScorerIndex = i +1
+			nextScorerIndex = i + 1
 			break
 		}
 	}
-	
+
 	if nextScorerIndex <= len(pIDs)-1 {
 		nextID := pIDs[nextScorerIndex]
 		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs)

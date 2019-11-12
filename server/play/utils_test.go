@@ -10,7 +10,7 @@ func TestHandContains(t *testing.T) {
 	assert.False(t, handContains(nil, model.NewCardFromString(`ah`)))
 	assert.False(t, handContains([]model.Card{}, model.NewCardFromString(`ah`)))
 
-	hand :=[]model.Card{
+	hand := []model.Card{
 		model.NewCardFromString(`ah`),
 		model.NewCardFromString(`jc`),
 		model.NewCardFromString(`6c`),
@@ -28,7 +28,7 @@ func TestHasBeenPegged(t *testing.T) {
 	assert.False(t, hasBeenPegged(nil, model.NewCardFromString(`ah`)))
 	assert.False(t, hasBeenPegged([]model.PeggedCard{}, model.NewCardFromString(`ah`)))
 
-	pegged :=[]model.PeggedCard{{
+	pegged := []model.PeggedCard{{
 		Card: model.NewCardFromString(`ah`),
 	}, {
 		Card: model.NewCardFromString(`jc`),

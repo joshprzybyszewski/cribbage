@@ -8,7 +8,8 @@ import (
 )
 
 var _ PhaseHandler = (*cribBuildingHandler)(nil)
-type cribBuildingHandler struct {}
+
+type cribBuildingHandler struct{}
 
 func (*cribBuildingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Clear out the previous crib before we start building this one
@@ -20,8 +21,8 @@ func (*cribBuildingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]intera
 
 	for _, pID := range pIDs {
 		addPlayerToBlocker(g, pID, model.CribCard, pAPIs, model.CribBlocker{
-			Desired: desired,
-			Dealer: g.CurrentDealer,
+			Desired:      desired,
+			Dealer:       g.CurrentDealer,
 			PlayerColors: g.PlayerColors,
 		})
 	}
@@ -40,7 +41,7 @@ func (*cribBuildingHandler) HandleAction(g *model.Game, action model.PlayerActio
 	}
 
 	if len(bca.Cards) != numDesiredCribCards(g) {
-		addPlayerToBlocker(g, action.ID, model.CribCard, pAPIs,  `Need to submit all required cards at once`)
+		addPlayerToBlocker(g, action.ID, model.CribCard, pAPIs, `Need to submit all required cards at once`)
 		return nil
 	}
 	if !isSuperSet(g.Hands[action.ID], bca.Cards) {
