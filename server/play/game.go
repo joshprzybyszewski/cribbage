@@ -7,60 +7,59 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func HandleAction(g *model.Game, action model.PlayerAction) (error) {
+var (
+handlers = map[model.Phase]PhaseHandler{
+	model.Deal: &dealingHandler{},
+	model.BuildCribReady: &cribBuildingHandler{},
+	model.BuildCrib: &cribBuildingHandler{},
+	model.CutReady: &cuttingHandler{},
+	model.Cut: &cuttingHandler{},
+	model.PeggingReady: &peggingHandler{},
+	model.Pegging: &peggingHandler{},
+	model.CountingReady: &handCountingHandler{},
+	model.Counting: &handCountingHandler{},
+	model.CribCountingReady: &cribCountingHandler{},
+	model.CribCounting: &cribCountingHandler{},
+	model.DealingReady: &dealingHandler{},
+	}
+)
+
+func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) (error) {
 	if g.ID != action.GameID {
 		return errors.New(`action not for this game`)
 	}
 
-	canFulfill := false
-	for bpID, br := range g.BlockingPlayers {
-		if bpID == action.ID && br == action.Overcomes {
-			canFulfill = true
+	switch p := g.Phase; p {
+	case model.Deal,
+	model.BuildCrib,
+	model.Cut,
+	model.Pegging,
+	model.Counting,
+	model.CribCounting:
+		err := handlers[p].HandleAction(g, action, pAPIs)
+		if err != nil {
+			return err
 		}
 	}
-	if !canFulfill {
-		return errors.New(`action does not overcome appropriate blocker`)
-	}
+	
 
-	// TODO add a switch based on what it overcomes?
+	switch p := g.Phase; p {
+	case model.BuildCribReady,
+	model.CutReady,
+	model.PeggingReady,
+	model.CountingReady,
+	model.CribCountingReady,
+	model.DealingReady:
+		err := handlers[p].Start(g, pAPIs)
+		if err != nil {
+			return err
+		}
+		g.Phase++
+		if g.Phase > model.DealingReady {
+			g.Phase = model.Deal
+		}
+	}
+	
 
 	return  nil
-}
-
-// TODO remove this. It's confusing
-func PlayOneStep(g *model.Game) error {
-	if g.IsOver() {
-		return nil
-	}
-
-	playerAPIs := map[model.PlayerID]interaction.Player{}
-
-	var err error
-	switch g.Phase {
-	case model.Deal:
-		err = dealPhase(g, playerAPIs)
-		g.Phase = model.BuildCrib
-	case model.BuildCrib:
-		err = buildCrib(g, playerAPIs)
-		g.Phase = model.Cut
-	case model.Cut:
-		err = cutPhase(g, playerAPIs)
-		g.Phase = model.Pegging
-	case model.Pegging:
-		err = peg(g, playerAPIs)
-		g.Phase = model.Counting
-	case model.Counting:
-		err = countHands(g, playerAPIs)
-		g.Phase = model.CribCounting
-	case model.CribCounting:
-		countCrib(g, playerAPIs)
-		g.Phase = model.Done
-		err = g.NextRound()
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

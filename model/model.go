@@ -104,12 +104,17 @@ type Phase int
 
 const (
 	Deal Phase = iota
+	BuildCribReady
 	BuildCrib
+	CutReady
 	Cut
+	PeggingReady
 	Pegging
+	CountingReady
 	Counting
+	CribCountingReady
 	CribCounting
-	Done
+	DealingReady
 )
 
 const (
