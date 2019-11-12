@@ -7,6 +7,46 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
+func New(players []model.Player) model.Game {
+	playersCopy := make([]model.Player, len(players))
+	colorsByID := make(map[model.PlayerID]model.PlayerColor, len(players))
+	curScores := make(map[model.PlayerColor]int, len(players))
+	lagScores := make(map[model.PlayerColor]int, len(players))
+
+	playerColors := []model.PlayerColor{
+		model.Blue,
+		model.Red,
+	}
+	if len(players) == 3 {
+		playerColors = append(playerColors, model.Green)
+	} else if len(players) == 4 {
+		playerColors = append(playerColors, model.Blue, model.Red)
+	}
+
+	for i, p := range players {
+		playersCopy[i] = p
+		color := playerColors[i]
+		colorsByID[p.ID] = color
+		curScores[color] = 0
+		lagScores[color] = 0
+	}
+	return model.Game{
+		ID:              model.NewGameID(),
+		Players:         playersCopy,
+		Deck:            nil, // TODO
+		BlockingPlayers: make(map[model.PlayerID]model.Blocker, len(players)),
+		CurrentDealer:   players[0].ID,
+		PlayerColors:    colorsByID,
+		CurrentScores:   curScores,
+		LagScores:       lagScores,
+		Phase:           model.Deal,
+		Hands:           make(map[model.PlayerID][]model.Card, len(players)),
+		CutCard:         model.Card{},
+		Crib:            make([]model.Card, 0, 4),
+		PeggedCards:     make([]model.PeggedCard, 0, 4*len(players)),
+	}
+}
+
 var (
 	handlers = map[model.Phase]PhaseHandler{
 		model.Deal:              &dealingHandler{},

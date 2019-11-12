@@ -22,8 +22,8 @@ type PeggedCard struct {
 	PlayerID PlayerID
 }
 
-type PlayerID int64
-type GameID int64
+type PlayerID int32
+type GameID int32
 
 type PlayerColor int8
 
