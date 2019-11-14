@@ -38,7 +38,7 @@ type Player interface {
 
 func NewPlayerFromModel(mp model.Player, gID model.GameID) Player {
 	var interaction PlayerInteraction // TODO figure this out
-	
+
 	return &player{
 		interaction: interaction,
 		name:        mp.Name,

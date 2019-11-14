@@ -12,14 +12,15 @@ import (
 var _ persistence.DB = (*memory)(nil)
 
 type memory struct {
+	lock sync.Mutex
+
 	games     map[model.GameID]model.Game
 	gameLocks map[model.GameID]*sync.Mutex
 
 	players     map[model.PlayerID]model.Player
 	playerLocks map[model.PlayerID]*sync.Mutex
 
-	interactions     map[model.PlayerID]interaction.Player
-	interactionLocks map[model.PlayerID]*sync.Mutex
+	interactions map[model.PlayerID]interaction.Player
 }
 
 func New() persistence.DB {
@@ -27,11 +28,13 @@ func New() persistence.DB {
 }
 
 func (m *memory) GetGame(id model.GameID) (model.Game, error) {
-	gl, ok := m.gameLocks[id]
-	if !ok {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if _, ok := m.gameLocks[id]; !ok {
 		m.gameLocks[id] = &sync.Mutex{}
 	}
-	gl.Lock()
+	m.gameLocks[id].Lock()
 	if g, ok := m.games[id]; ok {
 		return g, nil
 	}
@@ -39,11 +42,13 @@ func (m *memory) GetGame(id model.GameID) (model.Game, error) {
 }
 
 func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
-	pl, ok := m.playerLocks[id]
-	if !ok {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if _, ok := m.playerLocks[id]; !ok {
 		m.playerLocks[id] = &sync.Mutex{}
 	}
-	pl.Lock()
+	m.playerLocks[id].Lock()
 	if p, ok := m.players[id]; ok {
 		return p, nil
 	}
@@ -51,11 +56,9 @@ func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
 }
 
 func (m *memory) GetInteraction(id model.PlayerID) (interaction.Player, error) {
-	il, ok := m.interactionLocks[id]
-	if !ok {
-		m.interactionLocks[id] = &sync.Mutex{}
-	}
-	il.Lock()
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	if i, ok := m.interactions[id]; ok {
 		return i, nil
 	}
@@ -63,19 +66,38 @@ func (m *memory) GetInteraction(id model.PlayerID) (interaction.Player, error) {
 }
 
 func (m *memory) SaveGame(g model.Game) error {
-	m.games[g.ID] = g
-	m.gameLocks[g.ID].Unlock()
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	id := g.ID
+	m.games[id] = g
+
+	if _, ok := m.gameLocks[id]; !ok {
+		m.gameLocks[id] = &sync.Mutex{}
+	} else {
+		m.gameLocks[id].Unlock()
+	}
 	return nil
 }
 
 func (m *memory) SavePlayer(p model.Player) error {
-	m.players[p.ID] = p
-	m.playerLocks[p.ID].Unlock()
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	id := p.ID
+	m.players[id] = p
+	if _, ok := m.playerLocks[id]; !ok {
+		m.playerLocks[id] = &sync.Mutex{}
+	} else {
+		m.playerLocks[id].Unlock()
+	}
 	return nil
 }
 
 func (m *memory) SaveInteraction(i interaction.Player) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	m.interactions[i.ID()] = i
-	m.interactionLocks[i.ID()].Unlock()
 	return nil
 }
