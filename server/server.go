@@ -37,6 +37,12 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.GameID, error
 	if err != nil {
 		return model.GameID(-1), err
 	}
+	for _, pID := range pIDs {
+		err := cs.db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
+		if err != nil {
+			return model.GameID(-1), err
+		}
+	}
 	return mg.ID, nil
 }
 
@@ -47,7 +53,7 @@ func (cs *cribbageServer) createPlayer(name string) (model.PlayerID, error) {
 		Name:  name,
 		Games: make(map[model.GameID]model.PlayerColor),
 	}
-	err := cs.db.SavePlayer(mp)
+	err := cs.db.CreatePlayer(mp)
 	if err != nil {
 		return model.PlayerID(-1), err
 	}

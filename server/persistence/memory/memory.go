@@ -17,8 +17,7 @@ type memory struct {
 	games     map[model.GameID]model.Game
 	gameLocks map[model.GameID]*sync.Mutex
 
-	players     map[model.PlayerID]model.Player
-	playerLocks map[model.PlayerID]*sync.Mutex
+	players map[model.PlayerID]model.Player
 
 	interactions map[model.PlayerID]interaction.Player
 }
@@ -45,10 +44,6 @@ func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if _, ok := m.playerLocks[id]; !ok {
-		m.playerLocks[id] = &sync.Mutex{}
-	}
-	m.playerLocks[id].Lock()
 	if p, ok := m.players[id]; ok {
 		return p, nil
 	}
@@ -80,18 +75,30 @@ func (m *memory) SaveGame(g model.Game) error {
 	return nil
 }
 
-func (m *memory) SavePlayer(p model.Player) error {
+func (m *memory) CreatePlayer(p model.Player) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	id := p.ID
-	m.players[id] = p
-	if _, ok := m.playerLocks[id]; !ok {
-		m.playerLocks[id] = &sync.Mutex{}
-	} else {
-		m.playerLocks[id].Unlock()
+	if _, ok := m.players[id]; ok {
+		return errors.New(`player already exists`)
 	}
+
+	m.players[id] = p
 	return nil
+}
+
+func (m *memory) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if _, ok := m.players[id]; !ok {
+		return errors.New(`player does not exist`)
+	}
+
+	m.players[id].Games[gID] = color
+	return nil
+
 }
 
 func (m *memory) SaveInteraction(i interaction.Player) error {

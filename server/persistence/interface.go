@@ -6,11 +6,13 @@ import (
 )
 
 type DB interface {
-	GetGame(id model.GameID) (model.Game, error)
+	CreatePlayer(p model.Player) error
 	GetPlayer(id model.PlayerID) (model.Player, error)
-	GetInteraction(id model.PlayerID) (interaction.Player, error)
+	AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error
 
+	GetGame(id model.GameID) (model.Game, error)
 	SaveGame(g model.Game) error
-	SavePlayer(p model.Player) error
+
+	GetInteraction(id model.PlayerID) (interaction.Player, error)
 	SaveInteraction(i interaction.Player) error
 }
