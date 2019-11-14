@@ -80,7 +80,7 @@ func newRound(cribCards []model.Card, numPlayers int) *Round {
 }
 
 func (r *Round) NextRound() error {
-	if r.CurrentStage != model.Done {
+	if r.CurrentStage != model.DealingReady {
 		return errors.New(`cannot progress to next round when not done`)
 	}
 
