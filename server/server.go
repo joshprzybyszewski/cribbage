@@ -1,6 +1,10 @@
 package server
 
 import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -14,81 +18,87 @@ type cribbageServer struct {
 func (cs *cribbageServer) Serve() {
 	// TODO add handling to route traffic to the correct method
 	// I imagine this will be martini or another REST server router
+	router := gin.Default()
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 
-	// For now, let's just set up a game:
-	pID1, err := cs.createPlayer(`josh`)
-	if err != nil {
-		panic(err)
+	// Simple group: create
+	create := router.Group("/create")
+	{
+		create.POST("/game", func(c *gin.Context) {
+			// TODO ensure we pass in the playerIDs for this game
+			var pIDs []model.PlayerID
+			g, err := cs.createGame(pIDs)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "Error: %s", err)
+				return
+			}
+			// TODO investigate what it'll take to protobuf-ify our models
+			c.ProtoBuf(http.StatusOK, g)
+		})
+		create.POST("/player/:name", func(c *gin.Context) {
+			name := c.Param("name")
+			pID, err := cs.createPlayer(name)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "Error: %s", err)
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"name": name,
+				"ID": pID,
+			})
+		})
+		create.POST("/interaction/:playerId", func(c *gin.Context) {
+			// TODO ensure this whole thing makes sense...
+			pIDStr := c.Param("playerId")
+			pID := model.PlayerID(strconv.Atoi(pIDStr))
+			err := cs.setInteraction(pID)
+			if err != nil {
+				c.String(http.StatusInternalServerError, "Error: %s", err)
+				return
+			}
+			c.String(http.StatusOK, "Updated player interaction")
+		})
 	}
-	pID2, err := cs.createPlayer(`dumb NPC`)
-	if err != nil {
-		panic(err)
-	}
-	// TODO set player interactions, then create the game
-	gID, err := cs.createGame([]model.PlayerID{pID1, pID2})
-	if err != nil {
-		return err
-	}
-}
 
-func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.GameID, error) {
-	mg := play.New(pIDs)
-	err := cs.db.SaveGame(mg)
-	if err != nil {
-		return model.GameID(-1), err
-	}
-	for _, pID := range pIDs {
-		err := cs.db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
+	router.GET("/game/:gameID", func(c *gin.Context) {
+		gIDStr := c.Param("gameID")
+		gID := model.GameID(strconv.Atoi(gIDStr))
+		g, err := cs.GetGame(gID)
 		if err != nil {
-			return model.GameID(-1), err
+			c.String(http.StatusInternalServerError, "Error: %s", err)
+			return
 		}
-	}
-	return mg.ID, nil
-}
-
-func (cs *cribbageServer) createPlayer(name string) (model.PlayerID, error) {
-	pID := model.NewPlayerID()
-	mp := model.Player{
-		ID:    pID,
-		Name:  name,
-		Games: make(map[model.GameID]model.PlayerColor),
-	}
-	err := cs.db.CreatePlayer(mp)
-	if err != nil {
-		return model.PlayerID(-1), err
-	}
-	return pID, nil
-}
-
-func (cs *cribbageServer) setInteraction(pID model.PlayerID) error {
-	// TODO
-	var ip interaction.Player
-	err := cs.db.SaveInteraction(ip)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
-	g, err := cs.db.GetGame(action.GameID)
-	if err != nil {
-		return err
-	}
-
-	pAPIs := make(map[model.PlayerID]interaction.Player, len(g.Players))
-	for _, p := range g.Players {
-		pAPI, err := cs.db.GetInteraction(p.ID)
+		// TODO investigate what it'll take to protobuf-ify our models
+		c.ProtoBuf(http.StatusOK, g)
+	})
+	router.GET("/player/:playerID", func(c *gin.Context) {
+		pIDStr := c.Param("playerID")
+		pID := model.PlayerID(strconv.Atoi(pIDStr))
+		p, err := cs.GetPlayer(pID)
 		if err != nil {
-			return err
+			c.String(http.StatusInternalServerError, "Error: %s", err)
+			return
 		}
-		pAPIs[p.ID] = pAPI
-	}
+		// TODO investigate what it'll take to protobuf-ify our models
+		c.ProtoBuf(http.StatusOK, p)
+	})
 
-	err = play.HandleAction(&g, action, pAPIs)
-	if err != nil {
-		return err
-	}
+	create.POST("/action", func(c *gin.Context) {
+		// TODO find out how to pass in the action
+		var action model.PlayerAction 
+		err := cs.handleAction(action)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Error: %s", err)
+			return
+		}
+		// TODO figure out if we need to send back the updated game state
+		c.String(http.StatusOK, "action handled")
+	})
 
-	return cs.db.SaveGame(g)
+	r.Run() // listen and serve on 0.0.0.0:8080
 }
+
