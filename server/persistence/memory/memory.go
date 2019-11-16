@@ -14,11 +14,8 @@ var _ persistence.DB = (*memory)(nil)
 type memory struct {
 	lock sync.Mutex
 
-	games     map[model.GameID]model.Game
-	gameLocks map[model.GameID]*sync.Mutex
-
+	games     map[model.GameID][]model.Game
 	players map[model.PlayerID]model.Player
-
 	interactions map[model.PlayerID]interaction.Player
 }
 
@@ -30,12 +27,8 @@ func (m *memory) GetGame(id model.GameID) (model.Game, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	if _, ok := m.gameLocks[id]; !ok {
-		m.gameLocks[id] = &sync.Mutex{}
-	}
-	m.gameLocks[id].Lock()
-	if g, ok := m.games[id]; ok {
-		return g, nil
+	if games, ok := m.games[id]; ok {
+		return games[len(games)-1], nil
 	}
 	return model.Game{}, errors.New(`does not have player`)
 }
@@ -65,13 +58,13 @@ func (m *memory) SaveGame(g model.Game) error {
 	defer m.lock.Unlock()
 
 	id := g.ID
-	m.games[id] = g
 
-	if _, ok := m.gameLocks[id]; !ok {
-		m.gameLocks[id] = &sync.Mutex{}
-	} else {
-		m.gameLocks[id].Unlock()
+	if len(m.games[id]) != g.NumActions {
+		return errors.New(`game does not know about recent actions`)
 	}
+
+	m.games[id] = append(m.games[id], g)
+
 	return nil
 }
 

@@ -124,6 +124,7 @@ const (
 
 type Game struct {
 	ID              GameID
+	NumActions      int
 	Players         []Player
 	Deck            Deck
 	BlockingPlayers map[PlayerID]Blocker

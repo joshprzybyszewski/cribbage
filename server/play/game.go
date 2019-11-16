@@ -80,6 +80,7 @@ func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.Play
 		if err != nil {
 			return err
 		}
+		g.NumActions++
 	}
 
 	switch p := g.Phase; p {
