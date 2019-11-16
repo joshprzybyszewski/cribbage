@@ -100,8 +100,6 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 }
 
 func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs map[model.PlayerID]interaction.Player) error {
-	pIDs := playersToDealTo(g)
-
 	pts, err := pegging.PointsForCard(g.PeggedCards, pa.Card)
 	if err != nil {
 		return err

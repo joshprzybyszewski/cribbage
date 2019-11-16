@@ -2,13 +2,12 @@ package server
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
-	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
 type cribbageServer struct {
@@ -16,8 +15,6 @@ type cribbageServer struct {
 }
 
 func (cs *cribbageServer) Serve() {
-	// TODO add handling to route traffic to the correct method
-	// I imagine this will be martini or another REST server router
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -54,8 +51,13 @@ func (cs *cribbageServer) Serve() {
 		create.POST("/interaction/:playerId", func(c *gin.Context) {
 			// TODO ensure this whole thing makes sense...
 			pIDStr := c.Param("playerId")
-			pID := model.PlayerID(strconv.Atoi(pIDStr))
-			err := cs.setInteraction(pID)
+			n, err := strconv.Atoi(pIDStr)
+			if err != nil {
+				c.String(http.StatusBadRequest, "Invalid PlayerID: %s", pIDStr)
+				return
+			}
+			pID := model.PlayerID(n)
+			err = cs.setInteraction(pID)
 			if err != nil {
 				c.String(http.StatusInternalServerError, "Error: %s", err)
 				return
@@ -66,8 +68,13 @@ func (cs *cribbageServer) Serve() {
 
 	router.GET("/game/:gameID", func(c *gin.Context) {
 		gIDStr := c.Param("gameID")
-		gID := model.GameID(strconv.Atoi(gIDStr))
-		g, err := cs.GetGame(gID)
+		n, err := strconv.Atoi(gIDStr)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+			return
+		}
+		gID := model.GameID(n)
+		g, err := cs.getGame(gID)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error: %s", err)
 			return
@@ -77,8 +84,13 @@ func (cs *cribbageServer) Serve() {
 	})
 	router.GET("/player/:playerID", func(c *gin.Context) {
 		pIDStr := c.Param("playerID")
-		pID := model.PlayerID(strconv.Atoi(pIDStr))
-		p, err := cs.GetPlayer(pID)
+		n, err := strconv.Atoi(pIDStr)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid PlayerID: %s", pIDStr)
+			return
+		}
+		pID := model.PlayerID(n)
+		p, err := cs.getPlayer(pID)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error: %s", err)
 			return
@@ -99,5 +111,5 @@ func (cs *cribbageServer) Serve() {
 		c.String(http.StatusOK, "action handled")
 	})
 
-	r.Run() // listen and serve on 0.0.0.0:8080
+	router.Run() // listen and serve on 0.0.0.0:8080
 }

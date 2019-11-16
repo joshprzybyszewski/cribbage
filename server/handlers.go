@@ -1,18 +1,29 @@
 package server
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
+func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
+	return cs.db.GetGame(gID)
+}
+
+func (cs *cribbageServer) getPlayer(pID model.PlayerID) (model.Player, error) {
+	return cs.db.GetPlayer(pID)
+}
+
 func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.GameID, error) {
-	mg := play.New(pIDs)
+	players := make([]model.Player, len(pIDs))
+	for i, id := range pIDs {
+		p, err := cs.db.GetPlayer(id)
+		if err != nil {
+			return model.GameID(-1), err
+		}
+		players[i] = p
+	}
+	mg := play.New(players)
 	err := cs.db.SaveGame(mg)
 	if err != nil {
 		return model.GameID(-1), err

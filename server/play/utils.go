@@ -2,13 +2,14 @@ package play
 
 import (
 	"errors"
+	"log"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 func playersToDealTo(g *model.Game) []model.PlayerID {
-	pIDs := make([]PlayerID, len(g.Players))
+	pIDs := make([]model.PlayerID, len(g.Players))
 	dealerIndex := 0
 	for i, p := range g.Players {
 		pIDs[i] = p.ID
@@ -46,7 +47,7 @@ func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker,
 	}
 	g.BlockingPlayers[pID] = reason
 	pAPI := pAPIs[pID]
-	pAPI.NotifyBlocking(reason, msgs...)
+	pAPI.NotifyBlocking(reason, msgs)
 }
 
 func removePlayerFromBlockers(g *model.Game, action model.PlayerAction) {
@@ -133,7 +134,7 @@ func hasBeenPegged(pegged []model.PeggedCard, c model.Card) bool {
 }
 
 func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {
-	peggedMap := make(map[model.Card]struct{}, len(sub))
+	peggedMap := make(map[model.Card]struct{}, len(pegged))
 	for _, pc := range pegged {
 		peggedMap[pc.Card] = struct{}{}
 	}
