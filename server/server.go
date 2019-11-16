@@ -87,7 +87,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	}
 
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.ProtoBuf(http.StatusOK, g)
+	c.JSON(http.StatusOK, g)
 }
 
 func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID, error) {
@@ -147,7 +147,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.ProtoBuf(http.StatusOK, g)
+	c.JSON(http.StatusOK, g)
 }
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
@@ -164,7 +164,7 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.ProtoBuf(http.StatusOK, p)
+	c.JSON(http.StatusOK, p)
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {

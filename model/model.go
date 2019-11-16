@@ -10,8 +10,9 @@ const (
 )
 
 type Card struct {
-	Suit  Suit
-	Value int // Ace is 1, King is 13
+	Suit Suit `protobuf:"varint,1,req,name=suit,proto3" json:"suit"`
+	// Ace is 1, King is 13
+	Value int `protobuf:"varint,2,req,name=value,proto3" json:"value"`
 }
 
 const NumCardsPerDeck = 52
@@ -19,7 +20,7 @@ const JackValue = 11 // Ace is 1, King is 13
 
 type PeggedCard struct {
 	Card
-	PlayerID PlayerID
+	PlayerID PlayerID `protobuf:"varint,3,req,name=playerID,proto3" json:"playerID"`
 }
 
 type PlayerID uint32
@@ -51,9 +52,9 @@ func (c PlayerColor) String() string {
 }
 
 type Player struct {
-	ID    PlayerID
-	Name  string
-	Games map[GameID]PlayerColor
+	ID    PlayerID               `protobuf:"varint,1,req,name=id,proto3" json:"id"`
+	Name  string                 `protobuf:"string,2,req,name=name,proto3" json:"name"`
+	Games map[GameID]PlayerColor `protobuf:"map<varint, varint>,3,opt,name=games,proto3" json:"games,omitempty"`
 }
 
 type Blocker int
@@ -133,18 +134,18 @@ const (
 )
 
 type Game struct {
-	ID              GameID
-	NumActions      int
-	Players         []Player
-	Deck            Deck
-	BlockingPlayers map[PlayerID]Blocker
-	CurrentDealer   PlayerID
-	PlayerColors    map[PlayerID]PlayerColor
-	CurrentScores   map[PlayerColor]int
-	LagScores       map[PlayerColor]int
-	Phase           Phase
-	Hands           map[PlayerID][]Card
-	CutCard         Card
-	Crib            []Card
-	PeggedCards     []PeggedCard
+	ID              GameID                   `protobuf:"varint,1,name=id,proto3" json:"id"`
+	NumActions      int                      `protobuf:"varint,2,name=numActions,proto3" json:"numActions"`
+	Players         []Player                 `protobuf:"bytes,3,rep,name=players,proto3,proto3" json:"players"`
+	Deck            Deck                     `protobuf:"-" json:"-"`
+	BlockingPlayers map[PlayerID]Blocker     `protobuf:"map<varint, varint>,4,opt,name=blockingPlayers,proto3" json:"blockingPlayers,omitempty"`
+	CurrentDealer   PlayerID                 `protobuf:"varint,5,opt,name=currentDealer,proto3" json:"currentDealer"`
+	PlayerColors    map[PlayerID]PlayerColor `protobuf:"map<varint, varint>,6,name=playerColors,proto3" json:"playerColors,omitempty"`
+	CurrentScores   map[PlayerColor]int      `protobuf:"map<varint, varint>,7,opt,name=currentScores,proto3" json:"currentScores"`
+	LagScores       map[PlayerColor]int      `protobuf:"map<varint, varint>,8,opt,name=lagScores,proto3" json:"lagScores"`
+	Phase           Phase                    `protobuf:"varint,9,opt,name=phase,proto3" json:"phase"`
+	Hands           map[PlayerID][]Card      `protobuf:"map<varint, bytes>,10,opt,name=hands,proto3" json:"hands,omitempty"`
+	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty"`
+	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty"`
+	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty"`
 }
