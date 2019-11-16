@@ -25,7 +25,9 @@ func (cs *cribbageServer) Serve() {
 	// Simple group: create
 	create := router.Group("/create")
 	{
-		create.POST("/game", cs.ginPostCreateGame)
+		create.POST("/game/:player1/:player2", cs.ginPostCreateGame)
+		create.POST("/game/:player1/:player2/:player3", cs.ginPostCreateGame)
+		create.POST("/game/:player1/:player2/:player3/:player4", cs.ginPostCreateGame)
 		create.POST("/player/:name", cs.ginPostCreatePlayer)
 		create.POST("/interaction/:playerId", cs.ginPostCreateInteraction) //func(c *gin.Context) {
 	}
@@ -39,15 +41,66 @@ func (cs *cribbageServer) Serve() {
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
-	// TODO ensure we pass in the playerIDs for this game
 	var pIDs []model.PlayerID
-	g, err := cs.createGame(pIDs)
-	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+
+	pID, err := getPlayerID(c, `player1`)
+	if err != nil || pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, "Needs player1: %s", err)
 		return
 	}
+	pIDs = append(pIDs, pID)
+
+	pID, err = getPlayerID(c, `player2`)
+	if err != nil || pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, "Needs player2: %s", err)
+		return
+	}
+	pIDs = append(pIDs, pID)
+
+	pID, err = getPlayerID(c, `player3`)
+	if err != nil {
+		c.String(http.StatusBadRequest, "invalid player3: %s", err)
+		return
+	}
+	if pID != model.InvalidPlayerID {
+		pIDs = append(pIDs, pID)
+	}
+
+	pID, err = getPlayerID(c, `player4`)
+	if err != nil {
+		c.String(http.StatusBadRequest, "invalid player4: %s", err)
+		return
+	}
+	if pID != model.InvalidPlayerID {
+		pIDs = append(pIDs, pID)
+	}
+
+	if len(pIDs) < model.MinPlayerGame || len(pIDs) > model.MaxPlayerGame {
+		c.String(http.StatusBadRequest, "Invalid num players: %d", len(pIDs))
+		return
+	}
+
+	g, err := cs.createGame(pIDs)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "createGame error: %s", err)
+		return
+	}
+
 	// TODO investigate what it'll take to protobuf-ify our models
 	c.ProtoBuf(http.StatusOK, g)
+}
+
+func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID, error) {
+	pStr, ok := c.Params.Get(playerParam)
+	if !ok {
+		return model.InvalidPlayerID, nil
+	}
+
+	n, err := strconv.Atoi(pStr)
+	if err != nil {
+		return model.InvalidPlayerID, err
+	}
+	return model.PlayerID(n), nil
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {

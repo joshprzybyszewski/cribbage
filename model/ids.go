@@ -7,21 +7,31 @@ import (
 )
 
 func NewGameID() GameID {
-	r, err := uuid.NewRandom()
-	if err != nil {
-		log.Printf("NewRandom failed\n")
-		return GameID(-1)
+	gID := InvalidGameID
+	for gID == InvalidGameID {
+		r, err := uuid.NewRandom()
+		if err != nil {
+			log.Printf("NewGameID.NewRandom failed\n")
+			return InvalidGameID
+		}
+
+		gID = GameID(r.ID())
 	}
 
-	return GameID(r.ID())
+	return gID
 }
 
 func NewPlayerID() PlayerID {
-	r, err := uuid.NewRandom()
-	if err != nil {
-		log.Printf("NewRandom failed\n")
-		return PlayerID(-1)
+	pID := InvalidPlayerID
+	for pID == InvalidPlayerID {
+		r, err := uuid.NewRandom()
+		if err != nil {
+			log.Printf("NewPlayerID.NewRandom failed\n")
+			return InvalidPlayerID
+		}
+
+		pID = PlayerID(r.ID())
 	}
 
-	return PlayerID(r.ID())
+	return pID
 }

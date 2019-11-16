@@ -20,7 +20,11 @@ type memory struct {
 }
 
 func New() persistence.DB {
-	return &memory{}
+	return &memory{
+		games:        map[model.GameID][]model.Game{},
+		players:      map[model.PlayerID]model.Player{},
+		interactions: map[model.PlayerID]interaction.Player{},
+	}
 }
 
 func (m *memory) GetGame(id model.GameID) (model.Game, error) {

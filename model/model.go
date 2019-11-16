@@ -22,8 +22,13 @@ type PeggedCard struct {
 	PlayerID PlayerID
 }
 
-type PlayerID int32
-type GameID int32
+type PlayerID uint32
+type GameID uint32
+
+const (
+	InvalidPlayerID PlayerID = 0
+	InvalidGameID   GameID   = 0
+)
 
 type PlayerColor int8
 
@@ -120,6 +125,11 @@ const (
 const (
 	WinningScore    int = 121
 	MaxPeggingValue int = 31
+)
+
+const (
+	MinPlayerGame int = 2
+	MaxPlayerGame int = 4
 )
 
 type Game struct {
