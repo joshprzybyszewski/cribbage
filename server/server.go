@@ -48,7 +48,7 @@ func (cs *cribbageServer) Serve() {
 			}
 			c.JSON(http.StatusOK, gin.H{
 				"name": name,
-				"ID": pID,
+				"ID":   pID,
 			})
 		})
 		create.POST("/interaction/:playerId", func(c *gin.Context) {
@@ -89,7 +89,7 @@ func (cs *cribbageServer) Serve() {
 
 	create.POST("/action", func(c *gin.Context) {
 		// TODO find out how to pass in the action
-		var action model.PlayerAction 
+		var action model.PlayerAction
 		err := cs.handleAction(action)
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Error: %s", err)
@@ -101,4 +101,3 @@ func (cs *cribbageServer) Serve() {
 
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
-

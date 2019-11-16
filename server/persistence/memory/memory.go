@@ -14,8 +14,8 @@ var _ persistence.DB = (*memory)(nil)
 type memory struct {
 	lock sync.Mutex
 
-	games     map[model.GameID][]model.Game
-	players map[model.PlayerID]model.Player
+	games        map[model.GameID][]model.Game
+	players      map[model.PlayerID]model.Player
 	interactions map[model.PlayerID]interaction.Player
 }
 
