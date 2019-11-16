@@ -69,41 +69,41 @@ const (
 )
 
 type CribBlocker struct {
-	Desired      int
-	Dealer       PlayerID
-	PlayerColors map[PlayerID]PlayerColor
+	Desired      int                      `protobuf:"varint,1,req,name=desired,proto3" json:"desired"`
+	Dealer       PlayerID                 `protobuf:"varint,2,req,name=playerID,proto3" json:"playerID"`
+	PlayerColors map[PlayerID]PlayerColor `protobuf:"map<varint,varint>,3,opt,name=playerColors,proto3" json:"playerColors,omitempty"`
 }
 
 type PlayerAction struct {
-	GameID    GameID
-	ID        PlayerID
-	Overcomes Blocker
-	Action    interface{}
+	GameID    GameID      `protobuf:"varint,1,req,name=gameID,proto3" json:"gameID"`
+	ID        PlayerID    `protobuf:"varint,2,req,name=id,proto3" json:"id"`
+	Overcomes Blocker     `protobuf:"varint,3,req,name=overcomes,proto3" json:"overcomes"`
+	Action    interface{} `protobuf:"varint,4,req,name=action,proto3" json:"action"`
 }
 
 type DealAction struct {
-	NumShuffles int
+	NumShuffles int `protobuf:"varint,1,req,name=numShuffles,proto3" json:"numShuffles"`
 }
 
 type BuildCribAction struct {
-	Cards []Card
+	Cards []Card `protobuf:"Card,rep,1,req,name=cards,proto3" json:"cards"`
 }
 
 type CutDeckAction struct {
-	Percentage float64
+	Percentage float64 `protobuf:"varint,1,req,name=percentage,proto3" json:"percentage"`
 }
 
 type PegAction struct {
-	Card  Card
-	SayGo bool
+	Card  Card `protobuf:"Card,1,req,name=card,proto3" json:"card"`
+	SayGo bool `protobuf:"bool,2,req,name=sayGo,proto3" json:"sayGo"`
 }
 
 type CountHandAction struct {
-	Pts int
+	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts"`
 }
 
 type CountCribAction struct {
-	Pts int
+	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts"`
 }
 
 type Phase int
