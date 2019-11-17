@@ -16,6 +16,10 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+const (
+	serverDomain = `http://localhost:8080`
+)
+
 type terminalClient struct {
 	server *http.Client
 
@@ -26,22 +30,31 @@ type terminalClient struct {
 
 func StartTerminalInteraction() error {
 	tc := terminalClient{
-		server: &http.Client{},
+		server:  &http.Client{},
+		myGames: make(map[model.GameID]model.Game),
 	}
 	err := tc.createPlayer()
 	if err != nil {
 		return err
 	}
-	err = tc.createGame()
-	if err != nil {
-		return err
+	if tc.shouldCreateGame() {
+		err = tc.createGame()
+		if err != nil {
+			return err
+		}
+	} else {
+		err = tc.joinGame()
+		if err != nil {
+			return err
+		}
 	}
+	fmt.Printf("Success so far: %+v\n", tc)
 
 	return nil
 }
 
 func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser) ([]byte, error) {
-	url, err := url.Parse(apiURL)
+	url, err := url.Parse(serverDomain + apiURL)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +85,14 @@ func (tc *terminalClient) createPlayer() error {
 		return err
 	}
 
-	return json.Unmarshal(respBytes, &tc.me)
+	err = json.Unmarshal(respBytes, &tc.me)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Your player ID is: %v\n", tc.me.ID)
+
+	return nil
 }
 
 func (tc *terminalClient) getName() string {
@@ -95,6 +115,18 @@ func (tc *terminalClient) getName() string {
 	return answers.Name
 }
 
+func (p *terminalClient) shouldCreateGame() bool {
+	cont := true
+
+	prompt := &survey.Confirm{
+		Message: "Create new game?",
+		Default: true,
+	}
+
+	survey.AskOne(prompt, &cont)
+	return cont
+}
+
 func (tc *terminalClient) createGame() error {
 	opID := tc.getOpponentID()
 	url := fmt.Sprintf("/create/game/%s/%v", opID, tc.me.ID)
@@ -104,7 +136,17 @@ func (tc *terminalClient) createGame() error {
 		return err
 	}
 
-	return json.Unmarshal(respBytes, &tc.me)
+	g := model.Game{}
+
+	err = json.Unmarshal(respBytes, &g)
+	if err != nil {
+		return err
+	}
+
+	tc.myCurrentGame = g.ID
+	tc.myGames[g.ID] = g
+
+	return nil
 }
 
 func (tc *terminalClient) getOpponentID() string {
@@ -125,6 +167,44 @@ func (tc *terminalClient) getOpponentID() string {
 	}
 
 	return answers.Id
+}
+
+func (tc *terminalClient) joinGame() error {
+	url := fmt.Sprintf("/player/%v", tc.me.ID)
+
+	respBytes, err := tc.makeRequest(`GET`, url, nil)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(respBytes, &tc.me)
+	if err != nil {
+		return err
+	}
+
+	for gID := range tc.me.Games {
+		url := fmt.Sprintf("/game/%v", gID)
+
+		respBytes, err := tc.makeRequest(`GET`, url, nil)
+		if err != nil {
+			return err
+		}
+
+		g := model.Game{}
+
+		err = json.Unmarshal(respBytes, &g)
+		if err != nil {
+			return err
+		}
+
+		tc.myGames[gID] = g
+
+		if !g.IsOver() {
+			tc.myCurrentGame = gID
+		}
+	}
+
+	return nil
 }
 
 func (tc *terminalClient) getPlayerAction() (model.PlayerAction, error) {
