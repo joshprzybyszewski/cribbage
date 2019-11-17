@@ -32,6 +32,10 @@ func StartTerminalInteraction() error {
 	if err != nil {
 		return err
 	}
+	err = tc.createGame()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -89,6 +93,38 @@ func (tc *terminalClient) getName() string {
 	}
 
 	return answers.Name
+}
+
+func (tc *terminalClient) createGame() error {
+	opID := tc.getOpponentID()
+	url := fmt.Sprintf("/create/game/%s/%v", opID, tc.me.ID)
+
+	respBytes, err := tc.makeRequest(`POST`, url, nil)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(respBytes, &tc.me)
+}
+
+func (tc *terminalClient) getOpponentID() string {
+	qs := []*survey.Question{
+		{
+			Name:      "id",
+			Prompt:    &survey.Input{Message: "What's your opponent's ID?"},
+			Validate:  survey.Required,
+			Transform: survey.Title,
+		},
+	}
+
+	answers := struct{ Id string }{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		return `unknown`
+	}
+
+	return answers.Id
 }
 
 func (tc *terminalClient) getPlayerAction() (model.PlayerAction, error) {
