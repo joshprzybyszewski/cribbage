@@ -37,18 +37,17 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.GameID, error
 	return mg.ID, nil
 }
 
-func (cs *cribbageServer) createPlayer(name string) (model.PlayerID, error) {
-	pID := model.NewPlayerID()
+func (cs *cribbageServer) createPlayer(name string) (model.Player, error) {
 	mp := model.Player{
-		ID:    pID,
+		ID:    model.NewPlayerID(),
 		Name:  name,
 		Games: make(map[model.GameID]model.PlayerColor),
 	}
 	err := cs.db.CreatePlayer(mp)
 	if err != nil {
-		return model.InvalidPlayerID, err
+		return model.Player{}, err
 	}
-	return pID, nil
+	return mp, nil
 }
 
 func (cs *cribbageServer) setInteraction(pID model.PlayerID) error {

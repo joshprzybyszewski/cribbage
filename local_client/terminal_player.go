@@ -2,8 +2,10 @@ package local_client
 
 import (
 	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -17,7 +19,7 @@ import (
 type terminalClient struct {
 	server *http.Client
 
-	myID          model.PlayerID
+	me          model.Player
 	myCurrentGame model.GameID
 	myGames       map[model.GameID]model.Game
 }
@@ -34,10 +36,10 @@ func StartTerminalInteraction() error {
 	return nil
 }
 
-func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser) error {
+func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser) ([]byte, error) {
 	url, err := url.Parse(apiURL)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request := http.Request{
@@ -47,24 +49,26 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser)
 	}
 	response, err := tc.server.Do(&request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer response.Body.Close()
 
-	return nil
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(`bad response: %+v`, response)
+	}
+
+	return ioutil.ReadAll(response.Body)
 }
 
 func (tc *terminalClient) createPlayer() error {
 	name := tc.getName()
 
-	err := tc.makeRequest(`POST`, `/create/player/`+name, nil)
+	respBytes, err := tc.makeRequest(`POST`, `/create/player/`+name, nil)
 	if err != nil {
 		return err
 	}
 
-	// TODO get player id and start storing that
-
-	return nil
+	return json.Unmarshal(respBytes, &tc.me)
 }
 
 func (tc *terminalClient) getName() string {
@@ -93,7 +97,7 @@ func (tc *terminalClient) getPlayerAction() (model.PlayerAction, error) {
 		return model.PlayerAction{}, errors.New(`does not have game to play`)
 	}
 
-	b, ok := g.BlockingPlayers[tc.myID]
+	b, ok := g.BlockingPlayers[tc.me.ID]
 	if !ok {
 		return model.PlayerAction{}, errors.New(`I am not blocking play right now`)
 	}
@@ -118,7 +122,7 @@ func (tc *terminalClient) getPlayerAction() (model.PlayerAction, error) {
 
 	return model.PlayerAction{
 		GameID:    tc.myCurrentGame,
-		ID:        tc.myID,
+		ID:        tc.me.ID,
 		Overcomes: b,
 		Action:    action,
 	}, nil
@@ -144,7 +148,7 @@ func (p *terminalClient) getDealAction() model.DealAction {
 
 func (tc *terminalClient) getBuildCribAction() model.BuildCribAction {
 	g := tc.myGames[tc.myCurrentGame]
-	myHand := g.Hands[tc.myID]
+	myHand := g.Hands[tc.me.ID]
 	desired := len(myHand) - 4
 	cardChoices := make([]string, 0, len(myHand))
 	for _, c := range myHand {
@@ -170,10 +174,10 @@ func (tc *terminalClient) getBuildCribAction() model.BuildCribAction {
 	}
 
 	msg := ``
-	if g.CurrentDealer == tc.myID {
+	if g.CurrentDealer == tc.me.ID {
 		msg = `Your crib.`
 	} else {
-		myColor, dealerColor := g.PlayerColors[tc.myID], g.PlayerColors[g.CurrentDealer]
+		myColor, dealerColor := g.PlayerColors[tc.me.ID], g.PlayerColors[g.CurrentDealer]
 		if myColor == dealerColor {
 			msg = `Partner's crib.`
 		} else {
@@ -230,7 +234,7 @@ func (tc *terminalClient) getCutDeckAction() model.CutDeckAction {
 }
 func (tc *terminalClient) getPegAction() model.PegAction {
 	g := tc.myGames[tc.myCurrentGame]
-	myHand := g.Hands[tc.myID]
+	myHand := g.Hands[tc.me.ID]
 
 	pegChoices := make([]string, 0, len(myHand)+1)
 	const sayGo = `Say Go!`
@@ -305,7 +309,7 @@ func (tc *terminalClient) getPegAction() model.PegAction {
 }
 func (tc *terminalClient) getCountHandAction() model.CountHandAction {
 	g := tc.myGames[tc.myCurrentGame]
-	myHand := g.Hands[tc.myID]
+	myHand := g.Hands[tc.me.ID]
 
 	msg := fmt.Sprintf("Cut: %s, Hand: (%s %s %s %s).",
 		g.CutCard,
@@ -378,7 +382,7 @@ func (tc *terminalClient) getCountCribAction() model.CountCribAction {
 
 func (tc *terminalClient) printCurrentScore() {
 	g := tc.myGames[tc.myCurrentGame]
-	myColor := g.PlayerColors[tc.myID]
+	myColor := g.PlayerColors[tc.me.ID]
 	fmt.Println(`----------`)
 	fmt.Printf("%5s (you): %3d\n", myColor.String(), g.CurrentScores[myColor])
 	for c, s := range g.CurrentScores {

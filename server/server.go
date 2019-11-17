@@ -105,15 +105,12 @@ func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID, error) {
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	name := c.Param("name")
-	pID, err := cs.createPlayer(name)
+	player, err := cs.createPlayer(name)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"name": name,
-		"ID":   pID,
-	})
+	c.JSON(http.StatusOK, player)
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
