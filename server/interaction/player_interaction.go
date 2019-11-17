@@ -7,7 +7,16 @@ import (
 type Player interface {
 	ID() model.PlayerID
 
-	NotifyBlocking(model.Blocker, interface{})
-	NotifyMessage(interface{})
-	NotifyScoreUpdate(CurrentScores, LagScores map[model.PlayerColor]int, msgs ...string)
+	NotifyBlocking(model.Blocker, model.Game, string) error
+	NotifyMessage(model.Game, string) error
+	NotifyScoreUpdate(g model.Game, msgs ...string) error
+}
+
+func New(pID model.PlayerID, im model.InteractionMeans) Player {
+	switch im.Means {
+	case `localhost`:
+		return newLocalhostPlayer(pID, im.Info)
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package play
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -18,13 +19,10 @@ func (*cribBuildingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]intera
 	// Tell all of the players they need to give us the desired number of cards
 	pIDs := playersToDealTo(g)
 	desired := numDesiredCribCards(g)
+	msg := fmt.Sprintf("needs to cut %d cards", desired)
 
 	for _, pID := range pIDs {
-		addPlayerToBlocker(g, pID, model.CribCard, pAPIs, model.CribBlocker{
-			Desired:      desired,
-			Dealer:       g.CurrentDealer,
-			PlayerColors: g.PlayerColors,
-		})
+		addPlayerToBlocker(g, pID, model.CribCard, pAPIs, msg)
 	}
 
 	return nil

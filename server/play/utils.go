@@ -41,13 +41,13 @@ func isWaitingForPlayer(g *model.Game, action model.PlayerAction) error {
 	return nil
 }
 
-func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msgs ...interface{}) {
+func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msg string) {
 	if br, ok := g.BlockingPlayers[pID]; ok && br != reason {
 		log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
 	}
 	g.BlockingPlayers[pID] = reason
 	pAPI := pAPIs[pID]
-	pAPI.NotifyBlocking(reason, msgs)
+	_ = pAPI.NotifyBlocking(reason, *g, msg)
 }
 
 func removePlayerFromBlockers(g *model.Game, action model.PlayerAction) {
@@ -78,7 +78,7 @@ func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.Playe
 	g.CurrentScores[pc] = g.CurrentScores[pc] + pts
 
 	for _, pAPI := range pAPIs {
-		pAPI.NotifyScoreUpdate(g.CurrentScores, g.LagScores, msgs...)
+		_ = pAPI.NotifyScoreUpdate(*g, msgs...)
 	}
 }
 

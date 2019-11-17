@@ -55,6 +55,13 @@ type Player struct {
 	ID    PlayerID               `protobuf:"varint,1,req,name=id,proto3" json:"id"`
 	Name  string                 `protobuf:"string,2,req,name=name,proto3" json:"name"`
 	Games map[GameID]PlayerColor `protobuf:"map<varint, varint>,3,opt,name=games,proto3" json:"games,omitempty"`
+
+	means []InteractionMeans
+}
+
+type InteractionMeans struct {
+	Means string      `protobuf:"-" json:"-"`
+	Info  interface{} `protobuf:"-" json:"-"`
 }
 
 type Blocker int

@@ -94,7 +94,7 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Now that the hands are all dealt, tell everyone about what they have
 	for pID, hand := range g.Hands {
 		handStr := handString(hand)
-		pAPIs[pID].NotifyMessage(`Received Hand ` + handStr)
+		_ = pAPIs[pID].NotifyMessage(*g, `Received Hand `+handStr)
 	}
 
 	return nil

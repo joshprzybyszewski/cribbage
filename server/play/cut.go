@@ -56,7 +56,7 @@ func (*cuttingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	g.CutCard = c
 
 	for _, pAPI := range pAPIs {
-		pAPI.NotifyMessage("Cut card " + g.CutCard.String())
+		_ = pAPI.NotifyMessage(*g, "Cut card "+g.CutCard.String())
 	}
 
 	return nil
