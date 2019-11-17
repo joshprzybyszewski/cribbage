@@ -1,8 +1,8 @@
 package local_client
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,7 +19,7 @@ import (
 type terminalClient struct {
 	server *http.Client
 
-	me          model.Player
+	me            model.Player
 	myCurrentGame model.GameID
 	myGames       map[model.GameID]model.Game
 }
