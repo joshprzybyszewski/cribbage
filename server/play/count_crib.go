@@ -13,7 +13,7 @@ var _ PhaseHandler = (*cribCountingHandler)(nil)
 type cribCountingHandler struct{}
 
 func (*cribCountingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
-	addPlayerToBlocker(g, g.CurrentDealer, model.CountCrib, pAPIs)
+	addPlayerToBlocker(g, g.CurrentDealer, model.CountCrib, pAPIs, ``)
 
 	return nil
 }

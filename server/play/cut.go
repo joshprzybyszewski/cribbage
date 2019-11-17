@@ -13,10 +13,9 @@ var _ PhaseHandler = (*cuttingHandler)(nil)
 type cuttingHandler struct{}
 
 func (*cuttingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
-
 	behindDealer := roundCutter(g)
 
-	addPlayerToBlocker(g, behindDealer, model.CutCard, pAPIs)
+	addPlayerToBlocker(g, behindDealer, model.CutCard, pAPIs, ``)
 
 	return nil
 }

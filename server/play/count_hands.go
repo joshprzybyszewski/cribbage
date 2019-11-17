@@ -15,7 +15,7 @@ type handCountingHandler struct{}
 func (*handCountingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	pIDs := playersToDealTo(g)
 	firstPlayerID := pIDs[0]
-	addPlayerToBlocker(g, firstPlayerID, model.CountHand, pAPIs)
+	addPlayerToBlocker(g, firstPlayerID, model.CountHand, pAPIs, ``)
 
 	return nil
 }
@@ -57,7 +57,7 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 
 	if nextScorerIndex <= len(pIDs)-1 {
 		nextID := pIDs[nextScorerIndex]
-		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs)
+		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs, ``)
 	} else {
 		g.Phase++
 	}

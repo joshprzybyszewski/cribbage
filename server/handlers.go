@@ -50,14 +50,9 @@ func (cs *cribbageServer) createPlayer(name string) (model.Player, error) {
 	return mp, nil
 }
 
-func (cs *cribbageServer) setInteraction(pID model.PlayerID) error {
-	// TODO
-	var ip interaction.Player
-	err := cs.db.SaveInteraction(ip)
-	if err != nil {
-		return err
-	}
-	return nil
+func (cs *cribbageServer) setInteraction(pID model.PlayerID, im model.InteractionMeans) error {
+	ip := interaction.New(pID, im)
+	return cs.db.SaveInteraction(ip)
 }
 
 func (cs *cribbageServer) handleAction(action model.PlayerAction) error {

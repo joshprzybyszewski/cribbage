@@ -1,6 +1,7 @@
 package local_client
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,9 +10,12 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+	"sync"
 
 	survey "github.com/AlecAivazis/survey/v2"
+	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -48,7 +52,56 @@ func StartTerminalInteraction() error {
 			return err
 		}
 	}
-	fmt.Printf("Success so far: %+v\n", tc)
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	port := 8080 + (int(tc.me.ID)%100)
+
+	go func(){
+		filename := fmt.Sprintf("./player%d.log", tc.me.ID)
+		f, err := os.Create(filename)
+		if err != nil {
+			fmt.Printf("wat: %+v\n", err)
+		}
+		defer f.Close()
+		playerServerFile := bufio.NewWriter(f)
+
+		router := gin.New()
+		router.Use(gin.LoggerWithWriter(playerServerFile), gin.Recovery())
+		router.GET("/ping", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"message": "pong",
+			})
+		})
+
+		router.POST("/blocking", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"got": "blocked",
+			})
+		})
+		router.POST("/message", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"got": "message",
+			})
+		})
+		router.POST("/score", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{
+				"got": "score",
+			})
+		})
+
+		router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
+		wg.Done()
+	}()
+	
+	go func() {
+		url := fmt.Sprintf("/interaction/%d/localhost/%d", tc.me.ID, port)
+		tc.makeRequest(`POST`, url, nil)
+		wg.Done()
+	}()
+
+	// Block until forever...?
+	wg.Wait()
 
 	return nil
 }

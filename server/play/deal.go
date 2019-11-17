@@ -21,7 +21,7 @@ func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	// shuffle the deck at least once
 	g.Deck.Shuffle()
 
-	addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs)
+	addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs, ``)
 
 	return nil
 }

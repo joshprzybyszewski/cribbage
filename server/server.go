@@ -29,13 +29,13 @@ func (cs *cribbageServer) Serve() {
 		create.POST("/game/:player1/:player2/:player3", cs.ginPostCreateGame)
 		create.POST("/game/:player1/:player2/:player3/:player4", cs.ginPostCreateGame)
 		create.POST("/player/:name", cs.ginPostCreatePlayer)
-		create.POST("/interaction/:playerId", cs.ginPostCreateInteraction) //func(c *gin.Context) {
+		create.POST("/interaction/:playerId/:means/:info", cs.ginPostCreateInteraction)
 	}
 
 	router.GET("/game/:gameID", cs.ginGetGame)
 	router.GET("/player/:playerID", cs.ginGetPlayer)
 
-	create.POST("/action", cs.ginPostAction)
+	router.POST("/action/:gameID", cs.ginPostAction)
 
 	router.Run() // listen and serve on 0.0.0.0:8080
 }
@@ -114,15 +114,17 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
-	// TODO ensure this whole thing makes sense...
-	pIDStr := c.Param("playerId")
-	n, err := strconv.Atoi(pIDStr)
+	pID, err := getPlayerID(c, `playerId`)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid PlayerID: %s", pIDStr)
+		c.String(http.StatusBadRequest, "Needs playerId: %s", err)
 		return
 	}
-	pID := model.PlayerID(n)
-	err = cs.setInteraction(pID)
+	means := c.Param(`means`)
+	info := c.Param(`info`)
+	err = cs.setInteraction(pID, model.InteractionMeans{
+		Means: means,
+		Info: info,
+	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return

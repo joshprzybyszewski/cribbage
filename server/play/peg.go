@@ -94,7 +94,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	}
 
 	bp := g.Players[nextPlayerIndex]
-	addPlayerToBlocker(g, bp.ID, model.PegCard, pAPIs)
+	addPlayerToBlocker(g, bp.ID, model.PegCard, pAPIs, ``)
 
 	return nil
 }
