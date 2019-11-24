@@ -196,7 +196,7 @@ func (tc *terminalClient) askForCut() (model.PlayerAction, error) {
 	pa := model.PlayerAction{
 		GameID:    tc.myCurrentGame,
 		ID:        tc.me.ID,
-		Overcomes: model.DealCards,
+		Overcomes: model.CutCard,
 		Action: model.CutDeckAction{
 			Percentage: perc,
 		},
@@ -266,10 +266,54 @@ func (tc *terminalClient) askForPeg(g model.Game) (model.PlayerAction, error) {
 	pa := model.PlayerAction{
 		GameID:    tc.myCurrentGame,
 		ID:        tc.me.ID,
-		Overcomes: model.DealCards,
+		Overcomes: model.PegCard,
 		Action: model.PegAction{
 			Card: c,
 			SayGo: sayGo,
+		},
+	}
+
+	return pa, nil
+}
+
+func (tc *terminalClient) askForHandCount(g model.Game) (model.PlayerAction, error) {
+	hand := g.Hands[tc.me.ID]
+
+	msg := fmt.Sprintf(`Cut Card: %s, Hand: `, g.CutCard)
+	for i, c := range hand {
+		msg += c.String()
+		if i < len(g.PeggedCards)-1 {
+			msg += `, `
+		} else {
+			msg += `. `
+		}
+	}
+
+	cardChoices := make([]string, 0, len(hand))
+	for _, c := range hand {
+		cardChoices = append(cardChoices, c.String())
+	}
+
+	qs := []*survey.Question{{
+		Name:      "handPoints",
+		Prompt:    &survey.Input{Message: msg + `How many points in your hand?`},
+		Validate:  survey.Required,
+		Transform: survey.Title,
+	}}
+
+	answers := struct{ HandPoints int }{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	pa := model.PlayerAction{
+		GameID:    tc.myCurrentGame,
+		ID:        tc.me.ID,
+		Overcomes: model.CountHand,
+		Action: model.CountHandAction{
+			Pts: answers.HandPoints,
 		},
 	}
 
