@@ -1,6 +1,7 @@
 package local_client
 
 import (
+	// "bytes"
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -9,7 +10,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"sync"
@@ -66,31 +66,29 @@ func StartTerminalInteraction() error {
 		router := gin.New()
 		router.Use(gin.LoggerWithWriter(playerServerFile), gin.Recovery())
 		router.POST("/blocking/:gameID", func(c *gin.Context) {
+			fmt.Printf("blocked: %+v\n", c)
 			gIDStr := c.Param("gameID")
 			n, err := strconv.Atoi(gIDStr)
 			if err != nil {
 				c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
 				return
 			}
-			gID := model.GameID(n)
-
-			g, err := tc.getGame(gID)
-			if err != nil {
-				return
-			}
-
-			tc.askForAction(g)
+			go func(gID model.GameID){
+				tc.requestAndSendAction(gID)
+			}(model.GameID(n))
 
 			c.JSON(http.StatusOK, gin.H{
 				"got": "blocked",
 			})
 		})
 		router.POST("/message", func(c *gin.Context) {
+			fmt.Printf("message: %+v\n", c)
 			c.JSON(http.StatusOK, gin.H{
 				"got": "message",
 			})
 		})
 		router.POST("/score", func(c *gin.Context) {
+			fmt.Printf("score: %+v\n", c)
 			c.JSON(http.StatusOK, gin.H{
 				"got": "score",
 			})
@@ -118,13 +116,16 @@ func StartTerminalInteraction() error {
 			return
 		}
 
-		g, err := tc.getGame(tc.myCurrentGame)
-		if err != nil {
-			return
-		}
+		// g, err := tc.getGame(tc.myCurrentGame)
+		// if err != nil {
+		// 	return
+		// }
 
-		fmt.Printf("DEBUG// game: %+v\n", g)
-		tc.askForAction(g)
+		// fmt.Printf("DEBUG// game: %+v\n", g)
+		go func(gID model.GameID){
+			tc.requestAndSendAction(gID)
+		}(tc.myCurrentGame)
+		// tc.askForAction(g)
 		// TODO ask for what's blocking and then keep getting it and trying again and again
 	}()
 
@@ -134,18 +135,14 @@ func StartTerminalInteraction() error {
 	return nil
 }
 
-func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser) ([]byte, error) {
-	url, err := url.Parse(serverDomain + apiURL)
+func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]byte, error) {
+	urlStr := serverDomain + apiURL
+	req, err := http.NewRequest(method, urlStr, data)
 	if err != nil {
 		return nil, err
 	}
 
-	request := http.Request{
-		Method: method,
-		URL:    url,
-		Body:   data,
-	}
-	response, err := tc.server.Do(&request)
+	response, err := tc.server.Do(req)
 	if err != nil {
 		return nil, err
 	}

@@ -167,11 +167,15 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
-	// TODO find out how to pass in the action
 	var action model.PlayerAction
-	err := cs.handleAction(action)
+	err := c.BindJSON(&action)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusBadRequest, "Error: %s", err)
+		return
+	}
+	err = cs.handleAction(action)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Error: %s", err)
 		return
 	}
 	// TODO figure out if we need to send back the updated game state

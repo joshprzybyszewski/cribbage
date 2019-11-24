@@ -1,8 +1,9 @@
 package local_client
 
 import (
+	"bytes"
 	// "bufio"
-	// "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	// "io"
@@ -20,11 +21,49 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+var (
+	errIAmNotBlocking = errors.New(`i'm not blocking`)
+)
+
+func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
+	g, err := tc.getGame(gID)
+	if err != nil {
+		return err
+	}
+
+	pa, err := tc.askForAction(g)
+	if err != nil {
+		if err == errIAmNotBlocking {
+			return nil
+		}
+		// c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+		return err
+	}
+	b, err := json.Marshal(pa)
+	if err != nil {
+		// c.String(http.StatusBadRequest, "Bad Marshaling: %s", gIDStr)
+		return err
+	}
+	buf := bytes.NewBuffer(b)
+
+	url := fmt.Sprintf("/action/%d", g.ID)
+	bytes, err := tc.makeRequest(`POST`, url, buf)
+	if err != nil {
+		fmt.Printf("err: %+v\n", err)
+		// c.String(http.StatusBadRequest, "Bad Marshaling: %s", gIDStr)
+		return err
+	}
+	fmt.Printf("bytes: %+v\n", string(bytes))
+
+
+	return nil
+}
+
 func (tc *terminalClient) askForAction(g model.Game) (model.PlayerAction, error) {
 	r, ok := g.BlockingPlayers[tc.me.ID]
 	if !ok {
 		fmt.Printf("Waiting...\n")
-		return model.PlayerAction{}, nil
+		return model.PlayerAction{}, errIAmNotBlocking
 	}
 
 	switch r {
