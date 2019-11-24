@@ -73,7 +73,7 @@ func StartTerminalInteraction() error {
 				return
 			}
 			gID := model.GameID(n)
-			
+
 			g, err := tc.getGame(gID)
 			if err != nil {
 				return

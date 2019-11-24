@@ -51,8 +51,8 @@ func (tc *terminalClient) askForDeal() (model.PlayerAction, error) {
 	}
 
 	pa := model.PlayerAction{
-		GameID: tc.myCurrentGame,
-		ID: tc.me.ID,
+		GameID:    tc.myCurrentGame,
+		ID:        tc.me.ID,
 		Overcomes: model.DealCards,
 		Action: model.DealAction{
 			NumShuffles: answers.NumShuffles,
