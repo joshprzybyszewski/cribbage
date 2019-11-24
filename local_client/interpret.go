@@ -26,7 +26,9 @@ var (
 )
 
 func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
-	g, err := tc.getGame(gID)
+	// TODO change this to a "get game" call because we don't want to make network
+	// requests all the time
+	g, err := tc.requestGame(gID)
 	if err != nil {
 		return err
 	}

@@ -32,6 +32,12 @@ type terminalClient struct {
 	myGames       map[model.GameID]model.Game
 }
 
+type terminalRequest struct {
+	gameID model.GameID
+	game model.Game
+	msg string
+}
+
 func StartTerminalInteraction() error {
 	tc := terminalClient{
 		server:  &http.Client{},
@@ -47,10 +53,11 @@ func StartTerminalInteraction() error {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	
+	port := 8081 + (int(tc.me.ID) % 100)
+	reqChan := make(chan terminalRequest, 5)
 
-	port := 8080 + (int(tc.me.ID) % 100)
-
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		filename := fmt.Sprintf("./playerlogs/%d.log", tc.me.ID)
@@ -65,8 +72,8 @@ func StartTerminalInteraction() error {
 
 		router := gin.New()
 		router.Use(gin.LoggerWithWriter(playerServerFile), gin.Recovery())
+
 		router.POST("/blocking/:gameID", func(c *gin.Context) {
-			fmt.Printf("blocked: %+v\n", c)
 			gIDStr := c.Param("gameID")
 			n, err := strconv.Atoi(gIDStr)
 			if err != nil {
@@ -74,37 +81,55 @@ func StartTerminalInteraction() error {
 				return
 			}
 
-			go func(gID model.GameID){
-				tc.requestAndSendAction(gID)
-			}(model.GameID(n))
+			reqChan <- terminalRequest{
+				gameID: model.GameID(n),
+				msg: `you're blocking`,
+			}
 
-			c.JSON(http.StatusOK, gin.H{
-				"got": "blocked",
-			})
+			c.String(http.StatusOK, `received`)
 		})
-		router.POST("/message", func(c *gin.Context) {
-			fmt.Printf("message: %+v\n", c)
-			c.JSON(http.StatusOK, gin.H{
-				"got": "message",
-			})
+		router.POST("/message/:gameID", func(c *gin.Context) {
+			gIDStr := c.Param("gameID")
+			n, err := strconv.Atoi(gIDStr)
+			if err != nil {
+				c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+				return
+			}
+
+			reqChan <- terminalRequest{
+				gameID: model.GameID(n),
+				msg: `Received Message`,
+			}
+			c.String(http.StatusOK, `received`)
 		})
-		router.POST("/score", func(c *gin.Context) {
-			fmt.Printf("score: %+v\n", c)
-			c.JSON(http.StatusOK, gin.H{
-				"got": "score",
-			})
+		router.POST("/score/:gameID", func(c *gin.Context) {
+			gIDStr := c.Param("gameID")
+			n, err := strconv.Atoi(gIDStr)
+			if err != nil {
+				c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+				return
+			}
+
+			reqChan <- terminalRequest{
+				gameID: model.GameID(n),
+				msg: `Received score update`,
+			}
+			c.String(http.StatusOK, `received`)
 		})
 
 		router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		// Let the server know about where we're serving our listener
 		url := fmt.Sprintf("/create/interaction/%d/localhost/%d", tc.me.ID, port)
 		tc.makeRequest(`POST`, url, nil)
+	}()
 
-		fmt.Printf("DEBUG// me: %+v\n", tc.me)
-
+	wg.Add(1)
+	go func() {
 		if tc.shouldCreateGame() {
 			err := tc.createGame()
 			if err != nil {
@@ -117,9 +142,23 @@ func StartTerminalInteraction() error {
 			return
 		}
 
-		go func(gID model.GameID){
-			tc.requestAndSendAction(gID)
-		}(tc.myCurrentGame)
+		reqChan <- terminalRequest{
+			game: tc.myGames[tc.myCurrentGame],
+		}
+		for {
+			select {
+			case req := <-reqChan:
+				fmt.Printf("Message: \"%s\"\n", req.msg)
+				gID := req.gameID
+				if req.gameID == model.InvalidGameID {
+					gID = req.game.ID
+				}
+				err := tc.requestAndSendAction(gID)
+				if err != nil {
+					fmt.Printf("Error in requestAndSendAction: %+v\n", err)
+				}
+			}
+		}
 	}()
 
 	// Block until forever...?

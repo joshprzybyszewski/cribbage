@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	// "net/url"
 	"strconv"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -42,28 +42,22 @@ func (lhp *localhostPlayer) NotifyBlocking(b model.Blocker, g model.Game, i stri
 }
 
 func (lhp *localhostPlayer) NotifyMessage(g model.Game, msg string) error {
-	return lhp.notify(`message`, nil)
+	return lhp.notify(fmt.Sprintf(`message/%d`, g.ID), nil)
 }
 
 func (lhp *localhostPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
-	return lhp.notify(`score`, nil)
+	return lhp.notify(fmt.Sprintf(`score/%d`, g.ID), nil)
 }
 
 func (lhp *localhostPlayer) notify(endpoint string, data io.ReadCloser) error {
-	urlStr := fmt.Sprintf("localhost:%d/%s", lhp.port, endpoint)
-	url, err := url.Parse(urlStr)
+	urlStr := fmt.Sprintf("http://localhost:%d/%s", lhp.port, endpoint)
+	req, err := http.NewRequest(`POST`, urlStr, data)
 	if err != nil {
 		return err
 	}
 
 	client := &http.Client{}
-
-	request := http.Request{
-		Method: `POST`,
-		URL:    url,
-		Body:   data,
-	}
-	response, err := client.Do(&request)
+	response, err := client.Do(req)
 	if err != nil {
 		return err
 	}
