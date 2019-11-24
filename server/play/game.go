@@ -7,7 +7,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-func New(players []model.Player) model.Game {
+func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Player) (model.Game, error) {
 	playersCopy := make([]model.Player, len(players))
 	colorsByID := make(map[model.PlayerID]model.PlayerColor, len(players))
 	curScores := make(map[model.PlayerColor]int, len(players))
@@ -30,7 +30,8 @@ func New(players []model.Player) model.Game {
 		curScores[color] = 0
 		lagScores[color] = 0
 	}
-	return model.Game{
+
+	g := model.Game{
 		ID:              model.NewGameID(),
 		Players:         playersCopy,
 		Deck:            nil, // TODO
@@ -39,12 +40,19 @@ func New(players []model.Player) model.Game {
 		PlayerColors:    colorsByID,
 		CurrentScores:   curScores,
 		LagScores:       lagScores,
-		Phase:           model.Deal,
+		Phase:           model.DealingReady,
 		Hands:           make(map[model.PlayerID][]model.Card, len(players)),
 		CutCard:         model.Card{},
 		Crib:            make([]model.Card, 0, 4),
 		PeggedCards:     make([]model.PeggedCard, 0, 4*len(players)),
 	}
+
+	err := runStartHandlers(&g, pAPIs)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	return g, nil
 }
 
 var (
@@ -83,6 +91,10 @@ func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.Play
 		g.NumActions++
 	}
 
+	return runStartHandlers(g, pAPIs)
+}
+
+func runStartHandlers(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	switch p := g.Phase; p {
 	case model.BuildCribReady,
 		model.CutReady,

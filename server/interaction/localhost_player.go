@@ -70,7 +70,7 @@ func (lhp *localhostPlayer) notify(endpoint string, data io.ReadCloser) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf(`bad response: %+v`, response)
+		return fmt.Errorf("bad response: %+v\n%s", response, response.Body)
 	}
 
 	_, err = ioutil.ReadAll(response.Body)

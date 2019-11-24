@@ -23,8 +23,15 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) 
 		}
 		players[i] = p
 	}
-	mg := play.New(players)
-	err := cs.db.SaveGame(mg)
+	pAPIs, err := cs.getPlayerAPIs(players)
+	if err != nil {
+		return model.Game{}, err
+	}
+	mg, err := play.CreateGame(players, pAPIs)
+	if err != nil {
+		return model.Game{}, err
+	}
+	err = cs.db.SaveGame(mg)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -61,13 +68,9 @@ func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
 		return err
 	}
 
-	pAPIs := make(map[model.PlayerID]interaction.Player, len(g.Players))
-	for _, p := range g.Players {
-		pAPI, err := cs.db.GetInteraction(p.ID)
-		if err != nil {
-			return err
-		}
-		pAPIs[p.ID] = pAPI
+	pAPIs, err := cs.getPlayerAPIs(g.Players)
+	if err != nil {
+		return err
 	}
 
 	err = play.HandleAction(&g, action, pAPIs)
@@ -76,4 +79,16 @@ func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
 	}
 
 	return cs.db.SaveGame(g)
+}
+
+func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
+	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
+	for _, p := range players {
+		pAPI, err := cs.db.GetInteraction(p.ID)
+		if err != nil {
+			return nil, err
+		}
+		pAPIs[p.ID] = pAPI
+	}
+	return pAPIs, nil
 }

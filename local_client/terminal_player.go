@@ -41,23 +41,14 @@ func StartTerminalInteraction() error {
 	if err != nil {
 		return err
 	}
-	if tc.shouldCreateGame() {
-		err = tc.createGame()
-		if err != nil {
-			return err
-		}
-	} else {
-		err = tc.joinGame()
-		if err != nil {
-			return err
-		}
-	}
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	port := 8080 + (int(tc.me.ID)%100)
 
 	go func(){
+		defer wg.Done()
 		filename := fmt.Sprintf("./player%d.log", tc.me.ID)
 		f, err := os.Create(filename)
 		if err != nil {
@@ -91,13 +82,34 @@ func StartTerminalInteraction() error {
 		})
 
 		router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
-		wg.Done()
 	}()
 	
 	go func() {
-		url := fmt.Sprintf("/interaction/%d/localhost/%d", tc.me.ID, port)
+		defer wg.Done()
+		url := fmt.Sprintf("/create/interaction/%d/localhost/%d", tc.me.ID, port)
 		tc.makeRequest(`POST`, url, nil)
-		wg.Done()
+
+		fmt.Printf("DEBUG// me: %+v\n", tc.me)
+
+		if tc.shouldCreateGame() {
+			err = tc.createGame()
+			if err != nil {
+				return
+			}
+		}
+
+		err = tc.updatePlayer()
+		if err != nil {
+			return
+		}
+
+		g, err := tc.getGame(tc.myCurrentGame)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("DEBUG// game: %+v\n", g)
+		// TODO ask for what's blocking and then keep getting it and trying again and again
 	}()
 
 	// Block until forever...?
@@ -124,7 +136,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.ReadCloser)
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(`bad response: %+v`, response)
+		return nil, fmt.Errorf("bad response: %+v\n%s", response, response.Body)
 	}
 
 	return ioutil.ReadAll(response.Body)
@@ -222,7 +234,7 @@ func (tc *terminalClient) getOpponentID() string {
 	return answers.Id
 }
 
-func (tc *terminalClient) joinGame() error {
+func (tc *terminalClient) updatePlayer() error {
 	url := fmt.Sprintf("/player/%v", tc.me.ID)
 
 	respBytes, err := tc.makeRequest(`GET`, url, nil)
@@ -236,16 +248,7 @@ func (tc *terminalClient) joinGame() error {
 	}
 
 	for gID := range tc.me.Games {
-		url := fmt.Sprintf("/game/%v", gID)
-
-		respBytes, err := tc.makeRequest(`GET`, url, nil)
-		if err != nil {
-			return err
-		}
-
-		g := model.Game{}
-
-		err = json.Unmarshal(respBytes, &g)
+		g, err := tc.getGame(gID)
 		if err != nil {
 			return err
 		}
@@ -258,6 +261,24 @@ func (tc *terminalClient) joinGame() error {
 	}
 
 	return nil
+}
+
+func (tc *terminalClient) getGame(gID model.GameID) (model.Game, error) {
+	url := fmt.Sprintf("/game/%v", gID)
+
+	respBytes, err := tc.makeRequest(`GET`, url, nil)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	g := model.Game{}
+
+	err = json.Unmarshal(respBytes, &g)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	return g, nil
 }
 
 func (tc *terminalClient) getPlayerAction() (model.PlayerAction, error) {
