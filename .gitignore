@@ -16,3 +16,6 @@
 
 # go mod stuff
 vendor/
+
+# local_client player logs
+playerlogs/

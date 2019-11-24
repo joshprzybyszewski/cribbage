@@ -53,7 +53,7 @@ func StartTerminalInteraction() error {
 
 	go func() {
 		defer wg.Done()
-		filename := fmt.Sprintf("./player%d.log", tc.me.ID)
+		filename := fmt.Sprintf("./playerlogs/%d.log", tc.me.ID)
 		f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			fmt.Printf("failed opening file: %s", err)
