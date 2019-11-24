@@ -38,7 +38,7 @@ func (lhp *localhostPlayer) ID() model.PlayerID {
 }
 
 func (lhp *localhostPlayer) NotifyBlocking(b model.Blocker, g model.Game, i string) error {
-	return lhp.notify(`blocking`, nil)
+	return lhp.notify(fmt.Sprintf(`blocking/%d`, g.ID), nil)
 }
 
 func (lhp *localhostPlayer) NotifyMessage(g model.Game, msg string) error {

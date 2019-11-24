@@ -65,13 +65,22 @@ func StartTerminalInteraction() error {
 
 		router := gin.New()
 		router.Use(gin.LoggerWithWriter(playerServerFile), gin.Recovery())
-		router.GET("/ping", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "pong",
-			})
-		})
+		router.POST("/blocking/:gameID", func(c *gin.Context) {
+			gIDStr := c.Param("gameID")
+			n, err := strconv.Atoi(gIDStr)
+			if err != nil {
+				c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+				return
+			}
+			gID := model.GameID(n)
+			
+			g, err := tc.getGame(gID)
+			if err != nil {
+				return
+			}
 
-		router.POST("/blocking", func(c *gin.Context) {
+			tc.askForAction(g)
+
 			c.JSON(http.StatusOK, gin.H{
 				"got": "blocked",
 			})
@@ -115,6 +124,7 @@ func StartTerminalInteraction() error {
 		}
 
 		fmt.Printf("DEBUG// game: %+v\n", g)
+		tc.askForAction(g)
 		// TODO ask for what's blocking and then keep getting it and trying again and again
 	}()
 
@@ -240,18 +250,14 @@ func (tc *terminalClient) getPlayerID(msg string) model.PlayerID {
 		Transform: survey.Title,
 	}}
 
-	answers := struct{ Id string }{}
+	answers := struct{ Id int }{}
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
 		return model.InvalidPlayerID
 	}
 
-	pID, err := strconv.Atoi(answers.Id)
-	if err != nil {
-		return model.InvalidPlayerID
-	}
-	return model.PlayerID(pID)
+	return model.PlayerID(answers.Id)
 }
 
 func (tc *terminalClient) updatePlayer() error {
