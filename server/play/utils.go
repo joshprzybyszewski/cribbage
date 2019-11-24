@@ -130,7 +130,7 @@ func hasBeenPegged(pegged []model.PeggedCard, c model.Card) bool {
 			return true
 		}
 	}
-	return true
+	return false
 }
 
 func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {

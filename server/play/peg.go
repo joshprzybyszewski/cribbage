@@ -43,13 +43,18 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 			return nil
 		}
 	} else {
-		if handContains(g.Hands[pID], pa.Card) {
+		if !handContains(g.Hands[pID], pa.Card) {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card you don't have`)
 			return nil
 		}
 
 		if hasBeenPegged(g.PeggedCards, pa.Card) {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg same card twice`)
+			return nil
+		}
+
+		if g.CurrentPeg() + pa.Card.PegValue() > model.MaxPeggingValue {
+			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card with this value`)
 			return nil
 		}
 	}
