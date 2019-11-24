@@ -8,7 +8,7 @@ import (
 	"fmt"
 	// "io"
 	// "io/ioutil"
-	// "math/rand"
+	"math/rand"
 	// "net/http"
 	// "net/url"
 	// "os"
@@ -69,7 +69,7 @@ func (tc *terminalClient) askForAction(g model.Game) (model.PlayerAction, error)
 	case model.CribCard:
 		return tc.askForCrib(g)
 	case model.CutCard:
-		// return tc.askForDeal()
+		return tc.askForCut()
 	case model.PegCard:
 		// return tc.askForDeal()
 	case model.CountHand:
@@ -164,6 +164,41 @@ func (tc *terminalClient) askForCrib(g model.Game) (model.PlayerAction, error) {
 		Overcomes: model.DealCards,
 		Action: model.BuildCribAction{
 			Cards: crib,
+		},
+	}
+
+	return pa, nil
+}
+
+
+func (tc *terminalClient) askForCut(g model.Game) (model.PlayerAction, error) {
+	const thin = `thin`
+	const middle = `middle`
+	const thick = `thick`
+	cutChoice := ``
+	prompt := &survey.Select{
+		Message: "How would you like to cut?",
+		Options: []string{thin, middle, thick},
+		Filter:  func(filter string, value string, index int) bool { return true },
+	}
+	survey.AskOne(prompt, &cutChoice)
+
+	perc := 0.500
+	switch cutChoice {
+	case thin:
+		perc = (rand.Float64() + 0) / 3
+	case middle:
+		perc = (rand.Float64() + 1) / 3
+	case thick:
+		perc = (rand.Float64() + 2) / 3
+	}
+
+	pa := model.PlayerAction{
+		GameID:    tc.myCurrentGame,
+		ID:        tc.me.ID,
+		Overcomes: model.DealCards,
+		Action: model.CutDeckAction{
+			Percentage: perc,
 		},
 	}
 
