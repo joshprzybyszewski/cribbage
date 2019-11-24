@@ -26,7 +26,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 
 	pa, ok := action.Action.(model.PegAction)
 	if !ok {
-		return errors.New(`tried dealing with a different action`)
+		return errors.New(`tried pegging with a different action`)
 	}
 
 	pID := action.ID

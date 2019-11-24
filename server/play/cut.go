@@ -30,7 +30,7 @@ func (*cuttingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 
 	cda, ok := action.Action.(model.CutDeckAction)
 	if !ok {
-		return errors.New(`tried dealing with a different action`)
+		return errors.New(`tried cutting with a different action`)
 	}
 
 	if cda.Percentage < 0 || cda.Percentage > 1 {

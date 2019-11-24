@@ -83,7 +83,7 @@ type PlayerAction struct {
 	GameID    GameID      `protobuf:"varint,1,req,name=gameID,proto3" json:"gameID"`
 	ID        PlayerID    `protobuf:"varint,2,req,name=id,proto3" json:"id"`
 	Overcomes Blocker     `protobuf:"varint,3,req,name=overcomes,proto3" json:"overcomes"`
-	Action    interface{} `protobuf:"varint,4,req,name=action,proto3" json:"action"`
+	Action    interface{} `protobuf:"-" json:"action"`
 }
 
 type DealAction struct {

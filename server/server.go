@@ -1,6 +1,9 @@
 package server
 
 import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -167,17 +170,70 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
-	var action model.PlayerAction
-	err := c.BindJSON(&action)
+	action, err := unmarshalPlayerAction(c.Request)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error: %s", err)
 		return
 	}
+
 	err = cs.handleAction(action)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error: %s", err)
 		return
 	}
-	// TODO figure out if we need to send back the updated game state
+
 	c.String(http.StatusOK, "action handled")
+}
+
+func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
+	// We can store the RawMessage and then switch on the Overcomes type later
+	// otherwise Action becomes a map[string]interface{}
+	var raw json.RawMessage
+	action := model.PlayerAction{
+		Action: &raw,
+	}
+	reqBody, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+	err = json.Unmarshal(reqBody, &action)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	blockerActions := map[model.Blocker]func() interface{}{
+		model.DealCards: func() interface{} { return &model.DealAction{}},
+		model.CribCard: func() interface{} { return &model.BuildCribAction{}},
+		model.CutCard: func() interface{} { return &model.CutDeckAction{}},
+		model.PegCard: func() interface{} { return &model.PegAction{}},
+		model.CountHand: func() interface{} { return &model.CountHandAction{}},
+		model.CountCrib: func() interface{} { return &model.CountCribAction{}},
+	}
+
+	subActionFn, ok := blockerActions[action.Overcomes]
+	if !ok {
+		return model.PlayerAction{}, errors.New(`unknown action type`)
+	}
+	subAction := subActionFn()
+
+	if err := json.Unmarshal(raw, subAction); err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	switch t := subAction.(type) {
+	case *model.DealAction:
+		action.Action = *t
+	case *model.BuildCribAction:
+		action.Action = *t
+	case *model.CutDeckAction:
+		action.Action = *t
+	case *model.PegAction:
+		action.Action = *t
+	case *model.CountHandAction:
+		action.Action = *t
+	case *model.CountCribAction:
+		action.Action = *t
+	}
+
+	return action, nil
 }

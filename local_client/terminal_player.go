@@ -116,17 +116,9 @@ func StartTerminalInteraction() error {
 			return
 		}
 
-		// g, err := tc.getGame(tc.myCurrentGame)
-		// if err != nil {
-		// 	return
-		// }
-
-		// fmt.Printf("DEBUG// game: %+v\n", g)
 		go func(gID model.GameID){
 			tc.requestAndSendAction(gID)
 		}(tc.myCurrentGame)
-		// tc.askForAction(g)
-		// TODO ask for what's blocking and then keep getting it and trying again and again
 	}()
 
 	// Block until forever...?
