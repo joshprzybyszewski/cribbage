@@ -54,11 +54,13 @@ func StartTerminalInteraction() error {
 	go func() {
 		defer wg.Done()
 		filename := fmt.Sprintf("./player%d.log", tc.me.ID)
-		f, err := os.Create(filename)
+		f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			fmt.Printf("wat: %+v\n", err)
+			fmt.Printf("failed opening file: %s", err)
+			return
 		}
 		defer f.Close()
+
 		playerServerFile := bufio.NewWriter(f)
 
 		router := gin.New()
