@@ -73,6 +73,7 @@ func StartTerminalInteraction() error {
 				c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
 				return
 			}
+
 			go func(gID model.GameID){
 				tc.requestAndSendAction(gID)
 			}(model.GameID(n))
@@ -263,7 +264,7 @@ func (tc *terminalClient) updatePlayer() error {
 	}
 
 	for gID := range tc.me.Games {
-		g, err := tc.getGame(gID)
+		g, err := tc.requestGame(gID)
 		if err != nil {
 			return err
 		}
@@ -279,6 +280,15 @@ func (tc *terminalClient) updatePlayer() error {
 }
 
 func (tc *terminalClient) getGame(gID model.GameID) (model.Game, error) {
+	g, ok := tc.myGames[gID]
+	if ok {
+		return g, nil
+	}
+
+	return tc.requestGame(gID)
+}
+
+func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {
 	url := fmt.Sprintf("/game/%v", gID)
 
 	respBytes, err := tc.makeRequest(`GET`, url, nil)
