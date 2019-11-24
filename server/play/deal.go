@@ -60,8 +60,6 @@ func (*dealingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 		return err
 	}
 
-	g.Phase++
-
 	return nil
 }
 

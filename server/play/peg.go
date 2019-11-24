@@ -15,6 +15,11 @@ type peggingHandler struct{}
 
 func (*peggingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	g.PeggedCards = g.PeggedCards[:0]
+	
+	// put the player after the dealer as the blocking player
+	pIDs := playersToDealTo(g)
+	pID := pIDs[0]
+	addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `please peg a card`)
 
 	return nil
 }
@@ -73,9 +78,6 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 	if len(g.PeggedCards) == 4*len(g.Players) {
 		// This was the last card: give one point to this player.
 		addPoints(g, action.ID, 1, pAPIs, `last card`)
-		if !g.IsOver() {
-			g.Phase++
-		}
 		return nil
 	}
 

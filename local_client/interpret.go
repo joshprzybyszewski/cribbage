@@ -2,21 +2,13 @@ package local_client
 
 import (
 	"bytes"
-	// "bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
-	// "io"
-	// "io/ioutil"
 	"math/rand"
-	// "net/http"
-	// "net/url"
-	// "os"
 	"strconv"
-	// "sync"
 
 	survey "github.com/AlecAivazis/survey/v2"
-	// "github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -33,9 +25,10 @@ func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
 		return err
 	}
 
-	pa, err := tc.askForAction(g)
+	pa, err := tc.getPlayerAction(g)
 	if err != nil {
 		if err == errIAmNotBlocking {
+			fmt.Printf("Waiting for other players\n")
 			return nil
 		}
 		return err
@@ -58,32 +51,40 @@ func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
 	return nil
 }
 
-func (tc *terminalClient) askForAction(g model.Game) (model.PlayerAction, error) {
-	r, ok := g.BlockingPlayers[tc.me.ID]
+
+func (tc *terminalClient) getPlayerAction(g model.Game) (model.PlayerAction, error) {
+	b, ok := g.BlockingPlayers[tc.me.ID]
 	if !ok {
-		fmt.Printf("Waiting...\n")
 		return model.PlayerAction{}, errIAmNotBlocking
 	}
 
-	switch r {
+	tc.printCurrentScore()
+
+	var action interface{}
+	switch b {
 	case model.DealCards:
-		return tc.askForDeal()
+		action = tc.getDealAction()
 	case model.CribCard:
-		return tc.askForCrib(g)
+		action = tc.getBuildCribAction(g)
 	case model.CutCard:
-		return tc.askForCut()
+		action = tc.getCutDeckAction()
 	case model.PegCard:
-		return tc.askForPeg(g)
+		action = tc.getPegAction(g)
 	case model.CountHand:
-		return tc.askForHandCount(g)
+		action = tc.getCountHandAction(g)
 	case model.CountCrib:
-		return tc.askForCribCount(g)
+		action = tc.getCountCribAction(g)
 	}
 
-	return model.PlayerAction{}, errors.New(`unhandleable state?`)
+	return model.PlayerAction{
+		GameID:    g.ID,
+		ID:        tc.me.ID,
+		Overcomes: b,
+		Action:    action,
+	}, nil
 }
 
-func (tc *terminalClient) askForDeal() (model.PlayerAction, error) {
+func (p *terminalClient) getDealAction() model.DealAction {
 	qs := []*survey.Question{{
 		Name:      "numShuffles",
 		Prompt:    &survey.Input{Message: `How many times to shuffle?`},
@@ -95,22 +96,15 @@ func (tc *terminalClient) askForDeal() (model.PlayerAction, error) {
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
-		return model.PlayerAction{}, err
+		return model.DealAction{}
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.DealCards,
-		Action: model.DealAction{
-			NumShuffles: answers.NumShuffles,
-		},
+	return model.DealAction{
+		NumShuffles: answers.NumShuffles,
 	}
-
-	return pa, nil
 }
 
-func (tc *terminalClient) askForCrib(g model.Game) (model.PlayerAction, error) {
+func (tc *terminalClient) getBuildCribAction(g model.Game) model.BuildCribAction {
 	hand := g.Hands[tc.me.ID]
 	desired := len(hand) - 4
 	cardChoices := make([]string, 0, len(hand))
@@ -152,7 +146,7 @@ func (tc *terminalClient) askForCrib(g model.Game) (model.PlayerAction, error) {
 
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! expected %d cards, received %d`, desired, len(cribCards))
-		return model.PlayerAction{}, errors.New(`should not hit this`)
+		return model.BuildCribAction{}
 	}
 
 	crib := make([]model.Card, len(cribCards))
@@ -160,20 +154,11 @@ func (tc *terminalClient) askForCrib(g model.Game) (model.PlayerAction, error) {
 		crib[i] = model.NewCardFromString(cc)
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.DealCards,
-		Action: model.BuildCribAction{
-			Cards: crib,
-		},
+	return model.BuildCribAction{
+		Cards: crib,
 	}
-
-	return pa, nil
 }
-
-
-func (tc *terminalClient) askForCut() (model.PlayerAction, error) {
+func (tc *terminalClient) getCutDeckAction() model.CutDeckAction {
 	const thin = `thin`
 	const middle = `middle`
 	const thick = `thick`
@@ -195,19 +180,11 @@ func (tc *terminalClient) askForCut() (model.PlayerAction, error) {
 		perc = (rand.Float64() + 2) / 3
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.CutCard,
-		Action: model.CutDeckAction{
-			Percentage: perc,
-		},
+	return model.CutDeckAction{
+		Percentage: perc,
 	}
-
-	return pa, nil
 }
-
-func (tc *terminalClient) askForPeg(g model.Game) (model.PlayerAction, error) {
+func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 	hand := g.Hands[tc.me.ID]
 	curPeg := g.CurrentPeg()
 	
@@ -265,20 +242,12 @@ func (tc *terminalClient) askForPeg(g model.Game) (model.PlayerAction, error) {
 		c = model.NewCardFromString(pegCard)
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.PegCard,
-		Action: model.PegAction{
+	return model.PegAction{
 			Card: c,
 			SayGo: sayGo,
-		},
-	}
-
-	return pa, nil
+		}
 }
-
-func (tc *terminalClient) askForHandCount(g model.Game) (model.PlayerAction, error) {
+func (tc *terminalClient) getCountHandAction(g model.Game) model.CountHandAction {
 	hand := g.Hands[tc.me.ID]
 
 	msg := fmt.Sprintf(`Cut Card: %s, Hand: `, g.CutCard)
@@ -302,22 +271,14 @@ func (tc *terminalClient) askForHandCount(g model.Game) (model.PlayerAction, err
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
-		return model.PlayerAction{}, err
+		return model.CountHandAction{}
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.CountHand,
-		Action: model.CountHandAction{
-			Pts: answers.HandPoints,
-		},
+	return model.CountHandAction{
+		Pts: answers.HandPoints,
 	}
-
-	return pa, nil
 }
-
-func (tc *terminalClient) askForCribCount(g model.Game) (model.PlayerAction, error) {
+func (tc *terminalClient) getCountCribAction(g model.Game) model.CountCribAction {
 	crib := g.Crib
 
 	msg := fmt.Sprintf(`Cut Card: %s, Crib: `, g.CutCard)
@@ -341,17 +302,23 @@ func (tc *terminalClient) askForCribCount(g model.Game) (model.PlayerAction, err
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
-		return model.PlayerAction{}, err
+		return model.CountCribAction{}
 	}
 
-	pa := model.PlayerAction{
-		GameID:    tc.myCurrentGame,
-		ID:        tc.me.ID,
-		Overcomes: model.CountCrib,
-		Action: model.CountHandAction{
-			Pts: answers.CribPoints,
-		},
+	return model.CountCribAction{
+		Pts: answers.CribPoints,
 	}
+}
 
-	return pa, nil
+func (tc *terminalClient) printCurrentScore() {
+	g := tc.myGames[tc.myCurrentGame]
+	myColor := g.PlayerColors[tc.me.ID]
+	fmt.Println(`----------`)
+	fmt.Printf("%5s (you): %3d\n", myColor.String(), g.CurrentScores[myColor])
+	for c, s := range g.CurrentScores {
+		if c != myColor {
+			fmt.Printf("%11s: %3d\n", c.String(), s)
+		}
+	}
+	fmt.Println(`----------`)
 }

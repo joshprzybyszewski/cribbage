@@ -58,8 +58,6 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 	if nextScorerIndex <= len(pIDs)-1 {
 		nextID := pIDs[nextScorerIndex]
 		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs, ``)
-	} else {
-		g.Phase++
 	}
 
 	return nil
