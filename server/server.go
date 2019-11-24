@@ -123,7 +123,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	info := c.Param(`info`)
 	err = cs.setInteraction(pID, model.InteractionMeans{
 		Means: means,
-		Info: info,
+		Info:  info,
 	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)

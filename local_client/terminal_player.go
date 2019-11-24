@@ -49,9 +49,9 @@ func StartTerminalInteraction() error {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	port := 8080 + (int(tc.me.ID)%100)
+	port := 8080 + (int(tc.me.ID) % 100)
 
-	go func(){
+	go func() {
 		defer wg.Done()
 		filename := fmt.Sprintf("./player%d.log", tc.me.ID)
 		f, err := os.Create(filename)
@@ -87,7 +87,7 @@ func StartTerminalInteraction() error {
 
 		router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
 	}()
-	
+
 	go func() {
 		defer wg.Done()
 		url := fmt.Sprintf("/create/interaction/%d/localhost/%d", tc.me.ID, port)
@@ -232,11 +232,11 @@ func (tc *terminalClient) createGame() error {
 
 func (tc *terminalClient) getPlayerID(msg string) model.PlayerID {
 	qs := []*survey.Question{{
-			Name:      "id",
-			Prompt:    &survey.Input{Message: msg},
-			Validate:  survey.Required,
-			Transform: survey.Title,
-		}}
+		Name:      "id",
+		Prompt:    &survey.Input{Message: msg},
+		Validate:  survey.Required,
+		Transform: survey.Title,
+	}}
 
 	answers := struct{ Id string }{}
 
