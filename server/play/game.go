@@ -34,7 +34,7 @@ func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Pla
 	g := model.Game{
 		ID:              model.NewGameID(),
 		Players:         playersCopy,
-		Deck:            nil, // TODO
+		Deck:            model.NewDeck(),
 		BlockingPlayers: make(map[model.PlayerID]model.Blocker, len(players)),
 		CurrentDealer:   players[0].ID,
 		PlayerColors:    colorsByID,
