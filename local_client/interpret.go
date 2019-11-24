@@ -12,7 +12,7 @@ import (
 	// "net/http"
 	// "net/url"
 	// "os"
-	// "strconv"
+	"strconv"
 	// "sync"
 
 	survey "github.com/AlecAivazis/survey/v2"
@@ -71,7 +71,7 @@ func (tc *terminalClient) askForAction(g model.Game) (model.PlayerAction, error)
 	case model.CutCard:
 		return tc.askForCut()
 	case model.PegCard:
-		// return tc.askForDeal()
+		return tc.askForPeg(g)
 	case model.CountHand:
 		// return tc.askForDeal()
 	case model.CountCrib:
@@ -171,7 +171,7 @@ func (tc *terminalClient) askForCrib(g model.Game) (model.PlayerAction, error) {
 }
 
 
-func (tc *terminalClient) askForCut(g model.Game) (model.PlayerAction, error) {
+func (tc *terminalClient) askForCut() (model.PlayerAction, error) {
 	const thin = `thin`
 	const middle = `middle`
 	const thick = `thick`
@@ -199,6 +199,77 @@ func (tc *terminalClient) askForCut(g model.Game) (model.PlayerAction, error) {
 		Overcomes: model.DealCards,
 		Action: model.CutDeckAction{
 			Percentage: perc,
+		},
+	}
+
+	return pa, nil
+}
+
+func (tc *terminalClient) askForPeg(g model.Game) (model.PlayerAction, error) {
+	hand := g.Hands[tc.me.ID]
+	curPeg := g.CurrentPeg()
+	
+	pegChoices := make([]string, 0, len(hand)+1)
+	const sayGoOption = `Say Go!`
+	pegChoices = append(pegChoices, sayGoOption)
+	for _, c := range hand {
+		pegChoices = append(pegChoices, c.String())
+	}
+
+	canPeg := func(val interface{}) error {
+		if oa, ok := val.(survey.OptionAnswer); ok {
+			maxValToPeg := model.MaxPeggingValue - curPeg
+			if oa.Value == sayGoOption {
+				for _, c := range hand {
+					if c.PegValue() <= maxValToPeg {
+						return fmt.Errorf("You cannot say go when you have cards to peg")
+					}
+				}
+			} else {
+				c := model.NewCardFromString(oa.Value)
+				if c.PegValue() > maxValToPeg {
+					return fmt.Errorf("Card (%v) exceeds max peg value (%d)", c.String(), maxValToPeg)
+				}
+
+			}
+			return nil
+		} else {
+			// otherwise we cannot convert the value into a string and cannot enforce length
+			return fmt.Errorf("bad type! %T", val)
+		}
+	}
+
+	msg := `Pegging at: ` + strconv.Itoa(curPeg) + `. The last cards pegged were: `
+	for i, c := range g.PeggedCards {
+		msg += c.String()
+		if i < len(g.PeggedCards)-1 {
+			msg += `, `
+		} else {
+			msg += `. `
+		}
+	}
+
+	pegCard := ``
+	prompt := &survey.Select{
+		Message: msg + "Which card to peg next?",
+		Options: pegChoices,
+		Filter:  func(filter string, value string, index int) bool { return true },
+	}
+	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
+
+	c := model.Card{}
+	sayGo := pegCard == sayGoOption
+	if !sayGo {
+		c = model.NewCardFromString(pegCard)
+	}
+
+	pa := model.PlayerAction{
+		GameID:    tc.myCurrentGame,
+		ID:        tc.me.ID,
+		Overcomes: model.DealCards,
+		Action: model.PegAction{
+			Card: c,
+			SayGo: sayGo,
 		},
 	}
 
