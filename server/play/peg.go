@@ -15,7 +15,7 @@ type peggingHandler struct{}
 
 func (*peggingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	g.PeggedCards = g.PeggedCards[:0]
-	
+
 	// put the player after the dealer as the blocking player
 	pIDs := playersToDealTo(g)
 	pID := pIDs[0]
@@ -53,7 +53,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 			return nil
 		}
 
-		if g.CurrentPeg() + pa.Card.PegValue() > model.MaxPeggingValue {
+		if g.CurrentPeg()+pa.Card.PegValue() > model.MaxPeggingValue {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card with this value`)
 			return nil
 		}

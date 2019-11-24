@@ -5,8 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )

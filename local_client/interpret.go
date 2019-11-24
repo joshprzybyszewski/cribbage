@@ -44,7 +44,6 @@ func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
 	return err
 }
 
-
 func (tc *terminalClient) getPlayerAction(g model.Game) (model.PlayerAction, error) {
 	b, ok := g.BlockingPlayers[tc.me.ID]
 	if !ok {
@@ -180,7 +179,7 @@ func (tc *terminalClient) getCutDeckAction() model.CutDeckAction {
 func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 	hand := g.Hands[tc.me.ID]
 	curPeg := g.CurrentPeg()
-	
+
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGoOption = `Say Go!`
 	pegChoices = append(pegChoices, sayGoOption)
@@ -236,9 +235,9 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 	}
 
 	return model.PegAction{
-			Card: c,
-			SayGo: sayGo,
-		}
+		Card:  c,
+		SayGo: sayGo,
+	}
 }
 func (tc *terminalClient) getCountHandAction(g model.Game) model.CountHandAction {
 	hand := g.Hands[tc.me.ID]

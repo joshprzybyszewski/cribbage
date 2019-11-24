@@ -202,12 +202,12 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 	}
 
 	blockerActions := map[model.Blocker]func() interface{}{
-		model.DealCards: func() interface{} { return &model.DealAction{}},
-		model.CribCard: func() interface{} { return &model.BuildCribAction{}},
-		model.CutCard: func() interface{} { return &model.CutDeckAction{}},
-		model.PegCard: func() interface{} { return &model.PegAction{}},
-		model.CountHand: func() interface{} { return &model.CountHandAction{}},
-		model.CountCrib: func() interface{} { return &model.CountCribAction{}},
+		model.DealCards: func() interface{} { return &model.DealAction{} },
+		model.CribCard:  func() interface{} { return &model.BuildCribAction{} },
+		model.CutCard:   func() interface{} { return &model.CutDeckAction{} },
+		model.PegCard:   func() interface{} { return &model.PegAction{} },
+		model.CountHand: func() interface{} { return &model.CountHandAction{} },
+		model.CountCrib: func() interface{} { return &model.CountCribAction{} },
 	}
 
 	subActionFn, ok := blockerActions[action.Overcomes]

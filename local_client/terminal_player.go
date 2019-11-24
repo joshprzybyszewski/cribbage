@@ -31,8 +31,8 @@ type terminalClient struct {
 
 type terminalRequest struct {
 	gameID model.GameID
-	game model.Game
-	msg string
+	game   model.Game
+	msg    string
 }
 
 func StartTerminalInteraction() error {
@@ -50,7 +50,7 @@ func StartTerminalInteraction() error {
 	}
 
 	var wg sync.WaitGroup
-	
+
 	port := 8081 + (int(tc.me.ID) % 100)
 	reqChan := make(chan terminalRequest, 5)
 
@@ -87,7 +87,7 @@ func StartTerminalInteraction() error {
 
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: msg,
+				msg:    msg,
 			}
 
 			c.String(http.StatusOK, `received`)
@@ -110,7 +110,7 @@ func StartTerminalInteraction() error {
 
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: msg,
+				msg:    msg,
 			}
 			c.String(http.StatusOK, `received`)
 		})
@@ -131,7 +131,7 @@ func StartTerminalInteraction() error {
 
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: msg,
+				msg:    msg,
 			}
 			c.String(http.StatusOK, `received`)
 		})
@@ -176,7 +176,7 @@ func StartTerminalInteraction() error {
 				if err != nil {
 					reqChan <- terminalRequest{
 						gameID: gID,
-						msg: `Problem doing action. Try again?`,
+						msg:    `Problem doing action. Try again?`,
 					}
 				}
 			}
