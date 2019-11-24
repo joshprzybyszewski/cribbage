@@ -91,7 +91,11 @@ func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.Play
 		g.NumActions++
 	}
 
-	if !g.IsOver() && len(g.BlockingPlayers) == 0 {
+	if g.IsOver() {
+		return nil
+	}
+
+	if len(g.BlockingPlayers) == 0 {
 		g.Phase++
 	}
 

@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	// "net/url"
+	"strings"
 	"strconv"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -37,16 +37,21 @@ func (lhp *localhostPlayer) ID() model.PlayerID {
 	return lhp.pID
 }
 
-func (lhp *localhostPlayer) NotifyBlocking(b model.Blocker, g model.Game, i string) error {
-	return lhp.notify(fmt.Sprintf(`blocking/%d`, g.ID), nil)
+func (lhp *localhostPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
+	return lhp.notify(fmt.Sprintf(`blocking/%d`, g.ID), ioutil.NopCloser(strings.NewReader(s)))
 }
 
 func (lhp *localhostPlayer) NotifyMessage(g model.Game, msg string) error {
-	return lhp.notify(fmt.Sprintf(`message/%d`, g.ID), nil)
+	return lhp.notify(fmt.Sprintf(`message/%d`, g.ID), ioutil.NopCloser(strings.NewReader(msg)))
 }
 
 func (lhp *localhostPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
-	return lhp.notify(fmt.Sprintf(`score/%d`, g.ID), nil)
+	all := ``
+	for _, m := range msgs {
+		all += m
+	}
+	rc := ioutil.NopCloser(strings.NewReader(all))
+	return lhp.notify(fmt.Sprintf(`score/%d`, g.ID), rc)
 }
 
 func (lhp *localhostPlayer) notify(endpoint string, data io.ReadCloser) error {

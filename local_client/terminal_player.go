@@ -78,9 +78,16 @@ func StartTerminalInteraction() error {
 				return
 			}
 
+			msg := `We're told you're blocking: "`
+			reqBody, err := ioutil.ReadAll(c.Request.Body)
+			if err == nil {
+				msg += string(reqBody)
+			}
+			msg += `"`
+
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: `you're blocking`,
+				msg: msg,
 			}
 
 			c.String(http.StatusOK, `received`)
@@ -93,9 +100,17 @@ func StartTerminalInteraction() error {
 				return
 			}
 
+			msg := `Received Message: `
+			reqBody, err := ioutil.ReadAll(c.Request.Body)
+			if err != nil {
+				msg += `<unknown>`
+			} else {
+				msg += string(reqBody)
+			}
+
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: `Received Message`,
+				msg: msg,
 			}
 			c.String(http.StatusOK, `received`)
 		})
@@ -107,9 +122,16 @@ func StartTerminalInteraction() error {
 				return
 			}
 
+			msg := `There's been a score update: "`
+			reqBody, err := ioutil.ReadAll(c.Request.Body)
+			if err == nil {
+				msg += string(reqBody)
+			}
+			msg += `"`
+
 			reqChan <- terminalRequest{
 				gameID: model.GameID(n),
-				msg: `Received score update`,
+				msg: msg,
 			}
 			c.String(http.StatusOK, `received`)
 		})
