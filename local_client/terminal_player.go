@@ -37,9 +37,13 @@ func StartTerminalInteraction() error {
 		server:  &http.Client{},
 		myGames: make(map[model.GameID]model.Game),
 	}
-	err := tc.createPlayer()
-	if err != nil {
-		return err
+	if tc.shouldSignIn() {
+		tc.me.ID = tc.getPlayerID(`What is your player ID?`)
+	} else {
+		err := tc.createPlayer()
+		if err != nil {
+			return err
+		}
 	}
 
 	var wg sync.WaitGroup
@@ -92,13 +96,13 @@ func StartTerminalInteraction() error {
 		fmt.Printf("DEBUG// me: %+v\n", tc.me)
 
 		if tc.shouldCreateGame() {
-			err = tc.createGame()
+			err := tc.createGame()
 			if err != nil {
 				return
 			}
 		}
 
-		err = tc.updatePlayer()
+		err := tc.updatePlayer()
 		if err != nil {
 			return
 		}
@@ -160,6 +164,18 @@ func (tc *terminalClient) createPlayer() error {
 	return nil
 }
 
+func (p *terminalClient) shouldSignIn() bool {
+	should := true
+
+	prompt := &survey.Confirm{
+		Message: "Sign in?",
+		Default: true,
+	}
+
+	survey.AskOne(prompt, &should)
+	return should
+}
+
 func (tc *terminalClient) getName() string {
 	qs := []*survey.Question{
 		{
@@ -193,8 +209,8 @@ func (p *terminalClient) shouldCreateGame() bool {
 }
 
 func (tc *terminalClient) createGame() error {
-	opID := tc.getOpponentID()
-	url := fmt.Sprintf("/create/game/%s/%v", opID, tc.me.ID)
+	opID := tc.getPlayerID("What's your opponent's ID?")
+	url := fmt.Sprintf("/create/game/%d/%v", opID, tc.me.ID)
 
 	respBytes, err := tc.makeRequest(`POST`, url, nil)
 	if err != nil {
@@ -214,24 +230,26 @@ func (tc *terminalClient) createGame() error {
 	return nil
 }
 
-func (tc *terminalClient) getOpponentID() string {
-	qs := []*survey.Question{
-		{
+func (tc *terminalClient) getPlayerID(msg string) model.PlayerID {
+	qs := []*survey.Question{{
 			Name:      "id",
-			Prompt:    &survey.Input{Message: "What's your opponent's ID?"},
+			Prompt:    &survey.Input{Message: msg},
 			Validate:  survey.Required,
 			Transform: survey.Title,
-		},
-	}
+		}}
 
 	answers := struct{ Id string }{}
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
-		return `unknown`
+		return model.InvalidPlayerID
 	}
 
-	return answers.Id
+	pID, err := strconv.Atoi(answers.Id)
+	if err != nil {
+		return model.InvalidPlayerID
+	}
+	return model.PlayerID(pID)
 }
 
 func (tc *terminalClient) updatePlayer() error {
