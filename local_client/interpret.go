@@ -73,9 +73,9 @@ func (tc *terminalClient) askForAction(g model.Game) (model.PlayerAction, error)
 	case model.PegCard:
 		return tc.askForPeg(g)
 	case model.CountHand:
-		// return tc.askForDeal()
+		return tc.askForHandCount(g)
 	case model.CountCrib:
-		// return tc.askForDeal()
+		return tc.askForCribCount(g)
 	}
 
 	return model.PlayerAction{}, errors.New(`unhandleable state?`)
@@ -289,11 +289,6 @@ func (tc *terminalClient) askForHandCount(g model.Game) (model.PlayerAction, err
 		}
 	}
 
-	cardChoices := make([]string, 0, len(hand))
-	for _, c := range hand {
-		cardChoices = append(cardChoices, c.String())
-	}
-
 	qs := []*survey.Question{{
 		Name:      "handPoints",
 		Prompt:    &survey.Input{Message: msg + `How many points in your hand?`},
@@ -314,6 +309,45 @@ func (tc *terminalClient) askForHandCount(g model.Game) (model.PlayerAction, err
 		Overcomes: model.CountHand,
 		Action: model.CountHandAction{
 			Pts: answers.HandPoints,
+		},
+	}
+
+	return pa, nil
+}
+
+func (tc *terminalClient) askForCribCount(g model.Game) (model.PlayerAction, error) {
+	crib := g.Crib
+
+	msg := fmt.Sprintf(`Cut Card: %s, Crib: `, g.CutCard)
+	for i, c := range crib {
+		msg += c.String()
+		if i < len(g.PeggedCards)-1 {
+			msg += `, `
+		} else {
+			msg += `. `
+		}
+	}
+
+	qs := []*survey.Question{{
+		Name:      "cribPoints",
+		Prompt:    &survey.Input{Message: msg + `How many points in the crib?`},
+		Validate:  survey.Required,
+		Transform: survey.Title,
+	}}
+
+	answers := struct{ CribPoints int }{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	pa := model.PlayerAction{
+		GameID:    tc.myCurrentGame,
+		ID:        tc.me.ID,
+		Overcomes: model.CountCrib,
+		Action: model.CountHandAction{
+			Pts: answers.CribPoints,
 		},
 	}
 
