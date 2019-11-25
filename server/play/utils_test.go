@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-
 )
 
 func TestHandContains(t *testing.T) {

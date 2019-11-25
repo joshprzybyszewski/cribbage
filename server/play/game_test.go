@@ -14,18 +14,18 @@ import (
 
 func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.PlayerID]interaction.Player) {
 	alice := model.Player{
-		ID: model.PlayerID(1),
+		ID:   model.PlayerID(1),
 		Name: `alice`,
 	}
 	bob := model.Player{
-		ID: model.PlayerID(2),
+		ID:   model.PlayerID(2),
 		Name: `bob`,
 	}
 	aAPI := &interaction.Mock{}
 	bAPI := &interaction.Mock{}
 	abAPIs := map[model.PlayerID]interaction.Player{
 		alice.ID: aAPI,
-		bob.ID: bAPI,
+		bob.ID:   bAPI,
 	}
 	return alice, bob, aAPI, bAPI, abAPIs
 }
@@ -49,18 +49,18 @@ func TestHandleAction_Deal(t *testing.T) {
 		PeggedCards:     make([]model.PeggedCard, 0, 8),
 	}
 	action := model.PlayerAction{
-		GameID: g.ID,
-		ID: alice.ID,
+		GameID:    g.ID,
+		ID:        alice.ID,
 		Overcomes: model.DealCards,
 		Action: model.DealAction{
 			NumShuffles: 50,
 		},
 	}
-	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool{return strings.HasPrefix(s, `Received Hand `)})).Return(nil).Once()
+	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool { return strings.HasPrefix(s, `Received Hand `) })).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CribCard, mock.AnythingOfType(`model.Game`), `needs to cut 2 cards`).Return(nil).Once()
-	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool{return strings.HasPrefix(s, `Received Hand `)})).Return(nil).Once()
+	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool { return strings.HasPrefix(s, `Received Hand `) })).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.CribCard, mock.AnythingOfType(`model.Game`), `needs to cut 2 cards`).Return(nil).Once()
-	
+
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Equal(t, model.BuildCrib, g.Phase)
@@ -71,7 +71,7 @@ func TestHandleAction_Deal(t *testing.T) {
 	// the players should have 6 card hands
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
-	
+
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
 }
