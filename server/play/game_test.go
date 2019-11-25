@@ -64,6 +64,7 @@ func TestHandleAction_Deal(t *testing.T) {
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Equal(t, model.BuildCrib, g.Phase)
+	assert.Equal(t, g.NumActions, 1)
 	// now the game is blocked by both players needing to build the crib
 	require.Len(t, g.BlockingPlayers, 2)
 	assert.Contains(t, g.BlockingPlayers, alice.ID)
@@ -71,6 +72,110 @@ func TestHandleAction_Deal(t *testing.T) {
 	// the players should have 6 card hands
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
+
+	aliceAPI.AssertExpectations(t)
+	bobAPI.AssertExpectations(t)
+}
+
+func TestHandleAction_Crib(t *testing.T) {
+	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+
+	g := model.Game{
+		ID:              model.GameID(5),
+		NumActions:      1,
+		Players:         []model.Player{alice, bob},
+		Deck:            model.NewDeck(),
+		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CribCard, bob.ID: model.CribCard},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.BuildCrib,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: []model.Card{
+				model.NewCardFromString(`1s`),
+				model.NewCardFromString(`2s`),
+				model.NewCardFromString(`3s`),
+				model.NewCardFromString(`4s`),
+				model.NewCardFromString(`5s`),
+				model.NewCardFromString(`6s`),
+			},
+			bob.ID: []model.Card{
+				model.NewCardFromString(`1c`),
+				model.NewCardFromString(`2c`),
+				model.NewCardFromString(`3c`),
+				model.NewCardFromString(`4c`),
+				model.NewCardFromString(`5c`),
+				model.NewCardFromString(`6c`),
+			},
+		},
+		CutCard:     model.Card{},
+		Crib:        make([]model.Card, 0, 4),
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+	}
+
+	action := model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.CribCard,
+		Action: model.BuildCribAction{
+			Cards: []model.Card{
+				model.NewCardFromString(`1c`),
+				model.NewCardFromString(`2c`),
+			},
+		},
+	}
+
+	err := HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Equal(t, model.BuildCrib, g.Phase)
+	assert.Equal(t, g.NumActions, 2)
+	// now the game is blocked by alice needing to submit a crib card
+	require.Len(t, g.BlockingPlayers, 1)
+	assert.Contains(t, g.BlockingPlayers, alice.ID)
+	assert.NotContains(t, g.BlockingPlayers, bob.ID)
+	// alice should have 6 card hands, bob only has 4
+	assert.Len(t, g.Hands[alice.ID], 6)
+	assert.Len(t, g.Hands[bob.ID], 4)
+	assert.Len(t, g.Crib, 2)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.CribCard,
+		Action: model.BuildCribAction{
+			Cards: []model.Card{
+				model.NewCardFromString(`1s`),
+				model.NewCardFromString(`2s`),
+			},
+		},
+	}
+	bobAPI.On(`NotifyBlocking`, model.CutCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Equal(t, model.Cut, g.Phase)
+	assert.Equal(t, g.NumActions, 3)
+	// now the game has moved on to cutting for bob
+	require.Len(t, g.BlockingPlayers, 1)
+	assert.NotContains(t, g.BlockingPlayers, alice.ID)
+	assert.Contains(t, g.BlockingPlayers, bob.ID)
+	// the players hand should all be developed, and the crib too
+	assert.Len(t, g.Hands[alice.ID], 4)
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`3s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`4s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`5s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`6s`))
+	assert.Len(t, g.Hands[bob.ID], 4)
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`3c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`4c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`5c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`6c`))
+	assert.Len(t, g.Crib, 4)
+	assert.Contains(t, g.Crib, model.NewCardFromString(`1s`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`2s`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`1c`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`2c`))
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
