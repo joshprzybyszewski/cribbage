@@ -45,7 +45,7 @@ func TestHandleAction_Deal(t *testing.T) {
 		Phase:           model.Deal,
 		Hands:           make(map[model.PlayerID][]model.Card, 2),
 		CutCard:         model.Card{},
-		Crib:            make([]model.Card, 0, 4),
+		Crib:            make([]model.Card, 4),
 		PeggedCards:     make([]model.PeggedCard, 0, 8),
 	}
 	action := model.PlayerAction{
@@ -72,6 +72,8 @@ func TestHandleAction_Deal(t *testing.T) {
 	// the players should have 6 card hands
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
+	// assert that entering the build crib phase has cleared out the crib
+	assert.Empty(t, g.Crib)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
@@ -109,7 +111,7 @@ func TestHandleAction_Crib(t *testing.T) {
 				model.NewCardFromString(`6c`),
 			},
 		},
-		CutCard:     model.Card{},
+		CutCard:     model.NewCardFromString(`KH`),
 		Crib:        make([]model.Card, 0, 4),
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
@@ -176,6 +178,8 @@ func TestHandleAction_Crib(t *testing.T) {
 	assert.Contains(t, g.Crib, model.NewCardFromString(`2s`))
 	assert.Contains(t, g.Crib, model.NewCardFromString(`1c`))
 	assert.Contains(t, g.Crib, model.NewCardFromString(`2c`))
+	// verify that entering the cutting phase clears out the cut card until it _is_ cut
+	assert.Equal(t, model.Card{}, g.CutCard)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
