@@ -191,11 +191,10 @@ func TestHandleAction_Pegging(t *testing.T) {
 	g := model.Game{
 		ID: model.GameID(5),
 		// TODO
-		NumActions: 1,
-		Players:    []model.Player{alice, bob},
-		Deck:       model.NewDeck(),
-		// TODO
-		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.PegCard, bob.ID: model.PegCard},
+		NumActions:      1,
+		Players:         []model.Player{alice, bob},
+		Deck:            model.NewDeck(),
+		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
 		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
@@ -238,6 +237,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.Hands[bob.ID], 3)
+	assert.NotContains(t, g.Hands[bob.ID], model.NewCardFromString(`7c`))
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`8c`))
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`9c`))
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`10c`))
