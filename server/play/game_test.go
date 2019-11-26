@@ -184,3 +184,61 @@ func TestHandleAction_Crib(t *testing.T) {
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
 }
+
+func TestHandleAction_Pegging(t *testing.T) {
+	alice, bob, aliceAPI, _, abAPIs := setup()
+
+	g := model.Game{
+		ID: model.GameID(5),
+		// TODO
+		NumActions: 1,
+		Players:    []model.Player{alice, bob},
+		Deck:       model.NewDeck(),
+		// TODO
+		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.PegCard, bob.ID: model.PegCard},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Pegging,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: []model.Card{
+				model.NewCardFromString(`7s`),
+				model.NewCardFromString(`8s`),
+				model.NewCardFromString(`9s`),
+				model.NewCardFromString(`10s`),
+			},
+			bob.ID: []model.Card{
+				model.NewCardFromString(`7c`),
+				model.NewCardFromString(`8c`),
+				model.NewCardFromString(`9c`),
+				model.NewCardFromString(`10c`),
+			},
+		},
+		CutCard: model.NewCardFromString(`KH`),
+		Crib: []model.Card{
+			model.NewCardFromString(`7h`),
+			model.NewCardFromString(`8h`),
+			model.NewCardFromString(`8h`),
+			model.NewCardFromString(`10h`),
+		},
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+	}
+
+	action := model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[bob.ID][0],
+			SayGo: false,
+		},
+	}
+	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err := HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.Hands[bob.ID], 3)
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`8c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`9c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`10c`))
+}
