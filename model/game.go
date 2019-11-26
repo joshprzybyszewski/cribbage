@@ -14,7 +14,7 @@ func (g *Game) CurrentPeg() int {
 	for _, pc := range g.PeggedCards {
 		pv := pc.Card.PegValue()
 		cur += pv
-		if pv > MaxPeggingValue {
+		if cur > MaxPeggingValue {
 			cur = pv
 		}
 	}
