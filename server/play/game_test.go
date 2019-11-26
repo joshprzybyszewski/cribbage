@@ -47,6 +47,7 @@ func TestHandleAction_Deal(t *testing.T) {
 		CutCard:         model.Card{},
 		Crib:            make([]model.Card, 4),
 		PeggedCards:     make([]model.PeggedCard, 0, 8),
+		CanResetPeg:     false,
 	}
 	action := model.PlayerAction{
 		GameID:    g.ID,
@@ -114,6 +115,7 @@ func TestHandleAction_Crib(t *testing.T) {
 		CutCard:     model.NewCardFromString(`KH`),
 		Crib:        make([]model.Card, 0, 4),
 		PeggedCards: make([]model.PeggedCard, 0, 8),
+		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{
@@ -223,6 +225,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 			model.NewCardFromString(`ad`),
 		},
 		PeggedCards: make([]model.PeggedCard, 0, 8),
+		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{
@@ -313,24 +316,60 @@ func TestHandleAction_Pegging(t *testing.T) {
 	assert.Len(t, g.PeggedCards, 5)
 	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`10c`), PlayerID: bob.ID})
 	assert.Equal(t, g.CurrentPeg(), 10)
-	return
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[alice.ID][2],
+			SayGo: false,
+		},
+	}
+	// alice and bob are going to get notified because alice scores a pair
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 6)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`10s`), PlayerID: alice.ID})
+	assert.Equal(t, g.CurrentPeg(), 20)
+	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 9)
 
 	action = model.PlayerAction{
 		GameID:    g.ID,
 		ID:        bob.ID,
 		Overcomes: model.PegCard,
 		Action: model.PegAction{
-			Card:  model.Card{},
-			SayGo: true,
+			Card:  g.Hands[bob.ID][3],
+			SayGo: false,
 		},
 	}
 
 	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
-	assert.Len(t, g.PeggedCards, 4)
+	assert.Len(t, g.PeggedCards, 7)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`jc`), PlayerID: bob.ID})
 	assert.Equal(t, g.CurrentPeg(), 30)
 
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[alice.ID][3],
+			SayGo: false,
+		},
+	}
+	// alice tries to peg a jack but she needs to say go
+	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `Cannot peg card with this value`).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 7)
+
+	// alice says go
 	action = model.PlayerAction{
 		GameID:    g.ID,
 		ID:        alice.ID,
@@ -340,66 +379,53 @@ func TestHandleAction_Pegging(t *testing.T) {
 			SayGo: true,
 		},
 	}
-	// alice and bob are going to get notified because alice scored a go
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
-	assert.Len(t, g.PeggedCards, 4)
-	assert.Equal(t, g.CurrentPeg(), 30)
-	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 5)
+	assert.Len(t, g.PeggedCards, 7)
 
+	// bob says go
 	action = model.PlayerAction{
 		GameID:    g.ID,
 		ID:        bob.ID,
 		Overcomes: model.PegCard,
 		Action: model.PegAction{
-			Card:  g.Hands[bob.ID][2],
-			SayGo: false,
+			Card:  model.Card{},
+			SayGo: true,
 		},
 	}
-
+	// bob scores a go
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
-	assert.Len(t, g.PeggedCards, 5)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`9c`), PlayerID: alice.ID})
-	assert.Equal(t, g.CurrentPeg(), 9)
+	assert.Len(t, g.PeggedCards, 7)
+	assert.Equal(t, g.CurrentScores[g.PlayerColors[bob.ID]], 1)
 
-	// action = model.PlayerAction{
-	// 	GameID:    g.ID,
-	// 	ID:        alice.ID,
-	// 	Overcomes: model.PegCard,
-	// 	Action: model.PegAction{
-	// 		Card:  g.Hands[alice.ID][2],
-	// 		SayGo: false,
-	// 	},
-	// }
-	// // alice and bob are going to get notified because alice scores a pair
-	// aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
-	// bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
-	// bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
-	// err = HandleAction(&g, action, abAPIs)
-	// assert.Nil(t, err)
-	// assert.Len(t, g.PeggedCards, 6)
-	// assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`9s`), PlayerID: alice.ID})
-	// assert.Equal(t, g.CurrentPeg(), 18)
+	// make sure we're still at 30 after all of that
+	require.Equal(t, g.CurrentPeg(), 30)
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[alice.ID][3],
+			SayGo: false,
+		},
+	}
+	// alice scores last card
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`last card`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`last card`}).Return(nil).Once()
+	// bob will be up to count his hand
+	bobAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 8)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`js`), PlayerID: alice.ID})
+	assert.Equal(t, g.CurrentPeg(), 10)
+	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 10)
 
-	// action = model.PlayerAction{
-	// 	GameID:    g.ID,
-	// 	ID:        bob.ID,
-	// 	Overcomes: model.PegCard,
-	// 	Action: model.PegAction{
-	// 		Card:  g.Hands[bob.ID][3],
-	// 		SayGo: false,
-	// 	},
-	// }
-
-	// aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
-	// err = HandleAction(&g, action, abAPIs)
-	// assert.Nil(t, err)
-	// assert.Len(t, g.PeggedCards, 7)
-	// assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`10c`), PlayerID: bob.ID})
-	// assert.Equal(t, g.CurrentPeg(), 28)
+	aliceAPI.AssertExpectations(t)
+	bobAPI.AssertExpectations(t)
 }
