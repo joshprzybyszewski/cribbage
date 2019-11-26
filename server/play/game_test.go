@@ -434,3 +434,79 @@ func TestHandleAction_Pegging(t *testing.T) {
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
 }
+
+func TestHandleAction_Counting(t *testing.T) {
+	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+
+	g := model.Game{
+		ID: model.GameID(5),
+		// TODO
+		NumActions:      1,
+		Players:         []model.Player{alice, bob},
+		Deck:            model.NewDeck(),
+		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.CountHand},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Counting,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: []model.Card{
+				model.NewCardFromString(`7s`),
+				model.NewCardFromString(`8s`),
+				model.NewCardFromString(`9s`),
+				model.NewCardFromString(`10s`),
+			},
+			bob.ID: []model.Card{
+				model.NewCardFromString(`7c`),
+				model.NewCardFromString(`8c`),
+				model.NewCardFromString(`9c`),
+				model.NewCardFromString(`10c`),
+			},
+		},
+		CutCard:     model.NewCardFromString(`7h`),
+		Crib:        make([]model.Card, 4),
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+		CanResetPeg: false,
+	}
+
+	action := model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.CountHand,
+		Action: model.CountHandAction{
+			Pts: 18,
+		},
+	}
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err := HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Equal(t, 18, g.CurrentScores[g.PlayerColors[bob.ID]])
+	assert.Contains(t, g.BlockingPlayers, alice.ID)
+	assert.NotContains(t, g.BlockingPlayers, bob.ID)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.CountHand,
+		Action: model.CountHandAction{
+			Pts: 18,
+		},
+	}
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyBlocking`, model.CountCrib, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Equal(t, 18, g.CurrentScores[g.PlayerColors[alice.ID]])
+
+	// counting is done - we've moved onto counting the crib and alice needs to do that
+	assert.Equal(t, model.CribCounting, g.Phase)
+	assert.Contains(t, g.BlockingPlayers, alice.ID)
+	assert.NotContains(t, g.BlockingPlayers, bob.ID)
+
+	aliceAPI.AssertExpectations(t)
+	bobAPI.AssertExpectations(t)
+}
