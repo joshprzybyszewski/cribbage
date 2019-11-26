@@ -426,6 +426,11 @@ func TestHandleAction_Pegging(t *testing.T) {
 	assert.Equal(t, g.CurrentPeg(), 10)
 	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 10)
 
+	// we have moved on to counting hands, and bob is up
+	assert.Equal(t, model.Counting, g.Phase)
+	assert.Contains(t, g.BlockingPlayers, bob.ID)
+	assert.NotContains(t, g.BlockingPlayers, alice.ID)
+
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
 }
