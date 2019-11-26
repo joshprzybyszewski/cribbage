@@ -153,5 +153,5 @@ type Game struct {
 	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty"`
 	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty"`
 	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty"`
-	CanResetPeg     bool                     //TODO tag for serialization?
+	CanResetPeg     bool                     `json:"canResetPeg"`
 }
