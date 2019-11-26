@@ -258,4 +258,57 @@ func TestHandleAction_Pegging(t *testing.T) {
 	assert.Len(t, g.PeggedCards, 2)
 	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`7s`), PlayerID: alice.ID})
 	assert.Equal(t, g.CurrentPeg(), 14)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[bob.ID][1],
+			SayGo: false,
+		},
+	}
+
+	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 3)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`8c`), PlayerID: bob.ID})
+	assert.Equal(t, g.CurrentPeg(), 22)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[alice.ID][1],
+			SayGo: false,
+		},
+	}
+	// alice and bob are going to get notified because alice scores a pair
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 4)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`8s`), PlayerID: alice.ID})
+	assert.Equal(t, g.CurrentPeg(), 30)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[bob.ID][2],
+			SayGo: false,
+		},
+	}
+	// bob was supposed to say go
+	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `Cannot peg card with this value`).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.PeggedCards, 4)
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`8c`), PlayerID: bob.ID})
+	assert.Equal(t, g.CurrentPeg(), 30)
 }
