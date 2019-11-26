@@ -186,7 +186,7 @@ func TestHandleAction_Crib(t *testing.T) {
 }
 
 func TestHandleAction_Pegging(t *testing.T) {
-	alice, bob, aliceAPI, _, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
 
 	g := model.Game{
 		ID: model.GameID(5),
@@ -241,4 +241,25 @@ func TestHandleAction_Pegging(t *testing.T) {
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`8c`))
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`9c`))
 	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`10c`))
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.PegCard,
+		Action: model.PegAction{
+			Card:  g.Hands[alice.ID][0],
+			SayGo: false,
+		},
+	}
+	// alice and bob are going to get notified because alice scores a pair
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`pegging`}).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err = HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.Hands[alice.ID], 3)
+	assert.NotContains(t, g.Hands[alice.ID], model.NewCardFromString(`7s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`8s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`9s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`10s`))
 }
