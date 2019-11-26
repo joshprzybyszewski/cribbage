@@ -53,7 +53,7 @@ func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pA
 			return nil
 		}
 
-		if g.CurrentPeg()+pa.Card.PegValue() > model.MaxPeggingValue {
+		if g.CurrentPeg()+pa.Card.PegValue() > model.MaxPeggingValue && !canResetPeg(g, action) {
 			addPlayerToBlocker(g, pID, model.PegCard, pAPIs, `Cannot peg card with this value`)
 			return nil
 		}
@@ -134,4 +134,9 @@ func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]
 	}
 
 	return nil
+}
+
+func canResetPeg(g *model.Game, action model.PlayerAction) bool {
+	// TODO figure out how to detect that a go happened
+	return g.CurrentPeg() == 31
 }
