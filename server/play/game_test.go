@@ -237,7 +237,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 1)
-	assert.Contains(t, g.PeggedCards, model.NewCardFromString(`7c`))
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`7c`), PlayerID: bob.ID})
 	assert.Equal(t, g.CurrentPeg(), 7)
 
 	action = model.PlayerAction{
@@ -256,6 +256,6 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 2)
-	assert.Contains(t, g.PeggedCards, model.NewCardFromString(`7s`))
+	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`7s`), PlayerID: alice.ID})
 	assert.Equal(t, g.CurrentPeg(), 14)
 }
