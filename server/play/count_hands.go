@@ -59,6 +59,7 @@ func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 		nextID := pIDs[nextScorerIndex]
 		addPlayerToBlocker(g, nextID, model.CountHand, pAPIs, ``)
 	}
+	removePlayerFromBlockers(g, action)
 
 	return nil
 }
