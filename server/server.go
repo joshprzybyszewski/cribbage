@@ -31,12 +31,12 @@ func (cs *cribbageServer) Serve() {
 		create.POST("/game/:player1/:player2", cs.ginPostCreateGame)
 		create.POST("/game/:player1/:player2/:player3", cs.ginPostCreateGame)
 		create.POST("/game/:player1/:player2/:player3/:player4", cs.ginPostCreateGame)
-		create.POST("/player/:name", cs.ginPostCreatePlayer)
+		create.POST("/player/:username/:name", cs.ginPostCreatePlayer)
 		create.POST("/interaction/:playerId/:means/:info", cs.ginPostCreateInteraction)
 	}
 
 	router.GET("/game/:gameID", cs.ginGetGame)
-	router.GET("/player/:playerID", cs.ginGetPlayer)
+	router.GET("/player/:username", cs.ginGetPlayer)
 
 	router.POST("/action/:gameID", cs.ginPostAction)
 
@@ -94,21 +94,19 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 }
 
 func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID, error) {
-	pStr, ok := c.Params.Get(playerParam)
+	username, ok := c.Params.Get(playerParam)
 	if !ok {
 		return model.InvalidPlayerID, nil
 	}
 
-	n, err := strconv.Atoi(pStr)
-	if err != nil {
-		return model.InvalidPlayerID, err
-	}
-	return model.PlayerID(n), nil
+	return model.PlayerID(username), nil
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
+	username := c.Param("username")
+	// TODO validate the username
 	name := c.Param("name")
-	player, err := cs.createPlayer(name)
+	player, err := cs.createPlayer(username, name)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -153,13 +151,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
-	pIDStr := c.Param("playerID")
-	n, err := strconv.Atoi(pIDStr)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid PlayerID: %s", pIDStr)
-		return
-	}
-	pID := model.PlayerID(n)
+	pID := model.PlayerID(c.Param("username"))
 	p, err := cs.getPlayer(pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)

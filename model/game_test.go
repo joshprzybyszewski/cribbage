@@ -8,19 +8,19 @@ import (
 
 func getFourPlayers() (alice, bob, charlie, diane Player) {
 	alice = Player{
-		ID:   PlayerID(1),
+		ID:   PlayerID(`a`),
 		Name: `alice`,
 	}
 	bob = Player{
-		ID:   PlayerID(2),
+		ID:   PlayerID(`b`),
 		Name: `bob`,
 	}
 	charlie = Player{
-		ID:   PlayerID(3),
+		ID:   PlayerID(`c`),
 		Name: `charlie`,
 	}
 	diane = Player{
-		ID:   PlayerID(4),
+		ID:   PlayerID(`d`),
 		Name: `diane`,
 	}
 	return alice, bob, charlie, diane

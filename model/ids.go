@@ -20,18 +20,3 @@ func NewGameID() GameID {
 
 	return gID
 }
-
-func NewPlayerID() PlayerID {
-	pID := InvalidPlayerID
-	for pID == InvalidPlayerID {
-		r, err := uuid.NewRandom()
-		if err != nil {
-			log.Printf("NewPlayerID.NewRandom failed\n")
-			return InvalidPlayerID
-		}
-
-		pID = PlayerID(r.ID())
-	}
-
-	return pID
-}

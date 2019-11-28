@@ -44,9 +44,9 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) 
 	return mg, nil
 }
 
-func (cs *cribbageServer) createPlayer(name string) (model.Player, error) {
+func (cs *cribbageServer) createPlayer(username, name string) (model.Player, error) {
 	mp := model.Player{
-		ID:    model.NewPlayerID(),
+		ID:    model.PlayerID(username),
 		Name:  name,
 		Games: make(map[model.GameID]model.PlayerColor),
 	}

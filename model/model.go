@@ -24,11 +24,11 @@ type PeggedCard struct {
 	PlayerID PlayerID `protobuf:"varint,4,req,name=playerID,proto3" json:"playerID"`
 }
 
-type PlayerID uint32
+type PlayerID string
 type GameID uint32
 
 const (
-	InvalidPlayerID PlayerID = 0
+	InvalidPlayerID PlayerID = ``
 	InvalidGameID   GameID   = 0
 )
 

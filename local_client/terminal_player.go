@@ -41,7 +41,7 @@ func StartTerminalInteraction() error {
 		myGames: make(map[model.GameID]model.Game),
 	}
 	if tc.shouldSignIn() {
-		tc.me.ID = tc.getPlayerID(`What is your player ID?`)
+		tc.me.ID = tc.getPlayerID(`What is your username?`)
 	} else {
 		err := tc.createPlayer()
 		if err != nil {
@@ -51,7 +51,7 @@ func StartTerminalInteraction() error {
 
 	var wg sync.WaitGroup
 
-	port := 8081 + (int(tc.me.ID) % 100)
+	port := 8081 + (len(tc.me.ID) % 100)
 	reqChan := make(chan terminalRequest, 5)
 
 	wg.Add(1)
@@ -218,9 +218,9 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 }
 
 func (tc *terminalClient) createPlayer() error {
-	name := tc.getName()
+	username, name := tc.getName()
 
-	respBytes, err := tc.makeRequest(`POST`, `/create/player/`+name, nil)
+	respBytes, err := tc.makeRequest(`POST`, `/create/player/`+username+`/`+name, nil)
 	if err != nil {
 		return err
 	}
@@ -247,8 +247,14 @@ func (p *terminalClient) shouldSignIn() bool {
 	return should
 }
 
-func (tc *terminalClient) getName() string {
+func (tc *terminalClient) getName() (string, string) {
 	qs := []*survey.Question{
+		{
+			Name:      "username",
+			Prompt:    &survey.Input{Message: "What username do you want?"},
+			Validate:  survey.Required,
+			Transform: survey.Title,
+		},
 		{
 			Name:      "name",
 			Prompt:    &survey.Input{Message: "What is your name?"},
@@ -257,14 +263,14 @@ func (tc *terminalClient) getName() string {
 		},
 	}
 
-	answers := struct{ Name string }{}
+	answers := struct{ Username, Name string }{}
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
-		return `Player`
+		return `username`, `Player`
 	}
 
-	return answers.Name
+	return answers.Username, answers.Name
 }
 
 func (p *terminalClient) shouldCreateGame() bool {
@@ -280,7 +286,7 @@ func (p *terminalClient) shouldCreateGame() bool {
 }
 
 func (tc *terminalClient) createGame() error {
-	opID := tc.getPlayerID("What's your opponent's ID?")
+	opID := tc.getPlayerID("What's your opponent's username?")
 	url := fmt.Sprintf("/create/game/%d/%v", opID, tc.me.ID)
 
 	respBytes, err := tc.makeRequest(`POST`, url, nil)
@@ -303,24 +309,24 @@ func (tc *terminalClient) createGame() error {
 
 func (tc *terminalClient) getPlayerID(msg string) model.PlayerID {
 	qs := []*survey.Question{{
-		Name:      "id",
+		Name:      "username",
 		Prompt:    &survey.Input{Message: msg},
 		Validate:  survey.Required,
 		Transform: survey.Title,
 	}}
 
-	answers := struct{ Id int }{}
+	answers := struct{ Username string }{}
 
 	err := survey.Ask(qs, &answers)
 	if err != nil {
 		return model.InvalidPlayerID
 	}
 
-	return model.PlayerID(answers.Id)
+	return model.PlayerID(answers.Username)
 }
 
 func (tc *terminalClient) updatePlayer() error {
-	url := fmt.Sprintf("/player/%v", tc.me.ID)
+	url := fmt.Sprintf("/player/%s", tc.me.ID)
 
 	respBytes, err := tc.makeRequest(`GET`, url, nil)
 	if err != nil {
