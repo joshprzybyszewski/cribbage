@@ -28,7 +28,7 @@ func minUnpeggedValue(hand []model.Card, pegged []model.PeggedCard) int {
 		peggedMap[pc.Card] = struct{}{}
 	}
 
-	min := model.MaxPeggingValue
+	min := model.MaxPeggingValue + 1
 	for _, hc := range hand {
 		if _, ok := peggedMap[hc]; ok {
 			continue
