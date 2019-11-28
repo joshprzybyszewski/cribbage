@@ -57,10 +57,18 @@ func StartTerminalInteraction() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		filename := fmt.Sprintf("./playerlogs/%d.log", tc.me.ID)
+		dir := `./playerlogs`
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err = os.MkdirAll(dir, 0755)
+			if err != nil {
+				fmt.Printf("failed creating directory \"%s\": %v\n", dir, err)
+				return
+			}
+		}
+		filename := fmt.Sprintf(dir+"/%d.log", tc.me.ID)
 		f, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
-			fmt.Printf("failed opening file: %s", err)
+			fmt.Printf("failed opening file: %v", err)
 			return
 		}
 		defer f.Close()
