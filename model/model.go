@@ -141,7 +141,6 @@ const (
 
 type Game struct {
 	ID              GameID                   `protobuf:"varint,1,name=id,proto3" json:"id"`
-	NumActions      int                      `protobuf:"varint,2,name=numActions,proto3" json:"numActions"`
 	Players         []Player                 `protobuf:"bytes,3,rep,name=players,proto3,proto3" json:"players"`
 	Deck            Deck                     `protobuf:"-" json:"-"`
 	BlockingPlayers map[PlayerID]Blocker     `protobuf:"map<varint, varint>,4,opt,name=blockingPlayers,proto3" json:"blockingPlayers,omitempty"`
@@ -154,4 +153,6 @@ type Game struct {
 	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty"`
 	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty"`
 	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty"`
+
+	actions []PlayerAction
 }
