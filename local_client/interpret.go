@@ -183,8 +183,16 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 	pegChoices := make([]string, 0, len(hand)+1)
 	const sayGoOption = `Say Go!`
 	pegChoices = append(pegChoices, sayGoOption)
+
+	peggedMap := make(map[model.Card]struct{}, len(g.PeggedCards))
+	for _, pc := range g.PeggedCards {
+		peggedMap[pc.Card] = struct{}{}
+	}
 	for _, c := range hand {
-		pegChoices = append(pegChoices, c.String())
+		if _, ok := peggedMap[c]; !ok {
+			// if we haven't pegged this card, add it to the choices
+			pegChoices = append(pegChoices, c.String())
+		}
 	}
 
 	canPeg := func(val interface{}) error {
