@@ -67,12 +67,19 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Get the order of players we need to deal to
 	pIDs := playersToDealTo(g)
 
-	// Define how many cards we need to deal
-	numCardsToDeal := 6 * 2
-	if len(pIDs) == 3 {
-		numCardsToDeal = 5 * 3
-	} else if len(pIDs) == 4 {
-		numCardsToDeal = 5 * 4
+	// Define how many cards we need to deal and the hand size
+	handSize := 6
+	switch len(pIDs) {
+	case 3, 4:
+		handSize = 5
+	}
+	numCardsToDeal := handSize * len(pIDs)
+
+	// empty out the current hands if there are cards there
+	for id, h := range g.Hands {
+		if len(h) > 0 {
+			g.Hands[id] = make([]model.Card, 0, handSize)
+		}
 	}
 
 	for numDealt := 0; numDealt < numCardsToDeal; {
