@@ -527,8 +527,7 @@ func TestHandleAction_CribCounting(t *testing.T) {
 	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
 
 	g := model.Game{
-		ID: model.GameID(5),
-		// TODO
+		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
 		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CountCrib},
@@ -565,6 +564,60 @@ func TestHandleAction_CribCounting(t *testing.T) {
 	assert.Equal(t, 14, g.CurrentScores[g.PlayerColors[alice.ID]])
 	assert.Contains(t, g.BlockingPlayers, bob.ID)
 	assert.NotContains(t, g.BlockingPlayers, alice.ID)
+
+	aliceAPI.AssertExpectations(t)
+	bobAPI.AssertExpectations(t)
+}
+
+func TestHandleAction_DealAgain(t *testing.T) {
+	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+
+	g := model.Game{
+		ID:              model.GameID(5),
+		Players:         []model.Player{alice, bob},
+		Deck:            model.NewDeck(),
+		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.DealCards},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Deal,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: []model.Card{
+				model.NewCardFromString(`7s`),
+				model.NewCardFromString(`8s`),
+				model.NewCardFromString(`9s`),
+				model.NewCardFromString(`10s`),
+			},
+			bob.ID: []model.Card{
+				model.NewCardFromString(`7c`),
+				model.NewCardFromString(`8c`),
+				model.NewCardFromString(`9c`),
+				model.NewCardFromString(`10c`),
+			},
+		},
+		CutCard:     model.NewCardFromString(`7h`),
+		Crib:        make([]model.Card, 4),
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+	}
+
+	action := model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.DealCards,
+		Action: model.DealAction{
+			NumShuffles: 1,
+		},
+	}
+	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool { return strings.HasPrefix(s, `Received Hand `) })).Return(nil).Once()
+	aliceAPI.On(`NotifyBlocking`, model.CribCard, mock.AnythingOfType(`model.Game`), `needs to cut 2 cards`).Return(nil).Once()
+	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool { return strings.HasPrefix(s, `Received Hand `) })).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.CribCard, mock.AnythingOfType(`model.Game`), `needs to cut 2 cards`).Return(nil).Once()
+
+	err := HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Len(t, g.Hands[alice.ID], 6)
+	assert.Len(t, g.Hands[bob.ID], 6)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
