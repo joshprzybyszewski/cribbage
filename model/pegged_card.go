@@ -4,7 +4,7 @@ func NewPeggedCard(pID PlayerID, c Card, numActions int) PeggedCard {
 	return PeggedCard{
 		Card:     c,
 		PlayerID: pID,
-		Action: numActions,
+		Action:   numActions,
 	}
 }
 
@@ -12,6 +12,6 @@ func NewPeggedCardFromString(pID PlayerID, cStr string, numActions int) PeggedCa
 	return PeggedCard{
 		Card:     NewCardFromString(cStr),
 		PlayerID: pID,
-		Action: numActions,
+		Action:   numActions,
 	}
 }

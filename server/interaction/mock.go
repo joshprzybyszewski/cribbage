@@ -10,7 +10,7 @@ import (
 
 var _ Player = (*Mock)(nil)
 
-type Mock struct{
+type Mock struct {
 	mock.Mock
 }
 

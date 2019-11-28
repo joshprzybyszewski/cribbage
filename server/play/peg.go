@@ -117,7 +117,7 @@ func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs m
 	g.PeggedCards = append(g.PeggedCards, model.PeggedCard{
 		Card:     pa.Card,
 		PlayerID: action.ID,
-		Action:   g.NumActions+1,
+		Action:   g.NumActions + 1,
 	})
 
 	return nil
