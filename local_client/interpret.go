@@ -195,23 +195,6 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 		}
 	}
 
-	canPeg := func(val interface{}) error {
-		if oa, ok := val.(survey.OptionAnswer); ok {
-			maxValToPeg := model.MaxPeggingValue - curPeg
-			if oa.Value == sayGoOption {
-				for _, c := range hand {
-					if c.PegValue() <= maxValToPeg {
-						return fmt.Errorf("You cannot say go when you have cards to peg")
-					}
-				}
-			}
-			return nil
-		} else {
-			// otherwise we cannot convert the value into a string and cannot enforce length
-			return fmt.Errorf("bad type! %T", val)
-		}
-	}
-
 	msg := `Pegging at: ` + strconv.Itoa(curPeg) + `. The last cards pegged were: `
 	for i, c := range g.PeggedCards {
 		msg += c.String()
@@ -228,7 +211,7 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 		Options: pegChoices,
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
+	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required))
 
 	c := model.Card{}
 	sayGo := pegCard == sayGoOption

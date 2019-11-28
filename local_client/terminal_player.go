@@ -363,6 +363,7 @@ func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {
 	if err != nil {
 		return model.Game{}, err
 	}
+	tc.myGames[g.ID] = g
 
 	return g, nil
 }
