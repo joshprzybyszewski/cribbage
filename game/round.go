@@ -115,7 +115,7 @@ func (r *Round) AcceptPegCard(c model.Card) (int, error) {
 		return 0, err
 	}
 
-	pc := model.NewPeggedCard(pID, c)
+	pc := model.NewPeggedCard(pID, c, 0)
 
 	r.peggedCards = append(r.peggedCards, pc)
 	r.currentPeg += c.PegValue()

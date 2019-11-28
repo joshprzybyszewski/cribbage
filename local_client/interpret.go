@@ -196,12 +196,6 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 						return fmt.Errorf("You cannot say go when you have cards to peg")
 					}
 				}
-			} else {
-				c := model.NewCardFromString(oa.Value)
-				if c.PegValue() > maxValToPeg {
-					return fmt.Errorf("Card (%v) exceeds max peg value (%d)", c.String(), maxValToPeg)
-				}
-
 			}
 			return nil
 		} else {

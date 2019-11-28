@@ -140,7 +140,7 @@ func TestPointsForCard(t *testing.T) {
 	for _, tc := range testCases {
 		c := make([]model.PeggedCard, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = model.NewPeggedCard(0, model.NewCardFromString(ic))
+			c[i] = model.NewPeggedCard(model.InvalidPlayerID, model.NewCardFromString(ic), 0)
 		}
 		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)
@@ -179,7 +179,7 @@ func TestPointsErrorCase(t *testing.T) {
 	for _, tc := range testCases {
 		c := make([]model.PeggedCard, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = model.NewPeggedCard(0, model.NewCardFromString(ic))
+			c[i] = model.NewPeggedCard(model.InvalidPlayerID, model.NewCardFromString(ic), 0)
 		}
 		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)

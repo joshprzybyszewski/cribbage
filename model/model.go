@@ -20,7 +20,8 @@ const JackValue = 11 // Ace is 1, King is 13
 
 type PeggedCard struct {
 	Card
-	PlayerID PlayerID `protobuf:"varint,3,req,name=playerID,proto3" json:"playerID"`
+	Action int `protobuf:"varint,3,req,name=action,proto3" json:"action"`
+	PlayerID PlayerID `protobuf:"varint,4,req,name=playerID,proto3" json:"playerID"`
 }
 
 type PlayerID uint32
