@@ -104,24 +104,6 @@ func (tc *terminalClient) getBuildCribAction(g model.Game) model.BuildCribAction
 		cardChoices = append(cardChoices, c.String())
 	}
 
-	correctCountValidator := func(val interface{}) error {
-		if slice, ok := val.([]string); ok {
-			if len(slice) != desired {
-				return fmt.Errorf(`Asked for %d cards. (You gave us %d)`, desired, len(slice))
-			}
-		} else if slice, ok := val.([]survey.OptionAnswer); ok {
-			if len(slice) != desired {
-				return fmt.Errorf(`Asked for %d cards. (You gave us %d)`, desired, len(slice))
-			}
-		} else {
-			// otherwise we cannot convert the value into a string and cannot enforce length
-			return fmt.Errorf("bad type! %T", val)
-		}
-
-		// the input is fine
-		return nil
-	}
-
 	msg := `Crib does not go to you. `
 	if tc.me.ID == g.CurrentDealer {
 		msg = `Crib goes to you. `
@@ -134,7 +116,7 @@ func (tc *terminalClient) getBuildCribAction(g model.Game) model.BuildCribAction
 		Message: msg + "Which cards to place in the crib?",
 		Options: cardChoices,
 	}
-	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
+	survey.AskOne(prompt, &cribCards, survey.WithValidator(survey.Required))
 
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! expected %d cards, received %d`, desired, len(cribCards))
@@ -160,7 +142,7 @@ func (tc *terminalClient) getCutDeckAction() model.CutDeckAction {
 		Options: []string{thin, middle, thick},
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &cutChoice)
+	survey.AskOne(prompt, &cutChoice, survey.WithValidator(survey.Required))
 
 	perc := 0.500
 	switch cutChoice {
