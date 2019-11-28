@@ -8,37 +8,64 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func TestHandContains(t *testing.T) {
-	assert.False(t, handContains(nil, model.NewCardFromString(`ah`)))
-	assert.False(t, handContains([]model.Card{}, model.NewCardFromString(`ah`)))
-
-	hand := []model.Card{
-		model.NewCardFromString(`ah`),
-		model.NewCardFromString(`jc`),
-		model.NewCardFromString(`6c`),
-		model.NewCardFromString(`8h`),
+func TestPlayersToDealTo(t *testing.T) {
+	alice := model.Player{
+		ID:   model.PlayerID(1),
+		Name: `alice`,
+	}
+	bob := model.Player{
+		ID:   model.PlayerID(2),
+		Name: `bob`,
+	}
+	charlie := model.Player{
+		ID:   model.PlayerID(3),
+		Name: `charlie`,
 	}
 
-	assert.True(t, handContains(hand, model.NewCardFromString(`ah`)))
-	assert.True(t, handContains(hand, model.NewCardFromString(`jc`)))
-	assert.False(t, handContains(hand, model.NewCardFromString(`ad`)))
-	assert.False(t, handContains(hand, model.NewCardFromString(`7s`)))
-	assert.False(t, handContains(hand, model.NewCardFromString(`jd`)))
-}
-
-func TestHasBeenPegged(t *testing.T) {
-	assert.False(t, hasBeenPegged(nil, model.NewCardFromString(`ah`)))
-	assert.False(t, hasBeenPegged([]model.PeggedCard{}, model.NewCardFromString(`ah`)))
-
-	pegged := []model.PeggedCard{{
-		Card: model.NewCardFromString(`ah`),
+	testCases := []struct{
+		msg string
+		g model.Game
+		expPlayerIDs []model.PlayerID
+	}{{
+		msg: `two person game`,
+		g: model.Game{
+			Players: []model.Player{alice, bob},
+			CurrentDealer: alice.ID,
+		},
+		expPlayerIDs: []model.PlayerID{bob.ID, alice.ID},
 	}, {
-		Card: model.NewCardFromString(`jc`),
-	}}
+		msg: `two person game, other dealer`,
+		g: model.Game{
+			Players: []model.Player{alice, bob},
+			CurrentDealer: bob.ID,
+		},
+		expPlayerIDs: []model.PlayerID{alice.ID, bob.ID},
+	}, {
+		msg: `three person game`,
+		g: model.Game{
+			Players: []model.Player{alice, bob, charlie},
+			CurrentDealer: alice.ID,
+		},
+		expPlayerIDs: []model.PlayerID{bob.ID, charlie.ID, alice.ID},
+		}, {
+			msg: `three person game, second dealer`,
+			g: model.Game{
+				Players: []model.Player{alice, bob, charlie},
+				CurrentDealer: bob.ID,
+			},
+			expPlayerIDs: []model.PlayerID{charlie.ID, alice.ID, bob.ID},
+			}, {
+				msg: `three person game, third dealer`,
+				g: model.Game{
+					Players: []model.Player{alice, bob, charlie},
+					CurrentDealer: charlie.ID,
+				},
+				expPlayerIDs: []model.PlayerID{ alice.ID, bob.ID, charlie.ID},
+			
+		}}
 
-	assert.True(t, hasBeenPegged(pegged, model.NewCardFromString(`ah`)))
-	assert.True(t, hasBeenPegged(pegged, model.NewCardFromString(`jc`)))
-	assert.False(t, hasBeenPegged(pegged, model.NewCardFromString(`ad`)))
-	assert.False(t, hasBeenPegged(pegged, model.NewCardFromString(`7s`)))
-	assert.False(t, hasBeenPegged(pegged, model.NewCardFromString(`jd`)))
+	for _, tc := range testCases {
+		actPlayerIDs := playersToDealTo(&tc.g)
+		assert.Equal(t, tc.expPlayerIDs, actPlayerIDs, tc.msg)
+	}
 }

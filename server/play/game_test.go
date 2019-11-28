@@ -47,7 +47,6 @@ func TestHandleAction_Deal(t *testing.T) {
 		CutCard:         model.Card{},
 		Crib:            make([]model.Card, 4),
 		PeggedCards:     make([]model.PeggedCard, 0, 8),
-		CanResetPeg:     false,
 	}
 	action := model.PlayerAction{
 		GameID:    g.ID,
@@ -115,7 +114,6 @@ func TestHandleAction_Crib(t *testing.T) {
 		CutCard:     model.NewCardFromString(`KH`),
 		Crib:        make([]model.Card, 0, 4),
 		PeggedCards: make([]model.PeggedCard, 0, 8),
-		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{
@@ -225,7 +223,6 @@ func TestHandleAction_Pegging(t *testing.T) {
 			model.NewCardFromString(`ad`),
 		},
 		PeggedCards: make([]model.PeggedCard, 0, 8),
-		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{
@@ -241,7 +238,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 1)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`7c`), PlayerID: bob.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(bob.ID, `7c`, 2))
 	assert.Equal(t, g.CurrentPeg(), 7)
 
 	action = model.PlayerAction{
@@ -260,7 +257,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 2)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`7s`), PlayerID: alice.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(alice.ID, `7s`, 3))
 	assert.Equal(t, g.CurrentPeg(), 14)
 
 	action = model.PlayerAction{
@@ -277,7 +274,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 3)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`9c`), PlayerID: bob.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(bob.ID, `9c`, 4))
 	assert.Equal(t, g.CurrentPeg(), 23)
 
 	action = model.PlayerAction{
@@ -296,8 +293,8 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 4)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`8s`), PlayerID: alice.ID})
-	assert.Equal(t, g.CurrentPeg(), 31)
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(alice.ID, `8s`, 5))
+	assert.Equal(t, g.CurrentPeg(), 0)
 	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 7)
 
 	action = model.PlayerAction{
@@ -314,7 +311,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 5)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`10c`), PlayerID: bob.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(bob.ID, `10c`, 6))
 	assert.Equal(t, g.CurrentPeg(), 10)
 
 	action = model.PlayerAction{
@@ -333,7 +330,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 6)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`10s`), PlayerID: alice.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(alice.ID, `10s`, 7))
 	assert.Equal(t, g.CurrentPeg(), 20)
 	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 9)
 
@@ -351,7 +348,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 7)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`jc`), PlayerID: bob.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(bob.ID, `jc`, 8))
 	assert.Equal(t, g.CurrentPeg(), 30)
 
 	action = model.PlayerAction{
@@ -398,7 +395,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
 	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`the go`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
-	err = HandleAction(&g, action, abAPIs)
+	err = HandleAction(&g, action, abAPIs) //
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 7)
 	assert.Equal(t, g.CurrentScores[g.PlayerColors[bob.ID]], 1)
@@ -422,7 +419,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 8)
-	assert.Contains(t, g.PeggedCards, model.PeggedCard{Card: model.NewCardFromString(`js`), PlayerID: alice.ID})
+	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(alice.ID, `js`, 11))
 	assert.Equal(t, g.CurrentPeg(), 10)
 	assert.Equal(t, g.CurrentScores[g.PlayerColors[alice.ID]], 10)
 
@@ -467,7 +464,6 @@ func TestHandleAction_Counting(t *testing.T) {
 		CutCard:     model.NewCardFromString(`7h`),
 		Crib:        make([]model.Card, 4),
 		PeggedCards: make([]model.PeggedCard, 0, 8),
-		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{
@@ -535,7 +531,6 @@ func TestHandleAction_CribCounting(t *testing.T) {
 			model.NewCardFromString(`10s`),
 		},
 		PeggedCards: make([]model.PeggedCard, 0, 8),
-		CanResetPeg: false,
 	}
 
 	action := model.PlayerAction{

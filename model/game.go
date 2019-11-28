@@ -11,7 +11,7 @@ func (g *Game) IsOver() bool {
 
 func (g *Game) CurrentPeg() int {
 	// keep in mind that this logic will need to change if/when we implement stealing points
-	if g.NumActions >= g.PeggedCards[len(g.PeggedCards)-1].Action + len(g.Players) {
+	if len(g.PeggedCards) == 0 || g.NumActions >= g.PeggedCards[len(g.PeggedCards)-1].Action + len(g.Players) {
 		return 0
 	}
 	cur := 0
@@ -21,6 +21,9 @@ func (g *Game) CurrentPeg() int {
 		if cur > MaxPeggingValue {
 			cur = pv
 		}
+	}
+	if cur == MaxPeggingValue {
+		return 0
 	}
 	return cur
 }
