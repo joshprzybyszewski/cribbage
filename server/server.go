@@ -85,7 +85,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	c.JSON(http.StatusOK, g)
 }
 
-func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID) {
+func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 	username, ok := c.Params.Get(playerParam)
 	if !ok {
 		return model.InvalidPlayerID
