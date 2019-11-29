@@ -12,5 +12,5 @@ before_script:
 
 script:
   - GO111MODULE=on go mod vendor
-  - golangci-lint run       # run a bunch of code checkers/linters in parallel
+  - golangci-lint run -v    # run a bunch of code checkers/linters in parallel
   - go test -v -race ./...  # Run all the tests with the race detector enabled
