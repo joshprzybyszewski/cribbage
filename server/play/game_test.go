@@ -136,7 +136,7 @@ func TestHandleAction_Crib(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.BuildCrib,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`1s`),
 				model.NewCardFromString(`2s`),
 				model.NewCardFromString(`3s`),
@@ -144,7 +144,7 @@ func TestHandleAction_Crib(t *testing.T) {
 				model.NewCardFromString(`5s`),
 				model.NewCardFromString(`6s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`1c`),
 				model.NewCardFromString(`2c`),
 				model.NewCardFromString(`3c`),
@@ -243,13 +243,13 @@ func TestHandleAction_Pegging(t *testing.T) {
 		Phase:           model.Pegging,
 		// cards are chosen so we can test a 31 and a go
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`10s`),
 				model.NewCardFromString(`js`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`9c`),
 				model.NewCardFromString(`10c`),
@@ -507,13 +507,13 @@ func TestHandleAction_Counting(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.Counting,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`9s`),
 				model.NewCardFromString(`10s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`8c`),
 				model.NewCardFromString(`9c`),
@@ -626,13 +626,13 @@ func TestHandleAction_DealAgain(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.Deal,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`9s`),
 				model.NewCardFromString(`10s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`8c`),
 				model.NewCardFromString(`9c`),
