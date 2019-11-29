@@ -43,7 +43,7 @@ func (cs *cribbageServer) Serve() {
 
 	err := router.Run() // listen and serve on 0.0.0.0:8080
 	if err != nil {
-		log.Errorf("router.Run errored: %+v\n", err)
+		log.Printf("router.Run errored: %+v\n", err)
 	}
 }
 
