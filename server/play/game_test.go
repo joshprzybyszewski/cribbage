@@ -659,8 +659,8 @@ func TestHandleAction_DealAgain(t *testing.T) {
 			Pts: 14,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♦, 8♦, 9♦, 10♦)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♦, 8♦, 9♦, 10♦)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7D, 8D, 9D, 10D)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7D, 8D, 9D, 10D)`}).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 	require.Nil(t, err)
