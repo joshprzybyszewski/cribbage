@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 
 	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 var (

@@ -2,12 +2,12 @@ package game
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
 
 	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 var _ PlayerInteraction = (*terminalInteraction)(nil)
