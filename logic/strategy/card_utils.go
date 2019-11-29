@@ -36,7 +36,7 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func chooseFrom(desired int, hand []model.Card) [][]model.Card {
+func chooseFrom(desired int, hand []model.Card) [][]model.Card { //nolint:gocyclo
 	if desired > len(hand) || desired > 4 || desired <= 0 {
 		return nil
 	}
