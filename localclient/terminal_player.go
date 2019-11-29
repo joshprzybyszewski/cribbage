@@ -3,6 +3,7 @@ package localclient
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,6 +20,10 @@ import (
 
 const (
 	serverDomain = `http://localhost:8080`
+)
+
+var (
+	errInvalidGameID error = errors.New(`invalid game id`)
 )
 
 type terminalClient struct {
@@ -63,6 +68,17 @@ func StartTerminalInteraction() error {
 	port := 8081 + (len(tc.me.ID) % 100)
 	reqChan := make(chan terminalRequest, 5)
 
+	tc.startClientServer(&wg, reqChan, port)
+	tc.tellAboutInteraction(&wg, port)
+	tc.processUserInput(&wg, reqChan)
+
+	// Block until forever...?
+	wg.Wait()
+
+	return nil
+}
+
+func (tc *terminalClient) startClientServer(wg *sync.WaitGroup, reqChan chan terminalRequest, port int) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -94,7 +110,9 @@ func StartTerminalInteraction() error {
 		err = router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
 		fmt.Printf("router.Run error: %+v\n", err)
 	}()
+}
 
+func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -105,7 +123,9 @@ func StartTerminalInteraction() error {
 			fmt.Printf("Error telling server about interaction: %+v\n", err)
 		}
 	}()
+}
 
+func (tc *terminalClient) processUserInput(wg *sync.WaitGroup, reqChan chan terminalRequest) {
 	wg.Add(1)
 	go func() {
 		if tc.shouldCreateGame() {
@@ -126,40 +146,20 @@ func StartTerminalInteraction() error {
 			req:  message,
 		}
 		for req := range reqChan {
-			fmt.Printf("Message: \"%s\"\n", req.msg)
-			gID := req.gameID
-			if req.gameID == model.InvalidGameID {
-				gID = req.game.ID
-			}
-			if gID == model.InvalidGameID {
-				continue
-			}
-			switch req.req {
-			case blocking:
-				err := tc.requestAndSendAction(gID)
-				if err != nil {
-					reqChan <- terminalRequest{
-						gameID: gID,
-						msg:    `Problem doing action. Try again?`,
-						req:    message,
-					}
+			err := tc.processRequest(req)
+			if err != nil && err != errInvalidGameID {
+				reqChan <- terminalRequest{
+					gameID: req.gameID,
+					game:   req.game,
+					msg:    fmt.Sprintf(`Problem doing action (%s). Try again?`, err.Error()),
+					req:    req.req,
 				}
-			case message:
-				fmt.Println(req.msg)
-			case scoreUpdate:
-				fmt.Println(req.msg)
-				tc.printCurrentScore()
-			default:
-				fmt.Printf("Developer error: req needs a type %+v\n", req)
+
 			}
 		}
 	}()
-
-	// Block until forever...?
-	wg.Wait()
-
-	return nil
 }
+
 func handleBlocking(reqChan chan terminalRequest) func(*gin.Context) {
 	return func(c *gin.Context) {
 		gID, msg, err := getGameIDAndBody(c, `We heard you're blocking`)
@@ -412,4 +412,31 @@ func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {
 	tc.myGames[g.ID] = g
 
 	return g, nil
+}
+
+func (tc *terminalClient) processRequest(req terminalRequest) error {
+	gID := req.gameID
+	if req.gameID == model.InvalidGameID {
+		gID = req.game.ID
+	}
+	if gID == model.InvalidGameID {
+		fmt.Printf("request does not have valid game ID: %+v\n", req)
+		return errInvalidGameID
+	}
+	switch req.req {
+	case blocking:
+		fmt.Printf("Message: \"%s\"\n", req.msg)
+		err := tc.requestAndSendAction(gID)
+		if err != nil {
+			return err
+		}
+	case message:
+		fmt.Println(req.msg)
+	case scoreUpdate:
+		fmt.Println(req.msg)
+		tc.printCurrentScore()
+	default:
+		fmt.Printf("Developer error: req needs a type %+v\n", req)
+	}
+	return nil
 }
