@@ -46,15 +46,16 @@ func getCardValue(card string) (int, error) {
 }
 
 func getSuit(card string) (Suit, error) {
-	suitStr := card[len(card)-1:]
-	switch suitStr {
-	case `S`, `s`, `♤`, `♠︎`:
+	rs := []rune(card)
+	suitStr := rs[len(rs)-1]
+	switch string(suitStr) {
+	case `S`, `s`:
 		return Spades, nil
-	case `C`, `c`, `♧`, `♣︎`:
+	case `C`, `c`:
 		return Clubs, nil
-	case `D`, `d`, `♢`, `♦`:
+	case `D`, `d`:
 		return Diamonds, nil
-	case `H`, `h`, `♡`, `♥︎`:
+	case `H`, `h`:
 		return Hearts, nil
 	default:
 		return 0, errors.New(`bad input card: ` + card)
@@ -94,13 +95,13 @@ func (c Card) String() string {
 
 	switch c.Suit {
 	case Spades:
-		val += `♠︎`
+		val += `S`
 	case Clubs:
-		val += `♣︎`
+		val += `C`
 	case Diamonds:
-		val += `♦`
+		val += `D`
 	case Hearts:
-		val += `♥︎`
+		val += `H`
 	}
 
 	return val

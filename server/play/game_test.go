@@ -533,8 +533,8 @@ func TestHandleAction_Counting(t *testing.T) {
 			Pts: 18,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -550,8 +550,8 @@ func TestHandleAction_Counting(t *testing.T) {
 			Pts: 18,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CountCrib, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -598,8 +598,8 @@ func TestHandleAction_CribCounting(t *testing.T) {
 			Pts: 14,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 
