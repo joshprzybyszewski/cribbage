@@ -9,6 +9,8 @@ func Setup() error {
 	cs := cribbageServer{
 		db: getDB(),
 	}
+	// TODO is this where we should seed the DB with NPCs if they aren't
+	// there already?
 
 	cs.Serve()
 
