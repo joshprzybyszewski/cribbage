@@ -50,12 +50,10 @@ func (*cribCountingHandler) HandleAction(g *model.Game, action model.PlayerActio
 	removePlayerFromBlockers(g, action)
 
 	// Move forward to dealing
-	g.Phase = model.Deal
 	pIDs := playersToDealTo(g)
 	for i, id := range pIDs {
 		if id == pID {
 			g.CurrentDealer = pIDs[(i+1)%len(pIDs)]
-			addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs, ``)
 			break
 		}
 	}

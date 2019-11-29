@@ -75,13 +75,6 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 	}
 	numCardsToDeal := handSize * len(pIDs)
 
-	// empty out the current hands if there are cards there
-	for id, h := range g.Hands {
-		if len(h) > 0 {
-			g.Hands[id] = make([]model.Card, 0, handSize)
-		}
-	}
-
 	for numDealt := 0; numDealt < numCardsToDeal; {
 		for _, pID := range pIDs {
 			c := g.Deck.Deal()

@@ -572,16 +572,18 @@ func TestHandleAction_CribCounting(t *testing.T) {
 func TestHandleAction_DealAgain(t *testing.T) {
 	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
 
+	// Start handlers get called in the *Ready phases, so start from crib
+	// counting to make sure we pass through the DealReady phase
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
 		Deck:            model.NewDeck(),
-		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.DealCards},
+		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CountCrib},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
 		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
-		Phase:           model.Deal,
+		Phase:           model.CribCounting,
 		Hands: map[model.PlayerID][]model.Card{
 			alice.ID: []model.Card{
 				model.NewCardFromString(`7s`),
@@ -596,14 +598,33 @@ func TestHandleAction_DealAgain(t *testing.T) {
 				model.NewCardFromString(`10c`),
 			},
 		},
-		CutCard:     model.NewCardFromString(`7h`),
-		Crib:        make([]model.Card, 4),
+		CutCard: model.NewCardFromString(`7h`),
+		Crib: []model.Card{
+			model.NewCardFromString(`7d`),
+			model.NewCardFromString(`8d`),
+			model.NewCardFromString(`9d`),
+			model.NewCardFromString(`10d`),
+		},
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
 
 	action := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        alice.ID,
+		Overcomes: model.CountCrib,
+		Action: model.CountCribAction{
+			Pts: 14,
+		},
+	}
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♦, 8♦, 9♦, 10♦)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♦, 8♦, 9♦, 10♦)`}).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
+	err := HandleAction(&g, action, abAPIs)
+	require.Nil(t, err)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
 		Overcomes: model.DealCards,
 		Action: model.DealAction{
 			NumShuffles: 1,
@@ -614,7 +635,7 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.MatchedBy(func(s string) bool { return strings.HasPrefix(s, `Received Hand `) })).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.CribCard, mock.AnythingOfType(`model.Game`), `needs to cut 2 cards`).Return(nil).Once()
 
-	err := HandleAction(&g, action, abAPIs)
+	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
