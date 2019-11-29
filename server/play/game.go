@@ -7,6 +7,12 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
+var (
+	ErrActionNotForGame error = errors.New(`action not for game`)
+	ErrPlayerNotInGame  error = errors.New(`player is not in this game`)
+	ErrGameAlreadyOver  error = errors.New(`game is already over`)
+)
+
 func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Player) (model.Game, error) {
 	playersCopy := make([]model.Player, len(players))
 	colorsByID := make(map[model.PlayerID]model.PlayerColor, len(players))
@@ -72,9 +78,26 @@ var (
 	}
 )
 
-func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if g.ID != action.GameID {
-		return errors.New(`action not for this game`)
+		return ErrActionNotForGame
+	}
+	playerIsInGame := false
+	for i := range g.Players {
+		if g.Players[i].ID == action.ID {
+			playerIsInGame = true
+			break
+		}
+	}
+	if !playerIsInGame {
+		return ErrPlayerNotInGame
+	}
+	if g.IsOver() {
+		return ErrGameAlreadyOver
 	}
 
 	switch p := g.Phase; p {

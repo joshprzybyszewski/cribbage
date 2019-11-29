@@ -57,32 +57,6 @@ func TestNewCardFromString(t *testing.T) {
 			Suit:  Diamonds,
 			Value: 13,
 		},
-	}}
-
-	for _, tc := range testCases {
-		assert.Equal(t, tc.expCard, NewCardFromString(tc.input), tc.desc)
-	}
-}
-
-func TestNewCardFromStringWithWeirdInput(t *testing.T) {
-	testCases := []struct {
-		desc    string
-		input   string
-		expCard Card
-	}{{
-		desc:  `ace of hearts`,
-		input: `A♡`,
-		expCard: Card{
-			Suit:  Hearts,
-			Value: 1,
-		},
-	}, {
-		desc:  `two of diamonds`,
-		input: `2♢`,
-		expCard: Card{
-			Suit:  Diamonds,
-			Value: 2,
-		},
 	}, {
 		desc:  `10 of spades`,
 		input: `10s`,
@@ -97,24 +71,33 @@ func TestNewCardFromStringWithWeirdInput(t *testing.T) {
 			Suit:  Clubs,
 			Value: 11,
 		},
-	}, {
-		desc:  `Queen of Hearts`,
-		input: `12♥︎`,
-		expCard: Card{
-			Suit:  Hearts,
-			Value: 12,
-		},
-	}, {
-		desc:  `King of Diamonds`,
-		input: `13♦`,
-		expCard: Card{
-			Suit:  Diamonds,
-			Value: 13,
-		},
 	}}
 
 	for _, tc := range testCases {
 		assert.Equal(t, tc.expCard, NewCardFromString(tc.input), tc.desc)
+	}
+}
+
+func TestNewCardFromStringWithWeirdInput(t *testing.T) {
+	testCases := []struct {
+		desc  string
+		input string
+	}{{
+		desc:  `ace of hearts`,
+		input: `A♡`,
+	}, {
+		desc:  `two of diamonds`,
+		input: `2♢`,
+	}, {
+		desc:  `Queen of Hearts`,
+		input: `12♥︎`,
+	}, {
+		desc:  `King of Diamonds`,
+		input: `13♦`,
+	}}
+
+	for _, tc := range testCases {
+		assert.Equal(t, Card{}, NewCardFromString(tc.input), tc.desc)
 	}
 }
 
@@ -125,11 +108,11 @@ func TestPegValue(t *testing.T) {
 		expValue int
 	}{{
 		desc:     `ace of hearts`,
-		input:    `A♡`,
+		input:    `AH`,
 		expValue: 1,
 	}, {
 		desc:     `two of diamonds`,
-		input:    `2♢`,
+		input:    `2D`,
 		expValue: 2,
 	}, {
 		desc:     `10 of spades`,
@@ -141,11 +124,11 @@ func TestPegValue(t *testing.T) {
 		expValue: 10,
 	}, {
 		desc:     `Queen of Hearts`,
-		input:    `12♥︎`,
+		input:    `12♥h`,
 		expValue: 10,
 	}, {
 		desc:     `King of Diamonds`,
-		input:    `13♦`,
+		input:    `13d`,
 		expValue: 10,
 	}}
 

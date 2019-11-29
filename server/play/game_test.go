@@ -14,11 +14,11 @@ import (
 
 func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.PlayerID]interaction.Player) {
 	alice := model.Player{
-		ID:   model.PlayerID(1),
+		ID:   model.PlayerID(`alice`),
 		Name: `alice`,
 	}
 	bob := model.Player{
-		ID:   model.PlayerID(2),
+		ID:   model.PlayerID(`bob`),
 		Name: `bob`,
 	}
 	aAPI := &interaction.Mock{}
@@ -28,6 +28,49 @@ func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.Playe
 		bob.ID:   bAPI,
 	}
 	return alice, bob, aAPI, bAPI, abAPIs
+}
+
+func TestHandleAction_InvalidINputs(t *testing.T) {
+	alice, bob, _, _, abAPIs /*aliceAPI, bobAPI, abAPIs*/ := setup()
+
+	g := model.Game{
+		ID:              model.GameID(5),
+		Players:         []model.Player{alice, bob},
+		Deck:            model.NewDeck(),
+		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.DealCards},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Deal,
+		Hands:           make(map[model.PlayerID][]model.Card, 2),
+		CutCard:         model.Card{},
+		Crib:            make([]model.Card, 4),
+		PeggedCards:     make([]model.PeggedCard, 0, 8),
+	}
+	action := model.PlayerAction{
+		GameID:    model.GameID(8),
+		ID:        alice.ID,
+		Overcomes: model.DealCards,
+		Action: model.DealAction{
+			NumShuffles: 50,
+		},
+	}
+
+	err := HandleAction(&g, action, abAPIs)
+	assert.Equal(t, ErrActionNotForGame, err)
+
+	action.GameID = g.ID
+	action.ID = model.PlayerID(`dne`)
+
+	err = HandleAction(&g, action, abAPIs)
+	assert.Equal(t, ErrPlayerNotInGame, err)
+
+	action.ID = alice.ID
+	g.CurrentScores[model.Blue] = 121
+
+	err = HandleAction(&g, action, abAPIs)
+	assert.Equal(t, ErrGameAlreadyOver, err)
 }
 
 func TestHandleAction_Deal(t *testing.T) {
@@ -93,7 +136,7 @@ func TestHandleAction_Crib(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.BuildCrib,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`1s`),
 				model.NewCardFromString(`2s`),
 				model.NewCardFromString(`3s`),
@@ -101,7 +144,7 @@ func TestHandleAction_Crib(t *testing.T) {
 				model.NewCardFromString(`5s`),
 				model.NewCardFromString(`6s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`1c`),
 				model.NewCardFromString(`2c`),
 				model.NewCardFromString(`3c`),
@@ -200,13 +243,13 @@ func TestHandleAction_Pegging(t *testing.T) {
 		Phase:           model.Pegging,
 		// cards are chosen so we can test a 31 and a go
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`10s`),
 				model.NewCardFromString(`js`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`9c`),
 				model.NewCardFromString(`10c`),
@@ -464,13 +507,13 @@ func TestHandleAction_Counting(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.Counting,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`9s`),
 				model.NewCardFromString(`10s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`8c`),
 				model.NewCardFromString(`9c`),
@@ -490,8 +533,8 @@ func TestHandleAction_Counting(t *testing.T) {
 			Pts: 18,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♣︎, 8♣︎, 9♣︎, 10♣︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -507,8 +550,8 @@ func TestHandleAction_Counting(t *testing.T) {
 			Pts: 18,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CountCrib, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -555,8 +598,8 @@ func TestHandleAction_CribCounting(t *testing.T) {
 			Pts: 14,
 		},
 	}
-	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
-	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7♥︎: 7♠︎, 8♠︎, 9♠︎, 10♠︎)`}).Return(nil).Once()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 
@@ -585,13 +628,13 @@ func TestHandleAction_DealAgain(t *testing.T) {
 		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
 		Phase:           model.CribCounting,
 		Hands: map[model.PlayerID][]model.Card{
-			alice.ID: []model.Card{
+			alice.ID: {
 				model.NewCardFromString(`7s`),
 				model.NewCardFromString(`8s`),
 				model.NewCardFromString(`9s`),
 				model.NewCardFromString(`10s`),
 			},
-			bob.ID: []model.Card{
+			bob.ID: {
 				model.NewCardFromString(`7c`),
 				model.NewCardFromString(`8c`),
 				model.NewCardFromString(`9c`),

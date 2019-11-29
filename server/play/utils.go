@@ -41,7 +41,14 @@ func isWaitingForPlayer(g *model.Game, action model.PlayerAction) error {
 	return nil
 }
 
-func addPlayerToBlocker(g *model.Game, pID model.PlayerID, reason model.Blocker, pAPIs map[model.PlayerID]interaction.Player, msg string) {
+func addPlayerToBlocker(
+	g *model.Game,
+	pID model.PlayerID,
+	reason model.Blocker,
+	pAPIs map[model.PlayerID]interaction.Player,
+	msg string,
+) {
+
 	if br, ok := g.BlockingPlayers[pID]; ok && br != reason {
 		log.Printf("Same player (%s) blocking for new reason (%v vs. %v)", pID, br, reason)
 	}
@@ -65,7 +72,14 @@ func roundCutter(g *model.Game) model.PlayerID {
 	return pIDs[len(pIDs)-2]
 }
 
-func addPoints(g *model.Game, pID model.PlayerID, pts int, pAPIs map[model.PlayerID]interaction.Player, msgs ...string) {
+func addPoints(
+	g *model.Game,
+	pID model.PlayerID,
+	pts int,
+	pAPIs map[model.PlayerID]interaction.Player,
+	msgs ...string,
+) {
+
 	if pts == 0 {
 		return
 	} else if pts < 0 {

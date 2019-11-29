@@ -14,7 +14,7 @@ func PegToThirtyOne(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) 
 	return pegToTarget(hand, prevPegs, curPeg, 31)
 }
 
-func pegToTarget(hand []model.Card, prevPegs []model.PeggedCard, curPeg, target int) (_ model.Card, sayGo bool) {
+func pegToTarget(hand []model.Card, _ []model.PeggedCard, curPeg, target int) (_ model.Card, sayGo bool) {
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}

@@ -37,10 +37,13 @@ func PlayOneStep(g *Game) error {
 		err = peg(g)
 		g.round.CurrentStage = model.Counting
 	case model.Counting:
-		err = countHands(g)
+		countHands(g)
 		g.round.CurrentStage = model.CribCounting
 	case model.CribCounting:
-		countCrib(g)
+		err = countCrib(g)
+		if err != nil {
+			return err
+		}
 		g.round.CurrentStage = model.DealingReady
 		err = g.NextRound()
 	}
@@ -83,7 +86,10 @@ func deal(g *Game) error {
 			if err != nil {
 				return err
 			}
-			p.AcceptCard(c)
+			err = p.AcceptCard(c)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -93,7 +99,10 @@ func deal(g *Game) error {
 		if err != nil {
 			return err
 		}
-		g.round.AcceptCribCards(c)
+		err = g.round.AcceptCribCards(c)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -180,17 +189,15 @@ func peg(g *Game) error {
 	return nil
 }
 
-func countHands(g *Game) error {
+func countHands(g *Game) {
 	ps := g.PlayersToDealTo()
 	for _, p := range ps {
 		msg, s := p.HandScore(g.LeadCard())
 		g.AddPoints(p.Color(), s, msg)
 		if g.IsOver() {
-			return nil
+			return
 		}
 	}
-
-	return nil
 }
 
 func countCrib(g *Game) error {

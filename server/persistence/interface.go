@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
@@ -16,3 +18,7 @@ type DB interface {
 	GetInteraction(id model.PlayerID) (interaction.Player, error)
 	SaveInteraction(i interaction.Player) error
 }
+
+var (
+	ErrPlayerAlreadyExists error = errors.New(`username already exists`)
+)

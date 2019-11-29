@@ -2,9 +2,9 @@ package game
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 var _ PlayerInteraction = (*dumbNPCInteraction)(nil)

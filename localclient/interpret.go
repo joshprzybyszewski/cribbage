@@ -1,16 +1,16 @@
-package local_client
+package localclient
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 
 	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 var (
@@ -76,7 +76,7 @@ func (tc *terminalClient) getPlayerAction(g model.Game) (model.PlayerAction, err
 	}, nil
 }
 
-func (p *terminalClient) getDealAction() model.DealAction {
+func (tc *terminalClient) getDealAction() model.DealAction {
 	qs := []*survey.Question{{
 		Name:      "numShuffles",
 		Prompt:    &survey.Input{Message: `How many times to shuffle?`},
@@ -116,7 +116,11 @@ func (tc *terminalClient) getBuildCribAction(g model.Game) model.BuildCribAction
 		Message: msg + "Which cards to place in the crib?",
 		Options: cardChoices,
 	}
-	survey.AskOne(prompt, &cribCards, survey.WithValidator(survey.Required))
+	err := survey.AskOne(prompt, &cribCards, survey.WithValidator(survey.Required))
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return model.BuildCribAction{}
+	}
 
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! expected %d cards, received %d`, desired, len(cribCards))
@@ -142,7 +146,11 @@ func (tc *terminalClient) getCutDeckAction() model.CutDeckAction {
 		Options: []string{thin, middle, thick},
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &cutChoice, survey.WithValidator(survey.Required))
+	err := survey.AskOne(prompt, &cutChoice, survey.WithValidator(survey.Required))
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return model.CutDeckAction{}
+	}
 
 	perc := 0.500
 	switch cutChoice {
@@ -193,7 +201,11 @@ func (tc *terminalClient) getPegAction(g model.Game) model.PegAction {
 		Options: pegChoices,
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required))
+	err := survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required))
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return model.PegAction{}
+	}
 
 	c := model.Card{}
 	sayGo := pegCard == sayGoOption

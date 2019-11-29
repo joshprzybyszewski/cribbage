@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -40,40 +41,35 @@ func (cs *cribbageServer) Serve() {
 
 	router.POST("/action/:gameID", cs.ginPostAction)
 
-	router.Run() // listen and serve on 0.0.0.0:8080
+	err := router.Run() // listen and serve on 0.0.0.0:8080
+	if err != nil {
+		log.Printf("router.Run errored: %+v\n", err)
+	}
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	var pIDs []model.PlayerID
 
-	pID, err := getPlayerID(c, `player1`)
-	if err != nil || pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, "Needs player1: %s", err)
+	pID := getPlayerID(c, `player1`)
+	if pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, "Needs player1")
 		return
 	}
 	pIDs = append(pIDs, pID)
 
-	pID, err = getPlayerID(c, `player2`)
-	if err != nil || pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, "Needs player2: %s", err)
+	pID = getPlayerID(c, `player2`)
+	if pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, "Needs player2")
 		return
 	}
 	pIDs = append(pIDs, pID)
 
-	pID, err = getPlayerID(c, `player3`)
-	if err != nil {
-		c.String(http.StatusBadRequest, "invalid player3: %s", err)
-		return
-	}
+	pID = getPlayerID(c, `player3`)
 	if pID != model.InvalidPlayerID {
 		pIDs = append(pIDs, pID)
 	}
 
-	pID, err = getPlayerID(c, `player4`)
-	if err != nil {
-		c.String(http.StatusBadRequest, "invalid player4: %s", err)
-		return
-	}
+	pID = getPlayerID(c, `player4`)
 	if pID != model.InvalidPlayerID {
 		pIDs = append(pIDs, pID)
 	}
@@ -93,36 +89,42 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	c.JSON(http.StatusOK, g)
 }
 
-func getPlayerID(c *gin.Context, playerParam string) (model.PlayerID, error) {
+func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 	username, ok := c.Params.Get(playerParam)
 	if !ok {
-		return model.InvalidPlayerID, nil
+		return model.InvalidPlayerID
 	}
 
-	return model.PlayerID(username), nil
+	return model.PlayerID(username)
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	username := c.Param("username")
-	// TODO validate the username
 	name := c.Param("name")
 	player, err := cs.createPlayer(username, name)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		switch err {
+		case persistence.ErrPlayerAlreadyExists:
+			c.String(http.StatusBadRequest, "Username already exists")
+		case errInvalidUsername:
+			c.String(http.StatusBadRequest, "Username must be alphanumeric")
+		default:
+			c.String(http.StatusInternalServerError, "Error: %s", err)
+		}
 		return
 	}
 	c.JSON(http.StatusOK, player)
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
-	pID, err := getPlayerID(c, `playerId`)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Needs playerId: %s", err)
+	pID := getPlayerID(c, `playerId`)
+	if pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, "Needs playerId")
 		return
 	}
 	means := c.Param(`means`)
 	info := c.Param(`info`)
-	err = cs.setInteraction(pID, model.InteractionMeans{
+	err := cs.setInteraction(pID, model.InteractionMeans{
 		Means: means,
 		Info:  info,
 	})
@@ -193,6 +195,19 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 		return model.PlayerAction{}, err
 	}
 
+	err = unmarshalActionIntoPlayerAction(&action, raw)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	return action, nil
+}
+
+func unmarshalActionIntoPlayerAction(
+	action *model.PlayerAction,
+	raw json.RawMessage,
+) error {
+
 	blockerActions := map[model.Blocker]func() interface{}{
 		model.DealCards: func() interface{} { return &model.DealAction{} },
 		model.CribCard:  func() interface{} { return &model.BuildCribAction{} },
@@ -204,12 +219,12 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 
 	subActionFn, ok := blockerActions[action.Overcomes]
 	if !ok {
-		return model.PlayerAction{}, errors.New(`unknown action type`)
+		return errors.New(`unknown action type`)
 	}
 	subAction := subActionFn()
 
 	if err := json.Unmarshal(raw, subAction); err != nil {
-		return model.PlayerAction{}, err
+		return err
 	}
 
 	switch t := subAction.(type) {
@@ -227,5 +242,5 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 		action.Action = *t
 	}
 
-	return action, nil
+	return nil
 }

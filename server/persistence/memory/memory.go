@@ -78,7 +78,7 @@ func (m *memory) CreatePlayer(p model.Player) error {
 
 	id := p.ID
 	if _, ok := m.players[id]; ok {
-		return errors.New(`player already exists`)
+		return persistence.ErrPlayerAlreadyExists
 	}
 
 	m.players[id] = p

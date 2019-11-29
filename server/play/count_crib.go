@@ -18,7 +18,12 @@ func (*cribCountingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]intera
 	return nil
 }
 
-func (*cribCountingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func (*cribCountingHandler) HandleAction(
+	g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if err := validateAction(g, action, model.CountCrib); err != nil {
 		return err
 	}

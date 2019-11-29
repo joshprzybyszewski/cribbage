@@ -30,9 +30,7 @@ func NewRoundFromModelGame(mg model.Game) *Round {
 	r.CurrentStage = mg.Phase
 
 	r.cribCards = make([]model.Card, 4)
-	for i, mgcc := range mg.Crib {
-		r.cribCards[i] = mgcc
-	}
+	_ = copy(r.cribCards, mg.Crib)
 
 	currentPeg := 0
 	pc := make([]model.PeggedCard, 0, 4*len(mg.Players))
