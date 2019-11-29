@@ -215,6 +215,7 @@ issues:
         - gocritic
         - gocyclo
         - golint
+        - unconvert
     - path: play/
       linters:
         - gocritic

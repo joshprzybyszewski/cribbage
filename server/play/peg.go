@@ -69,10 +69,7 @@ func (*peggingHandler) HandleAction(g *model.Game,
 	removePlayerFromBlockers(g, action)
 
 	if pa.SayGo {
-		err := doSayGo(g, action, pAPIs)
-		if err != nil {
-			return err
-		}
+		doSayGo(g, action, pAPIs)
 	} else {
 		err := doPeg(g, action, pa, pAPIs)
 		if err != nil {
@@ -110,7 +107,13 @@ func (*peggingHandler) HandleAction(g *model.Game,
 	return nil
 }
 
-func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func doPeg(
+	g *model.Game,
+	action model.PlayerAction,
+	pa model.PegAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	pts, err := pegging.PointsForCard(g.PeggedCards, pa.Card)
 	if err != nil {
 		return err
@@ -127,9 +130,13 @@ func doPeg(g *model.Game, action model.PlayerAction, pa model.PegAction, pAPIs m
 	return nil
 }
 
-func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func doSayGo(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) {
+
 	if len(g.PeggedCards) == 0 {
-		return nil
+		return
 	}
 
 	lastPeggerID := g.PeggedCards[len(g.PeggedCards)-1].PlayerID
@@ -137,6 +144,4 @@ func doSayGo(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]
 		// The go's went all the way around. Take a point
 		addPoints(g, action.ID, 1, pAPIs, `the go`)
 	}
-
-	return nil
 }

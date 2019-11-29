@@ -8,51 +8,57 @@ import (
 )
 
 func NewCardFromString(card string) Card {
-	value := 0
-	var err error
-
-	suitStr := string(card[1:])
-	switch string(card[0]) {
-	case `A`, `a`:
-		value = 1
-	case `J`, `j`:
-		value = 11
-	case `Q`, `q`:
-		value = 12
-	case `K`, `k`:
-		value = 13
-	case `1`:
-		// try parsing 10, 11, 12, or 13
-		value, err = strconv.Atoi(string(card[:2]))
-		if err == nil {
-			suitStr = string(card[2:])
-		} else {
-			value, err = strconv.Atoi(string(card[0]))
-		}
-	default:
-		value, err = strconv.Atoi(string(card[0]))
-	}
-
-	var suit Suit
-	switch suitStr {
-	case `S`, `s`, `♤`, `♠︎`:
-		suit = Spades
-	case `C`, `c`, `♧`, `♣︎`:
-		suit = Clubs
-	case `D`, `d`, `♢`, `♦`:
-		suit = Diamonds
-	case `H`, `h`, `♡`, `♥︎`:
-		suit = Hearts
-	default:
-		err = errors.New(`bad input card: ` + card)
-	}
-
+	value, err := getCardValue(card)
 	if err != nil {
-		log.Printf(`NewCardFromString got an error! %+v`, err)
+		log.Printf(`NewCardFromString invalid value: %s`, err.Error())
+		return Card{}
+	}
+
+	suit, err := getSuit(card)
+	if err != nil {
+		log.Printf(`NewCardFromString invalid suit: %s`, err.Error())
 		return Card{}
 	}
 
 	return NewCard(suit, value)
+}
+
+func getCardValue(card string) (int, error) {
+	switch string(card[0]) {
+	case `A`, `a`:
+		return 1, nil
+	case `J`, `j`:
+		return 11, nil
+	case `Q`, `q`:
+		return 12, nil
+	case `K`, `k`:
+		return 13, nil
+	case `1`:
+		// try parsing 10, 11, 12, or 13
+		value, err := strconv.Atoi(card[:2])
+		if err == nil {
+			return value, nil
+		}
+		return 1, nil
+	default:
+		return strconv.Atoi(string(card[0]))
+	}
+}
+
+func getSuit(card string) (Suit, error) {
+	suitStr := card[len(card)-1:]
+	switch suitStr {
+	case `S`, `s`, `♤`, `♠︎`:
+		return Spades, nil
+	case `C`, `c`, `♧`, `♣︎`:
+		return Clubs, nil
+	case `D`, `d`, `♢`, `♦`:
+		return Diamonds, nil
+	case `H`, `h`, `♡`, `♥︎`:
+		return Hearts, nil
+	default:
+		return 0, errors.New(`bad input card: ` + card)
+	}
 }
 
 func NewCardFromNumber(val int) Card {
