@@ -68,7 +68,7 @@ func NewGameFromModel(mg model.Game) *Game {
 		if p.ID == mg.CurrentDealer {
 			dealerIndex = i
 		}
-		gp[i] = NewPlayerFromModel(p)
+		gp[i] = NewPlayerFromModel(p, mg.ID)
 	}
 
 	sbc := make(map[model.PlayerColor]int, len(mg.CurrentScores))

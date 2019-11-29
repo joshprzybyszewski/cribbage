@@ -36,12 +36,13 @@ type Player interface {
 	ReturnCards() error
 }
 
-func NewPlayerFromModel(mp model.Player) Player {
+func NewPlayerFromModel(mp model.Player, gID model.GameID) Player {
 	var interaction PlayerInteraction // TODO figure this out
+
 	return &player{
 		interaction: interaction,
 		name:        mp.Name,
-		color:       mp.Color,
+		color:       mp.Games[gID],
 		deck:        nil,
 		hand:        make([]model.Card, 0, 6),
 		crib:        make([]model.Card, 0, 4),

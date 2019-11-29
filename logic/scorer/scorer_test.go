@@ -84,7 +84,7 @@ func TestPointsStandardFunThings(t *testing.T) {
 	}, {
 		desc:      `flush`,
 		leadCard:  `3H`,
-		hand:      `8♦,4♦,10♦,6♦`,
+		hand:      `8D,4D,10D,6D`,
 		expPoints: 6,
 	}}
 

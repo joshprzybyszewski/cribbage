@@ -30,9 +30,7 @@ func NewRoundFromModelGame(mg model.Game) *Round {
 	r.CurrentStage = mg.Phase
 
 	r.cribCards = make([]model.Card, 4)
-	for i, mgcc := range mg.Crib {
-		r.cribCards[i] = mgcc
-	}
+	_ = copy(r.cribCards, mg.Crib)
 
 	currentPeg := 0
 	pc := make([]model.PeggedCard, 0, 4*len(mg.Players))
@@ -80,7 +78,7 @@ func newRound(cribCards []model.Card, numPlayers int) *Round {
 }
 
 func (r *Round) NextRound() error {
-	if r.CurrentStage != model.Done {
+	if r.CurrentStage != model.DealingReady {
 		return errors.New(`cannot progress to next round when not done`)
 	}
 
@@ -115,7 +113,7 @@ func (r *Round) AcceptPegCard(c model.Card) (int, error) {
 		return 0, err
 	}
 
-	pc := model.NewPeggedCard(pID, c)
+	pc := model.NewPeggedCard(pID, c, 0)
 
 	r.peggedCards = append(r.peggedCards, pc)
 	r.currentPeg += c.PegValue()

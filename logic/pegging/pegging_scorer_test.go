@@ -113,25 +113,25 @@ func TestPointsForCard(t *testing.T) {
 		expErr:     nil,
 	}, {
 		msg:        `not a run, hits 31`,
-		inputCards: []string{`4♥︎`, `8♥︎`, `7♠︎`, `6♣︎`, `5♥︎`},
+		inputCards: []string{`4H`, `8H`, `7S`, `6C`, `5H`},
 		inputCard:  `AC`,
 		expVal:     2,
 		expErr:     nil,
 	}, {
 		msg:        `looks like a run, but over a 31`,
-		inputCards: []string{`4♠︎`, `J♦`, `K♥︎`, `A♦`, `9♣︎`, `7♣︎`, `8♠︎`},
+		inputCards: []string{`4S`, `JD`, `KH`, `AD`, `9C`, `7C`, `8S`},
 		inputCard:  `9D`,
 		expVal:     0,
 		expErr:     nil,
 	}, {
 		msg:        `looks like a pair, but over a 31`,
-		inputCards: []string{`4♠︎`, `J♦`, `K♥︎`, `A♦`, `9♣︎`, `7♣︎`, `8♠︎`},
+		inputCards: []string{`4S`, `JD`, `KH`, `AD`, `9C`, `7C`, `8S`},
 		inputCard:  `8D`,
 		expVal:     0,
 		expErr:     nil,
 	}, {
 		msg:        `check peg value, not vale`,
-		inputCards: []string{`K♠︎`, `K♦`},
+		inputCards: []string{`KS`, `KD`},
 		inputCard:  `KH`,
 		expVal:     6,
 		expErr:     nil,
@@ -140,7 +140,7 @@ func TestPointsForCard(t *testing.T) {
 	for _, tc := range testCases {
 		c := make([]model.PeggedCard, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = model.NewPeggedCard(0, model.NewCardFromString(ic))
+			c[i] = model.NewPeggedCard(model.InvalidPlayerID, model.NewCardFromString(ic), 0)
 		}
 		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)
@@ -179,7 +179,7 @@ func TestPointsErrorCase(t *testing.T) {
 	for _, tc := range testCases {
 		c := make([]model.PeggedCard, len(tc.inputCards))
 		for i, ic := range tc.inputCards {
-			c[i] = model.NewPeggedCard(0, model.NewCardFromString(ic))
+			c[i] = model.NewPeggedCard(model.InvalidPlayerID, model.NewCardFromString(ic), 0)
 		}
 		next := model.NewCardFromString(tc.inputCard)
 		actVal, actErr := PointsForCard(c, next)

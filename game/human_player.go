@@ -2,12 +2,12 @@ package game
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
 
 	survey "github.com/AlecAivazis/survey/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 var _ PlayerInteraction = (*terminalInteraction)(nil)
@@ -52,7 +52,7 @@ func (p *terminalInteraction) AskToShuffle() bool {
 		Default: true,
 	}
 
-	survey.AskOne(prompt, &cont)
+	_ = survey.AskOne(prompt, &cont)
 	return cont
 }
 
@@ -90,7 +90,7 @@ func (p *terminalInteraction) AskForCribCards(dealerColor model.PlayerColor, des
 		Message: msg + "Which cards to place in the crib?",
 		Options: cardChoices,
 	}
-	survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
+	_ = survey.AskOne(prompt, &cribCards, survey.WithValidator(correctCountValidator))
 
 	if len(cribCards) != desired {
 		fmt.Printf(`bad time! expected %d cards, received %d`, desired, len(cribCards))
@@ -114,7 +114,7 @@ func (p *terminalInteraction) AskForCut() float64 {
 		Options: []string{thin, middle, thick},
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &cutChoice)
+	_ = survey.AskOne(prompt, &cutChoice)
 
 	switch cutChoice {
 	case thin:
@@ -180,7 +180,7 @@ func (p *terminalInteraction) AskToPeg(hand []model.Card, prevPegs []model.Pegge
 		Options: pegChoices,
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
+	_ = survey.AskOne(prompt, &pegCard, survey.WithValidator(survey.Required), survey.WithValidator(canPeg))
 
 	if pegCard == sayGo {
 		return model.Card{}, true

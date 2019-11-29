@@ -17,7 +17,7 @@ func strToCards(s []string) []model.Card {
 func strToPeggedCards(s []string) []model.PeggedCard {
 	c := make([]model.PeggedCard, len(s))
 	for i, str := range s {
-		c[i] = model.NewPeggedCard(0, model.NewCardFromString(str))
+		c[i] = model.NewPeggedCard(model.InvalidPlayerID, model.NewCardFromString(str), 0)
 	}
 	return c
 }

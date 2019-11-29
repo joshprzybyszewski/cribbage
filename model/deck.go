@@ -1,9 +1,7 @@
 package model
 
 import (
-	"crypto/rand"
-	"fmt"
-	"math/big"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 type Deck interface {
@@ -24,22 +22,24 @@ func NewDeck() Deck {
 		cards[i] = NewCardFromNumber(i)
 	}
 
-	return &deck{
+	d := deck{
 		cards:    cards,
 		numDealt: 0,
 	}
+
+	// Start the deck off in a random state by shuffling it a few times
+	n := rand.Intn(10)
+	for i := 0; i < n; i++ {
+		d.Shuffle()
+	}
+
+	return &d
 }
 
 func (d *deck) Deal() Card {
-	lastValidCard := int64(51 - d.numDealt)
+	lastValidCard := 51 - d.numDealt
 	if lastValidCard > 0 {
-		randBigInt, err := rand.Int(rand.Reader, big.NewInt(lastValidCard))
-		if err != nil {
-			// rand.Int should never fail
-			fmt.Printf("Deal got error: %+v\n", err)
-			return Card{}
-		}
-		randomIndex := randBigInt.Int64()
+		randomIndex := rand.Intn(lastValidCard)
 		d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
 	}
 

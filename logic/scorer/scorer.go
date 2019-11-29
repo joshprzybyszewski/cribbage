@@ -102,7 +102,7 @@ func howManyAddUpTo(goal int, ptVals []int) uint {
 }
 
 // Assumes input is sorted and has len 5
-func scoreRunsAndPairs(values []int) (scoreType, int) {
+func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 	max := values[4]
 	min := values[0]
 	diffOf5Cards := max - min
