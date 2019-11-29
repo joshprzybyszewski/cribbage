@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -40,7 +41,10 @@ func (cs *cribbageServer) Serve() {
 
 	router.POST("/action/:gameID", cs.ginPostAction)
 
-	router.Run() // listen and serve on 0.0.0.0:8080
+	err := router.Run() // listen and serve on 0.0.0.0:8080
+	if err != nil {
+		fmt.Printf("router.Run errored: %+v\n", err)
+	}
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {

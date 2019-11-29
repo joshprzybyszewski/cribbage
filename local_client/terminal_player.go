@@ -144,7 +144,8 @@ func StartTerminalInteraction() error {
 			c.String(http.StatusOK, `received`)
 		})
 
-		router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
+		err = router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
+		fmt.Printf("router.Run error: %+v\n", err)
 	}()
 
 	wg.Add(1)
@@ -152,7 +153,10 @@ func StartTerminalInteraction() error {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
 		url := fmt.Sprintf("/create/interaction/%s/localhost/%d", tc.me.ID, port)
-		tc.makeRequest(`POST`, url, nil)
+		_, err := tc.makeRequest(`POST`, url, nil)
+		if err != nil {
+			fmt.Printf("Error telling server about interaction: %+v\n", err)
+		}
 	}()
 
 	wg.Add(1)
@@ -172,23 +176,20 @@ func StartTerminalInteraction() error {
 		reqChan <- terminalRequest{
 			game: tc.myGames[tc.myCurrentGame],
 		}
-		for {
-			select {
-			case req := <-reqChan:
-				fmt.Printf("Message: \"%s\"\n", req.msg)
-				gID := req.gameID
-				if req.gameID == model.InvalidGameID {
-					gID = req.game.ID
-				}
-				if gID == model.InvalidGameID {
-					continue
-				}
-				err := tc.requestAndSendAction(gID)
-				if err != nil {
-					reqChan <- terminalRequest{
-						gameID: gID,
-						msg:    `Problem doing action. Try again?`,
-					}
+		for req := range reqChan {
+			fmt.Printf("Message: \"%s\"\n", req.msg)
+			gID := req.gameID
+			if req.gameID == model.InvalidGameID {
+				gID = req.game.ID
+			}
+			if gID == model.InvalidGameID {
+				continue
+			}
+			err := tc.requestAndSendAction(gID)
+			if err != nil {
+				reqChan <- terminalRequest{
+					gameID: gID,
+					msg:    `Problem doing action. Try again?`,
 				}
 			}
 		}
@@ -246,7 +247,11 @@ func (p *terminalClient) shouldSignIn() bool {
 		Default: true,
 	}
 
-	survey.AskOne(prompt, &should)
+	err := survey.AskOne(prompt, &should)
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return false
+	}
 	return should
 }
 
@@ -284,7 +289,11 @@ func (p *terminalClient) shouldCreateGame() bool {
 		Default: true,
 	}
 
-	survey.AskOne(prompt, &cont)
+	err := survey.AskOne(prompt, &cont)
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return false
+	}
 	return cont
 }
 
@@ -355,15 +364,6 @@ func (tc *terminalClient) updatePlayer() error {
 	}
 
 	return nil
-}
-
-func (tc *terminalClient) getGame(gID model.GameID) (model.Game, error) {
-	g, ok := tc.myGames[gID]
-	if ok {
-		return g, nil
-	}
-
-	return tc.requestGame(gID)
 }
 
 func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {

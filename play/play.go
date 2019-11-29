@@ -40,7 +40,7 @@ func getOpponent(color model.PlayerColor) game.Player {
 		Options: []string{dumb, simple, calculated},
 		Filter:  func(filter string, value string, index int) bool { return true },
 	}
-	survey.AskOne(prompt, &opponentChoice)
+	_ = survey.AskOne(prompt, &opponentChoice)
 
 	switch opponentChoice {
 	case dumb:
