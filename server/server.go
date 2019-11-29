@@ -195,6 +195,19 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 		return model.PlayerAction{}, err
 	}
 
+	err = unmarshalActionIntoPlayerAction(&action, raw)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	return action, nil
+}
+
+func unmarshalActionIntoPlayerAction(
+	action *model.PlayerAction,
+	raw json.RawMessage,
+) error {
+
 	blockerActions := map[model.Blocker]func() interface{}{
 		model.DealCards: func() interface{} { return &model.DealAction{} },
 		model.CribCard:  func() interface{} { return &model.BuildCribAction{} },
@@ -206,12 +219,12 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 
 	subActionFn, ok := blockerActions[action.Overcomes]
 	if !ok {
-		return model.PlayerAction{}, errors.New(`unknown action type`)
+		return errors.New(`unknown action type`)
 	}
 	subAction := subActionFn()
 
 	if err := json.Unmarshal(raw, subAction); err != nil {
-		return model.PlayerAction{}, err
+		return err
 	}
 
 	switch t := subAction.(type) {
@@ -229,5 +242,5 @@ func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
 		action.Action = *t
 	}
 
-	return action, nil
+	return nil
 }
