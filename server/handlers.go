@@ -1,9 +1,16 @@
 package server
 
 import (
+	"errors"
+	"regexp"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/play"
+)
+
+var (
+	errInvalidUsername error = errors.New(`invalid username`)
 )
 
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
@@ -45,6 +52,11 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) 
 }
 
 func (cs *cribbageServer) createPlayer(username, name string) (model.Player, error) {
+	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
+	if !re.MatchString(username) {
+		return model.Player{}, errInvalidUsername
+	}
+
 	mp := model.Player{
 		ID:    model.PlayerID(username),
 		Name:  name,

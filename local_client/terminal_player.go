@@ -151,7 +151,7 @@ func StartTerminalInteraction() error {
 	go func() {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
-		url := fmt.Sprintf("/create/interaction/%d/localhost/%d", tc.me.ID, port)
+		url := fmt.Sprintf("/create/interaction/%s/localhost/%d", tc.me.ID, port)
 		tc.makeRequest(`POST`, url, nil)
 	}()
 
@@ -179,6 +179,9 @@ func StartTerminalInteraction() error {
 				gID := req.gameID
 				if req.gameID == model.InvalidGameID {
 					gID = req.game.ID
+				}
+				if gID == model.InvalidGameID {
+					continue
 				}
 				err := tc.requestAndSendAction(gID)
 				if err != nil {
@@ -287,7 +290,7 @@ func (p *terminalClient) shouldCreateGame() bool {
 
 func (tc *terminalClient) createGame() error {
 	opID := tc.getPlayerID("What's your opponent's username?")
-	url := fmt.Sprintf("/create/game/%d/%v", opID, tc.me.ID)
+	url := fmt.Sprintf("/create/game/%s/%s", opID, tc.me.ID)
 
 	respBytes, err := tc.makeRequest(`POST`, url, nil)
 	if err != nil {
