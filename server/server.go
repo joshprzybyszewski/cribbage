@@ -3,8 +3,8 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -43,7 +43,7 @@ func (cs *cribbageServer) Serve() {
 
 	err := router.Run() // listen and serve on 0.0.0.0:8080
 	if err != nil {
-		fmt.Printf("router.Run errored: %+v\n", err)
+		log.Errorf("router.Run errored: %+v\n", err)
 	}
 }
 
