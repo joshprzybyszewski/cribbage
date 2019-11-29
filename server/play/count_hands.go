@@ -20,7 +20,11 @@ func (*handCountingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]intera
 	return nil
 }
 
-func (*handCountingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func (*handCountingHandler) HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if err := validateAction(g, action, model.CountHand); err != nil {
 		return err
 	}

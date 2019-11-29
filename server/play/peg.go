@@ -24,7 +24,11 @@ func (*peggingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	return nil
 }
 
-func (*peggingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func (*peggingHandler) HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if err := validateAction(g, action, model.PegCard); err != nil {
 		return err
 	}

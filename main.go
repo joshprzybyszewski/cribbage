@@ -50,10 +50,5 @@ func runClient() error {
 }
 
 func playLegacy() error {
-	err := play.PlayGame()
-	if err != nil {
-		panic(err)
-	}
-
-	return nil
+	return play.PlayGame()
 }

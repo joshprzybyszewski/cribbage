@@ -206,6 +206,19 @@ issues:
         - errcheck
         - dupl
         - gosec
+        - lll
+
+    # Don't run some linters on the legacy code (pre-stateless server)
+    - path: game/
+      linters:
+        - lll
+        - gocritic
+        - gocyclo
+        - golint
+    - path: play/
+      linters:
+        - gocritic
+        - golint
 
     # Exclude lll issues for long lines with go:generate
     - linters:

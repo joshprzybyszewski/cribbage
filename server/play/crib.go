@@ -28,7 +28,11 @@ func (*cribBuildingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]intera
 	return nil
 }
 
-func (*cribBuildingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func (*cribBuildingHandler) HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if err := validateAction(g, action, model.CribCard); err != nil {
 		return err
 	}

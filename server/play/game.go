@@ -78,13 +78,17 @@ var (
 	}
 )
 
-func HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if g.ID != action.GameID {
 		return ErrActionNotForGame
 	}
 	playerIsInGame := false
-	for _, p := range g.Players {
-		if p.ID == action.ID {
+	for i := range g.Players {
+		if g.Players[i].ID == action.ID {
 			playerIsInGame = true
 			break
 		}

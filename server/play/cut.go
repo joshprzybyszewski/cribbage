@@ -23,7 +23,11 @@ func (*cuttingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	return nil
 }
 
-func (*cuttingHandler) HandleAction(g *model.Game, action model.PlayerAction, pAPIs map[model.PlayerID]interaction.Player) error {
+func (*cuttingHandler) HandleAction(g *model.Game,
+	action model.PlayerAction,
+	pAPIs map[model.PlayerID]interaction.Player,
+) error {
+
 	if err := validateAction(g, action, model.CutCard); err != nil {
 		return err
 	}
