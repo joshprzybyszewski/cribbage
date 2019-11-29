@@ -50,7 +50,7 @@ func PegToPair(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ mo
 }
 
 // PegToRun returns a card that forms the longest run if one is possible
-func PegToRun(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) {
+func PegToRun(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ model.Card, sayGo bool) { //nolint:gocyclo
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}

@@ -39,7 +39,7 @@ const (
 	allFifteens = fifteen1 | fifteen2 | fifteen3 | fifteen4 | fifteen5 | fifteen6 | fifteen7 | fifteen8
 )
 
-func describePoints(lead model.Card, hand []model.Card, st scoreType) int {
+func describePoints(lead model.Card, hand []model.Card, st scoreType) int { //nolint:gocyclo
 	if LOG {
 		fmt.Println("---------")
 		fmt.Printf("lead: %v\n", lead.String())
