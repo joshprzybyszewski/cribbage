@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/joshprzybyszewski/cribbage/local_client"
+	"github.com/joshprzybyszewski/cribbage/localclient"
 	"github.com/joshprzybyszewski/cribbage/play"
 	"github.com/joshprzybyszewski/cribbage/server"
 )
@@ -46,7 +46,7 @@ func playServer() error {
 }
 
 func runClient() error {
-	return local_client.StartTerminalInteraction()
+	return localclient.StartTerminalInteraction()
 }
 
 func playLegacy() error {

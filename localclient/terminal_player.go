@@ -1,4 +1,4 @@
-package local_client
+package localclient
 
 import (
 	"bufio"
@@ -268,7 +268,7 @@ func (tc *terminalClient) createPlayer() error {
 	return nil
 }
 
-func (p *terminalClient) shouldSignIn() bool {
+func (tc *terminalClient) shouldSignIn() bool {
 	should := true
 
 	prompt := &survey.Confirm{
@@ -310,7 +310,7 @@ func (tc *terminalClient) getName() (string, string) {
 	return answers.Username, answers.Name
 }
 
-func (p *terminalClient) shouldCreateGame() bool {
+func (tc *terminalClient) shouldCreateGame() bool {
 	cont := true
 
 	prompt := &survey.Confirm{

@@ -54,7 +54,7 @@ func (lhp *localhostPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) erro
 	return lhp.notify(fmt.Sprintf(`score/%d`, g.ID), rc)
 }
 
-func (lhp *localhostPlayer) notify(endpoint string, data io.ReadCloser) error {
+func (lhp *localhostPlayer) notify(endpoint string, data io.Reader) error {
 	urlStr := fmt.Sprintf("http://localhost:%d/%s", lhp.port, endpoint)
 	req, err := http.NewRequest(`POST`, urlStr, data)
 	if err != nil {

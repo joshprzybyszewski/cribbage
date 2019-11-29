@@ -1,4 +1,4 @@
-package local_client
+package localclient
 
 import (
 	"bytes"
@@ -76,7 +76,7 @@ func (tc *terminalClient) getPlayerAction(g model.Game) (model.PlayerAction, err
 	}, nil
 }
 
-func (p *terminalClient) getDealAction() model.DealAction {
+func (tc *terminalClient) getDealAction() model.DealAction {
 	qs := []*survey.Question{{
 		Name:      "numShuffles",
 		Prompt:    &survey.Input{Message: `How many times to shuffle?`},
