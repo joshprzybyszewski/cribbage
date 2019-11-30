@@ -5,12 +5,13 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 )
 
+// Setup connects to a database and starts serving requests
 func Setup() error {
 	cs := cribbageServer{
 		db: getDB(),
 	}
-	// TODO is this where we should seed the DB with NPCs if they aren't
-	// there already?
+	// TODO this is where we should seed the DB with NPCs if they aren't
+	// there already
 
 	cs.Serve()
 
