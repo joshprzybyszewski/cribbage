@@ -11,6 +11,7 @@ func (npc *dumbNPCPlayer) ID() model.PlayerID {
 	return `dumbNPC`
 }
 
+// Methods satisfying Player interface
 func (npc *dumbNPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
 	return handleNPCBlocker(npc, b, g, npc.ID())
 }
@@ -20,6 +21,8 @@ func (npc *dumbNPCPlayer) NotifyMessage(g model.Game, s string) error {
 func (npc *dumbNPCPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
+
+// Methods satisfying npcPlayer interface
 func (npc *dumbNPCPlayer) buildCrib(g model.Game) model.BuildCribAction {
 	return model.BuildCribAction{}
 }

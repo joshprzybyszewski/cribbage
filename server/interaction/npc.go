@@ -12,7 +12,7 @@ type npcPlayer interface {
 	peg(g model.Game) model.PegAction
 }
 
-func handleNPCBlocker(npc *npcPlayer, b model.Blocker, g model.Game, id model.PlayerID) error {
+func handleNPCBlocker(npc npcPlayer, b model.Blocker, g model.Game, id model.PlayerID) error {
 	a := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        id,
