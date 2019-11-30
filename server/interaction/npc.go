@@ -12,10 +12,10 @@ type npcPlayer interface {
 	peg(g model.Game) model.PegAction
 }
 
-func handleNPCBlocker(npc *dumbNPCPlayer, b model.Blocker, g model.Game, s string) error {
+func handleNPCBlocker(npc *npcPlayer, b model.Blocker, g model.Game, id model.PlayerID) error {
 	a := model.PlayerAction{
 		GameID:    g.ID,
-		ID:        npc.ID(),
+		ID:        id,
 		Overcomes: b,
 	}
 	switch b {
@@ -33,7 +33,7 @@ func handleNPCBlocker(npc *dumbNPCPlayer, b model.Blocker, g model.Game, s strin
 		a.Action = npc.peg(g)
 	case model.CountHand:
 		a.Action = model.CountHandAction{
-			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),
+			Pts: scorer.HandPoints(g.CutCard, g.Hands[id]),
 		}
 	case model.CountCrib:
 		a.Action = model.CountCribAction{

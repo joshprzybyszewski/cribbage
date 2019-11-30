@@ -12,7 +12,7 @@ func (npc *dumbNPCPlayer) ID() model.PlayerID {
 }
 
 func (npc *dumbNPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	return handleNPCBlocker(npc, b, g, s)
+	return handleNPCBlocker(npc, b, g, npc.ID())
 }
 func (npc *dumbNPCPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
@@ -25,3 +25,4 @@ func (npc *dumbNPCPlayer) buildCrib(g model.Game) model.BuildCribAction {
 }
 func (npc *dumbNPCPlayer) peg(g model.Game) model.PegAction {
 	return model.PegAction{}
+}
