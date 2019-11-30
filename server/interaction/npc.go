@@ -3,21 +3,19 @@ package interaction
 import (
 	"math/rand"
 
+	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 type npcPlayer interface {
-	id() model.PlayerID
 	buildCrib(g model.Game) model.BuildCribAction
 	peg(g model.Game) model.PegAction
-	countHand(g model.Game) model.CountHandAction
-	countCrib(g model.Game) model.CountCribAction
 }
 
 func handleNPCBlocker(npc *dumbNPCPlayer, b model.Blocker, g model.Game, s string) error {
 	a := model.PlayerAction{
 		GameID:    g.ID,
-		ID:        npc.id(),
+		ID:        npc.ID(),
 		Overcomes: b,
 	}
 	switch b {
@@ -34,9 +32,13 @@ func handleNPCBlocker(npc *dumbNPCPlayer, b model.Blocker, g model.Game, s strin
 	case model.PegCard:
 		a.Action = npc.peg(g)
 	case model.CountHand:
-		a.Action = npc.countHand(g)
+		a.Action = model.CountHandAction{
+			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),
+		}
 	case model.CountCrib:
-		a.Action = npc.countCrib(g)
+		a.Action = model.CountCribAction{
+			Pts: scorer.CribPoints(g.CutCard, g.Crib),
+		}
 	}
 	return nil
 }
