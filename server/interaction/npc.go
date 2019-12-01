@@ -10,6 +10,7 @@ import (
 
 var npc game.Player
 
+// NewNPCPlayer creates a new NPC with specified type
 func NewNPCPlayer(npcType NPC) Player {
 	return &npcPlayer{
 		Type: npcType,
