@@ -13,6 +13,11 @@ var (
 	errInvalidUsername error = errors.New(`invalid username`)
 )
 
+// HandleAction is the function called by an AWS lambda
+func HandleAction(a model.PlayerAction) error {
+	return nil
+}
+
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
 	return cs.db.GetGame(gID)
 }

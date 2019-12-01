@@ -6,6 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server"
 )
 
 var npc game.Player
@@ -46,8 +47,7 @@ func handleNPCBlocker(npcType NPC, b model.Blocker, g model.Game) error {
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
-	// TODO now use the action within the server to do something useful
-	return nil
+	return server.HandleAction(a)
 }
 
 func updateNPC(npcType NPC, g model.Game) {
