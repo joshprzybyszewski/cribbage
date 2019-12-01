@@ -1,13 +1,16 @@
 package interaction
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
-
 	// TODO find a way around this import cycle
-	"github.com/joshprzybyszewski/cribbage/server"
 )
 
 // NPC is an enum specifying which type of NPC
@@ -55,36 +58,60 @@ func NewNPCPlayer(npcType NPC) Player {
 
 var npc game.Player
 
-func handleNPCBlocker(npcType NPC, b model.Blocker, g model.Game) error {
-	id := model.PlayerID(npcIDs[npcType])
-	action := model.PlayerAction{
+const (
+	serverDomain = `http://localhost:8080`
+)
+
+func handleNPCBlocker(n NPC, b model.Blocker, g model.Game) error {
+	id := model.PlayerID(npcIDs[n])
+	a := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        id,
 		Overcomes: b,
 	}
 	switch b {
 	case model.DealCards:
-		action.Action = model.DealAction{
+		a.Action = model.DealAction{
 			NumShuffles: rand.Intn(10),
 		}
 	case model.CribCard:
-		action.Action = handleNPCBuildCrib(npcType, g)
+		a.Action = handleNPCBuildCrib(n, g)
 	case model.CutCard:
-		action.Action = model.CutDeckAction{
+		a.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		action.Action = handleNPCPeg(npcType, g)
+		a.Action = handleNPCPeg(n, g)
 	case model.CountHand:
-		action.Action = model.CountHandAction{
+		a.Action = model.CountHandAction{
 			Pts: scorer.HandPoints(g.CutCard, g.Hands[id]),
 		}
 	case model.CountCrib:
-		action.Action = model.CountCribAction{
+		a.Action = model.CountCribAction{
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
-	return server.HandleAction(action)
+	return postAction(a)
+}
+
+func postAction(a model.PlayerAction) error {
+	endpt := fmt.Sprintf(`/action/%d`, a.GameID)
+
+	body, err := json.Marshal(a)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(serverDomain+endpt, ``, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad response: %+v\n%s", resp, resp.Body)
+	}
+	return nil
 }
 
 func updateNPC(npcType NPC, g model.Game) {
