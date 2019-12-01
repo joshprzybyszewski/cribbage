@@ -6,6 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+
 	// TODO find a way around this import cycle
 	"github.com/joshprzybyszewski/cribbage/server"
 )
@@ -21,34 +22,34 @@ func NewNPCPlayer(npcType NPC) Player {
 
 func handleNPCBlocker(npcType NPC, b model.Blocker, g model.Game) error {
 	id := model.PlayerID(npcIDs[npcType])
-	a := model.PlayerAction{
+	action := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        id,
 		Overcomes: b,
 	}
 	switch b {
 	case model.DealCards:
-		a.Action = model.DealAction{
+		action.Action = model.DealAction{
 			NumShuffles: rand.Intn(10),
 		}
 	case model.CribCard:
-		a.Action = handleNPCBuildCrib(npcType, g)
+		action.Action = handleNPCBuildCrib(npcType, g)
 	case model.CutCard:
-		a.Action = model.CutDeckAction{
+		action.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		a.Action = handleNPCPeg(npcType, g)
+		action.Action = handleNPCPeg(npcType, g)
 	case model.CountHand:
-		a.Action = model.CountHandAction{
+		action.Action = model.CountHandAction{
 			Pts: scorer.HandPoints(g.CutCard, g.Hands[id]),
 		}
 	case model.CountCrib:
-		a.Action = model.CountCribAction{
+		action.Action = model.CountCribAction{
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
-	return server.HandleAction(a)
+	return server.HandleAction(action)
 }
 
 func updateNPC(npcType NPC, g model.Game) {
