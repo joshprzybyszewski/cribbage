@@ -1,11 +1,10 @@
 package interaction
 
 import (
-	"math/rand"
-
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 
 	// TODO find a way around this import cycle
 	"github.com/joshprzybyszewski/cribbage/server"
