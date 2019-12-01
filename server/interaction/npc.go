@@ -10,7 +10,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
-	// TODO find a way around this import cycle
 )
 
 // NPC is an enum specifying which type of NPC
