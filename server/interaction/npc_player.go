@@ -18,6 +18,8 @@ var npcIDs = [...]string{
 	Calculated: `calculatedNPC`,
 }
 
+var _ Player = (*npcPlayer)(nil)
+
 type npcPlayer struct {
 	Type NPC
 }
