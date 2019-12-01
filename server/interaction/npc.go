@@ -6,6 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+	// TODO find a way around this import cycle
 	"github.com/joshprzybyszewski/cribbage/server"
 )
 

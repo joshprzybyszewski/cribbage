@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	// TODO find a way around this import cycle
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
