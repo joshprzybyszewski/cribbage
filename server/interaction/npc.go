@@ -93,7 +93,8 @@ func handleNPCBlocker(n NPC, b model.Blocker, g model.Game) error {
 	return postAction(a)
 }
 
-// TODO if possible, do this without making a proper http request
+// TODO if possible, do this without making a proper http request. This
+// would mean only having to spin up one AWS lambda to handle an NPC action
 func postAction(a model.PlayerAction) error {
 	endpt := fmt.Sprintf(`/action/%d`, a.GameID)
 
