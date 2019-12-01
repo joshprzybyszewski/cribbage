@@ -4,8 +4,10 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+// NPC is an enum specifying which type of NPC
 type NPC int
 
+// Dumb, Simple, and Calculated are supported
 const (
 	Dumb NPC = iota
 	Simple
