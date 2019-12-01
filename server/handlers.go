@@ -5,23 +5,13 @@ import (
 	"regexp"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	// TODO find a way around this import cycle
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
-	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
 var (
 	errInvalidUsername error = errors.New(`invalid username`)
 )
-
-// HandleAction is the function called by an AWS lambda. It spins up a new
-// connection to the database, then handles the action.
-func HandleAction(a model.PlayerAction) error {
-	db := memory.New()
-	return handleActionHelper(a, db)
-}
 
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
 	return cs.db.GetGame(gID)
@@ -84,14 +74,13 @@ func (cs *cribbageServer) setInteraction(pID model.PlayerID, im model.Interactio
 	return cs.db.SaveInteraction(ip)
 }
 
-// TODO give this a better name
-func handleActionHelper(action model.PlayerAction, db persistence.DB) error {
-	g, err := db.GetGame(action.GameID)
+func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
+	g, err := cs.db.GetGame(action.GameID)
 	if err != nil {
 		return err
 	}
 
-	pAPIs, err := getPlayerAPIsHelper(g.Players, db)
+	pAPIs, err := cs.getPlayerAPIs(g.Players)
 	if err != nil {
 		return err
 	}
@@ -101,26 +90,17 @@ func handleActionHelper(action model.PlayerAction, db persistence.DB) error {
 		return err
 	}
 
-	return db.SaveGame(g)
+	return cs.db.SaveGame(g)
 }
 
-// TODO give this a better name
-func getPlayerAPIsHelper(players []model.Player, db persistence.DB) (map[model.PlayerID]interaction.Player, error) {
+func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
 	for _, p := range players {
-		pAPI, err := db.GetInteraction(p.ID)
+		pAPI, err := cs.db.GetInteraction(p.ID)
 		if err != nil {
 			return nil, err
 		}
 		pAPIs[p.ID] = pAPI
 	}
 	return pAPIs, nil
-}
-
-func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
-	return handleActionHelper(action, cs.db)
-}
-
-func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
-	return getPlayerAPIsHelper(players, cs.db)
 }
