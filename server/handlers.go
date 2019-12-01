@@ -6,6 +6,8 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
@@ -15,7 +17,9 @@ var (
 
 // HandleAction is the function called by an AWS lambda
 func HandleAction(a model.PlayerAction) error {
-	return nil
+	// TODO fix arguments. What do we pass in here?
+	return handleActionHelper(a, memory.New(),
+		make(map[model.PlayerID]interaction.Player))
 }
 
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
@@ -77,6 +81,21 @@ func (cs *cribbageServer) createPlayer(username, name string) (model.Player, err
 func (cs *cribbageServer) setInteraction(pID model.PlayerID, im model.InteractionMeans) error {
 	ip := interaction.New(pID, im)
 	return cs.db.SaveInteraction(ip)
+}
+
+func handleActionHelper(action model.PlayerAction, db persistence.DB,
+	pAPIs map[model.PlayerID]interaction.Player) error {
+	g, err := db.GetGame(action.GameID)
+	if err != nil {
+		return err
+	}
+
+	err = play.HandleAction(&g, action, pAPIs)
+	if err != nil {
+		return err
+	}
+
+	return db.SaveGame(g)
 }
 
 func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
