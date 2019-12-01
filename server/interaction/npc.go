@@ -46,6 +46,7 @@ func handleNPCBlocker(npcType NPC, b model.Blocker, g model.Game) error {
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
+	// TODO now use the action within the server to do something useful
 	return nil
 }
 
