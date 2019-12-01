@@ -94,6 +94,7 @@ func handleNPCBlocker(n NPC, b model.Blocker, g model.Game) error {
 	return postAction(a)
 }
 
+// TODO if possible, do this without making a proper http request
 func postAction(a model.PlayerAction) error {
 	endpt := fmt.Sprintf(`/action/%d`, a.GameID)
 
