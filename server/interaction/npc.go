@@ -39,8 +39,11 @@ func (npc *npcPlayer) ID() model.PlayerID {
 }
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	return handleNPCBlocker(npc.Type, b, g)
+	a := buildNPCAction(npc.Type, b, g)
+	return postAction(a)
 }
+
+// The NPC doesn't care about messages or score updates
 func (npc *npcPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
 }
@@ -61,7 +64,7 @@ const (
 	serverDomain = `http://localhost:8080`
 )
 
-func handleNPCBlocker(n NPC, b model.Blocker, g model.Game) error {
+func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
 	id := model.PlayerID(npcIDs[n])
 	a := model.PlayerAction{
 		GameID:    g.ID,
@@ -90,7 +93,7 @@ func handleNPCBlocker(n NPC, b model.Blocker, g model.Game) error {
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
-	return postAction(a)
+	return a
 }
 
 // TODO if possible, do this without making a proper http request. This
