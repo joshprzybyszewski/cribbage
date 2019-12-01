@@ -15,11 +15,11 @@ var (
 	errInvalidUsername error = errors.New(`invalid username`)
 )
 
-// HandleAction is the function called by an AWS lambda
+// HandleAction is the function called by an AWS lambda. It spins up a new
+// connection to the database, then handles the action.
 func HandleAction(a model.PlayerAction) error {
-	// TODO fix arguments. What do we pass in here?
-	return handleActionHelper(a, memory.New(),
-		make(map[model.PlayerID]interaction.Player))
+	db := memory.New()
+	return handleActionHelper(a, db)
 }
 
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
@@ -83,9 +83,14 @@ func (cs *cribbageServer) setInteraction(pID model.PlayerID, im model.Interactio
 	return cs.db.SaveInteraction(ip)
 }
 
-func handleActionHelper(action model.PlayerAction, db persistence.DB,
-	pAPIs map[model.PlayerID]interaction.Player) error {
+// TODO give this a better name
+func handleActionHelper(action model.PlayerAction, db persistence.DB) error {
 	g, err := db.GetGame(action.GameID)
+	if err != nil {
+		return err
+	}
+
+	pAPIs, err := getPlayerAPIsHelper(g.Players, db)
 	if err != nil {
 		return err
 	}
@@ -98,33 +103,23 @@ func handleActionHelper(action model.PlayerAction, db persistence.DB,
 	return db.SaveGame(g)
 }
 
-func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
-	g, err := cs.db.GetGame(action.GameID)
-	if err != nil {
-		return err
-	}
-
-	pAPIs, err := cs.getPlayerAPIs(g.Players)
-	if err != nil {
-		return err
-	}
-
-	err = play.HandleAction(&g, action, pAPIs)
-	if err != nil {
-		return err
-	}
-
-	return cs.db.SaveGame(g)
-}
-
-func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
+// TODO give this a better name
+func getPlayerAPIsHelper(players []model.Player, db persistence.DB) (map[model.PlayerID]interaction.Player, error) {
 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
 	for _, p := range players {
-		pAPI, err := cs.db.GetInteraction(p.ID)
+		pAPI, err := db.GetInteraction(p.ID)
 		if err != nil {
 			return nil, err
 		}
 		pAPIs[p.ID] = pAPI
 	}
 	return pAPIs, nil
+}
+
+func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
+	return handleActionHelper(action, cs.db)
+}
+
+func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
+	return getPlayerAPIsHelper(players, cs.db)
 }
