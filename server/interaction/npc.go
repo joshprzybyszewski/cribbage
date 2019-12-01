@@ -10,8 +10,8 @@ import (
 
 var npc game.Player
 
-func NewNPCPlayer(npcType NPC) npcPlayer {
-	return npcPlayer{
+func NewNPCPlayer(npcType NPC) Player {
+	return &npcPlayer{
 		Type: npcType,
 	}
 }
