@@ -118,9 +118,9 @@ func postAction(a model.PlayerAction) error {
 	return nil
 }
 
-func updateNPC(npcType NPC, g model.Game) {
-	id := model.PlayerID(npcIDs[npcType])
-	switch npcType {
+func updateNPC(n NPC, g model.Game) {
+	id := model.PlayerID(npcIDs[n])
+	switch n {
 	case Dumb:
 		npc = game.NewDumbNPC(g.PlayerColors[id])
 	case Simple:
