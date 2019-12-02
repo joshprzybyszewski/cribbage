@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -14,10 +15,17 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
+const (
+	dbName     string = `cribbage`
+	gamesCol   string = `games`
+	playersCol string = `players`
+)
+
 var _ persistence.DB = (*mongodb)(nil)
 
 type mongodb struct {
-	client *mongo.Client
+	bsonRegistry *bsoncodec.Registry
+	client       *mongo.Client
 }
 
 func New(uri string) (persistence.DB, error) {
@@ -26,26 +34,39 @@ func New(uri string) (persistence.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &mongodb{
-		client: client,
+		client:       client,
+		bsonRegistry: modelBSONRegistry(),
 	}, nil
 }
 
 func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
 	result := model.Game{}
-	collection := m.client.Database(`cribbage`).Collection(`games`)
+	gColOpts := []*options.CollectionOptions{
+		{
+			Registry: m.bsonRegistry,
+		},
+	}
+	collection := m.client.Database(dbName).Collection(gamesCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
 	if err != nil {
 		return model.Game{}, err
 	}
+
 	return result, nil
 }
 
 func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 	result := model.Player{}
-	collection := m.client.Database(`cribbage`).Collection(`players`)
+	gColOpts := []*options.CollectionOptions{
+		{
+			Registry: m.bsonRegistry,
+		},
+	}
+	collection := m.client.Database(dbName).Collection(playersCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
@@ -60,7 +81,12 @@ func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.Player, error) 
 }
 
 func (m *mongodb) SaveGame(g model.Game) error {
-	collection := m.client.Database(`cribbage`).Collection(`games`)
+	gColOpts := []*options.CollectionOptions{
+		{
+			Registry: m.bsonRegistry,
+		},
+	}
+	collection := m.client.Database(dbName).Collection(gamesCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	// TODO insert this like the memory does
 	_, err := collection.InsertOne(ctx, g)
@@ -68,7 +94,12 @@ func (m *mongodb) SaveGame(g model.Game) error {
 }
 
 func (m *mongodb) CreatePlayer(p model.Player) error {
-	collection := m.client.Database(`cribbage`).Collection(`players`)
+	gColOpts := []*options.CollectionOptions{
+		{
+			Registry: m.bsonRegistry,
+		},
+	}
+	collection := m.client.Database(dbName).Collection(playersCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	// TODO check if the player already exists
 	_, err := collection.InsertOne(ctx, p)
