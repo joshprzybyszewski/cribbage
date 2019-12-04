@@ -31,7 +31,10 @@ func Setup() error {
 func getDB() (persistence.DB, error) {
 	switch *database {
 	case `mongo`:
-		return mongodb.New(`mongodb://localhost:27017`)
+		// TODO make the URI a command line flag to be passed in
+		// so that someday we can talk to AWS
+		mongoURI := ``
+		return mongodb.New(mongoURI)
 	case `memory`:
 		return memory.New(), nil
 	}

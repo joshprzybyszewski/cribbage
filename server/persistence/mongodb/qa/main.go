@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	mdb, err := mongodb.New(`mongodb://localhost:27017`)
+	mdb, err := mongodb.New(``)
 	if err != nil {
 		fmt.Printf("Error on New: %+v\n", err)
 		os.Exit(1)

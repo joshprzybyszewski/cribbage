@@ -30,6 +30,10 @@ type mongodb struct {
 }
 
 func New(uri string) (persistence.DB, error) {
+	if uri == `` {
+		// If we don't know where to connect, use the default localhost URI
+		uri = `mongodb://localhost:27017`
+	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
@@ -42,16 +46,24 @@ func New(uri string) (persistence.DB, error) {
 	}, nil
 }
 
+func (m *mongodb) gamesCollection() *mongo.Collection {
+	gColOpts := []*options.CollectionOptions{{
+		Registry: m.bsonRegistry,
+	}}
+	return m.client.Database(dbName).Collection(gamesCol, gColOpts...)
+}
+
+func (m *mongodb) playersCollection() *mongo.Collection {
+	gColOpts := []*options.CollectionOptions{{
+		Registry: m.bsonRegistry,
+	}}
+	return m.client.Database(dbName).Collection(playersCol, gColOpts...)
+}
+
 func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
 	result := model.Game{}
-	gColOpts := []*options.CollectionOptions{
-		{
-			Registry: m.bsonRegistry,
-		},
-	}
-	collection := m.client.Database(dbName).Collection(gamesCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&result)
+	err := m.gamesCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
 	if err != nil {
 		return model.Game{}, err
@@ -62,14 +74,8 @@ func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
 
 func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 	result := model.Player{}
-	gColOpts := []*options.CollectionOptions{
-		{
-			Registry: m.bsonRegistry,
-		},
-	}
-	collection := m.client.Database(dbName).Collection(playersCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := collection.FindOne(ctx, bson.M{"id": id}).Decode(&result)
+	err := m.playersCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
 	if err != nil {
 		return model.Player{}, err
@@ -82,31 +88,21 @@ func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.Player, error) 
 }
 
 func (m *mongodb) SaveGame(g model.Game) error {
-	gColOpts := []*options.CollectionOptions{
-		{
-			Registry: m.bsonRegistry,
-		},
-	}
-	collection := m.client.Database(dbName).Collection(gamesCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	// TODO insert this like the memory does
-	_, err := collection.InsertOne(ctx, g)
+	// TODO insert this like the memory does, where we append it to the end of a list of games,
+	// in order of how many actions they've had
+	_, err := m.gamesCollection().InsertOne(ctx, g)
 	return err
 }
 
 func (m *mongodb) CreatePlayer(p model.Player) error {
-	gColOpts := []*options.CollectionOptions{
-		{
-			Registry: m.bsonRegistry,
-		},
-	}
-	collection := m.client.Database(dbName).Collection(playersCol, gColOpts...)
+	collection := m.playersCollection()
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	// check if the player already exists
 	sr := collection.FindOne(ctx, bson.M{"id": p.ID})
 	if sr.Err() != mongo.ErrNoDocuments {
-		return errors.New(`player already exists`)
+		return persistence.ErrPlayerAlreadyExists
 	}
 
 	_, err := collection.InsertOne(ctx, p)
@@ -114,6 +110,14 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 }
 
 func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+	collection := m.playersCollection()
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	// Overwrite the player's Games field with a new map
+	// TODO figure out replacement
+	var replacement interface{}
+	collection.FindOneAndReplace(ctx, bson.M{"id": id}, replacement)
+	// TODO do this stufffr
 	return nil
 
 }

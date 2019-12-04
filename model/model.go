@@ -140,19 +140,19 @@ const (
 )
 
 type Game struct {
-	ID              GameID                   `protobuf:"varint,1,name=id,proto3" json:"id" bson:"id"`                                                                             //nolint:lll
-	Players         []Player                 `protobuf:"bytes,3,rep,name=players,proto3,proto3" json:"players" bson:"players"`                                                    //nolint:lll
-	Deck            Deck                     `protobuf:"-" json:"-" bson:"-"`                                                                                                     //nolint:lll
-	BlockingPlayers map[PlayerID]Blocker     `protobuf:"map<varint, varint>,4,opt,name=blockingPlayers,proto3" json:"blockingPlayers,omitempty" bson:"blockingPlayers,omitempty"` //nolint:lll
-	CurrentDealer   PlayerID                 `protobuf:"varint,5,opt,name=currentDealer,proto3" json:"currentDealer" bson:"currentDealer"`                                        //nolint:lll
-	PlayerColors    map[PlayerID]PlayerColor `protobuf:"map<varint, varint>,6,name=playerColors,proto3" json:"playerColors,omitempty" bson:"playerColors,omitempty"`              //nolint:lll
-	CurrentScores   map[PlayerColor]int      `protobuf:"map<varint, varint>,7,opt,name=currentScores,proto3" json:"currentScores" bson:"currentScores"`                           //nolint:lll
-	LagScores       map[PlayerColor]int      `protobuf:"map<varint, varint>,8,opt,name=lagScores,proto3" json:"lagScores" bson:"lagScores"`                                       //nolint:lll
-	Phase           Phase                    `protobuf:"varint,9,opt,name=phase,proto3" json:"phase" bson:"phase"`                                                                //nolint:lll
-	Hands           map[PlayerID][]Card      `protobuf:"map<varint, bytes>,10,opt,name=hands,proto3" json:"hands,omitempty" bson:"hands,omitempty"`                               //nolint:lll
-	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty" bson:"cutCard,omitempty"`                                       //nolint:lll
-	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty" bson:"crib,omitempty"`                                                //nolint:lll
-	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty" bson:"peggedCards,omitempty"`                 //nolint:lll
+	ID              GameID                   `protobuf:"varint,1,name=id,proto3" json:"id" bson:"id"`                                                                   //nolint:lll
+	Players         []Player                 `protobuf:"bytes,3,rep,name=players,proto3,proto3" json:"players" bson:"players"`                                          //nolint:lll
+	Deck            Deck                     `protobuf:"-" json:"-" bson:"-"`                                                                                           //nolint:lll
+	BlockingPlayers map[PlayerID]Blocker     `protobuf:"map<varint, varint>,4,opt,name=blockingPlayers,proto3" json:"blockingPlayers,omitempty" bson:"blockingPlayers"` //nolint:lll
+	CurrentDealer   PlayerID                 `protobuf:"varint,5,opt,name=currentDealer,proto3" json:"currentDealer" bson:"currentDealer"`                              //nolint:lll
+	PlayerColors    map[PlayerID]PlayerColor `protobuf:"map<varint, varint>,6,name=playerColors,proto3" json:"playerColors,omitempty" bson:"playerColors"`              //nolint:lll
+	CurrentScores   map[PlayerColor]int      `protobuf:"map<varint, varint>,7,opt,name=currentScores,proto3" json:"currentScores" bson:"currentScores"`                 //nolint:lll
+	LagScores       map[PlayerColor]int      `protobuf:"map<varint, varint>,8,opt,name=lagScores,proto3" json:"lagScores" bson:"lagScores"`                             //nolint:lll
+	Phase           Phase                    `protobuf:"varint,9,opt,name=phase,proto3" json:"phase" bson:"phase"`                                                      //nolint:lll
+	Hands           map[PlayerID][]Card      `protobuf:"map<varint, bytes>,10,opt,name=hands,proto3" json:"hands,omitempty" bson:"hands"`                               //nolint:lll
+	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty" bson:"cutCard"`                                       //nolint:lll
+	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty" bson:"crib"`                                                //nolint:lll
+	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty" bson:"peggedCards"`                 //nolint:lll
 
 	actions []PlayerAction
 }

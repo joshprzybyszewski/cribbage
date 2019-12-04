@@ -6,6 +6,10 @@ import (
 	"math/big"
 )
 
+var (
+	randChars []rune = []rune(`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_`)
+)
+
 func Intn(max int) int {
 	return int(Int64n(int64(max)))
 }
@@ -34,4 +38,12 @@ func Int() int {
 // floats than that
 func Float64() float64 {
 	return float64(Int64n(10000)) / 10000.0
+}
+
+func String(n int) string {
+	s := ``
+	for len(s) < n {
+		s += string(randChars[Intn(len(randChars))])
+	}
+	return s
 }
