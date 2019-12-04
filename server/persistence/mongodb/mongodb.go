@@ -13,6 +13,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb/mapbson"
 )
 
 const (
@@ -37,7 +38,7 @@ func New(uri string) (persistence.DB, error) {
 
 	return &mongodb{
 		client:       client,
-		bsonRegistry: modelBSONRegistry(),
+		bsonRegistry: mapbson.CustomRegistry(),
 	}, nil
 }
 
