@@ -97,12 +97,17 @@ func copyGame(dst *model.Game, src model.Game) {
 }
 
 func TestDB(t *testing.T) {
-	mongo, err := mongodb.New(``)
-	require.NoError(t, err)
-
 	dbs := map[string]persistence.DB{
-		`memory`:  memory.New(),
-		`mongodb`: mongo,
+		`memory`: memory.New(),
+	}
+
+	// TODO get mongodb tests running in travis?
+	if !testing.Short() {
+		// We assume you have mongodb stood up locally when running without -short
+		mongo, err := mongodb.New(``)
+		require.NoError(t, err)
+
+		dbs[`mongodb`] = mongo
 	}
 
 	for dbName, db := range dbs {
