@@ -3,6 +3,8 @@ package persistence_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
@@ -20,6 +23,7 @@ var (
 	tests = map[string]dbTest{
 		`createPlayer`: testCreatePlayer,
 		`saveGame`:     testSaveGame,
+		`resaveGame`:   testSaveGameMultipleTimes,
 	}
 )
 
@@ -33,12 +37,63 @@ func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.Playe
 		Name: `bob`,
 	}
 	aAPI := &interaction.Mock{}
+	aAPI.On(`ID`).Return(alice.ID)
+	aAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	aAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
+	aAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
 	bAPI := &interaction.Mock{}
+	bAPI.On(`ID`).Return(bob.ID)
+	bAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	bAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
+	bAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
 	abAPIs := map[model.PlayerID]interaction.Player{
 		alice.ID: aAPI,
 		bob.ID:   bAPI,
 	}
 	return alice, bob, aAPI, bAPI, abAPIs
+}
+
+func copyGame(dst *model.Game, src model.Game) {
+	*dst = src
+
+	// The deck will always be nil after a copy
+	dst.Deck = nil
+
+	dst.Players = make([]model.Player, len(src.Players))
+	_ = copy(dst.Players, src.Players)
+
+	dst.BlockingPlayers = make(map[model.PlayerID]model.Blocker, len(src.BlockingPlayers))
+	for k, v := range src.BlockingPlayers {
+		dst.BlockingPlayers[k] = v
+	}
+
+	dst.PlayerColors = make(map[model.PlayerID]model.PlayerColor, len(src.PlayerColors))
+	for k, v := range src.PlayerColors {
+		dst.PlayerColors[k] = v
+	}
+
+	dst.CurrentScores = make(map[model.PlayerColor]int, len(src.CurrentScores))
+	for k, v := range src.CurrentScores {
+		dst.CurrentScores[k] = v
+	}
+
+	dst.LagScores = make(map[model.PlayerColor]int, len(src.LagScores))
+	for k, v := range src.LagScores {
+		dst.LagScores[k] = v
+	}
+
+	dst.Hands = make(map[model.PlayerID][]model.Card, len(src.Hands))
+	for k, v := range src.Hands {
+		newHand := make([]model.Card, len(v))
+		copy(newHand, v)
+		dst.Hands[k] = newHand
+	}
+
+	dst.Crib = make([]model.Card, len(src.Crib))
+	_ = copy(dst.Crib, src.Crib)
+
+	dst.PeggedCards = make([]model.PeggedCard, len(src.PeggedCards))
+	_ = copy(dst.PeggedCards, src.PeggedCards)
 }
 
 func TestDB(t *testing.T) {
@@ -150,4 +205,58 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	// the deck should be nil
 	g1Copy.Deck = nil
 	assert.Equal(t, g1Copy, actGame)
+}
+
+func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
+	alice, bob, _, _, abAPIs := setup()
+
+	checkPersistedGame := func(expGame model.Game) {
+		actGame, err := db.GetGame(expGame.ID)
+		require.NoError(t, err)
+		// the deck should always be nil
+		expGame.Deck = nil
+		assert.Equal(t, expGame, actGame)
+	}
+
+	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
+	require.NoError(t, err)
+	var gCopy model.Game
+	copyGame(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.DealCards,
+		Action:    model.DealAction{NumShuffles: 10},
+	}, abAPIs))
+	copyGame(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+	}, abAPIs))
+	copyGame(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+	}, abAPIs))
+	copyGame(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
 }
