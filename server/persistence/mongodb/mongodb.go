@@ -102,7 +102,13 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 	}
 	collection := m.client.Database(dbName).Collection(playersCol, gColOpts...)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	// TODO check if the player already exists
+
+	// check if the player already exists
+	sr := collection.FindOne(ctx, bson.M{"id": p.ID})
+	if sr.Err() != mongo.ErrNoDocuments {
+		return errors.New(`player already exists`)
+	}
+
 	_, err := collection.InsertOne(ctx, p)
 	return err
 }

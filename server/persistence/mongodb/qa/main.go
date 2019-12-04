@@ -15,7 +15,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	id := 47
+	id := 49
 	idStr := fmt.Sprintf("%d", id)
 	otherIDStr := fmt.Sprintf("%d", id*2)
 	g1ID := model.GameID(id)
