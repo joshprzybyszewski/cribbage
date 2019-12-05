@@ -15,8 +15,8 @@ type DB interface {
 	GetGame(id model.GameID) (model.Game, error)
 	SaveGame(g model.Game) error
 
-	GetInteraction(id model.PlayerID) (interaction.Player, error)
-	SaveInteraction(i interaction.Player) error
+	GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error)
+	SaveInteraction(pm interaction.PlayerMeans) error
 }
 
 var (

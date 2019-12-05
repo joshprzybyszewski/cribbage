@@ -16,14 +16,14 @@ type memory struct {
 
 	games        map[model.GameID][]model.Game
 	players      map[model.PlayerID]model.Player
-	interactions map[model.PlayerID]interaction.Player
+	interactions map[model.PlayerID]interaction.PlayerMeans
 }
 
 func New() persistence.DB {
 	return &memory{
 		games:        map[model.GameID][]model.Game{},
 		players:      map[model.PlayerID]model.Player{},
-		interactions: map[model.PlayerID]interaction.Player{},
+		interactions: map[model.PlayerID]interaction.PlayerMeans{},
 	}
 }
 
@@ -51,14 +51,14 @@ func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
 	return model.Player{}, errors.New(`does not have player`)
 }
 
-func (m *memory) GetInteraction(id model.PlayerID) (interaction.Player, error) {
+func (m *memory) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	if i, ok := m.interactions[id]; ok {
 		return i, nil
 	}
-	return nil, errors.New(`does not have player`)
+	return interaction.PlayerMeans{}, errors.New(`does not have player means`)
 }
 
 func (m *memory) SaveGame(g model.Game) error {
@@ -102,10 +102,10 @@ func (m *memory) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor
 
 }
 
-func (m *memory) SaveInteraction(i interaction.Player) error {
+func (m *memory) SaveInteraction(pm interaction.PlayerMeans) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	m.interactions[i.ID()] = i
+	m.interactions[pm.PlayerID] = pm
 	return nil
 }

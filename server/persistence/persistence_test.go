@@ -21,9 +21,10 @@ type dbTest func(*testing.T, persistence.DB)
 
 var (
 	tests = map[string]dbTest{
-		`createPlayer`: testCreatePlayer,
-		`saveGame`:     testSaveGame,
-		`resaveGame`:   testSaveGameMultipleTimes,
+		`createPlayer`:    testCreatePlayer,
+		`saveGame`:        testSaveGame,
+		`resaveGame`:      testSaveGameMultipleTimes,
+		`saveInteraction`: testSaveInteraction,
 	}
 )
 
@@ -264,4 +265,37 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 
 	require.NoError(t, db.SaveGame(g))
 	checkPersistedGame(gCopy)
+}
+
+func testSaveInteraction(t *testing.T, db persistence.DB) {
+	p1 := interaction.PlayerMeans{
+		PlayerID:      model.PlayerID(rand.String(50)),
+		PreferredMode: interaction.Localhost,
+		Interactions: []interaction.Means{{
+			Mode: interaction.Localhost,
+			Info: 8383,
+		}},
+	}
+	p1Copy := p1
+
+	assert.NoError(t, db.SaveInteraction(p1))
+	actPM, err := db.GetInteraction(p1.PlayerID)
+	assert.NoError(t, err)
+	assert.Equal(t, p1Copy, actPM)
+
+	assert.NoError(t, db.SaveInteraction(p1))
+
+	p1update := interaction.PlayerMeans{
+		PlayerID:      p1.PlayerID,
+		PreferredMode: interaction.Localhost,
+		Interactions: []interaction.Means{{
+			Mode: interaction.Localhost,
+			Info: 8484,
+		}},
+	}
+	assert.NoError(t, db.SaveInteraction(p1update))
+
+	actPM, err = db.GetInteraction(p1.PlayerID)
+	assert.NoError(t, err)
+	assert.NotEqual(t, p1Copy, actPM)
 }

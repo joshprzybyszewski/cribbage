@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
@@ -124,9 +125,9 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 	means := c.Param(`means`)
 	info := c.Param(`info`)
-	err := cs.setInteraction(pID, model.InteractionMeans{
-		Means: means,
-		Info:  info,
+	err := cs.setInteraction(pID, interaction.Means{
+		Mode: interaction.Localhost,
+		Info: info,
 	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)

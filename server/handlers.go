@@ -69,9 +69,10 @@ func (cs *cribbageServer) createPlayer(username, name string) (model.Player, err
 	return mp, nil
 }
 
-func (cs *cribbageServer) setInteraction(pID model.PlayerID, im model.InteractionMeans) error {
-	ip := interaction.New(pID, im)
-	return cs.db.SaveInteraction(ip)
+func (cs *cribbageServer) setInteraction(pID model.PlayerID, im interaction.Means) error {
+	// TODO have a way to get the previous interaction and then update with this as the preferred mode
+	pm := interaction.New(pID, im)
+	return cs.db.SaveInteraction(pm)
 }
 
 func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
@@ -96,7 +97,11 @@ func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
 func (cs *cribbageServer) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
 	for _, p := range players {
-		pAPI, err := cs.db.GetInteraction(p.ID)
+		pm, err := cs.db.GetInteraction(p.ID)
+		if err != nil {
+			return nil, err
+		}
+		pAPI, err := interaction.FromPlayerMeans(pm)
 		if err != nil {
 			return nil, err
 		}

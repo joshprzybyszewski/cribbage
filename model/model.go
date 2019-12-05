@@ -58,11 +58,6 @@ type Player struct {
 	Games map[GameID]PlayerColor `protobuf:"map<varint, varint>,3,opt,name=games,proto3" json:"games,omitempty" bson:"games"` //nolint:lll
 }
 
-type InteractionMeans struct {
-	Means string      `protobuf:"-" json:"-" bson:"-"`
-	Info  interface{} `protobuf:"-" json:"-" bson:"-"`
-}
-
 type Blocker int
 
 const (

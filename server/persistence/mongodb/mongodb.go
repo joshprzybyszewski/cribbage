@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,9 +16,10 @@ import (
 )
 
 const (
-	dbName     string = `cribbage`
-	gamesCol   string = `games`
-	playersCol string = `players`
+	dbName          string = `cribbage`
+	gamesCol        string = `games`
+	playersCol      string = `players`
+	interactionsCol string = `interactions`
 )
 
 var _ persistence.DB = (*mongodb)(nil)
@@ -60,6 +60,13 @@ func (m *mongodb) playersCollection() *mongo.Collection {
 	return m.client.Database(dbName).Collection(playersCol, gColOpts...)
 }
 
+func (m *mongodb) interactionsCollection() *mongo.Collection {
+	gColOpts := []*options.CollectionOptions{{
+		Registry: m.bsonRegistry,
+	}}
+	return m.client.Database(dbName).Collection(interactionsCol, gColOpts...)
+}
+
 func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
 	result := model.Game{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
@@ -81,10 +88,6 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 		return model.Player{}, err
 	}
 	return result, nil
-}
-
-func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.Player, error) {
-	return nil, errors.New(`unimplemented`)
 }
 
 func (m *mongodb) SaveGame(g model.Game) error {
@@ -122,6 +125,27 @@ func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColo
 
 }
 
-func (m *mongodb) SaveInteraction(i interaction.Player) error {
-	return nil
+func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
+	collection := m.interactionsCollection()
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+
+	// check if the player already exists
+	sr := collection.FindOne(ctx, bson.M{"id": i.PlayerID})
+	if sr.Err() != mongo.ErrNoDocuments {
+		return persistence.ErrPlayerAlreadyExists
+	}
+
+	_, err := collection.InsertOne(ctx, i)
+	return err
+}
+
+func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
+	pm := interaction.PlayerMeans{}
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	err := m.interactionsCollection().FindOne(ctx, bson.M{"id": id}).Decode(&pm)
+
+	if err != nil {
+		return interaction.PlayerMeans{}, err
+	}
+	return pm, nil
 }
