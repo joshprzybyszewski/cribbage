@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -68,15 +70,36 @@ func (m *mongodb) interactionsCollection() *mongo.Collection {
 }
 
 func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
-	result := model.Game{}
+	// var monthStatus interface{}
+	// filter := bson.M{"_id": id}
+	// tempResult := bson.M{}
+	// err := db.Collection("Months").FindOne(ctx, filter).Decode(&tempResult)
+	// if err == nil {
+	// 	obj, _ := json.Marshal(tempResult)
+	// 	err = json.Unmarshal(obj, &monthStatus)
+	// }
+	// return monthStatus, err
+
+	// result := model.Game{}
+	tempResult := bson.M{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := m.gamesCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
+	err := m.gamesCollection().FindOne(ctx, bson.M{"id": id}).Decode(&tempResult)
 
 	if err != nil {
 		return model.Game{}, err
 	}
 
-	return result, nil
+	obj, err := json.Marshal(tempResult)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	g, err := jsonutils.UnmarshalGame(obj)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	return g, nil
 }
 
 func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
@@ -91,10 +114,33 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 }
 
 func (m *mongodb) SaveGame(g model.Game) error {
+	// TODO make this transactional
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	// TODO insert this like the memory does, where we append it to the end of a list of games,
-	// in order of how many actions they've had
-	_, err := m.gamesCollection().InsertOne(ctx, g)
+
+	current := model.Game{}
+	err := m.gamesCollection().FindOne(ctx, bson.M{"id": g.ID}).Decode(&current)
+	if err != nil {
+		// if this is the first time saving the game, then we get ErrNoDocuments
+		if err != mongo.ErrNoDocuments {
+			return err
+		}
+
+		// Since this is the first save, we should have _no_ actions
+		if len(g.Actions) != 0 {
+			return persistence.ErrGameInitialSave
+		}
+
+		_, err = m.gamesCollection().InsertOne(ctx, g)
+		return err
+	}
+
+	if len(current.Actions)+1 != len(g.Actions) {
+		// TODO we could do a deeper check on the actions
+		// i.e. current.Actions == g.Action[:len(g.Actions)-1]
+		return persistence.ErrGameActionsOutOfOrder
+	}
+
+	_, err = m.gamesCollection().ReplaceOne(ctx, bson.M{"id": g.ID}, g)
 	return err
 }
 

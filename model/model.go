@@ -134,20 +134,42 @@ const (
 	MaxPlayerGame int = 4
 )
 
+// Game represents all of the data needed for a game of cribbage
+// between 2, 3, or 4 players
 type Game struct {
-	ID              GameID                   `protobuf:"varint,1,name=id,proto3" json:"id" bson:"id"`                                                                   //nolint:lll
-	Players         []Player                 `protobuf:"bytes,3,rep,name=players,proto3,proto3" json:"players" bson:"players"`                                          //nolint:lll
-	Deck            Deck                     `protobuf:"-" json:"-" bson:"-"`                                                                                           //nolint:lll
-	BlockingPlayers map[PlayerID]Blocker     `protobuf:"map<varint, varint>,4,opt,name=blockingPlayers,proto3" json:"blockingPlayers,omitempty" bson:"blockingPlayers"` //nolint:lll
-	CurrentDealer   PlayerID                 `protobuf:"varint,5,opt,name=currentDealer,proto3" json:"currentDealer" bson:"currentDealer"`                              //nolint:lll
-	PlayerColors    map[PlayerID]PlayerColor `protobuf:"map<varint, varint>,6,name=playerColors,proto3" json:"playerColors,omitempty" bson:"playerColors"`              //nolint:lll
-	CurrentScores   map[PlayerColor]int      `protobuf:"map<varint, varint>,7,opt,name=currentScores,proto3" json:"currentScores" bson:"currentScores"`                 //nolint:lll
-	LagScores       map[PlayerColor]int      `protobuf:"map<varint, varint>,8,opt,name=lagScores,proto3" json:"lagScores" bson:"lagScores"`                             //nolint:lll
-	Phase           Phase                    `protobuf:"varint,9,opt,name=phase,proto3" json:"phase" bson:"phase"`                                                      //nolint:lll
-	Hands           map[PlayerID][]Card      `protobuf:"map<varint, bytes>,10,opt,name=hands,proto3" json:"hands,omitempty" bson:"hands"`                               //nolint:lll
-	CutCard         Card                     `protobuf:"Card,11,opt,name=cutCard,proto3" json:"cutCard,omitempty" bson:"cutCard"`                                       //nolint:lll
-	Crib            []Card                   `protobuf:"Card,12,rep,name=crib,proto3" json:"crib,omitempty" bson:"crib"`                                                //nolint:lll
-	PeggedCards     []PeggedCard             `protobuf:"PeggedCard,13,rep,opt,name=peggedCards,proto3" json:"peggedCards,omitempty" bson:"peggedCards"`                 //nolint:lll
+	// The unique identifier used to reference this game
+	ID GameID `protobuf:"-" json:"id" bson:"id"` //nolint:lll
 
-	actions []PlayerAction
+	// The players playing this game and their colors
+	Players      []Player                 `protobuf:"-" json:"players" bson:"players"`                     //nolint:lll
+	PlayerColors map[PlayerID]PlayerColor `protobuf:"-" json:"playerColors,omitempty" bson:"playerColors"` //nolint:lll
+
+	// The current (and lagging) scores
+	CurrentScores map[PlayerColor]int `protobuf:"-" json:"currentScores" bson:"currentScores"` //nolint:lll
+	LagScores     map[PlayerColor]int `protobuf:"-" json:"lagScores" bson:"lagScores"`         //nolint:lll
+
+	// What phase this game is in
+	Phase Phase `protobuf:"-" json:"phase" bson:"phase"` //nolint:lll
+	// Who is blocking and why
+	BlockingPlayers map[PlayerID]Blocker `protobuf:"-" json:"blockingPlayers,omitempty" bson:"blockingPlayers"` //nolint:lll
+
+	// The identifier for the current dealer
+	CurrentDealer PlayerID `protobuf:"-" json:"currentDealer" bson:"currentDealer"` //nolint:lll
+
+	// The hands of each player
+	Hands map[PlayerID][]Card `protobuf:"-" json:"hands,omitempty" bson:"hands"` //nolint:lll
+	// The cards currently in the crib
+	Crib []Card `protobuf:"-" json:"crib,omitempty" bson:"crib"` //nolint:lll
+
+	// The flipped card which acts as the lead
+	CutCard Card `protobuf:"-" json:"cutCard" bson:"cutCard"` //nolint:lll
+
+	// An ordered list of previously pegged cards (which includes who pegged them), most recent last
+	PeggedCards []PeggedCard `protobuf:"-" json:"peggedCards,omitempty" bson:"peggedCards"` //nolint:lll
+
+	// An ordered list of player actions
+	Actions []PlayerAction `protobuf:"-" json:"actions" bson:"actions"` //nolint:lll
+
+	// The deck of cards
+	Deck Deck `protobuf:"-" json:"-" bson:"-"` //nolint:lll
 }

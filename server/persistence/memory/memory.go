@@ -68,7 +68,7 @@ func (m *memory) SaveGame(g model.Game) error {
 	id := g.ID
 
 	if len(m.games[id]) != g.NumActions() {
-		return errors.New(`game does not know about recent actions`)
+		return persistence.ErrGameActionsOutOfOrder
 	}
 
 	m.games[id] = append(m.games[id], g)

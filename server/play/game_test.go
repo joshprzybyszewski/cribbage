@@ -9,29 +9,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
 
-func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.PlayerID]interaction.Player) {
-	alice := model.Player{
-		ID:   model.PlayerID(`alice`),
-		Name: `alice`,
-	}
-	bob := model.Player{
-		ID:   model.PlayerID(`bob`),
-		Name: `bob`,
-	}
-	aAPI := &interaction.Mock{}
-	bAPI := &interaction.Mock{}
-	abAPIs := map[model.PlayerID]interaction.Player{
-		alice.ID: aAPI,
-		bob.ID:   bAPI,
-	}
-	return alice, bob, aAPI, bAPI, abAPIs
-}
-
 func TestHandleAction_InvalidINputs(t *testing.T) {
-	alice, bob, _, _, abAPIs /*aliceAPI, bobAPI, abAPIs*/ := setup()
+	alice, bob, _, _, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID:              model.GameID(5),
@@ -74,7 +56,7 @@ func TestHandleAction_InvalidINputs(t *testing.T) {
 }
 
 func TestHandleAction_Deal(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID:              model.GameID(5),
@@ -123,7 +105,7 @@ func TestHandleAction_Deal(t *testing.T) {
 }
 
 func TestHandleAction_Crib(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID:              model.GameID(5),
@@ -228,7 +210,7 @@ func TestHandleAction_Crib(t *testing.T) {
 }
 
 func TestHandleAction_Pegging(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID: model.GameID(5),
@@ -493,7 +475,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 }
 
 func TestHandleAction_Counting(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID: model.GameID(5),
@@ -567,7 +549,7 @@ func TestHandleAction_Counting(t *testing.T) {
 }
 
 func TestHandleAction_CribCounting(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
 		ID:              model.GameID(5),
@@ -613,7 +595,7 @@ func TestHandleAction_CribCounting(t *testing.T) {
 }
 
 func TestHandleAction_DealAgain(t *testing.T) {
-	alice, bob, aliceAPI, bobAPI, abAPIs := setup()
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	// Start handlers get called in the *Ready phases, so start from crib
 	// counting to make sure we pass through the DealReady phase

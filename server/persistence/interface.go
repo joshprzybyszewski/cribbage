@@ -21,4 +21,7 @@ type DB interface {
 
 var (
 	ErrPlayerAlreadyExists error = errors.New(`username already exists`)
+
+	ErrGameInitialSave       error = errors.New(`game must be saved with no actions`)
+	ErrGameActionsOutOfOrder error = errors.New(`game actions out of order`)
 )

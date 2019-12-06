@@ -10,11 +10,11 @@ func (g *Game) IsOver() bool {
 }
 
 func (g *Game) NumActions() int {
-	return len(g.actions)
+	return len(g.Actions)
 }
 
 func (g *Game) AddAction(a PlayerAction) {
-	g.actions = append(g.actions, a)
+	g.Actions = append(g.Actions, a)
 }
 
 func (g *Game) CurrentPeg() int {
@@ -47,7 +47,7 @@ func (g *Game) goesAround() bool {
 	lastPeggedCard := g.PeggedCards[len(g.PeggedCards)-1]
 	lastPlayerWhoPlayed := lastPeggedCard.PlayerID
 	for actIndex := g.NumActions() - 1; actIndex >= lastPeggedCard.Action; actIndex-- {
-		act := g.actions[actIndex]
+		act := g.Actions[actIndex]
 		if pa, ok := act.Action.(PegAction); ok {
 			if !pa.SayGo {
 				// if anybody else has played a card, the goes have not gone around

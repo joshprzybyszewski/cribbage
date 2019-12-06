@@ -15,6 +15,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
+	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
 
 type dbTest func(*testing.T, persistence.DB)
@@ -29,32 +30,21 @@ var (
 )
 
 func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.PlayerID]interaction.Player) {
-	alice := model.Player{
-		ID:   model.PlayerID(rand.String(100)),
-		Name: `alice`,
-	}
-	bob := model.Player{
-		ID:   model.PlayerID(rand.String(100)),
-		Name: `bob`,
-	}
-	aAPI := &interaction.Mock{}
+	alice, bob, aAPI, bAPI, abAPIs := testutils.AliceAndBob()
+
 	aAPI.On(`ID`).Return(alice.ID)
 	aAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	aAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
 	aAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
-	bAPI := &interaction.Mock{}
+
 	bAPI.On(`ID`).Return(bob.ID)
 	bAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	bAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
 	bAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
-	abAPIs := map[model.PlayerID]interaction.Player{
-		alice.ID: aAPI,
-		bob.ID:   bAPI,
-	}
 	return alice, bob, aAPI, bAPI, abAPIs
 }
 
-func copyGame(dst *model.Game, src model.Game) {
+func persistenceGameCopy(dst *model.Game, src model.Game) {
 	*dst = src
 
 	// The deck will always be nil after a copy
@@ -227,7 +217,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
 	var gCopy model.Game
-	copyGame(&gCopy, g)
+	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
 
@@ -239,7 +229,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 		Overcomes: model.DealCards,
 		Action:    model.DealAction{NumShuffles: 10},
 	}, abAPIs))
-	copyGame(&gCopy, g)
+	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
 	checkPersistedGame(gCopy)
@@ -250,7 +240,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
 	}, abAPIs))
-	copyGame(&gCopy, g)
+	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
 	checkPersistedGame(gCopy)
@@ -261,7 +251,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
 	}, abAPIs))
-	copyGame(&gCopy, g)
+	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
 	checkPersistedGame(gCopy)
