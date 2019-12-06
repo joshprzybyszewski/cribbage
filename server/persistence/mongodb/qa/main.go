@@ -14,6 +14,7 @@ func main() {
 		fmt.Printf("Error on New: %+v\n", err)
 		os.Exit(1)
 	}
+	os.Exit(0)
 
 	id := 49
 	idStr := fmt.Sprintf("%d", id)

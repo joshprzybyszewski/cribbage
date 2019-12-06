@@ -269,6 +269,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 	p1Copy := p1
 
 	assert.NoError(t, db.SaveInteraction(p1))
+
 	actPM, err := db.GetInteraction(p1.PlayerID)
 	assert.NoError(t, err)
 	assert.Equal(t, p1Copy, actPM)

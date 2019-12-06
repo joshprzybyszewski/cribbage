@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	Localhost Mode = iota
+	Unset Mode = iota
+	Localhost
+	Unknown
 )
 
 type Mode int

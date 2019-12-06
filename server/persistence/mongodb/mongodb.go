@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/bsonx"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -42,10 +43,55 @@ func New(uri string) (persistence.DB, error) {
 		return nil, err
 	}
 
-	return &mongodb{
+	m := mongodb{
 		client:       client,
 		bsonRegistry: mapbson.CustomRegistry(),
-	}, nil
+	}
+
+	err = m.setupIndex(ctx, `id`, m.gamesCollection().Indexes())
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.setupIndex(ctx, `id`, m.playersCollection().Indexes())
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+
+func (m *mongodb) setupIndex(ctx context.Context, indexKey string, idxs mongo.IndexView) error {
+	listMaxTimeOpt := &options.ListIndexesOptions{}
+	listMaxTimeOpt.SetMaxTime(30 * time.Second)
+	cur, err := idxs.List(ctx, listMaxTimeOpt)
+	if err != nil {
+		return err
+	}
+
+	for cur.Next(context.Background()) {
+		index := bson.D{}
+		err = cur.Decode(&index)
+		if err != nil {
+			return err
+		}
+		for _, i := range index {
+			if key := i.Key; key == `key` {
+				if val, ok := i.Value.(bson.D); ok && val[0].Key == indexKey {
+					// found the desired index, exit
+					return nil
+				}
+			}
+		}
+	}
+
+	keys := bsonx.Doc{{Key: indexKey, Value: bsonx.Int64(int64(1))}}
+	im := mongo.IndexModel{}
+	im.Keys = keys
+	opts := options.CreateIndexes().SetMaxTime(5 * time.Minute)
+
+	_, err = idxs.CreateOne(ctx, im, opts)
+	return err
 }
 
 func (m *mongodb) gamesCollection() *mongo.Collection {
