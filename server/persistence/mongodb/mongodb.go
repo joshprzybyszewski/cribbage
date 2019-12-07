@@ -160,7 +160,7 @@ func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, 
 func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) ([]model.Game, error) {
 	pgl := persistedGameList{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	filter := persistedGameList{GameID: id}
+	filter := bson.M{`gameID`: id} // persistedGameList{GameID: id}
 	err := m.gamesCollection().FindOne(ctx, filter).Decode(&pgl)
 
 	if err != nil {
@@ -177,7 +177,7 @@ func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) 
 
 	gl := gameList{
 		GameID: id,
-		Games:  make([]model.Game, len(pgl.TempGames)),
+		Games:  make([]model.Game, 0, len(pgl.TempGames)),
 	}
 
 	for i, tempGame := range pgl.TempGames {
@@ -195,7 +195,7 @@ func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) 
 			return nil, err
 		}
 
-		gl.Games[i] = g
+		gl.Games = append(gl.Games, g)
 	}
 
 	return gl.Games, nil
@@ -220,7 +220,7 @@ func (m *mongodb) SaveGame(g model.Game) error {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	saved := gameList{}
-	filter := gameList{GameID: g.ID}
+	filter := bson.M{`gameID`: g.ID} // gameList{GameID: g.ID}
 	err := m.gamesCollection().FindOne(ctx, filter).Decode(&saved)
 	if err != nil {
 		// if this is the first time saving the game, then we get ErrNoDocuments
@@ -254,7 +254,7 @@ func (m *mongodb) SaveGame(g model.Game) error {
 }
 
 func (m *mongodb) saveGameList(ctx context.Context, saved gameList) error {
-	filter := gameList{GameID: saved.GameID}
+	filter := bson.M{`gameID`: saved.GameID} // gameList{GameID: saved.GameID}
 	_, err := m.gamesCollection().ReplaceOne(ctx, filter, saved)
 	return err
 }

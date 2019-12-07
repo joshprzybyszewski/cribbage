@@ -217,6 +217,11 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
+
+	_, err = db.GetGame(g.ID)
+	require.Error(t, err)
+	assert.EqualError(t, err, persistence.ErrGameNotFound.Error())
+
 	var gCopy model.Game
 	persistenceGameCopy(&gCopy, g)
 
