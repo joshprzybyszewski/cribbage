@@ -1,11 +1,6 @@
 package interaction
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"net/http"
-
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -62,10 +57,6 @@ func NewNPCPlayer(n NPC, cb func(a model.PlayerAction) error) Player {
 
 var npc game.Player
 
-const (
-	serverDomain = `http://localhost:8080`
-)
-
 func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
 	id := model.PlayerID(npcIDs[n])
 	a := model.PlayerAction{
@@ -96,28 +87,6 @@ func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
 		}
 	}
 	return a
-}
-
-// TODO if possible, do this without making a proper http request. This
-// would mean only having to spin up one AWS lambda to handle an NPC action
-func postAction(a model.PlayerAction) error {
-	endpt := fmt.Sprintf(`/action/%d`, a.GameID)
-
-	body, err := json.Marshal(a)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.Post(serverDomain+endpt, ``, bytes.NewBuffer(body))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("bad response: %+v\n%s", resp, resp.Body)
-	}
-	return nil
 }
 
 func updateNPC(n NPC, g model.Game) {
