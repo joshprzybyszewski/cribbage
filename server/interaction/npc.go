@@ -42,7 +42,7 @@ type npcPlayer struct {
 }
 
 func (npc *npcPlayer) ID() model.PlayerID {
-	return model.PlayerID(npcs[npc.Type].id)
+	return npc.id
 }
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
