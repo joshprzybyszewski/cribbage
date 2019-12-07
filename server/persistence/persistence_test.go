@@ -22,15 +22,15 @@ type dbTest func(*testing.T, persistence.DB)
 
 var (
 	tests = map[string]dbTest{
-		// `createPlayer`:    testCreatePlayer,
-		// `saveGame`:        testSaveGame,
-		// `resaveGame`:      testSaveGameMultipleTimes,
-		// `saveInteraction`: testSaveInteraction,
-		`addColorToGame`: testAddPlayerColorToGame,
+		`createPlayer`:    testCreatePlayer,
+		`saveGame`:        testSaveGame,
+		`resaveGame`:      testSaveGameMultipleTimes,
+		`saveInteraction`: testSaveInteraction,
+		`addColorToGame`:  testAddPlayerColorToGame,
 	}
 )
 
-func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.PlayerID]interaction.Player) {
+func setup() (a, b model.Player, pAPIs map[model.PlayerID]interaction.Player) {
 	alice, bob, aAPI, bAPI, abAPIs := testutils.AliceAndBob()
 
 	aAPI.On(`ID`).Return(alice.ID)
@@ -42,7 +42,7 @@ func setup() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model.Playe
 	bAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	bAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
 	bAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
-	return alice, bob, aAPI, bAPI, abAPIs
+	return alice, bob, abAPIs
 }
 
 func persistenceGameCopy(dst *model.Game, src model.Game) {
@@ -158,7 +158,7 @@ func testCreatePlayer(t *testing.T, db persistence.DB) {
 }
 
 func testSaveGame(t *testing.T, db persistence.DB) {
-	alice, bob, _, _, _ := setup()
+	alice, bob, _ := setup()
 
 	g1 := model.Game{
 		ID:              model.GameID(rand.Intn(1000)),
@@ -205,7 +205,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 }
 
 func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
-	alice, bob, _, _, abAPIs := setup()
+	alice, bob, abAPIs := setup()
 
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)

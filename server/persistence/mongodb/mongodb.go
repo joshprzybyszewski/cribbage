@@ -293,7 +293,13 @@ func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColo
 	return nil
 }
 
-func (m *mongodb) addPlayerColorToPlayer(ctx context.Context, id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+func (m *mongodb) addPlayerColorToPlayer(
+	ctx context.Context,
+	id model.PlayerID,
+	color model.PlayerColor,
+	gID model.GameID,
+) error {
+
 	// Overwrite the player's Games field with a new map
 	filter := bson.M{`id`: id} // model.Player{ID: p.ID}
 	p, err := m.GetPlayer(id)
@@ -321,7 +327,13 @@ func (m *mongodb) addPlayerColorToPlayer(ctx context.Context, id model.PlayerID,
 	return sr.Err()
 }
 
-func (m *mongodb) addPlayerColorToGame(ctx context.Context, id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+func (m *mongodb) addPlayerColorToGame(
+	ctx context.Context,
+	id model.PlayerID,
+	color model.PlayerColor,
+	gID model.GameID,
+) error {
+
 	g, err := m.GetGame(gID)
 	if err != nil {
 		return nil
