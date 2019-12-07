@@ -12,7 +12,7 @@ func Setup() error {
 		db: getDB(),
 	}
 
-	npcTypes := []interaction.NPC{
+	npcTypes := []interaction.NPCType{
 		interaction.Dumb, interaction.Simple, interaction.Calculated,
 	}
 	for _, npcType := range npcTypes {
