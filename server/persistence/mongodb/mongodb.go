@@ -42,7 +42,9 @@ func New(uri string) (persistence.DB, error) {
 		// If we don't know where to connect, use the default localhost URI
 		uri = `mongodb://localhost:27017`
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
@@ -158,8 +160,10 @@ func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, 
 }
 
 func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) ([]model.Game, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	pgl := persistedGameList{}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	filter := bson.M{`gameID`: id} // persistedGameList{GameID: id}
 	err := m.gamesCollection().FindOne(ctx, filter).Decode(&pgl)
 
@@ -202,8 +206,10 @@ func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) 
 }
 
 func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	result := model.Player{}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	err := m.playersCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
 	if err != nil {
@@ -217,7 +223,8 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 
 func (m *mongodb) SaveGame(g model.Game) error {
 	// TODO make this transactional
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	saved := gameList{}
 	filter := bson.M{`gameID`: g.ID} // gameList{GameID: g.ID}
@@ -260,8 +267,10 @@ func (m *mongodb) saveGameList(ctx context.Context, saved gameList) error {
 }
 
 func (m *mongodb) CreatePlayer(p model.Player) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	collection := m.playersCollection()
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	// check if the player already exists
 	filter := bson.M{`id`: p.ID} // model.Player{ID: p.ID}
@@ -278,7 +287,8 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 }
 
 func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	err := m.addPlayerColorToPlayer(ctx, id, color, gID)
 	if err != nil {
@@ -293,6 +303,7 @@ func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColo
 	return nil
 }
 
+// addPlayerColorToPlayer will add this player's color to the saved Player
 func (m *mongodb) addPlayerColorToPlayer(
 	ctx context.Context,
 	id model.PlayerID,
@@ -300,8 +311,6 @@ func (m *mongodb) addPlayerColorToPlayer(
 	gID model.GameID,
 ) error {
 
-	// Overwrite the player's Games field with a new map
-	filter := bson.M{`id`: id} // model.Player{ID: p.ID}
 	p, err := m.GetPlayer(id)
 	if err != nil {
 		return nil
@@ -315,18 +324,22 @@ func (m *mongodb) addPlayerColorToPlayer(
 		if c != color {
 			return errors.New(`mismatched player-games color`)
 		}
+
 		// Nothing to do; the player already knows its color
 		return nil
 	}
 
 	p.Games[gID] = color
 
+	filter := bson.M{`id`: id} // model.Player{ID: p.ID}
 	opt := &options.FindOneAndReplaceOptions{}
 	opt.SetUpsert(true)
 	sr := m.playersCollection().FindOneAndReplace(ctx, filter, p)
 	return sr.Err()
 }
 
+// addPlayerColorToGame will add this player's color to the most recently saved game
+// if it doesn't exist
 func (m *mongodb) addPlayerColorToGame(
 	ctx context.Context,
 	id model.PlayerID,
@@ -369,9 +382,10 @@ func (m *mongodb) addPlayerColorToGame(
 }
 
 func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
-	collection := m.interactionsCollection()
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
+	collection := m.interactionsCollection()
 	if _, err := m.GetInteraction(i.PlayerID); err == persistence.ErrInteractionNotFound {
 		_, err = collection.InsertOne(ctx, i)
 		return err
@@ -385,16 +399,18 @@ func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
 }
 
 func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
-	pm := interaction.PlayerMeans{}
-	filter := bson.M{`playerID`: id} // interaction.PlayerMeans{PlayerID: id}
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := m.interactionsCollection().FindOne(ctx, filter).Decode(&pm)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
+	result := interaction.PlayerMeans{}
+	filter := bson.M{`playerID`: id} // interaction.PlayerMeans{PlayerID: id}
+	err := m.interactionsCollection().FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return interaction.PlayerMeans{}, persistence.ErrInteractionNotFound
 		}
 		return interaction.PlayerMeans{}, err
 	}
-	return pm, nil
+
+	return result, nil
 }
