@@ -93,7 +93,6 @@ func TestDB(t *testing.T) {
 		`memory`: memory.New(),
 	}
 
-	// TODO get mongodb tests running in travis?
 	if !testing.Short() {
 		// We assume you have mongodb stood up locally when running without -short
 		mongo, err := mongodb.New(``)
