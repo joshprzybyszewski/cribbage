@@ -22,10 +22,11 @@ type dbTest func(*testing.T, persistence.DB)
 
 var (
 	tests = map[string]dbTest{
-		`createPlayer`:    testCreatePlayer,
-		`saveGame`:        testSaveGame,
-		`resaveGame`:      testSaveGameMultipleTimes,
-		`saveInteraction`: testSaveInteraction,
+		// `createPlayer`:    testCreatePlayer,
+		// `saveGame`:        testSaveGame,
+		// `resaveGame`:      testSaveGameMultipleTimes,
+		// `saveInteraction`: testSaveInteraction,
+		`addColorToGame`: testAddPlayerColorToGame,
 	}
 )
 
@@ -289,4 +290,29 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 	actPM, err = db.GetInteraction(p1.PlayerID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, p1Copy, actPM)
+}
+
+func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
+	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
+	require.NoError(t, db.CreatePlayer(alice))
+	require.NoError(t, db.CreatePlayer(bob))
+
+	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
+	require.NoError(t, err)
+
+	require.NoError(t, db.SaveGame(g))
+
+	for _, pID := range []model.PlayerID{alice.ID, bob.ID} {
+		require.NoError(t, db.AddPlayerColorToGame(pID, g.PlayerColors[pID], g.ID))
+	}
+
+	a2, err := db.GetPlayer(alice.ID)
+	require.NoError(t, err)
+	assert.NotEqual(t, alice, a2)
+	assert.Equal(t, g.PlayerColors[alice.ID], a2.Games[g.ID])
+
+	b2, err := db.GetPlayer(bob.ID)
+	require.NoError(t, err)
+	assert.NotEqual(t, bob, b2)
+	assert.Equal(t, g.PlayerColors[bob.ID], b2.Games[g.ID])
 }
