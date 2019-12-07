@@ -14,6 +14,7 @@ func newCustomMapCoder(
 	keyEnc func(reflect.Value) (string, error),
 	keyDec func(string) (reflect.Value, error),
 ) *customMapCoder {
+
 	return &customMapCoder{
 		mapKind:    mapType.Kind(),
 		keyKind:    mapType.Key().Kind(),
@@ -35,7 +36,7 @@ type customMapCoder struct {
 	keyDecoder func(string) (reflect.Value, error)
 }
 
-func (c *customMapCoder) EncodeValue(
+func (c *customMapCoder) EncodeValue( //nolint:gocyclo this func mimics mongo's map encoder
 	ectx bsoncodec.EncodeContext,
 	vw bsonrw.ValueWriter,
 	val reflect.Value,
@@ -90,7 +91,7 @@ func (c *customMapCoder) EncodeValue(
 	return dw.WriteDocumentEnd()
 }
 
-func (c *customMapCoder) DecodeValue(
+func (c *customMapCoder) DecodeValue( //nolint:gocyclo this func mimics mongo's map decoder
 	dctx bsoncodec.DecodeContext,
 	vr bsonrw.ValueReader,
 	val reflect.Value,
