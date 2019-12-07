@@ -31,7 +31,8 @@ var npcIDs = [...]string{
 var _ Player = (*npcPlayer)(nil)
 
 type npcPlayer struct {
-	Type NPC
+	Type                 NPC
+	handleActionCallback func(a model.PlayerAction) error
 }
 
 func (npc *npcPlayer) ID() model.PlayerID {
@@ -40,8 +41,7 @@ func (npc *npcPlayer) ID() model.PlayerID {
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
 	a := buildNPCAction(npc.Type, b, g)
-	// TODO use a callback to handle the action
-	return nil
+	return npc.handleActionCallback(a)
 }
 
 // The NPC doesn't care about messages or score updates
@@ -53,9 +53,10 @@ func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPC) Player {
+func NewNPCPlayer(n NPC, cb func(a model.PlayerAction) error) Player {
 	return &npcPlayer{
-		Type: n,
+		Type:                 n,
+		handleActionCallback: cb,
 	}
 }
 
