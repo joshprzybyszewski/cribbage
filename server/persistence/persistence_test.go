@@ -300,19 +300,31 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
 
+	// Right now, CreateGame assigns colors to players, but we may
+	// not always do that. Clear out that map but save it so that we
+	// _can_ assign colors:)
+	playerColors := g.PlayerColors
+	g.PlayerColors = nil
+
 	require.NoError(t, db.SaveGame(g))
 
 	for _, pID := range []model.PlayerID{alice.ID, bob.ID} {
-		require.NoError(t, db.AddPlayerColorToGame(pID, g.PlayerColors[pID], g.ID))
+		require.NoError(t, db.AddPlayerColorToGame(pID, playerColors[pID], g.ID))
 	}
 
 	a2, err := db.GetPlayer(alice.ID)
 	require.NoError(t, err)
 	assert.NotEqual(t, alice, a2)
-	assert.Equal(t, g.PlayerColors[alice.ID], a2.Games[g.ID])
+	assert.Equal(t, playerColors[alice.ID], a2.Games[g.ID])
 
 	b2, err := db.GetPlayer(bob.ID)
 	require.NoError(t, err)
 	assert.NotEqual(t, bob, b2)
-	assert.Equal(t, g.PlayerColors[bob.ID], b2.Games[g.ID])
+	assert.Equal(t, playerColors[bob.ID], b2.Games[g.ID])
+
+	g2, err := db.GetGame(g.ID)
+	require.NoError(t, err)
+	assert.NotEqual(t, g, g2)
+	assert.Equal(t, g2.PlayerColors[alice.ID], a2.Games[g.ID])
+	assert.Equal(t, g2.PlayerColors[bob.ID], b2.Games[g.ID])
 }
