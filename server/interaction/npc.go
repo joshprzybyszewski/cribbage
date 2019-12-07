@@ -7,35 +7,46 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-// NPC is an enum specifying which type of NPC
-type NPC int
+// NPCType is an enum specifying which type of NPCType
+type NPCType int
 
 // Dumb, Simple, and Calculated are supported
 const (
-	Dumb NPC = iota
+	Dumb NPCType = iota
 	Simple
 	Calculated
 )
 
-var npcIDs = [...]string{
-	Dumb:       `dumbNPC`,
-	Simple:     `simpleNPC`,
-	Calculated: `calculatedNPC`,
+var npcs = [...]npcPlayer{
+	Dumb: npcPlayer{
+		Type: Dumb,
+		id:   `dumbNPC`,
+	},
+	Simple: npcPlayer{
+		Type: Simple,
+		id:   `simpleNPC`,
+	},
+	Calculated: npcPlayer{
+		Type: Calculated,
+		id:   `calculatedNPC`,
+	},
 }
 
 var _ Player = (*npcPlayer)(nil)
 
 type npcPlayer struct {
-	Type                 NPC
+	Type NPCType
+
+	id                   model.PlayerID
 	handleActionCallback func(a model.PlayerAction) error
 }
 
 func (npc *npcPlayer) ID() model.PlayerID {
-	return model.PlayerID(npcIDs[npc.Type])
+	return model.PlayerID(npcs[npc.Type].id)
 }
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	a := buildNPCAction(npc.Type, b, g)
+	a := npc.buildAction(b, g)
 	return npc.handleActionCallback(a)
 }
 
@@ -48,20 +59,18 @@ func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPC, cb func(a model.PlayerAction) error) Player {
-	return &npcPlayer{
-		Type:                 n,
-		handleActionCallback: cb,
-	}
+func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) Player {
+	npc := npcs[n]
+	npc.handleActionCallback = cb
+	return &npc
 }
 
-var npc game.Player
+var me game.Player
 
-func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
-	id := model.PlayerID(npcIDs[n])
+func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAction {
 	a := model.PlayerAction{
 		GameID:    g.ID,
-		ID:        id,
+		ID:        npc.ID(),
 		Overcomes: b,
 	}
 	switch b {
@@ -70,16 +79,16 @@ func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
 			NumShuffles: rand.Intn(10),
 		}
 	case model.CribCard:
-		a.Action = handleNPCBuildCrib(n, g)
+		a.Action = npc.handleBuildCrib(g)
 	case model.CutCard:
 		a.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		a.Action = handleNPCPeg(n, g)
+		a.Action = npc.handlePeg(g)
 	case model.CountHand:
 		a.Action = model.CountHandAction{
-			Pts: scorer.HandPoints(g.CutCard, g.Hands[id]),
+			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),
 		}
 	case model.CountCrib:
 		a.Action = model.CountCribAction{
@@ -89,35 +98,35 @@ func buildNPCAction(n NPC, b model.Blocker, g model.Game) model.PlayerAction {
 	return a
 }
 
-func updateNPC(n NPC, g model.Game) {
-	id := model.PlayerID(npcIDs[n])
-	switch n {
+func (npc *npcPlayer) updateCurrentNPC(g model.Game) {
+	id := model.PlayerID(npc.ID())
+	switch npc.Type {
 	case Dumb:
-		npc = game.NewDumbNPC(g.PlayerColors[id])
+		me = game.NewDumbNPC(g.PlayerColors[id])
 	case Simple:
-		npc = game.NewSimpleNPC(g.PlayerColors[id])
+		me = game.NewSimpleNPC(g.PlayerColors[id])
 	case Calculated:
-		npc = game.NewCalcNPC(g.PlayerColors[id])
+		me = game.NewCalcNPC(g.PlayerColors[id])
 	}
 }
 
-func handleNPCPeg(npcType NPC, g model.Game) model.PegAction {
-	updateNPC(npcType, g)
-	c, sayGo, _ := npc.Peg(g.PeggedCards, g.CurrentPeg())
+func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
+	npc.updateCurrentNPC(g)
+	c, sayGo, _ := me.Peg(g.PeggedCards, g.CurrentPeg())
 	return model.PegAction{
 		Card:  c,
 		SayGo: sayGo,
 	}
 }
 
-func handleNPCBuildCrib(npcType NPC, g model.Game) model.BuildCribAction {
-	updateNPC(npcType, g)
+func (npc *npcPlayer) handleBuildCrib(g model.Game) model.BuildCribAction {
+	npc.updateCurrentNPC(g)
 	nCards := 2
 	switch len(g.Players) {
 	case 3, 4:
 		nCards = 1
 	}
 	return model.BuildCribAction{
-		Cards: npc.AddToCrib(g.PlayerColors[g.CurrentDealer], nCards),
+		Cards: me.AddToCrib(g.PlayerColors[g.CurrentDealer], nCards),
 	}
 }
