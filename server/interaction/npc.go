@@ -40,7 +40,7 @@ func (npc *npcPlayer) ID() model.PlayerID {
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
 	a := buildNPCAction(npc.Type, b, g)
-	respChan <- a
+	// TODO use a callback to handle the action
 	return nil
 }
 
@@ -49,21 +49,17 @@ func (npc *npcPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
 }
 func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
-	// TODO Can we use this to stop the goroutine if the game is over?
 	return nil
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPC, c chan model.PlayerAction) Player {
-	respChan = c
-	// TODO Can we use this to spin up a goroutine which sends responses to the channel?
+func NewNPCPlayer(n NPC) Player {
 	return &npcPlayer{
 		Type: n,
 	}
 }
 
 var npc game.Player
-var respChan chan model.PlayerAction
 
 const (
 	serverDomain = `http://localhost:8080`
