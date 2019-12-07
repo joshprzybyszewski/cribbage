@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,6 +24,10 @@ const (
 	gamesCol        string = `games`
 	playersCol      string = `players`
 	interactionsCol string = `interactions`
+)
+
+const (
+	latestGameAction int = -1
 )
 
 var _ persistence.DB = (*mongodb)(nil)
@@ -48,7 +53,7 @@ func New(uri string) (persistence.DB, error) {
 		bsonRegistry: mapbson.CustomRegistry(),
 	}
 
-	err = m.setupIndex(ctx, `id`, m.gamesCollection().Indexes())
+	err = m.setupIndex(ctx, `gameID`, m.gamesCollection().Indexes())
 	if err != nil {
 		return nil, err
 	}
@@ -115,27 +120,47 @@ func (m *mongodb) interactionsCollection() *mongo.Collection {
 	return m.client.Database(dbName).Collection(interactionsCol, gColOpts...)
 }
 
-func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
-	// var monthStatus interface{}
-	// filter := bson.M{"_id": id}
-	// tempResult := bson.M{}
-	// err := db.Collection("Months").FindOne(ctx, filter).Decode(&tempResult)
-	// if err == nil {
-	// 	obj, _ := json.Marshal(tempResult)
-	// 	err = json.Unmarshal(obj, &monthStatus)
-	// }
-	// return monthStatus, err
+type gameList struct {
+	GameID model.GameID `bson:"gameID"`
+	Games  []model.Game `bson:"games,omitempty"`
+}
 
-	// result := model.Game{}
-	tempResult := bson.M{}
+type persistedGameList struct {
+	GameID    model.GameID `bson:"gameID"`
+	TempGames []bson.M     `bson:"games,omitempty"`
+}
+
+func (m *mongodb) GetGame(id model.GameID) (model.Game, error) {
+	return m.getGameAtAction(id, latestGameAction)
+}
+
+func (m *mongodb) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
+	return m.getGameAtAction(id, int(numActions))
+}
+
+func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, error) {
+	pgl := persistedGameList{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := m.gamesCollection().FindOne(ctx, bson.M{"id": id}).Decode(&tempResult)
+	filter := persistedGameList{GameID: id}
+	err := m.gamesCollection().FindOne(ctx, filter).Decode(&pgl)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.Game{}, persistence.ErrGameNotFound
+		}
 		return model.Game{}, err
 	}
 
-	obj, err := json.Marshal(tempResult)
+	if numActions == latestGameAction {
+		numActions = len(pgl.TempGames) - 1
+	}
+
+	if numActions < 0 || numActions >= len(pgl.TempGames) {
+		return model.Game{}, errors.New(`action doesn't exist`)
+	}
+
+	tempGame := pgl.TempGames[numActions]
+	obj, err := json.Marshal(tempGame)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -154,6 +179,9 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 	err := m.playersCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return model.Player{}, persistence.ErrPlayerNotFound
+		}
 		return model.Player{}, err
 	}
 	return result, nil
@@ -163,8 +191,9 @@ func (m *mongodb) SaveGame(g model.Game) error {
 	// TODO make this transactional
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	current := model.Game{}
-	err := m.gamesCollection().FindOne(ctx, bson.M{"id": g.ID}).Decode(&current)
+	saved := gameList{}
+	filter := gameList{GameID: g.ID}
+	err := m.gamesCollection().FindOne(ctx, filter).Decode(&saved)
 	if err != nil {
 		// if this is the first time saving the game, then we get ErrNoDocuments
 		if err != mongo.ErrNoDocuments {
@@ -176,17 +205,24 @@ func (m *mongodb) SaveGame(g model.Game) error {
 			return persistence.ErrGameInitialSave
 		}
 
-		_, err = m.gamesCollection().InsertOne(ctx, g)
+		saved.GameID = g.ID
+		saved.Games = []model.Game{g}
+		_, err = m.gamesCollection().InsertOne(ctx, saved)
 		return err
 	}
 
-	if len(current.Actions)+1 != len(g.Actions) {
+	if saved.GameID != g.ID {
+		return errors.New(`bad save somewhere`)
+	}
+	if len(saved.Games) != len(g.Actions) {
 		// TODO we could do a deeper check on the actions
-		// i.e. current.Actions == g.Action[:len(g.Actions)-1]
+		// i.e. saved.games == g.Action[:len(g.Actions)-1]
 		return persistence.ErrGameActionsOutOfOrder
 	}
 
-	_, err = m.gamesCollection().ReplaceOne(ctx, bson.M{"id": g.ID}, g)
+	saved.Games = append(saved.Games, g)
+
+	_, err = m.gamesCollection().ReplaceOne(ctx, filter, saved)
 	return err
 }
 
@@ -197,6 +233,7 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 	// check if the player already exists
 	sr := collection.FindOne(ctx, bson.M{"id": p.ID})
 	if sr.Err() != mongo.ErrNoDocuments {
+		// TODO log this sr.Err() and check if we _found_ a player
 		return persistence.ErrPlayerAlreadyExists
 	}
 

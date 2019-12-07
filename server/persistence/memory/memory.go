@@ -1,7 +1,6 @@
 package memory
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -38,7 +37,24 @@ func (m *memory) GetGame(id model.GameID) (model.Game, error) {
 		g.Deck = nil
 		return g, nil
 	}
-	return model.Game{}, errors.New(`does not have player`)
+	return model.Game{}, persistence.ErrGameNotFound
+}
+
+func (m *memory) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if games, ok := m.games[id]; ok {
+		if int(numActions) >= len(games) {
+			return model.Game{}, persistence.ErrGameNotFound
+		}
+		g := games[numActions]
+		// Persistence should never know about the Deck in a game
+		// make sure that memory mimics real persistence
+		g.Deck = nil
+		return g, nil
+	}
+	return model.Game{}, persistence.ErrGameNotFound
 }
 
 func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
@@ -48,7 +64,7 @@ func (m *memory) GetPlayer(id model.PlayerID) (model.Player, error) {
 	if p, ok := m.players[id]; ok {
 		return p, nil
 	}
-	return model.Player{}, errors.New(`does not have player`)
+	return model.Player{}, persistence.ErrPlayerNotFound
 }
 
 func (m *memory) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
@@ -58,7 +74,7 @@ func (m *memory) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, err
 	if i, ok := m.interactions[id]; ok {
 		return i, nil
 	}
-	return interaction.PlayerMeans{}, errors.New(`does not have player means`)
+	return interaction.PlayerMeans{}, persistence.ErrInteractionNotFound
 }
 
 func (m *memory) SaveGame(g model.Game) error {
@@ -94,7 +110,7 @@ func (m *memory) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor
 	defer m.lock.Unlock()
 
 	if _, ok := m.players[id]; !ok {
-		return errors.New(`player does not exist`)
+		return persistence.ErrPlayerNotFound
 	}
 
 	m.players[id].Games[gID] = color
