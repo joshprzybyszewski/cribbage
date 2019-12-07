@@ -16,7 +16,7 @@ func Setup() error {
 		interaction.Dumb, interaction.Simple, interaction.Calculated,
 	}
 	for _, npcType := range npcTypes {
-		npc := interaction.NewNPCPlayer(npcType)
+		npc := interaction.NewNPCPlayer(npcType, cs.handleAction)
 		if _, err := cs.db.GetInteraction(npc.ID()); err != nil {
 			// TODO we should probably not use the error this way...
 			if err.Error() == `does not have player` {
