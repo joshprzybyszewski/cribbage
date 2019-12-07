@@ -147,7 +147,7 @@ func (m *mongodb) GetGameAction(id model.GameID, numActions uint) (model.Game, e
 }
 
 func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, error) {
-	gs, err := m.getGameStates(id, map[int]struct{}{numActions: struct{}{}})
+	gs, err := m.getGameStates(id, map[int]struct{}{numActions: {}})
 	if err != nil {
 		return model.Game{}, err
 	}
