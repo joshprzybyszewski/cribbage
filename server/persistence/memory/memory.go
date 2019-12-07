@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -109,11 +110,36 @@ func (m *memory) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
+	// Assign color to player
 	if _, ok := m.players[id]; !ok {
 		return persistence.ErrPlayerNotFound
 	}
+	pCopy := m.players[id]
 
-	m.players[id].Games[gID] = color
+	if pCopy.Games == nil {
+		pCopy.Games = map[model.GameID]model.PlayerColor{}
+	}
+
+	if c, ok := pCopy.Games[gID]; !ok {
+		pCopy.Games[gID] = color
+		m.players[id] = pCopy
+	} else if c != color {
+		return errors.New(`mismatched player colors`)
+	}
+
+	// assign color in game
+	gameList := m.games[gID]
+	mostRecent := gameList[len(gameList)-1]
+	if c, ok := mostRecent.PlayerColors[id]; !ok {
+		if mostRecent.PlayerColors == nil {
+			mostRecent.PlayerColors = make(map[model.PlayerID]model.PlayerColor, 1)
+		}
+		mostRecent.PlayerColors[id] = color
+		gameList[len(gameList)-1] = mostRecent
+	} else if c != color {
+		return errors.New(`mismatched game-player colors`)
+	}
+
 	return nil
 
 }

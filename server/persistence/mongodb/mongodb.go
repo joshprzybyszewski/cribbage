@@ -53,7 +53,7 @@ func New(uri string) (persistence.DB, error) {
 		bsonRegistry: mapbson.CustomRegistry(),
 	}
 
-	// needs to match savedGame.ID
+	// needs to match gameList.GameID
 	err = m.setupIndex(ctx, `gameID`, m.gamesCollection().Indexes())
 	if err != nil {
 		return nil, err
@@ -147,6 +147,17 @@ func (m *mongodb) GetGameAction(id model.GameID, numActions uint) (model.Game, e
 }
 
 func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, error) {
+	gs, err := m.getGameStates(id, map[int]struct{}{numActions: struct{}{}})
+	if err != nil {
+		return model.Game{}, err
+	}
+	if len(gs) != 1 {
+		return model.Game{}, errors.New(`action doesn't exist`)
+	}
+	return gs[0], nil
+}
+
+func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) ([]model.Game, error) {
 	pgl := persistedGameList{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	filter := persistedGameList{GameID: id}
@@ -154,31 +165,40 @@ func (m *mongodb) getGameAtAction(id model.GameID, numActions int) (model.Game, 
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return model.Game{}, persistence.ErrGameNotFound
+			return nil, persistence.ErrGameNotFound
 		}
-		return model.Game{}, err
+		return nil, err
 	}
 
-	if numActions == latestGameAction {
-		numActions = len(pgl.TempGames) - 1
+	if _, ok := actionStates[latestGameAction]; ok {
+		delete(actionStates, latestGameAction)
+		actionStates[len(pgl.TempGames)-1] = struct{}{}
 	}
 
-	if numActions < 0 || numActions >= len(pgl.TempGames) {
-		return model.Game{}, errors.New(`action doesn't exist`)
+	gl := gameList{
+		GameID: id,
+		Games:  make([]model.Game, len(pgl.TempGames)),
 	}
 
-	tempGame := pgl.TempGames[numActions]
-	obj, err := json.Marshal(tempGame)
-	if err != nil {
-		return model.Game{}, err
+	for i, tempGame := range pgl.TempGames {
+		if _, ok := actionStates[i]; actionStates != nil && !ok {
+			continue
+		}
+
+		obj, err := json.Marshal(tempGame)
+		if err != nil {
+			return nil, err
+		}
+
+		g, err := jsonutils.UnmarshalGame(obj)
+		if err != nil {
+			return nil, err
+		}
+
+		gl.Games[i] = g
 	}
 
-	g, err := jsonutils.UnmarshalGame(obj)
-	if err != nil {
-		return model.Game{}, err
-	}
-
-	return g, nil
+	return gl.Games, nil
 }
 
 func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
@@ -230,7 +250,12 @@ func (m *mongodb) SaveGame(g model.Game) error {
 
 	saved.Games = append(saved.Games, g)
 
-	_, err = m.gamesCollection().ReplaceOne(ctx, filter, saved)
+	return m.saveGameList(ctx, saved)
+}
+
+func (m *mongodb) saveGameList(ctx context.Context, saved gameList) error {
+	filter := gameList{GameID: saved.GameID}
+	_, err := m.gamesCollection().ReplaceOne(ctx, filter, saved)
 	return err
 }
 
@@ -253,16 +278,82 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 }
 
 func (m *mongodb) AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
-	collection := m.playersCollection()
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	// Overwrite the player's Games field with a new map
-	// TODO figure out replacement
-	var replacement interface{}
-	collection.FindOneAndReplace(ctx, bson.M{"id": id}, replacement)
-	// TODO do this stufffr
-	return nil
+	err := m.addPlayerColorToPlayer(ctx, id, color, gID)
+	if err != nil {
+		return err
+	}
 
+	err = m.addPlayerColorToGame(ctx, id, color, gID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *mongodb) addPlayerColorToPlayer(ctx context.Context, id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+	// Overwrite the player's Games field with a new map
+	filter := bson.M{`id`: id} // model.Player{ID: p.ID}
+	p, err := m.GetPlayer(id)
+	if err != nil {
+		return nil
+	}
+
+	if p.Games == nil {
+		p.Games = make(map[model.GameID]model.PlayerColor, 1)
+	}
+
+	if c, ok := p.Games[gID]; ok {
+		if c != color {
+			return errors.New(`mismatched player-games color`)
+		}
+		// Nothing to do; the player already knows its color
+		return nil
+	}
+
+	p.Games[gID] = color
+
+	opt := &options.FindOneAndReplaceOptions{}
+	opt.SetUpsert(true)
+	sr := m.playersCollection().FindOneAndReplace(ctx, filter, p)
+	return sr.Err()
+}
+
+func (m *mongodb) addPlayerColorToGame(ctx context.Context, id model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+	g, err := m.GetGame(gID)
+	if err != nil {
+		return nil
+	}
+
+	if c, ok := g.PlayerColors[id]; ok {
+		if c != color {
+			return errors.New(`mismatched game-player color`)
+		}
+
+		// the Game already knows this player's color; nothing to do
+		return nil
+	}
+
+	games, err := m.getGameStates(gID, nil)
+	if err != nil {
+		return err
+	}
+
+	recentGame := games[len(games)-1]
+	if recentGame.PlayerColors == nil {
+		recentGame.PlayerColors = make(map[model.PlayerID]model.PlayerColor, 1)
+	}
+	recentGame.PlayerColors[id] = color
+
+	games[len(games)-1] = recentGame
+	newGameList := gameList{
+		GameID: gID,
+		Games:  games,
+	}
+
+	return m.saveGameList(ctx, newGameList)
 }
 
 func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
