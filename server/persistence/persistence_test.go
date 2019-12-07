@@ -263,7 +263,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 		PreferredMode: interaction.Localhost,
 		Interactions: []interaction.Means{{
 			Mode: interaction.Localhost,
-			Info: 8383,
+			Info: int32(8383),
 		}},
 	}
 	p1Copy := p1
@@ -271,7 +271,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 	assert.NoError(t, db.SaveInteraction(p1))
 
 	actPM, err := db.GetInteraction(p1.PlayerID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, p1Copy, actPM)
 
 	assert.NoError(t, db.SaveInteraction(p1))

@@ -53,12 +53,20 @@ func New(uri string) (persistence.DB, error) {
 		bsonRegistry: mapbson.CustomRegistry(),
 	}
 
+	// needs to match savedGame.ID
 	err = m.setupIndex(ctx, `gameID`, m.gamesCollection().Indexes())
 	if err != nil {
 		return nil, err
 	}
 
+	// needs to match model.Player.ID
 	err = m.setupIndex(ctx, `id`, m.playersCollection().Indexes())
+	if err != nil {
+		return nil, err
+	}
+
+	// needs to match interaction.PlayerMeans.PlayerID
+	err = m.setupIndex(ctx, `playerID`, m.interactionsCollection().Indexes())
 	if err != nil {
 		return nil, err
 	}
@@ -231,13 +239,16 @@ func (m *mongodb) CreatePlayer(p model.Player) error {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
 	// check if the player already exists
-	sr := collection.FindOne(ctx, bson.M{"id": p.ID})
-	if sr.Err() != mongo.ErrNoDocuments {
-		// TODO log this sr.Err() and check if we _found_ a player
+	filter := bson.M{`id`: p.ID} // model.Player{ID: p.ID}
+	c, err := collection.Find(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if c.Next(ctx) {
 		return persistence.ErrPlayerAlreadyExists
 	}
 
-	_, err := collection.InsertOne(ctx, p)
+	_, err = collection.InsertOne(ctx, p)
 	return err
 }
 
@@ -258,22 +269,28 @@ func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
 	collection := m.interactionsCollection()
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	// check if the player already exists
-	sr := collection.FindOne(ctx, bson.M{"id": i.PlayerID})
-	if sr.Err() != mongo.ErrNoDocuments {
-		return persistence.ErrPlayerAlreadyExists
+	if _, err := m.GetInteraction(i.PlayerID); err == persistence.ErrInteractionNotFound {
+		_, err = collection.InsertOne(ctx, i)
+		return err
 	}
 
-	_, err := collection.InsertOne(ctx, i)
+	opt := &options.ReplaceOptions{}
+	opt.SetUpsert(true)
+
+	_, err := collection.ReplaceOne(ctx, i, opt)
 	return err
 }
 
 func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
 	pm := interaction.PlayerMeans{}
+	filter := bson.M{`playerID`: id} // interaction.PlayerMeans{PlayerID: id}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	err := m.interactionsCollection().FindOne(ctx, bson.M{"id": id}).Decode(&pm)
+	err := m.interactionsCollection().FindOne(ctx, filter).Decode(&pm)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return interaction.PlayerMeans{}, persistence.ErrInteractionNotFound
+		}
 		return interaction.PlayerMeans{}, err
 	}
 	return pm, nil
