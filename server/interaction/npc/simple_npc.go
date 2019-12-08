@@ -6,11 +6,11 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-var _ npcLogic = (*simpleNPCInteraction)(nil)
+var _ npcLogic = (*simpleNPCLogic)(nil)
 
-type simpleNPCInteraction struct{}
+type simpleNPCLogic struct{}
 
-func (npc *simpleNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
+func (npc *simpleNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
 	hand := g.Hands[pID]
 	if pID == g.CurrentDealer {
 		if rand.Int()%2 == 0 {
@@ -25,7 +25,7 @@ func (npc *simpleNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n i
 	return strategy.AvoidCribPairs(n, hand)
 }
 
-func (npc *simpleNPCInteraction) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
+func (npc *simpleNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
 	hand := g.Hands[pID]
 	prevPegs := g.PeggedCards
 	curPeg := g.CurrentPeg()
