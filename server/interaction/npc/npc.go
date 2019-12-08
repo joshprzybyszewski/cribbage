@@ -1,6 +1,8 @@
 package npc
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -27,28 +29,25 @@ type npcPlayer struct {
 	handleActionCallback func(a model.PlayerAction) error
 }
 
-var npcs = [...]npcPlayer{
-	Dumb: {
-		Mode: Dumb,
-		id:   `dumbNPC`,
-	},
-	Simple: {
-		Mode: Simple,
-		id:   `simpleNPC`,
-	},
-	Calculated: {
-		Mode: Calculated,
-		id:   `calculatedNPC`,
-	},
+var npcs = map[model.PlayerID]Mode{
+	`dumbNPC`:        Dumb,
+	`simpleNPC`:      Simple,
+	`calculaterdNPC`: Calculated,
 }
 
 var me game.Player
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n Mode, cb func(a model.PlayerAction) error) interaction.Player {
-	npc := npcs[n]
-	npc.handleActionCallback = cb
-	return &npc
+func NewNPCPlayer(pID model.PlayerID, cb func(a model.PlayerAction) error) (interaction.Player, error) {
+	m, ok := npcs[pID]
+	if !ok {
+		return &npcPlayer{}, errors.New(`not a valid npc mode`)
+	}
+	return &npcPlayer{
+		Mode:                 m,
+		id:                   pID,
+		handleActionCallback: cb,
+	}, nil
 }
 
 func (npc *npcPlayer) ID() model.PlayerID {
