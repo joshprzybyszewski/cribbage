@@ -4,6 +4,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
@@ -17,7 +18,7 @@ const (
 	Calculated
 )
 
-var _ Player = (*npcPlayer)(nil)
+var _ interaction.Player = (*npcPlayer)(nil)
 
 type npcPlayer struct {
 	Type NPCType
@@ -44,7 +45,7 @@ var npcs = [...]npcPlayer{
 var me game.Player
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) Player {
+func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) interaction.Player {
 	npc := npcs[n]
 	npc.handleActionCallback = cb
 	return &npc
