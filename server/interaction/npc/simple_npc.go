@@ -10,19 +10,16 @@ var _ npcLogic = (*simpleNPCLogic)(nil)
 
 type simpleNPCLogic struct{}
 
-func (npc *simpleNPCLogic) addToCrib(hand []model.Card, isDealer bool) []model.Card {
-	n := len(hand) - 4
-	if isDealer {
-		if rand.Int()%2 == 0 {
-			return strategy.GiveCribFifteens(n, hand)
-		}
-		return strategy.GiveCribPairs(n, hand)
+func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) model.BuildCribAction {
+	dealerStrats := []func(desired int, hand []model.Card) []model.Card{
+		strategy.GiveCribFifteens,
+		strategy.GiveCribPairs,
 	}
-
-	if rand.Int()%2 == 0 {
-		return strategy.AvoidCribFifteens(n, hand)
+	notDealerStrats := []func(desired int, hand []model.Card) []model.Card{
+		strategy.AvoidCribFifteens,
+		strategy.AvoidCribPairs,
 	}
-	return strategy.AvoidCribPairs(n, hand)
+	return cribActionHelper(hand, isDealer, dealerStrats, notDealerStrats)
 }
 
 func (npc *simpleNPCLogic) peg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {

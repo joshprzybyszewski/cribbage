@@ -71,7 +71,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 			NumShuffles: rand.Intn(10) + 1,
 		}
 	case model.CribCard:
-		a.Action = npc.handleBuildCrib(g)
+		a.Action = npc.logic.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
 	case model.CutCard:
 		a.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
@@ -95,14 +95,5 @@ func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
 	return model.PegAction{
 		Card:  c,
 		SayGo: sayGo,
-	}
-}
-
-func (npc *npcPlayer) handleBuildCrib(g model.Game) model.BuildCribAction {
-	id := npc.ID()
-	hand := g.Hands[id]
-	isDealer := g.CurrentDealer == id
-	return model.BuildCribAction{
-		Cards: npc.logic.addToCrib(hand, isDealer),
 	}
 }

@@ -10,9 +10,11 @@ var _ npcLogic = (*dumbNPCLogic)(nil)
 
 type dumbNPCLogic struct{}
 
-func (npc *dumbNPCLogic) addToCrib(hand []model.Card, _ bool) []model.Card {
+func (npc *dumbNPCLogic) getCribAction(hand []model.Card, _ bool) model.BuildCribAction {
 	n := len(hand) - 4
-	return hand[0:n]
+	return model.BuildCribAction{
+		Cards: hand[0:n],
+	}
 }
 
 func (npc *dumbNPCLogic) peg(hand []model.Card, _ []model.PeggedCard, curPeg int) (model.Card, bool) {
