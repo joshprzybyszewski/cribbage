@@ -20,7 +20,7 @@ func createPlayer(t *testing.T, pID model.PlayerID) *npcPlayer {
 	return p
 }
 
-func newNPlayerGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
+func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 	players := make([]model.Player, n)
 	for i := 0; i < n-1; i++ {
 		id := model.PlayerID(fmt.Sprintf(`p%d`, i))
@@ -37,11 +37,8 @@ func newNPlayerGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Ga
 	for _, p := range players {
 		hands[p.ID] = make([]model.Card, nCards)
 	}
-	hands[npcID] = []model.Card{
-		model.NewCardFromString(`6c`),
-		model.NewCardFromString(`7c`),
-		model.NewCardFromString(`8c`),
-		model.NewCardFromString(`9c`),
+	for i := range hands[npcID] {
+		hands[npcID][i] = model.NewCardFromString(fmt.Sprintf(`%dc`, i+2))
 	}
 
 	pegs := make([]model.PeggedCard, 0)
@@ -123,22 +120,22 @@ func TestPegAction(t *testing.T) {
 	}{{
 		desc:  `test dumb npc`,
 		npc:   `dumbNPC`,
-		g:     newNPlayerGame(`dumbNPC`, 2, make([]model.Card, 0)),
+		g:     newGame(`dumbNPC`, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc:  `test simple npc`,
 		npc:   `simpleNPC`,
-		g:     newNPlayerGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		g:     newGame(`simpleNPC`, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc:  `test calculated npc`,
 		npc:   `calculatedNPC`,
-		g:     newNPlayerGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		g:     newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc: `test go`,
 		npc:  `dumbNPC`,
-		g: newNPlayerGame(`dumbNPC`, 2, []model.Card{
+		g: newGame(`dumbNPC`, 2, []model.Card{
 			model.NewCardFromString(`10c`),
 			model.NewCardFromString(`10s`),
 			model.NewCardFromString(`10h`),
@@ -162,6 +159,8 @@ func TestPegAction(t *testing.T) {
 	}
 }
 func TestBuildBuildCribAction(t *testing.T) {
+	// TODO this is sometimes failing because of the random nature of choosing a strategy
+	// with calculatedNPC.
 	tests := []struct {
 		desc      string
 		npc       model.PlayerID
@@ -170,37 +169,39 @@ func TestBuildBuildCribAction(t *testing.T) {
 	}{{
 		desc:      `test dumb npc`,
 		npc:       `dumbNPC`,
-		g:         newNPlayerGame(`dumbNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(`dumbNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test simple npc`,
 		npc:       `simpleNPC`,
-		g:         newNPlayerGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(`simpleNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test calculated npc`,
 		npc:       `calculatedNPC`,
-		g:         newNPlayerGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test 3 player game`,
 		npc:       `dumbNPC`,
-		g:         newNPlayerGame(`dumbNPC`, 3, make([]model.Card, 0)),
+		g:         newGame(`dumbNPC`, 3, make([]model.Card, 0)),
 		expNCards: 1,
 	}, {
 		desc:      `test 4 player game`,
 		npc:       `dumbNPC`,
-		g:         newNPlayerGame(`dumbNPC`, 4, make([]model.Card, 0)),
+		g:         newGame(`dumbNPC`, 4, make([]model.Card, 0)),
 		expNCards: 1,
 	}}
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.CribCard, tc.g)
-		assert.Equal(t, a.Overcomes, model.CribCard)
+		for i := 0; i < 5; i++ {
+			a := p.buildAction(model.CribCard, tc.g)
+			assert.Equal(t, a.Overcomes, model.CribCard)
 
-		bca, ok := a.Action.(model.BuildCribAction)
-		assert.True(t, ok)
-		assert.Len(t, bca.Cards, tc.expNCards)
+			bca, ok := a.Action.(model.BuildCribAction)
+			assert.True(t, ok)
+			assert.Len(t, bca.Cards, tc.expNCards, tc.desc)
+		}
 	}
 }
