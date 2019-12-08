@@ -6,11 +6,11 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-var _ npcLogic = (*calcNPCInteraction)(nil)
+var _ npcLogic = (*calcNPCLogic)(nil)
 
-type calcNPCInteraction struct{}
+type calcNPCLogic struct{}
 
-func (npc *calcNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
+func (npc *calcNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
 	hand := g.Hands[pID]
 	if pID == g.CurrentDealer {
 		if rand.Int()%2 == 0 {
@@ -25,6 +25,6 @@ func (npc *calcNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n int
 	return strategy.GiveCribLowestPotential(n, hand)
 }
 
-func (npc *calcNPCInteraction) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
+func (npc *calcNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
 	return strategy.PegHighestCardNow(g.Hands[pID], g.PeggedCards, g.CurrentPeg())
 }
