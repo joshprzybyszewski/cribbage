@@ -159,8 +159,6 @@ func TestPegAction(t *testing.T) {
 	}
 }
 func TestBuildBuildCribAction(t *testing.T) {
-	// TODO this is sometimes failing because of the random nature of choosing a strategy
-	// with calculatedNPC.
 	tests := []struct {
 		desc      string
 		npc       model.PlayerID
