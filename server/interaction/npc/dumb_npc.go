@@ -6,15 +6,15 @@ import (
 
 const maxPeggingValue = 31
 
-var _ npcLogic = (*dumbNPCInteraction)(nil)
+var _ npcLogic = (*dumbNPCLogic)(nil)
 
-type dumbNPCInteraction struct{}
+type dumbNPCLogic struct{}
 
-func (npc *dumbNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
+func (npc *dumbNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
 	return g.Hands[pID][0:2]
 }
 
-func (npc *dumbNPCInteraction) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
+func (npc *dumbNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
 	hand := g.Hands[pID]
 	maxVal := maxPeggingValue - g.CurrentPeg()
 	for _, c := range hand {
