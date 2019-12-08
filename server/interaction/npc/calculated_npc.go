@@ -10,9 +10,9 @@ var _ npcLogic = (*calcNPCLogic)(nil)
 
 type calcNPCLogic struct{}
 
-func (npc *calcNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
-	hand := g.Hands[pID]
-	if pID == g.CurrentDealer {
+func (npc *calcNPCLogic) addToCrib(hand []model.Card, isDealer bool) []model.Card {
+	n := len(hand) - 4
+	if isDealer {
 		if rand.Int()%2 == 0 {
 			return strategy.KeepHandLowestPotential(n, hand)
 		}

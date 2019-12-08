@@ -93,8 +93,10 @@ func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
 }
 
 func (npc *npcPlayer) handleBuildCrib(g model.Game) model.BuildCribAction {
-	nCards := len(g.Hands[npc.ID()]) - 4
+	id := npc.ID()
+	hand := g.Hands[id]
+	isDealer := g.CurrentDealer == id
 	return model.BuildCribAction{
-		Cards: npc.logic.addToCrib(g, npc.ID(), nCards),
+		Cards: npc.logic.addToCrib(hand, isDealer),
 	}
 }
