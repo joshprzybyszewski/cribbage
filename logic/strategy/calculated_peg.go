@@ -6,6 +6,11 @@ import (
 )
 
 func PegHighestCardNow(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
+	// TODO maybe be smarter when the count is zero (i.e. don't play a 5, but play as high a card as possible)
+	if curPeg == 0 {
+		return hand[0], false
+	}
+
 	bestCard := model.Card{}
 	bestPoints := 0
 
