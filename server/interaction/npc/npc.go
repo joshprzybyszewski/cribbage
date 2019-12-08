@@ -77,7 +77,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		a.Action = npc.handlePeg(g)
+		a.Action = npc.logic.getPegAction(g.Hands[npc.ID()], g.PeggedCards, g.CurrentPeg())
 	case model.CountHand:
 		a.Action = model.CountHandAction{
 			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),
@@ -88,12 +88,4 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 		}
 	}
 	return a
-}
-
-func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
-	c, sayGo := npc.logic.peg(g.Hands[npc.ID()], g.PeggedCards, g.CurrentPeg())
-	return model.PegAction{
-		Card:  c,
-		SayGo: sayGo,
-	}
 }

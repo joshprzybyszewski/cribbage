@@ -7,7 +7,7 @@ import (
 
 type npcLogic interface {
 	getCribAction([]model.Card, bool) model.BuildCribAction
-	peg([]model.Card, []model.PeggedCard, int) (model.Card, bool)
+	getPegAction([]model.Card, []model.PeggedCard, int) model.PegAction
 }
 
 // TODO put this in a better place?

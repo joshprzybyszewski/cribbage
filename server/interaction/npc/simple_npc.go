@@ -22,14 +22,21 @@ func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) model
 	return cribActionHelper(hand, isDealer, dealerStrats, notDealerStrats)
 }
 
-func (npc *simpleNPCLogic) peg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
+func (npc *simpleNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+	var card model.Card
+	var sayGo bool
 	switch rand.Int() % 4 {
 	case 0:
-		return strategy.PegToFifteen(hand, prevPegs, curPeg)
+		card, sayGo = strategy.PegToFifteen(hand, prevPegs, curPeg)
 	case 1:
-		return strategy.PegToThirtyOne(hand, prevPegs, curPeg)
+		card, sayGo = strategy.PegToThirtyOne(hand, prevPegs, curPeg)
 	case 2:
-		return strategy.PegToPair(hand, prevPegs, curPeg)
+		card, sayGo = strategy.PegToPair(hand, prevPegs, curPeg)
+	default:
+		card, sayGo = strategy.PegToRun(hand, prevPegs, curPeg)
 	}
-	return strategy.PegToRun(hand, prevPegs, curPeg)
+	return model.PegAction{
+		Card:  card,
+		SayGo: sayGo,
+	}
 }

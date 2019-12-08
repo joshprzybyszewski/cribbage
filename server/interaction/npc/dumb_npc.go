@@ -17,13 +17,20 @@ func (npc *dumbNPCLogic) getCribAction(hand []model.Card, _ bool) model.BuildCri
 	}
 }
 
-func (npc *dumbNPCLogic) peg(hand []model.Card, _ []model.PeggedCard, curPeg int) (model.Card, bool) {
+func (npc *dumbNPCLogic) getPegAction(hand []model.Card, _ []model.PeggedCard, curPeg int) model.PegAction {
 	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
 		if c.PegValue() > maxVal {
 			continue
 		}
-		return c, false
+		return model.PegAction{
+			Card:  c,
+			SayGo: false,
+		}
+
 	}
-	return model.Card{}, true
+	return model.PegAction{
+		Card:  model.Card{},
+		SayGo: true,
+	}
 }
