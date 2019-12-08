@@ -6,6 +6,9 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+// UnmarshalGame takes in json marshalled bytes of a model.Game
+// The main advantage is that the list of actions can be deserialized
+// into the interface{} type.
 func UnmarshalGame(b []byte) (model.Game, error) {
 	game := model.Game{}
 

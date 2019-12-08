@@ -3,8 +3,6 @@ package persistence_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/mock"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -29,21 +27,6 @@ var (
 		`addColorToGame`:  testAddPlayerColorToGame,
 	}
 )
-
-func setup() (a, b model.Player, pAPIs map[model.PlayerID]interaction.Player) {
-	alice, bob, aAPI, bAPI, abAPIs := testutils.AliceAndBob()
-
-	aAPI.On(`ID`).Return(alice.ID)
-	aAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	aAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
-	aAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
-
-	bAPI.On(`ID`).Return(bob.ID)
-	bAPI.On(`NotifyBlocking`, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-	bAPI.On(`NotifyMessage`, mock.Anything, mock.Anything).Return(nil)
-	bAPI.On(`NotifyScoreUpdate`, mock.Anything, mock.Anything).Return(nil)
-	return alice, bob, abAPIs
-}
 
 func persistenceGameCopy(dst *model.Game, src model.Game) {
 	*dst = src
@@ -157,7 +140,7 @@ func testCreatePlayer(t *testing.T, db persistence.DB) {
 }
 
 func testSaveGame(t *testing.T, db persistence.DB) {
-	alice, bob, _ := setup()
+	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g1 := model.Game{
 		ID:              model.GameID(rand.Intn(1000)),
@@ -204,7 +187,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 }
 
 func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
-	alice, bob, abAPIs := setup()
+	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)

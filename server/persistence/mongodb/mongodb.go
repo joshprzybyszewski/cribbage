@@ -210,7 +210,8 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
 	defer cancel()
 
 	result := model.Player{}
-	err := m.playersCollection().FindOne(ctx, bson.M{"id": id}).Decode(&result)
+	filter := bson.M{"id": id} // model.Player.ID
+	err := m.playersCollection().FindOne(ctx, filter).Decode(&result)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

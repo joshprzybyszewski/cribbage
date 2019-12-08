@@ -36,7 +36,8 @@ type customMapCoder struct {
 	keyDecoder func(string) (reflect.Value, error)
 }
 
-func (c *customMapCoder) EncodeValue( //nolint:gocyclo this func mimics mongo's map encoder
+// EncodeValue mimics the code in the mongodb go driver to encode a map with a custom key type
+func (c *customMapCoder) EncodeValue( //nolint:gocyclo
 	ectx bsoncodec.EncodeContext,
 	vw bsonrw.ValueWriter,
 	val reflect.Value,
@@ -91,7 +92,8 @@ func (c *customMapCoder) EncodeValue( //nolint:gocyclo this func mimics mongo's 
 	return dw.WriteDocumentEnd()
 }
 
-func (c *customMapCoder) DecodeValue( //nolint:gocyclo this func mimics mongo's map decoder
+// DecodeValue mimics the code in the mongodb go driver to decode a map with a custom key type
+func (c *customMapCoder) DecodeValue( //nolint:gocyclo
 	dctx bsoncodec.DecodeContext,
 	vr bsonrw.ValueReader,
 	val reflect.Value,

@@ -11,6 +11,7 @@ import (
 
 var (
 	database = flag.String(`db`, `memory`, `Set to the type of database to access`)
+	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 )
 
 func Setup() error {
@@ -31,10 +32,7 @@ func Setup() error {
 func getDB() (persistence.DB, error) {
 	switch *database {
 	case `mongo`:
-		// TODO make the URI a command line flag to be passed in
-		// so that someday we can talk to AWS
-		mongoURI := ``
-		return mongodb.New(mongoURI)
+		return mongodb.New(*dbURI)
 	case `memory`:
 		return memory.New(), nil
 	}

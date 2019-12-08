@@ -7,6 +7,8 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+// UnmarshalPlayerAction takes json-marshalled bytes and returns the model.PlayerAction
+// The advantage is that we can unmarshal the Action which is typed based on the Blocker
 func UnmarshalPlayerAction(b []byte) (model.PlayerAction, error) {
 	// We can store the RawMessage and then switch on the Overcomes type later
 	// otherwise Action becomes a map[string]interface{}
