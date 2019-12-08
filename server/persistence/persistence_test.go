@@ -32,9 +32,6 @@ var (
 func persistenceGameCopy(dst *model.Game, src model.Game) {
 	*dst = src
 
-	// The deck will always be nil after a copy
-	dst.Deck = nil
-
 	dst.Players = make([]model.Player, len(src.Players))
 	_ = copy(dst.Players, src.Players)
 
@@ -146,7 +143,6 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	g1 := model.Game{
 		ID:              model.GameID(rand.Intn(1000)),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -182,8 +178,6 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 
 	actGame, err := db.GetGame(g1.ID)
 	require.NoError(t, err)
-	// the deck should be nil
-	g1Copy.Deck = nil
 	assert.Equal(t, g1Copy, actGame)
 }
 
@@ -193,8 +187,6 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)
 		require.NoError(t, err)
-		// the deck should always be nil
-		expGame.Deck = nil
 		assert.Equal(t, expGame, actGame)
 	}
 
@@ -323,8 +315,6 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)
 		require.NoError(t, err)
-		// the deck should always be nil
-		expGame.Deck = nil
 		assert.Equal(t, expGame, actGame)
 	}
 

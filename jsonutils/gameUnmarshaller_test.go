@@ -16,7 +16,6 @@ import (
 
 func jsonCopyGame(input model.Game) model.Game {
 	output := input
-	output.Deck = nil
 
 	if len(output.PlayerColors) == 0 {
 		output.PlayerColors = nil
@@ -50,7 +49,6 @@ func TestUnmarshalGame(t *testing.T) {
 		game: model.Game{
 			ID:              g5,
 			Players:         []model.Player{alice, bob},
-			Deck:            model.NewDeck(),
 			BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CountCrib},
 			CurrentDealer:   alice.ID,
 			PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},

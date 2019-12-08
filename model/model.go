@@ -170,7 +170,4 @@ type Game struct {
 
 	// An ordered list of player actions
 	Actions []PlayerAction `protobuf:"-" json:"actions" bson:"actions"` //nolint:lll
-
-	// The deck of cards
-	Deck Deck `protobuf:"-" json:"-" bson:"-"` //nolint:lll
 }

@@ -33,9 +33,6 @@ func (m *memory) GetGame(id model.GameID) (model.Game, error) {
 
 	if games, ok := m.games[id]; ok {
 		g := games[len(games)-1]
-		// Persistence should never know about the Deck in a game
-		// make sure that memory mimics real persistence
-		g.Deck = nil
 		return g, nil
 	}
 	return model.Game{}, persistence.ErrGameNotFound
@@ -50,9 +47,6 @@ func (m *memory) GetGameAction(id model.GameID, numActions uint) (model.Game, er
 			return model.Game{}, persistence.ErrGameNotFound
 		}
 		g := games[numActions]
-		// Persistence should never know about the Deck in a game
-		// make sure that memory mimics real persistence
-		g.Deck = nil
 		return g, nil
 	}
 	return model.Game{}, persistence.ErrGameNotFound

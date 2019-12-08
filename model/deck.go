@@ -16,6 +16,10 @@ type deck struct {
 }
 
 func NewDeck() Deck {
+	return newDeck()
+}
+
+func newDeck() *deck {
 	var cards [52]Card
 
 	for i := 0; i < NumCardsPerDeck; i++ {
@@ -34,6 +38,26 @@ func NewDeck() Deck {
 	}
 
 	return &d
+}
+
+func newDeckWithDealt(dealt map[Card]struct{}) Deck {
+	d := newDeck()
+	if len(dealt) == 0 {
+		return d
+	}
+
+	for i, c := range d.cards {
+		lastValidCard := 51 - d.numDealt
+		if i >= lastValidCard {
+			break
+		}
+		if _, ok := dealt[c]; ok {
+			d.cards[lastValidCard], d.cards[i] = d.cards[i], d.cards[lastValidCard]
+			d.numDealt++
+		}
+	}
+
+	return d
 }
 
 func (d *deck) Deal() Card {

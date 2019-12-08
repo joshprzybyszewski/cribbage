@@ -59,7 +59,6 @@ func TestCustomRegistryModelGame(t *testing.T) {
 
 	gPeg := gameAtPegging(t, alice, bob, pAPIs)
 	gPegOutput := gPeg
-	gPegOutput.Deck = nil
 
 	testCases := []struct {
 		msg       string
@@ -118,7 +117,6 @@ func TestCustomRegistryModelGame(t *testing.T) {
 					Card: model.NewCardFromString(`4c`),
 				},
 			}},
-			Deck: model.NewDeck(),
 		},
 		expOutput: model.Game{
 			ID:      model.GameID(42),
@@ -171,7 +169,6 @@ func TestCustomRegistryModelGame(t *testing.T) {
 					Card: model.NewCardFromString(`4c`),
 				},
 			}},
-			Deck: nil,
 		},
 	}, {
 		msg:       `game at pegging`,

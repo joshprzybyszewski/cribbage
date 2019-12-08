@@ -1,5 +1,28 @@
 package model
 
+import (
+	"errors"
+)
+
+func (g *Game) GetDeck() (Deck, error) {
+	emptyCard := Card{}
+	if emptyCard != g.CutCard {
+		return nil, errors.New(`cannot get deck when there is a cut card`)
+	}
+
+	allDealtCards := map[Card]struct{}{}
+	for _, hand := range g.Hands {
+		for _, c := range hand {
+			allDealtCards[c] = struct{}{}
+		}
+	}
+	for _, c := range g.Crib {
+		allDealtCards[c] = struct{}{}
+	}
+
+	return newDeckWithDealt(allDealtCards), nil
+}
+
 func (g *Game) IsOver() bool {
 	for _, score := range g.CurrentScores {
 		if score >= WinningScore {

@@ -18,7 +18,6 @@ func TestHandleAction_InvalidINputs(t *testing.T) {
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.DealCards},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -61,7 +60,6 @@ func TestHandleAction_Deal(t *testing.T) {
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.DealCards},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -110,7 +108,6 @@ func TestHandleAction_Crib(t *testing.T) {
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CribCard, bob.ID: model.CribCard},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -213,10 +210,8 @@ func TestHandleAction_Pegging(t *testing.T) {
 	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
-		ID: model.GameID(5),
-		// TODO
+		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -478,10 +473,8 @@ func TestHandleAction_Counting(t *testing.T) {
 	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
 
 	g := model.Game{
-		ID: model.GameID(5),
-		// TODO
+		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.CountHand},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -554,7 +547,6 @@ func TestHandleAction_CribCounting(t *testing.T) {
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CountCrib},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
@@ -602,7 +594,6 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	g := model.Game{
 		ID:              model.GameID(5),
 		Players:         []model.Player{alice, bob},
-		Deck:            model.NewDeck(),
 		BlockingPlayers: map[model.PlayerID]model.Blocker{alice.ID: model.CountCrib},
 		CurrentDealer:   alice.ID,
 		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
