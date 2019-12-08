@@ -125,9 +125,9 @@ func (g *Game) CutAt(p float64) error {
 		return errors.New(`cannot re-cut the deck`)
 	}
 
-	c, err = g.deck.CutDeck(p)
+	c, err := g.deck.CutDeck(p)
 	if err != nil {
-		return error
+		return err
 	}
 	g.cutCard = c
 
