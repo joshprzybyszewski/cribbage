@@ -3,6 +3,8 @@ This repo is a little free-time exercise that has turned into a little free-time
 
 It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cribbage/), and now it is evolving into an interactive game playing application.
 
+[![codecov](https://codecov.io/gh/joshprzybyszewski/cribbage/branch/master/graph/badge.svg)](https://codecov.io/gh/joshprzybyszewski/cribbage)
+
 ## How to install
 
 1. Go get this project
