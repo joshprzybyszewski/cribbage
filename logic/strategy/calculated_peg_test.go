@@ -3,8 +3,9 @@ package strategy
 import (
 	"testing"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func TestPegHighestCardNow(t *testing.T) {
