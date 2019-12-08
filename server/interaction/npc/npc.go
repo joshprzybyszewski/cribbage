@@ -3,48 +3,34 @@ package npc
 import (
 	"errors"
 
-	"github.com/joshprzybyszewski/cribbage/game"
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-// Mode is an enum specifying which type of Mode
-type Mode int
-
-// Dumb, Simple, and Calculated are supported
-const (
-	Dumb Mode = iota
-	Simple
-	Calculated
-)
+var npcs = map[model.PlayerID]npcLogic{
+	`dumbNPC`:        &dumbNPCLogic{},
+	`simpleNPC`:      &simpleNPCLogic{},
+	`calculaterdNPC`: &simpleNPCLogic{},
+}
 
 var _ interaction.Player = (*npcPlayer)(nil)
 
 type npcPlayer struct {
-	Mode Mode
-
+	logic                npcLogic
 	id                   model.PlayerID
 	handleActionCallback func(a model.PlayerAction) error
 }
 
-var npcs = map[model.PlayerID]Mode{
-	`dumbNPC`:        Dumb,
-	`simpleNPC`:      Simple,
-	`calculaterdNPC`: Calculated,
-}
-
-var me game.Player
-
 // NewNPCPlayer creates a new NPC with specified type
 func NewNPCPlayer(pID model.PlayerID, cb func(a model.PlayerAction) error) (interaction.Player, error) {
-	m, ok := npcs[pID]
+	l, ok := npcs[pID]
 	if !ok {
 		return &npcPlayer{}, errors.New(`not a valid npc mode`)
 	}
 	return &npcPlayer{
-		Mode:                 m,
+		logic:                l,
 		id:                   pID,
 		handleActionCallback: cb,
 	}, nil
@@ -98,21 +84,8 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 	return a
 }
 
-func (npc *npcPlayer) updateCurrentNPC(g model.Game) {
-	id := npc.ID()
-	switch npc.Mode {
-	case Dumb:
-		me = game.NewDumbNPC(g.PlayerColors[id])
-	case Simple:
-		me = game.NewSimpleNPC(g.PlayerColors[id])
-	case Calculated:
-		me = game.NewCalcNPC(g.PlayerColors[id])
-	}
-}
-
 func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
-	npc.updateCurrentNPC(g)
-	c, sayGo, _ := me.Peg(g.PeggedCards, g.CurrentPeg())
+	c, sayGo := npc.logic.peg(g, npc.ID())
 	return model.PegAction{
 		Card:  c,
 		SayGo: sayGo,
@@ -120,13 +93,8 @@ func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
 }
 
 func (npc *npcPlayer) handleBuildCrib(g model.Game) model.BuildCribAction {
-	npc.updateCurrentNPC(g)
-	nCards := 2
-	switch len(g.Players) {
-	case 3, 4:
-		nCards = 1
-	}
+	nCards := len(g.Hands[npc.ID()]) - 4
 	return model.BuildCribAction{
-		Cards: me.AddToCrib(g.PlayerColors[g.CurrentDealer], nCards),
+		Cards: npc.logic.addToCrib(g, npc.ID(), nCards),
 	}
 }
