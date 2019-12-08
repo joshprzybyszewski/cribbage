@@ -13,19 +13,9 @@ func Setup() error {
 		db: getDB(),
 	}
 
-	for _, id := range getNPCIDs() {
-		npc, err := npc.NewNPCPlayer(id, cs.handleAction)
-		if err != nil {
-			return err
-		}
-
-		if _, err := cs.db.GetInteraction(npc.ID()); err != nil {
-			// TODO we should probably not use the error this way...
-			if err.Error() == `does not have player` {
-				return cs.db.SaveInteraction(npc)
-			}
-			return err
-		}
+	err := seedNPCs(cs)
+	if err != nil {
+		return err
 	}
 
 	cs.Serve()
@@ -33,8 +23,23 @@ func Setup() error {
 	return nil
 }
 
-func getNPCIDs() []model.PlayerID {
-	return []model.PlayerID{`dumbNPC`, `simpleNPC`, `calculatedNPC`}
+func seedNPCs(cs cribbageServer) error {
+	npcIDs := []model.PlayerID{npc.Dumb, npc.Simple, npc.Calc}
+	for _, id := range npcIDs {
+		p, err := npc.NewNPCPlayer(id, cs.handleAction)
+		if err != nil {
+			return err
+		}
+
+		if _, err := cs.db.GetInteraction(p.ID()); err != nil {
+			// TODO we should probably not use the error this way...
+			if err.Error() == `does not have player` {
+				return cs.db.SaveInteraction(p)
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 func getDB() persistence.DB {
