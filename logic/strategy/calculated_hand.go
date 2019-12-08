@@ -25,9 +25,6 @@ func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) boo
 	bestHand := make([]model.Card, 0, 4)
 	bestPotential := 0.0
 
-	// TODO chooseFrom is producing hands which duplicate cards from the original
-	// hand (e.g. with a hand of 2s, 3s, 4s, 5s, 6s, 7s, the first hand in allHands
-	// was 2s, 3s, 3s, 3s)
 	allHands := chooseFrom(4, hand)
 
 	seen := map[model.Card]struct{}{}

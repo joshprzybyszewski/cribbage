@@ -36,6 +36,9 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
+// TODO chooseFrom is producing hands which duplicate cards from the original
+// hand (e.g. with a hand of 2s, 3s, 4s, 5s, 6s, 7s, the first hand in allHands
+// was 2s, 3s, 3s, 3s) [see issue #22]
 func chooseFrom(desired int, hand []model.Card) [][]model.Card { //nolint:gocyclo
 	if desired > len(hand) || desired > 4 || desired <= 0 {
 		return nil
