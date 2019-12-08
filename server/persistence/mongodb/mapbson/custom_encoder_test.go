@@ -10,6 +10,8 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
 
@@ -53,7 +55,11 @@ func TestCustomRegistryModelPlayer(t *testing.T) {
 
 func TestCustomRegistryModelGame(t *testing.T) {
 	registry := CustomRegistry()
-	alice, bob, _, _, _ := testutils.AliceAndBob()
+	alice, bob, pAPIs := testutils.EmptyAliceAndBob()
+
+	gPeg := gameAtPegging(t, alice, bob, pAPIs)
+	gPegOutput := gPeg
+	gPegOutput.Deck = nil
 
 	testCases := []struct {
 		msg       string
@@ -167,6 +173,10 @@ func TestCustomRegistryModelGame(t *testing.T) {
 			}},
 			Deck: nil,
 		},
+	}, {
+		msg:       `game at pegging`,
+		input:     gPeg,
+		expOutput: gPegOutput,
 	}}
 
 	for _, tc := range testCases {
@@ -193,4 +203,42 @@ func TestCustomRegistryModelGame(t *testing.T) {
 		require.NoError(t, err, tc.msg)
 		assert.Equal(t, tc.expOutput, actOutput, tc.msg)
 	}
+}
+
+func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.PlayerID]interaction.Player) model.Game {
+	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
+	require.NoError(t, err)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.DealCards,
+		Action:    model.DealAction{NumShuffles: 10},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CutCard,
+		Action:    model.CutDeckAction{Percentage: 0.314},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][0]},
+	}, pAPIs))
+
+	return g
 }

@@ -19,9 +19,10 @@ const NumCardsPerDeck = 52
 const JackValue = 11 // Ace is 1, King is 13
 
 type PeggedCard struct {
-	Card
-	Action   int      `protobuf:"varint,3,req,name=action,proto3" json:"action" bson:"action"`       //nolint:lll
-	PlayerID PlayerID `protobuf:"varint,4,req,name=playerID,proto3" json:"playerID" bson:"playerID"` //nolint:lll
+	Card `protobuf:"-" json:"pc" bson:"pc"` //nolint:lll
+
+	Action   int      `protobuf:"-" json:"aIdx" bson:"aIdx"` //nolint:lll
+	PlayerID PlayerID `protobuf:"-" json:"pID" bson:"pID"`   //nolint:lll
 }
 
 type PlayerID string

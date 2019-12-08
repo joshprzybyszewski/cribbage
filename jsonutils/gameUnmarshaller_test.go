@@ -36,46 +36,8 @@ func jsonCopyGame(input model.Game) model.Game {
 	return output
 }
 
-func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.PlayerID]interaction.Player) model.Game {
-	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
-	require.NoError(t, err)
-
-	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.DealCards,
-		Action:    model.DealAction{NumShuffles: 10},
-	}, pAPIs))
-	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
-	}, pAPIs))
-	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
-	}, pAPIs))
-	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.CutCard,
-		Action:    model.CutDeckAction{Percentage: 0.314},
-	}, pAPIs))
-	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.PegCard,
-		Action:    model.PegAction{Card: g.Hands[bob.ID][0]},
-	}, pAPIs))
-
-	return g
-}
-
 func TestUnmarshalGame(t *testing.T) {
-	alice, bob, _, _, pAPIs := testutils.AliceAndBob()
+	alice, bob, pAPIs := testutils.EmptyAliceAndBob()
 
 	g5 := model.GameID(5)
 
@@ -134,6 +96,7 @@ func TestUnmarshalGame(t *testing.T) {
 
 	for _, tc := range testCases {
 		gameCopy := jsonCopyGame(tc.game)
+
 		b, err := json.Marshal(tc.game)
 		require.NoError(t, err, tc.msg)
 
@@ -141,4 +104,42 @@ func TestUnmarshalGame(t *testing.T) {
 		require.NoError(t, err, tc.msg)
 		assert.Equal(t, gameCopy, actGame, tc.msg)
 	}
+}
+
+func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.PlayerID]interaction.Player) model.Game {
+	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
+	require.NoError(t, err)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.DealCards,
+		Action:    model.DealAction{NumShuffles: 10},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CutCard,
+		Action:    model.CutDeckAction{Percentage: 0.314},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][0]},
+	}, pAPIs))
+
+	return g
 }
