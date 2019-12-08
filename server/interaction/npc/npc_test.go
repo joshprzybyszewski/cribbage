@@ -71,6 +71,34 @@ func TestBuildDealAction(t *testing.T) {
 		assert.GreaterOrEqual(t, da.NumShuffles, 1)
 	}
 }
+func TestBuildCutAction(t *testing.T) {
+	tests := []struct {
+		desc string
+		npc  model.PlayerID
+		g    model.Game
+		exp  model.PlayerAction
+	}{{
+		desc: `test dumb npc`,
+		npc:  `dumbNPC`,
+	}, {
+		desc: `test simple npc`,
+		npc:  `simpleNPC`,
+	}, {
+		desc: `test calculated npc`,
+		npc:  `calculatedNPC`,
+	}}
+	for _, tc := range tests {
+		p := createPlayer(t, tc.npc)
+
+		a := p.buildAction(model.CutCard, tc.g)
+		assert.Equal(t, a.Overcomes, model.CutCard)
+
+		cda, ok := a.Action.(model.CutDeckAction)
+		assert.True(t, ok)
+		assert.LessOrEqual(t, cda.Percentage, 1.0)
+		assert.GreaterOrEqual(t, cda.Percentage, 0.0)
+	}
+}
 func TestBuildBuildCribAction(t *testing.T) {
 	tests := []struct {
 		desc      string
