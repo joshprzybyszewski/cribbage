@@ -57,7 +57,10 @@ func (*cuttingHandler) HandleAction(g *model.Game,
 
 	// cut the deck
 	cutPercent := cda.Percentage
-	c := deck.CutDeck(cutPercent)
+	c, err := deck.CutDeck(cutPercent)
+	if err != nil {
+		return err
+	}
 
 	if c.Value == model.JackValue {
 		// Check if the dealer was cut a jack

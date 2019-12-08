@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDeckBasics(t *testing.T) {
@@ -40,14 +41,29 @@ func TestDeckDealing(t *testing.T) {
 func TestDeckCutting(t *testing.T) {
 	d := NewDeck()
 
-	cutCard1 := d.CutDeck(0.5)
-	cutCard2 := d.CutDeck(0.5)
-	assert.NotEqual(t, cutCard1, cutCard2)
-	cutCard3 := d.CutDeck(0.5)
-	assert.NotEqual(t, cutCard1, cutCard3)
-	assert.Equal(t, cutCard2, cutCard3, `after the first cut, nothing is sane`)
+	cutCard1, err := d.CutDeck(0.5)
+	require.NoError(t, err)
+	cutCard2, err := d.CutDeck(0.5)
+	require.NoError(t, err)
+	assert.Equal(t, cutCard1, cutCard2)
+	cutCard3, err := d.CutDeck(0.5)
+	require.NoError(t, err)
+	assert.Equal(t, cutCard1, cutCard3)
+	assert.Equal(t, cutCard2, cutCard3)
+	cutCard4, err := d.CutDeck(0.75)
+	require.NoError(t, err)
+	assert.NotEqual(t, cutCard1, cutCard4)
+}
 
-	d.Shuffle()
-	cutCard4 := d.CutDeck(0.5)
-	assert.NotEqual(t, cutCard1, cutCard4, `this has a _very low_ chance of being equal`)
+func TestDeckCuttingAvoidsDealtCards(t *testing.T) {
+	d := NewDeck()
+	dealtCard1 := d.Deal()
+	dealtCard2 := d.Deal()
+	for i := 0; i <= 104; i++ {
+		p := float64(i) / 104.0
+		cutCard, err := d.CutDeck(p)
+		require.NoError(t, err)
+		assert.NotEqual(t, dealtCard1, cutCard)
+		assert.NotEqual(t, dealtCard2, cutCard)
+	}
 }
