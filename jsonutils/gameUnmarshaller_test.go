@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
 
@@ -34,10 +36,50 @@ func jsonCopyGame(input model.Game) model.Game {
 	return output
 }
 
+func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.PlayerID]interaction.Player) model.Game {
+	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
+	require.NoError(t, err)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.DealCards,
+		Action:    model.DealAction{NumShuffles: 10},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CutCard,
+		Action:    model.CutDeckAction{Percentage: 0.314},
+	}, pAPIs))
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][0]},
+	}, pAPIs))
+
+	return g
+}
+
 func TestUnmarshalGame(t *testing.T) {
-	alice, bob, _, _, _ := testutils.AliceAndBob()
+	alice, bob, _, _, pAPIs := testutils.AliceAndBob()
 
 	g5 := model.GameID(5)
+
+	gPeg := gameAtPegging(t, alice, bob, pAPIs)
 
 	testCases := []struct {
 		msg  string
@@ -85,6 +127,9 @@ func TestUnmarshalGame(t *testing.T) {
 				},
 			}},
 		},
+	}, {
+		msg:  `game at pegging`,
+		game: gPeg,
 	}}
 
 	for _, tc := range testCases {
