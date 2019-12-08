@@ -8,9 +8,7 @@ import (
 
 var _ npcLogic = (*simpleNPCInteraction)(nil)
 
-type simpleNPCInteraction struct {
-	myColor model.PlayerColor
-}
+type simpleNPCInteraction struct{}
 
 func (npc *simpleNPCInteraction) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
 	hand := g.Hands[pID]
