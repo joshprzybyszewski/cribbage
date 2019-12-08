@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func createPlayer(t *testing.T, pID model.PlayerID) *npcPlayer {
