@@ -205,7 +205,7 @@ func (m *mongodb) getGameStates(id model.GameID, actionStates map[int]struct{}) 
 	return gl.Games, nil
 }
 
-func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) {
+func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) { //nolint:dupl
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -399,7 +399,7 @@ func (m *mongodb) SaveInteraction(i interaction.PlayerMeans) error {
 	return err
 }
 
-func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
+func (m *mongodb) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) { //nolint:dupl
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
