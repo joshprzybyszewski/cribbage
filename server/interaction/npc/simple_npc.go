@@ -25,10 +25,7 @@ func (npc *simpleNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []
 	return strategy.AvoidCribPairs(n, hand)
 }
 
-func (npc *simpleNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
-	hand := g.Hands[pID]
-	prevPegs := g.PeggedCards
-	curPeg := g.CurrentPeg()
+func (npc *simpleNPCLogic) peg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	switch rand.Int() % 4 {
 	case 0:
 		return strategy.PegToFifteen(hand, prevPegs, curPeg)

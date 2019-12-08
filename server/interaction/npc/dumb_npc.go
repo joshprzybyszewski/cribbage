@@ -14,9 +14,8 @@ func (npc *dumbNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []mo
 	return g.Hands[pID][0:n]
 }
 
-func (npc *dumbNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
-	hand := g.Hands[pID]
-	maxVal := maxPeggingValue - g.CurrentPeg()
+func (npc *dumbNPCLogic) peg(hand []model.Card, _ []model.PeggedCard, curPeg int) (model.Card, bool) {
+	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
 		if c.PegValue() > maxVal {
 			continue

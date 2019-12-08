@@ -25,6 +25,6 @@ func (npc *calcNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []mo
 	return strategy.GiveCribLowestPotential(n, hand)
 }
 
-func (npc *calcNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
-	return strategy.PegHighestCardNow(g.Hands[pID], g.PeggedCards, g.CurrentPeg())
+func (npc *calcNPCLogic) peg(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
+	return strategy.PegHighestCardNow(hand, prevPegs, curPeg)
 }

@@ -85,7 +85,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 }
 
 func (npc *npcPlayer) handlePeg(g model.Game) model.PegAction {
-	c, sayGo := npc.logic.peg(g, npc.ID())
+	c, sayGo := npc.logic.peg(g.Hands[npc.ID()], g.PeggedCards, g.CurrentPeg())
 	return model.PegAction{
 		Card:  c,
 		SayGo: sayGo,
