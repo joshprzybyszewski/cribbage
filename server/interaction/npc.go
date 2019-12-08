@@ -17,6 +17,15 @@ const (
 	Calculated
 )
 
+var _ Player = (*npcPlayer)(nil)
+
+type npcPlayer struct {
+	Type NPCType
+
+	id                   model.PlayerID
+	handleActionCallback func(a model.PlayerAction) error
+}
+
 var npcs = [...]npcPlayer{
 	Dumb: {
 		Type: Dumb,
@@ -32,13 +41,13 @@ var npcs = [...]npcPlayer{
 	},
 }
 
-var _ Player = (*npcPlayer)(nil)
+var me game.Player
 
-type npcPlayer struct {
-	Type NPCType
-
-	id                   model.PlayerID
-	handleActionCallback func(a model.PlayerAction) error
+// NewNPCPlayer creates a new NPC with specified type
+func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) Player {
+	npc := npcs[n]
+	npc.handleActionCallback = cb
+	return &npc
 }
 
 func (npc *npcPlayer) ID() model.PlayerID {
@@ -57,15 +66,6 @@ func (npc *npcPlayer) NotifyMessage(g model.Game, s string) error {
 func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
-
-// NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) Player {
-	npc := npcs[n]
-	npc.handleActionCallback = cb
-	return &npc
-}
-
-var me game.Player
 
 func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAction {
 	a := model.PlayerAction{
