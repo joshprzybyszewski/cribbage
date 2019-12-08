@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -65,7 +66,11 @@ func StartTerminalInteraction() error {
 
 	var wg sync.WaitGroup
 
-	port := 8081 + (len(tc.me.ID) % 100)
+	port, err := findOpenPort()
+	if err != nil {
+		return err
+	}
+
 	reqChan := make(chan terminalRequest, 5)
 
 	tc.startClientServer(&wg, reqChan, port)
@@ -76,6 +81,27 @@ func StartTerminalInteraction() error {
 	wg.Wait()
 
 	return nil
+}
+
+func findOpenPort() (int, error) {
+	port := 8081
+	for ; port < 8180; port++ {
+		ln, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+
+		if err != nil {
+			continue
+		}
+
+		err = ln.Close()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Couldn't stop listening on port %q: %s", port, err)
+			return 0, err
+		}
+
+		break
+	}
+
+	return port, nil
 }
 
 func (tc *terminalClient) startClientServer(wg *sync.WaitGroup, reqChan chan terminalRequest, port int) {
@@ -157,6 +183,7 @@ func (tc *terminalClient) processUserInput(wg *sync.WaitGroup, reqChan chan term
 
 			}
 		}
+		fmt.Printf("some reason, after the reqChan loop\n")
 	}()
 }
 
