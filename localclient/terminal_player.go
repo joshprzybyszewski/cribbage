@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/joshprzybyszewski/cribbage/jsonutils"
+
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/gin-gonic/gin"
 
@@ -30,6 +32,8 @@ var (
 type terminalClient struct {
 	server *http.Client
 
+	reqChan chan terminalRequest
+
 	me            model.Player
 	myCurrentGame model.GameID
 	myGames       map[model.GameID]model.Game
@@ -41,6 +45,8 @@ const (
 	blocking termReqType = iota
 	scoreUpdate
 	message
+	info
+	switchGames
 )
 
 type terminalRequest struct {
@@ -54,6 +60,7 @@ func StartTerminalInteraction() error {
 	tc := terminalClient{
 		server:  &http.Client{},
 		myGames: make(map[model.GameID]model.Game),
+		reqChan: make(chan terminalRequest, 5),
 	}
 	if tc.shouldSignIn() {
 		tc.me.ID = tc.getPlayerID(`What is your username?`)
@@ -71,11 +78,9 @@ func StartTerminalInteraction() error {
 		return err
 	}
 
-	reqChan := make(chan terminalRequest, 5)
-
-	tc.startClientServer(&wg, reqChan, port)
+	tc.startClientServer(&wg, port)
 	tc.tellAboutInteraction(&wg, port)
-	tc.processUserInput(&wg, reqChan)
+	tc.processUserInput(&wg)
 
 	// Block until forever...?
 	wg.Wait()
@@ -104,7 +109,7 @@ func findOpenPort() (int, error) {
 	return port, nil
 }
 
-func (tc *terminalClient) startClientServer(wg *sync.WaitGroup, reqChan chan terminalRequest, port int) {
+func (tc *terminalClient) startClientServer(wg *sync.WaitGroup, port int) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -129,9 +134,9 @@ func (tc *terminalClient) startClientServer(wg *sync.WaitGroup, reqChan chan ter
 		router := gin.New()
 		router.Use(gin.LoggerWithWriter(playerServerFile), gin.Recovery())
 
-		router.POST("/blocking/:gameID", handleBlocking(reqChan))
-		router.POST("/message/:gameID", handleMessage(reqChan))
-		router.POST("/score/:gameID", handleScoreUpdate(reqChan))
+		router.POST("/blocking/:gameID", handleBlocking(tc.reqChan))
+		router.POST("/message/:gameID", handleMessage(tc.reqChan))
+		router.POST("/score/:gameID", handleScoreUpdate(tc.reqChan))
 
 		err = router.Run(fmt.Sprintf("0.0.0.0:%d", port)) // listen and serve on the addr
 		fmt.Printf("router.Run error: %+v\n", err)
@@ -151,7 +156,7 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 	}()
 }
 
-func (tc *terminalClient) processUserInput(wg *sync.WaitGroup, reqChan chan terminalRequest) {
+func (tc *terminalClient) processUserInput(wg *sync.WaitGroup) {
 	wg.Add(1)
 	go func() {
 		if tc.shouldCreateGame() {
@@ -166,15 +171,15 @@ func (tc *terminalClient) processUserInput(wg *sync.WaitGroup, reqChan chan term
 			return
 		}
 
-		reqChan <- terminalRequest{
+		tc.reqChan <- terminalRequest{
 			game: tc.myGames[tc.myCurrentGame],
 			msg:  `Starting terminal player`,
 			req:  message,
 		}
-		for req := range reqChan {
+		for req := range tc.reqChan {
 			err := tc.processRequest(req)
 			if err != nil && err != errInvalidGameID {
-				reqChan <- terminalRequest{
+				tc.reqChan <- terminalRequest{
 					gameID: req.gameID,
 					game:   req.game,
 					msg:    fmt.Sprintf(`Problem doing action (%s). Try again?`, err.Error()),
@@ -362,15 +367,21 @@ func (tc *terminalClient) createGame() error {
 		return err
 	}
 
-	g := model.Game{}
-
-	err = json.Unmarshal(respBytes, &g)
+	g, err := jsonutils.UnmarshalGame(respBytes)
 	if err != nil {
 		return err
 	}
 
-	tc.myCurrentGame = g.ID
 	tc.myGames[g.ID] = g
+
+	if tc.myCurrentGame == model.InvalidGameID {
+		tc.myCurrentGame = g.ID
+	} else {
+		tc.reqChan <- terminalRequest{
+			gameID: g.ID,
+			req:    switchGames,
+		}
+	}
 
 	return nil
 }
@@ -406,6 +417,11 @@ func (tc *terminalClient) updatePlayer() error {
 		return err
 	}
 
+	tc.reqChan <- terminalRequest{
+		msg: fmt.Sprintf(`Knows about %d games`, len(tc.me.Games)),
+		req: info,
+	}
+
 	for gID := range tc.me.Games {
 		g, err := tc.requestGame(gID)
 		if err != nil {
@@ -430,18 +446,31 @@ func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {
 		return model.Game{}, err
 	}
 
-	g := model.Game{}
-
-	err = json.Unmarshal(respBytes, &g)
+	g, err := jsonutils.UnmarshalGame(respBytes)
 	if err != nil {
 		return model.Game{}, err
 	}
 	tc.myGames[g.ID] = g
 
+	if _, ok := g.BlockingPlayers[tc.me.ID]; ok && g.ID != tc.myCurrentGame {
+		tc.reqChan <- terminalRequest{
+			gameID: g.ID,
+			req:    switchGames,
+		}
+	}
+
 	return g, nil
 }
 
 func (tc *terminalClient) processRequest(req terminalRequest) error {
+	switch req.req {
+	case info:
+		fmt.Println(req.msg)
+		return nil
+	case switchGames:
+		return tc.askToSwitchGames(req.gameID)
+	}
+
 	gID := req.gameID
 	if req.gameID == model.InvalidGameID {
 		gID = req.game.ID
@@ -450,9 +479,10 @@ func (tc *terminalClient) processRequest(req terminalRequest) error {
 		fmt.Printf("request does not have valid game ID: %+v\n", req)
 		return errInvalidGameID
 	}
+
 	switch req.req {
 	case blocking:
-		fmt.Printf("Message: \"%s\"\n", req.msg)
+		fmt.Printf("Blocking message: \"%s\"\n", req.msg)
 		err := tc.requestAndSendAction(gID)
 		if err != nil {
 			return err
@@ -465,5 +495,45 @@ func (tc *terminalClient) processRequest(req terminalRequest) error {
 	default:
 		fmt.Printf("Developer error: req needs a type %+v\n", req)
 	}
+	return nil
+}
+
+func (tc *terminalClient) askToSwitchGames(newGameID model.GameID) error {
+	should := true
+
+	msg := `Current game is with `
+	for i, p := range tc.myGames[tc.myCurrentGame].Players {
+		if i > 0 {
+			msg += `, `
+		}
+		msg += p.Name
+	}
+	msg += `. `
+	msg += `Do you want to switch to game with `
+	for i, p := range tc.myGames[newGameID].Players {
+		if i > 0 {
+			msg += `, `
+		}
+		msg += p.Name
+	}
+	msg += `? `
+
+	prompt := &survey.Confirm{
+		Message: msg,
+		Default: true,
+	}
+
+	err := survey.AskOne(prompt, &should)
+	if err != nil {
+		fmt.Printf("survey.AskOne error: %+v\n", err)
+		return err
+	}
+
+	tc.reqChan <- terminalRequest{
+		gameID: newGameID,
+		msg:    `Switched to new game`,
+		req:    blocking,
+	}
+
 	return nil
 }
