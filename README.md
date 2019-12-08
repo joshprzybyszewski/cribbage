@@ -5,6 +5,8 @@ It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cri
 
 [![codecov](https://codecov.io/gh/joshprzybyszewski/cribbage/branch/master/graph/badge.svg)](https://codecov.io/gh/joshprzybyszewski/cribbage)
 
+[![Build Status](https://travis-ci.org/joshprzybyszewski/cribbage.png)](https://travis-ci.org/joshprzybyszewski/cribbage)
+
 ## How to install
 
 1. Go get this project
