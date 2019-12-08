@@ -85,7 +85,7 @@ func (m *memory) SaveGame(g model.Game) error {
 	id := g.ID
 
 	savedGames := m.games[id]
-	err := validateGameState(saved.Games, g)
+	err := validateGameState(savedGames, g)
 	if err != nil {
 		return err
 	}
