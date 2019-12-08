@@ -11,7 +11,7 @@ var _ npcLogic = (*dumbNPCLogic)(nil)
 type dumbNPCLogic struct{}
 
 func (npc *dumbNPCLogic) addToCrib(g model.Game, pID model.PlayerID, n int) []model.Card {
-	return g.Hands[pID][0:2]
+	return g.Hands[pID][0:n]
 }
 
 func (npc *dumbNPCLogic) peg(g model.Game, pID model.PlayerID) (model.Card, bool) {
