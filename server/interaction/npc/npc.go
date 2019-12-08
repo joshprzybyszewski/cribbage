@@ -9,10 +9,16 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
+const (
+	dumb   model.PlayerID = `dumbNPC`
+	simple model.PlayerID = `simpleNPC`
+	calc   model.PlayerID = `calculatedNPC`
+)
+
 var npcs = map[model.PlayerID]npcLogic{
-	`dumbNPC`:       &dumbNPCLogic{},
-	`simpleNPC`:     &simpleNPCLogic{},
-	`calculatedNPC`: &calcNPCLogic{},
+	dumb:   &dumbNPCLogic{},
+	simple: &simpleNPCLogic{},
+	calc:   &calcNPCLogic{},
 }
 
 var _ interaction.Player = (*npcPlayer)(nil)
