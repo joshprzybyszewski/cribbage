@@ -1,4 +1,4 @@
-package interaction
+package npc
 
 import (
 	"github.com/joshprzybyszewski/cribbage/game"
@@ -8,12 +8,12 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-// NPCType is an enum specifying which type of NPCType
-type NPCType int
+// Mode is an enum specifying which type of Mode
+type Mode int
 
 // Dumb, Simple, and Calculated are supported
 const (
-	Dumb NPCType = iota
+	Dumb Mode = iota
 	Simple
 	Calculated
 )
@@ -21,7 +21,7 @@ const (
 var _ interaction.Player = (*npcPlayer)(nil)
 
 type npcPlayer struct {
-	Type NPCType
+	Mode Mode
 
 	id                   model.PlayerID
 	handleActionCallback func(a model.PlayerAction) error
@@ -29,15 +29,15 @@ type npcPlayer struct {
 
 var npcs = [...]npcPlayer{
 	Dumb: {
-		Type: Dumb,
+		Mode: Dumb,
 		id:   `dumbNPC`,
 	},
 	Simple: {
-		Type: Simple,
+		Mode: Simple,
 		id:   `simpleNPC`,
 	},
 	Calculated: {
-		Type: Calculated,
+		Mode: Calculated,
 		id:   `calculatedNPC`,
 	},
 }
@@ -45,7 +45,7 @@ var npcs = [...]npcPlayer{
 var me game.Player
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(n NPCType, cb func(a model.PlayerAction) error) interaction.Player {
+func NewNPCPlayer(n Mode, cb func(a model.PlayerAction) error) interaction.Player {
 	npc := npcs[n]
 	npc.handleActionCallback = cb
 	return &npc
@@ -101,7 +101,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 
 func (npc *npcPlayer) updateCurrentNPC(g model.Game) {
 	id := npc.ID()
-	switch npc.Type {
+	switch npc.Mode {
 	case Dumb:
 		me = game.NewDumbNPC(g.PlayerColors[id])
 	case Simple:

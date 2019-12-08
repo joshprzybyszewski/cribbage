@@ -1,4 +1,4 @@
-package interaction
+package npc
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 func Test_npcPlayer_buildDealAction(t *testing.T) {
 	tests := []struct {
 		desc string
-		npc  NPCType
+		npc  Mode
 		g    model.Game
 		exp  model.PlayerAction
 	}{{
@@ -25,7 +25,7 @@ func Test_npcPlayer_buildDealAction(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		npc := npcPlayer{
-			Type: tc.npc,
+			Mode: tc.npc,
 		}
 		a := npc.buildAction(model.DealCards, tc.g)
 		assert.Equal(t, a.Overcomes, model.DealCards)
@@ -39,7 +39,7 @@ func Test_npcPlayer_buildDealAction(t *testing.T) {
 func Test_npcPlayer_buildBuildCribAction(t *testing.T) {
 	tests := []struct {
 		desc      string
-		npc       NPCType
+		npc       Mode
 		g         model.Game
 		expNCards int
 	}{{
@@ -74,7 +74,7 @@ func Test_npcPlayer_buildBuildCribAction(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		npc := npcPlayer{
-			Type: tc.npc,
+			Mode: tc.npc,
 		}
 		a := npc.buildAction(model.CribCard, tc.g)
 		assert.Equal(t, a.Overcomes, model.CribCard)
@@ -88,7 +88,7 @@ func Test_npcPlayer_buildBuildCribAction(t *testing.T) {
 func TestNewNPCPlayer(t *testing.T) {
 	tests := []struct {
 		desc  string
-		n     NPCType
+		n     Mode
 		expID model.PlayerID
 	}{
 		{
