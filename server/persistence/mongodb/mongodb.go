@@ -250,12 +250,23 @@ func (m *mongodb) SaveGame(g model.Game) error {
 	if saved.GameID != g.ID {
 		return errors.New(`bad save somewhere`)
 	}
-	if len(saved.Games) != len(g.Actions) {
+	err = validateGameState(saved.Games, g)
+	if err != nil {
+		return err
+	}
+
+	saved.Games = append(saved.Games, g)
+
+	return m.saveGameList(ctx, saved)
+}
+
+func validateGameState(savedGames []model.Game, newGameState model.Game) error {
+	if len(savedGames) != len(newGameState.Actions) {
 		return persistence.ErrGameActionsOutOfOrder
 	}
-	for i := range saved.Games {
-		savedActions := saved.Games[i].Actions
-		myKnownActions := g.Actions[:i]
+	for i := range savedGames {
+		savedActions := savedGames[i].Actions
+		myKnownActions := newGameState.Actions[:i]
 		if len(savedActions) != len(myKnownActions) {
 			return persistence.ErrGameActionsOutOfOrder
 		}
@@ -265,10 +276,7 @@ func (m *mongodb) SaveGame(g model.Game) error {
 			}
 		}
 	}
-
-	saved.Games = append(saved.Games, g)
-
-	return m.saveGameList(ctx, saved)
+	return nil
 }
 
 func (m *mongodb) saveGameList(ctx context.Context, saved gameList) error {
