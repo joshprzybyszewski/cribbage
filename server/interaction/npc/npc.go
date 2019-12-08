@@ -12,7 +12,7 @@ import (
 var npcs = map[model.PlayerID]npcLogic{
 	`dumbNPC`:       &dumbNPCLogic{},
 	`simpleNPC`:     &simpleNPCLogic{},
-	`calculatedNPC`: &simpleNPCLogic{},
+	`calculatedNPC`: &calcNPCLogic{},
 }
 
 var _ interaction.Player = (*npcPlayer)(nil)
