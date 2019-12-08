@@ -18,15 +18,15 @@ const (
 )
 
 var npcs = [...]npcPlayer{
-	Dumb: npcPlayer{
+	Dumb: {
 		Type: Dumb,
 		id:   `dumbNPC`,
 	},
-	Simple: npcPlayer{
+	Simple: {
 		Type: Simple,
 		id:   `simpleNPC`,
 	},
-	Calculated: npcPlayer{
+	Calculated: {
 		Type: Calculated,
 		id:   `calculatedNPC`,
 	},
@@ -76,7 +76,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 	switch b {
 	case model.DealCards:
 		a.Action = model.DealAction{
-			NumShuffles: rand.Intn(10),
+			NumShuffles: rand.Intn(10) + 1,
 		}
 	case model.CribCard:
 		a.Action = npc.handleBuildCrib(g)
@@ -99,7 +99,7 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 }
 
 func (npc *npcPlayer) updateCurrentNPC(g model.Game) {
-	id := model.PlayerID(npc.ID())
+	id := npc.ID()
 	switch npc.Type {
 	case Dumb:
 		me = game.NewDumbNPC(g.PlayerColors[id])
