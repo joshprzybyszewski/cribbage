@@ -1,7 +1,8 @@
 package server
 
 import (
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction/npc"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 )
@@ -12,11 +13,12 @@ func Setup() error {
 		db: getDB(),
 	}
 
-	npcTypes := []interaction.NPCType{
-		interaction.Dumb, interaction.Simple, interaction.Calculated,
-	}
-	for _, npcType := range npcTypes {
-		npc := interaction.NewNPCPlayer(npcType, cs.handleAction)
+	for _, id := range getNPCIDs() {
+		npc, err := npc.NewNPCPlayer(id, cs.handleAction)
+		if err != nil {
+			return err
+		}
+
 		if _, err := cs.db.GetInteraction(npc.ID()); err != nil {
 			// TODO we should probably not use the error this way...
 			if err.Error() == `does not have player` {
@@ -29,6 +31,10 @@ func Setup() error {
 	cs.Serve()
 
 	return nil
+}
+
+func getNPCIDs() []model.PlayerID {
+	return []model.PlayerID{`dumbNPC`, `simpleNPC`, `calculatedNPC`}
 }
 
 func getDB() persistence.DB {
