@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	database = flag.String(`db`, `memory`, `Set to the type of database to access`)
+	database = flag.String(`db`, `mongo`, `Set to the type of database to access`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 )
 
