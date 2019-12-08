@@ -185,3 +185,11 @@ func TestPointsOddInteractions(t *testing.T) {
 		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
 	}
 }
+
+func TestScoringPoorlySizedHands(t *testing.T) {
+	// Asserting zero also checks that the func doesn't panic
+	assert.Zero(t, CribPoints(model.Card{}, make([]model.Card, 5)))
+	assert.Zero(t, CribPoints(model.Card{}, make([]model.Card, 6)))
+	assert.Zero(t, HandPoints(model.Card{}, make([]model.Card, 5)))
+	assert.Zero(t, HandPoints(model.Card{}, make([]model.Card, 6)))
+}

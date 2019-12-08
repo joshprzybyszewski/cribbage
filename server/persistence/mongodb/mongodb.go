@@ -223,7 +223,7 @@ func (m *mongodb) GetPlayer(id model.PlayerID) (model.Player, error) { //nolint:
 }
 
 func (m *mongodb) SaveGame(g model.Game) error {
-	// TODO make this transactional
+	// Would like to make this transactional. Look at https://github.com/joshprzybyszewski/cribbage/issues/23
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -251,9 +251,19 @@ func (m *mongodb) SaveGame(g model.Game) error {
 		return errors.New(`bad save somewhere`)
 	}
 	if len(saved.Games) != len(g.Actions) {
-		// TODO we could do a deeper check on the actions
-		// i.e. saved.games == g.Action[:len(g.Actions)-1]
 		return persistence.ErrGameActionsOutOfOrder
+	}
+	for i := range saved.Games {
+		savedActions := saved.Games[i].Actions
+		myKnownActions := g.Actions[:i]
+		if len(savedActions) != len(myKnownActions) {
+			return persistence.ErrGameActionsOutOfOrder
+		}
+		for ai, a := range savedActions {
+			if a.ID != myKnownActions[ai].ID || a.Overcomes != myKnownActions[ai].Overcomes {
+				return persistence.ErrGameActionsOutOfOrder
+			}
+		}
 	}
 
 	saved.Games = append(saved.Games, g)

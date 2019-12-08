@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/joshprzybyszewski/cribbage/logic/scorer"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
@@ -37,11 +38,9 @@ func jsonCopyGame(input model.Game) model.Game {
 }
 
 func TestUnmarshalGame(t *testing.T) {
-	alice, bob, pAPIs := testutils.EmptyAliceAndBob()
+	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g5 := model.GameID(5)
-
-	gPeg := gameAtPegging(t, alice, bob, pAPIs)
 
 	testCases := []struct {
 		msg  string
@@ -89,24 +88,26 @@ func TestUnmarshalGame(t *testing.T) {
 				},
 			}},
 		},
-	}, {
-		msg:  `game at pegging`,
-		game: gPeg,
 	}}
 
 	for _, tc := range testCases {
-		gameCopy := jsonCopyGame(tc.game)
-
-		b, err := json.Marshal(tc.game)
-		require.NoError(t, err, tc.msg)
-
-		actGame, err := UnmarshalGame(b)
-		require.NoError(t, err, tc.msg)
-		assert.Equal(t, gameCopy, actGame, tc.msg)
+		checkMarshalUnmarshal(t, tc.game, tc.msg)
 	}
 }
 
-func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.PlayerID]interaction.Player) model.Game {
+func checkMarshalUnmarshal(t *testing.T, g model.Game, msg string) {
+	gameCopy := jsonCopyGame(g)
+
+	b, err := json.Marshal(g)
+	require.NoError(t, err, msg)
+
+	actGame, err := UnmarshalGame(b)
+	require.NoError(t, err, msg)
+	assert.Equal(t, gameCopy, actGame, msg)
+}
+
+func TestGameAtAllStages(t *testing.T) {
+	alice, bob, pAPIs := testutils.EmptyAliceAndBob()
 	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
 	require.NoError(t, err)
 
@@ -116,30 +117,135 @@ func gameAtPegging(t *testing.T, alice, bob model.Player, pAPIs map[model.Player
 		Overcomes: model.DealCards,
 		Action:    model.DealAction{NumShuffles: 10},
 	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after deal`)
+
+	g.Hands[alice.ID] = []model.Card{
+		model.NewCardFromString(`5s`),
+		model.NewCardFromString(`5c`),
+		model.NewCardFromString(`1s`),
+		model.NewCardFromString(`2s`),
+		model.NewCardFromString(`3s`),
+		model.NewCardFromString(`4s`),
+	}
+	g.Hands[bob.ID] = []model.Card{
+		model.NewCardFromString(`5d`),
+		model.NewCardFromString(`5h`),
+		model.NewCardFromString(`1c`),
+		model.NewCardFromString(`2c`),
+		model.NewCardFromString(`3c`),
+		model.NewCardFromString(`4c`),
+	}
+	checkMarshalUnmarshal(t, g, `after deal`)
+
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
 	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after crib from alice`)
+
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
 	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after crib from bob`)
+
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
 		GameID:    g.ID,
 		Overcomes: model.CutCard,
 		Action:    model.CutDeckAction{Percentage: 0.314},
 	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after cut from bob`)
+
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
 		GameID:    g.ID,
 		Overcomes: model.PegCard,
 		Action:    model.PegAction{Card: g.Hands[bob.ID][0]},
 	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after bob pegs`)
 
-	return g
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[alice.ID][0]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][1]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after bob pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[alice.ID][1]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][2]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after bob pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[alice.ID][2]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[bob.ID][3]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after bob pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: g.Hands[alice.ID][3]},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice pegs`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CountHand,
+		Action:    model.CountHandAction{Pts: scorer.HandPoints(g.CutCard, g.Hands[bob.ID])},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after bob scores`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CountHand,
+		Action:    model.CountHandAction{Pts: scorer.HandPoints(g.CutCard, g.Hands[alice.ID])},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice scores`)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CountCrib,
+		Action:    model.CountCribAction{Pts: scorer.CribPoints(g.CutCard, g.Crib)},
+	}, pAPIs))
+	checkMarshalUnmarshal(t, g, `after alice scores crib`)
 }

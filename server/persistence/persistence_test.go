@@ -20,11 +20,12 @@ type dbTest func(*testing.T, persistence.DB)
 
 var (
 	tests = map[string]dbTest{
-		`createPlayer`:    testCreatePlayer,
-		`saveGame`:        testSaveGame,
-		`resaveGame`:      testSaveGameMultipleTimes,
-		`saveInteraction`: testSaveInteraction,
-		`addColorToGame`:  testAddPlayerColorToGame,
+		`createPlayer`:          testCreatePlayer,
+		`saveGame`:              testSaveGame,
+		`resaveGame`:            testSaveGameMultipleTimes,
+		`saveGameMissingAction`: testSaveGameWithMissingAction,
+		`saveInteraction`:       testSaveInteraction,
+		`addColorToGame`:        testAddPlayerColorToGame,
 	}
 )
 
@@ -314,4 +315,82 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 	assert.NotEqual(t, g, g2)
 	assert.Equal(t, g2.PlayerColors[alice.ID], a2.Games[g.ID])
 	assert.Equal(t, g2.PlayerColors[bob.ID], b2.Games[g.ID])
+}
+
+func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
+	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
+
+	checkPersistedGame := func(expGame model.Game) {
+		actGame, err := db.GetGame(expGame.ID)
+		require.NoError(t, err)
+		// the deck should always be nil
+		expGame.Deck = nil
+		assert.Equal(t, expGame, actGame)
+	}
+
+	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
+	require.NoError(t, err)
+
+	_, err = db.GetGame(g.ID)
+	require.Error(t, err)
+	assert.EqualError(t, err, persistence.ErrGameNotFound.Error())
+
+	var gCopy model.Game
+	persistenceGameCopy(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.DealCards,
+		Action:    model.DealAction{NumShuffles: 10},
+	}, abAPIs))
+	persistenceGameCopy(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        alice.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+	}, abAPIs))
+	persistenceGameCopy(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CribCard,
+		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+	}, abAPIs))
+	persistenceGameCopy(&gCopy, g)
+
+	require.NoError(t, db.SaveGame(g))
+	checkPersistedGame(gCopy)
+
+	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
+		ID:        bob.ID,
+		GameID:    g.ID,
+		Overcomes: model.CutCard,
+		Action:    model.CutDeckAction{Percentage: 0.600},
+	}, abAPIs))
+	persistenceGameCopy(&gCopy, g)
+
+	// corrupt an action
+	badAction := g.Actions[1]
+	badAction.Action = model.CountCribAction{Pts: 100}
+	badAction.Overcomes = model.CountCrib
+	g.Actions[1] = badAction
+	require.Error(t, db.SaveGame(g), `saving a game with a corrupted action is a :badtime:`)
+
+	// splice out an action
+	g.Actions = append(g.Actions[:1], g.Actions[2:]...)
+	require.Error(t, db.SaveGame(g), `saving a game with a missing action is a :badtime:`)
 }

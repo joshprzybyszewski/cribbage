@@ -16,6 +16,13 @@ func CribPoints(lead model.Card, crib []model.Card) int {
 }
 
 func points(lead model.Card, hand []model.Card, isCrib bool) int {
+	if len(hand) != 4 {
+		if LOG {
+			fmt.Printf("Expected hand size 4, got %d\n", len(hand))
+		}
+		return 0
+	}
+
 	values := make([]int, 5)
 	ptValues := make([]int, 5)
 	for i, c := range hand {

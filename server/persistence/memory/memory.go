@@ -84,8 +84,21 @@ func (m *memory) SaveGame(g model.Game) error {
 
 	id := g.ID
 
-	if len(m.games[id]) != g.NumActions() {
+	savedGames := m.games[id]
+	if len(savedGames) != g.NumActions() {
 		return persistence.ErrGameActionsOutOfOrder
+	}
+	for i := range savedGames {
+		savedActions := savedGames[i].Actions
+		myKnownActions := g.Actions[:i]
+		if len(savedActions) != len(myKnownActions) {
+			return persistence.ErrGameActionsOutOfOrder
+		}
+		for ai, a := range savedActions {
+			if a.ID != myKnownActions[ai].ID || a.Overcomes != myKnownActions[ai].Overcomes {
+				return persistence.ErrGameActionsOutOfOrder
+			}
+		}
 	}
 
 	m.games[id] = append(m.games[id], g)
