@@ -32,7 +32,7 @@ func seedNPCs(cs cribbageServer) error {
 		}
 
 		if _, err := cs.db.GetInteraction(p.ID()); err != nil {
-			// TODO we should probably not use the error this way...
+			// TODO compare to err consts when those get pulled in
 			if err.Error() == `does not have player` {
 				return cs.db.SaveInteraction(p)
 			}
