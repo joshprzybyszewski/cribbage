@@ -15,13 +15,16 @@ func cribActionHelper(hand []model.Card,
 	isDealer bool, dealerStrats,
 	notDealerStrats []func(int, []model.Card) []model.Card) model.BuildCribAction {
 
+	var i int
 	n := len(hand) - 4
 	if isDealer {
+		i = rand.Int() % len(dealerStrats)
 		return model.BuildCribAction{
-			Cards: dealerStrats[rand.Int()%2](n, hand),
+			Cards: dealerStrats[i](n, hand),
 		}
 	}
+	i = rand.Int() % len(notDealerStrats)
 	return model.BuildCribAction{
-		Cards: notDealerStrats[rand.Int()%2](n, hand),
+		Cards: notDealerStrats[i](n, hand),
 	}
 }
