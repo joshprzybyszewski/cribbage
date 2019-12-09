@@ -61,8 +61,6 @@ func TestBuildDealAction(t *testing.T) {
 	tests := []struct {
 		desc string
 		npc  model.PlayerID
-		g    model.Game
-		exp  model.PlayerAction
 	}{{
 		desc: `test dumb npc`,
 		npc:  `dumbNPC`,
@@ -76,7 +74,7 @@ func TestBuildDealAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.DealCards, tc.g)
+		a := p.buildAction(model.DealCards, model.Game{})
 		assert.Equal(t, a.Overcomes, model.DealCards)
 
 		da, ok := a.Action.(model.DealAction)
