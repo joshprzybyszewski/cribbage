@@ -38,6 +38,7 @@ func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 		hands[p.ID] = make([]model.Card, nCards)
 	}
 	for i := range hands[npcID] {
+		// create a hand: 2c, 3c, 4c, ...
 		hands[npcID][i] = model.NewCardFromString(fmt.Sprintf(`%dc`, i+2))
 	}
 
@@ -49,6 +50,7 @@ func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 		})
 	}
 	return model.Game{
+		ID:          5,
 		Players:     players,
 		Hands:       hands,
 		PeggedCards: pegs,
@@ -87,8 +89,6 @@ func TestBuildCutAction(t *testing.T) {
 	tests := []struct {
 		desc string
 		npc  model.PlayerID
-		g    model.Game
-		exp  model.PlayerAction
 	}{{
 		desc: `test dumb npc`,
 		npc:  `dumbNPC`,
@@ -102,13 +102,90 @@ func TestBuildCutAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.CutCard, tc.g)
+		a := p.buildAction(model.CutCard, model.Game{})
 		assert.Equal(t, a.Overcomes, model.CutCard)
 
 		cda, ok := a.Action.(model.CutDeckAction)
 		assert.True(t, ok)
 		assert.LessOrEqual(t, cda.Percentage, 1.0)
 		assert.GreaterOrEqual(t, cda.Percentage, 0.0)
+	}
+}
+func TestCountHandAction(t *testing.T) {
+	tests := []struct {
+		desc string
+		npc  model.PlayerID
+		g    model.Game
+		exp  model.PlayerAction
+	}{{
+		desc: `test dumb npc`,
+		npc:  Dumb,
+		g: model.Game{
+			Hands: map[model.PlayerID][]model.Card{
+				Dumb: {
+					model.NewCardFromString(`2c`),
+					model.NewCardFromString(`3c`),
+					model.NewCardFromString(`4c`),
+					model.NewCardFromString(`5c`),
+				}},
+			CutCard: model.NewCardFromString(`10h`),
+		},
+		exp: model.PlayerAction{
+			ID:        Dumb,
+			Overcomes: model.CountHand,
+			Action: model.CountHandAction{
+				Pts: 12,
+			}},
+	}, {
+		desc: `test simple npc`,
+		npc:  Simple,
+		g: model.Game{
+			Hands: map[model.PlayerID][]model.Card{
+				Simple: {
+					model.NewCardFromString(`2c`),
+					model.NewCardFromString(`3c`),
+					model.NewCardFromString(`4c`),
+					model.NewCardFromString(`5c`),
+				}},
+			CutCard: model.NewCardFromString(`10h`),
+		},
+		exp: model.PlayerAction{
+			ID:        Simple,
+			Overcomes: model.CountHand,
+			Action: model.CountHandAction{
+				Pts: 12,
+			}},
+	}, {
+		desc: `test calculated npc`,
+		npc:  Calc,
+		g: model.Game{
+			Hands: map[model.PlayerID][]model.Card{
+				Calc: {
+					model.NewCardFromString(`2c`),
+					model.NewCardFromString(`3c`),
+					model.NewCardFromString(`4c`),
+					model.NewCardFromString(`5c`),
+				}},
+			CutCard: model.NewCardFromString(`10h`),
+		},
+		exp: model.PlayerAction{
+			ID:        Calc,
+			Overcomes: model.CountHand,
+			Action: model.CountHandAction{
+				Pts: 12,
+			}},
+	}}
+	for _, tc := range tests {
+		p := createPlayer(t, tc.npc)
+
+		a := p.buildAction(model.CountHand, tc.g)
+		assert.Equal(t, a.Overcomes, model.CountHand)
+
+		cha, ok := a.Action.(model.CountHandAction)
+		assert.True(t, ok)
+		exp, ok := tc.exp.Action.(model.CountHandAction)
+		assert.True(t, ok)
+		assert.Equal(t, exp.Pts, cha.Pts)
 	}
 }
 func TestPegAction(t *testing.T) {
@@ -193,7 +270,7 @@ func TestBuildBuildCribAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 1; i++ {
 			a := p.buildAction(model.CribCard, tc.g)
 			assert.Equal(t, a.Overcomes, model.CribCard)
 
