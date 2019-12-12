@@ -11,15 +11,7 @@ var _ npcLogic = (*simpleNPCLogic)(nil)
 type simpleNPCLogic struct{}
 
 func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) model.BuildCribAction {
-	dealerStrats := []func(desired int, hand []model.Card) []model.Card{
-		strategy.GiveCribFifteens,
-		strategy.GiveCribPairs,
-	}
-	notDealerStrats := []func(desired int, hand []model.Card) []model.Card{
-		strategy.AvoidCribFifteens,
-		strategy.AvoidCribPairs,
-	}
-	return cribActionHelper(hand, isDealer, dealerStrats, notDealerStrats)
+	return cribActionHelper(hand, Simple, isDealer)
 }
 
 func (npc *simpleNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {

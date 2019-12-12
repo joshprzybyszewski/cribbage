@@ -10,15 +10,7 @@ var _ npcLogic = (*calcNPCLogic)(nil)
 type calcNPCLogic struct{}
 
 func (npc *calcNPCLogic) getCribAction(hand []model.Card, isDealer bool) model.BuildCribAction {
-	dealerStrats := []func(desired int, hand []model.Card) []model.Card{
-		strategy.KeepHandLowestPotential,
-		strategy.GiveCribHighestPotential,
-	}
-	notDealerStrats := []func(desired int, hand []model.Card) []model.Card{
-		strategy.KeepHandHighestPotential,
-		strategy.GiveCribLowestPotential,
-	}
-	return cribActionHelper(hand, isDealer, dealerStrats, notDealerStrats)
+	return cribActionHelper(hand, Calc, isDealer)
 }
 
 func (npc *calcNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
