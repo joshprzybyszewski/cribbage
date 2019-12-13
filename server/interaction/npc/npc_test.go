@@ -20,9 +20,9 @@ func createPlayer(t *testing.T, pID model.PlayerID) *npcPlayer {
 	return p
 }
 
-func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
-	players := make([]model.Player, n)
-	for i := 0; i < n-1; i++ {
+func newGame(npcID model.PlayerID, nPlayers int, pegCards []model.Card) model.Game {
+	players := make([]model.Player, nPlayers)
+	for i := 0; i < nPlayers-1; i++ {
 		id := model.PlayerID(fmt.Sprintf(`p%d`, i))
 		players[i] = model.Player{ID: id}
 	}
@@ -30,7 +30,7 @@ func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 
 	hands := make(map[model.PlayerID][]model.Card)
 	nCards := 6
-	switch n {
+	switch nPlayers {
 	case 3, 4:
 		nCards = 5
 	}
@@ -46,7 +46,7 @@ func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 	for i, c := range pegCards {
 		pegs = append(pegs, model.PeggedCard{
 			Card:     c,
-			PlayerID: players[i%n].ID,
+			PlayerID: players[i%nPlayers].ID,
 		})
 	}
 	return model.Game{
@@ -57,7 +57,7 @@ func newGame(npcID model.PlayerID, n int, pegCards []model.Card) model.Game {
 	}
 }
 
-func TestBuildDealAction(t *testing.T) {
+func TestDealAction(t *testing.T) {
 	tests := []struct {
 		desc string
 		npc  model.PlayerID
@@ -83,7 +83,7 @@ func TestBuildDealAction(t *testing.T) {
 		assert.GreaterOrEqual(t, da.NumShuffles, 1)
 	}
 }
-func TestBuildCutAction(t *testing.T) {
+func TestCutAction(t *testing.T) {
 	tests := []struct {
 		desc string
 		npc  model.PlayerID
@@ -272,40 +272,61 @@ func TestPegAction(t *testing.T) {
 		}
 	}
 }
-func TestBuildBuildCribAction(t *testing.T) {
+func TestBuildCribAction(t *testing.T) {
 	tests := []struct {
 		desc      string
 		npc       model.PlayerID
+		isDealer  bool
 		g         model.Game
 		expNCards int
 	}{{
 		desc:      `test dumb npc`,
 		npc:       `dumbNPC`,
+		isDealer:  false,
 		g:         newGame(`dumbNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
-		desc:      `test simple npc`,
+		desc:      `test simple npc, not dealer`,
 		npc:       `simpleNPC`,
+		isDealer:  false,
 		g:         newGame(`simpleNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
-		desc:      `test calculated npc`,
+		desc:      `test simple npc, dealer`,
+		npc:       `simpleNPC`,
+		isDealer:  true,
+		g:         newGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		expNCards: 2,
+	}, {
+		desc:      `test calculated npc, not dealer`,
 		npc:       `calculatedNPC`,
+		isDealer:  false,
+		g:         newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		expNCards: 2,
+	}, {
+		desc:      `test calculated npc, dealer`,
+		npc:       `calculatedNPC`,
+		isDealer:  true,
 		g:         newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test 3 player game`,
 		npc:       `dumbNPC`,
+		isDealer:  false,
 		g:         newGame(`dumbNPC`, 3, make([]model.Card, 0)),
 		expNCards: 1,
 	}, {
 		desc:      `test 4 player game`,
 		npc:       `dumbNPC`,
+		isDealer:  false,
 		g:         newGame(`dumbNPC`, 4, make([]model.Card, 0)),
 		expNCards: 1,
 	}}
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
+		if tc.isDealer {
+			tc.g.CurrentDealer = tc.npc
+		}
 
 		for i := 0; i < 1; i++ {
 			a := p.buildAction(model.CribCard, tc.g)
@@ -315,5 +336,83 @@ func TestBuildBuildCribAction(t *testing.T) {
 			assert.True(t, ok)
 			assert.Len(t, bca.Cards, tc.expNCards, tc.desc)
 		}
+	}
+}
+
+func TestNotifyBlocking(t *testing.T) {
+	tests := []struct {
+		desc string
+		npc  model.PlayerID
+	}{{
+		desc: `test dumb NPC`,
+		npc:  Dumb,
+	}, {
+		desc: `test simple NPC`,
+		npc:  Simple,
+	}, {
+		desc: `test calculated NPC`,
+		npc:  Calc,
+	}}
+
+	for _, tc := range tests {
+		cb := func(a model.PlayerAction) error {
+			da, ok := a.Action.(model.DealAction)
+			assert.True(t, ok)
+			assert.GreaterOrEqual(t, da.NumShuffles, 1)
+			assert.LessOrEqual(t, da.NumShuffles, 10)
+			return nil
+		}
+		p, err := NewNPCPlayer(tc.npc, cb)
+		require.Nil(t, err)
+		err = p.NotifyBlocking(model.DealCards, model.Game{}, ``)
+		assert.Nil(t, err)
+	}
+}
+func TestNotifyMessage(t *testing.T) {
+	tests := []struct {
+		desc string
+		npc  model.PlayerID
+	}{{
+		desc: `test dumb NPC`,
+		npc:  Dumb,
+	}, {
+		desc: `test simple NPC`,
+		npc:  Simple,
+	}, {
+		desc: `test calculated NPC`,
+		npc:  Calc,
+	}}
+
+	for _, tc := range tests {
+		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+			return nil
+		})
+		require.Nil(t, err)
+		err = p.NotifyBlocking(model.DealCards, model.Game{}, ``)
+		assert.Nil(t, err)
+	}
+}
+func TestNotifyScoreUpdate(t *testing.T) {
+	tests := []struct {
+		desc string
+		npc  model.PlayerID
+	}{{
+		desc: `test dumb NPC`,
+		npc:  Dumb,
+	}, {
+		desc: `test simple NPC`,
+		npc:  Simple,
+	}, {
+		desc: `test calculated NPC`,
+		npc:  Calc,
+	}}
+
+	for _, tc := range tests {
+		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+			return nil
+		})
+		require.Nil(t, err)
+		err = p.NotifyScoreUpdate(model.Game{}, ``)
+		assert.Nil(t, err)
 	}
 }
