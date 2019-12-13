@@ -36,41 +36,41 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func chooseFrom(desired int, hand []model.Card) [][]model.Card { //nolint:gocyclo
+func countBits(num uint) (int, []int) {
+	n := 0
+	iter := 0
+	idx := make([]int, 0)
+	for num > 0 {
+		if num&1 > 0 {
+			n++
+			idx = append(idx, iter)
+		}
+		num >>= 1
+		iter++
+	}
+	return n, idx
+}
+
+func chooseFrom(desired int, hand []model.Card) [][]model.Card {
 	if desired > len(hand) || desired > 4 || desired <= 0 {
 		return nil
 	}
-	// 6 choose 2 = 15, our largest number of potential deposits to the crib
-	allDeposits := make([][]model.Card, 0, 15)
-	for i, c1 := range hand {
-		if desired == 1 {
-			// it's a three or four player game, return one card
-			allDeposits = append(allDeposits, []model.Card{c1})
-			continue
-		}
-		for j := i + 1; j < len(hand); j++ {
-			c2 := hand[j]
-			if desired == 2 {
-				allDeposits = append(allDeposits, []model.Card{c1, c2})
-				continue
+	// the min int we need is the number with the lowest _n_ bits set, where n = desired
+	// the max int we need is the number with the highest _n_ bits set, where n = desired
+	// e.g. for 6 choose 4, we need min = 001111 and max = 111100
+	hands := make([][]model.Card, 0)
+	min := uint(1<<uint(desired)) - 1
+	max := min << uint(len(hand)-desired)
+	for i := min; i <= max; i++ {
+		if n, idx := countBits(i); n == desired {
+			thisHand := make([]model.Card, desired)
+			for j, k := range idx {
+				thisHand[j] = hand[k]
 			}
-			for k := i + 1; k < len(hand); k++ {
-				c3 := hand[k]
-				if desired == 3 {
-					allDeposits = append(allDeposits, []model.Card{c1, c2, c3})
-					continue
-				}
-				for l := i + 1; l < len(hand); l++ {
-					c4 := hand[l]
-					if desired == 4 {
-						allDeposits = append(allDeposits, []model.Card{c1, c2, c3, c4})
-						continue
-					}
-				}
-			}
+			hands = append(hands, thisHand)
 		}
 	}
-	return allDeposits
+	return hands
 }
 
 // without returns the cards in superset minus the subsetToRemove
