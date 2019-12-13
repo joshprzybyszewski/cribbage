@@ -259,16 +259,18 @@ func TestPegAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.PegCard, tc.g)
-		assert.Equal(t, a.Overcomes, model.PegCard)
+		for i := 0; i < 10; i++ {
+			a := p.buildAction(model.PegCard, tc.g)
+			assert.Equal(t, a.Overcomes, model.PegCard)
 
-		pa, ok := a.Action.(model.PegAction)
-		assert.True(t, ok)
-		if tc.expGo {
-			assert.True(t, pa.SayGo)
-		} else {
-			assert.False(t, pa.SayGo, tc.desc)
-			assert.NotEqual(t, model.Card{}, pa.Card)
+			pa, ok := a.Action.(model.PegAction)
+			assert.True(t, ok)
+			if tc.expGo {
+				assert.True(t, pa.SayGo)
+			} else {
+				assert.False(t, pa.SayGo, tc.desc)
+				assert.NotEqual(t, model.Card{}, pa.Card)
+			}
 		}
 	}
 }
@@ -388,7 +390,7 @@ func TestNotifyMessage(t *testing.T) {
 			return nil
 		})
 		require.Nil(t, err)
-		err = p.NotifyBlocking(model.DealCards, model.Game{}, ``)
+		err = p.NotifyMessage(model.Game{}, ``)
 		assert.Nil(t, err)
 	}
 }
@@ -414,5 +416,48 @@ func TestNotifyScoreUpdate(t *testing.T) {
 		require.Nil(t, err)
 		err = p.NotifyScoreUpdate(model.Game{}, ``)
 		assert.Nil(t, err)
+	}
+}
+func TestNewNPCPlayer(t *testing.T) {
+	tests := []struct {
+		desc     string
+		npc      model.PlayerID
+		expErr   bool
+		expLogic interface{}
+	}{{
+		desc:     `test dumb NPC`,
+		npc:      Dumb,
+		expErr:   false,
+		expLogic: &dumbNPCLogic{},
+	}, {
+		desc:     `test simple NPC`,
+		npc:      Simple,
+		expErr:   false,
+		expLogic: &simpleNPCLogic{},
+	}, {
+		desc:     `test calculated NPC`,
+		npc:      Calc,
+		expErr:   false,
+		expLogic: &calcNPCLogic{},
+	}, {
+		desc:     `test unsupported type`,
+		npc:      `unsupported`,
+		expErr:   true,
+		expLogic: nil,
+	}}
+
+	for _, tc := range tests {
+		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+			return nil
+		})
+		n, ok := p.(*npcPlayer)
+		assert.True(t, ok)
+		if tc.expErr {
+			assert.NotNil(t, err)
+			assert.Equal(t, &npcPlayer{}, p)
+		} else {
+			assert.Nil(t, err)
+			assert.Equal(t, tc.expLogic, n.logic)
+		}
 	}
 }
