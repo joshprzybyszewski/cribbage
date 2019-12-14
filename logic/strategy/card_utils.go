@@ -36,39 +36,28 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func getBitInds(num uint) []int {
-	iter := 0
-	idx := make([]int, 0)
-	for num > 0 {
-		if num&1 > 0 {
-			idx = append(idx, iter)
+func chooseFrom(k int, hand []model.Card) [][]model.Card {
+	if k == 1 {
+		all := make([][]model.Card, len(hand))
+		for i, e := range hand {
+			all[i] = []model.Card{e}
 		}
-		num >>= 1
-		iter++
+		return all
 	}
-	return idx
-}
-
-func chooseFrom(desired int, hand []model.Card) [][]model.Card {
-	if desired > len(hand) || desired > 4 || desired <= 0 {
-		return nil
+	if k == len(hand) {
+		return [][]model.Card{hand}
 	}
-	// the min int we need is the number with the lowest _n_ bits set, where n = desired
-	// the max int we need is the number with the highest _n_ bits set, where n = desired
-	// e.g. for 6 choose 4, we need min = 001111 and max = 111100
-	hands := make([][]model.Card, 0)
-	min := uint(1<<uint(desired)) - 1
-	max := min << uint(len(hand)-desired)
-	for i := min; i <= max; i++ {
-		if idx := getBitInds(i); len(idx) == desired {
-			thisHand := make([]model.Card, desired)
-			for j, k := range idx {
-				thisHand[j] = hand[k]
-			}
-			hands = append(hands, thisHand)
+	all := make([][]model.Card, 0)
+	for i := 0; i <= len(hand)-k; i++ {
+		c := hand[i]
+		others := hand[i+1:]
+		otherSets := chooseFrom(k-1, others)
+		for _, s := range otherSets {
+			set := append([]model.Card{c}, s...)
+			all = append(all, set)
 		}
 	}
-	return hands
+	return all
 }
 
 // without returns the cards in superset minus the subsetToRemove
