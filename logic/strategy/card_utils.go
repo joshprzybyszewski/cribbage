@@ -36,19 +36,17 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func countBits(num uint) (int, []int) {
-	n := 0
+func getBitInds(num uint) []int {
 	iter := 0
 	idx := make([]int, 0)
 	for num > 0 {
 		if num&1 > 0 {
-			n++
 			idx = append(idx, iter)
 		}
 		num >>= 1
 		iter++
 	}
-	return n, idx
+	return idx
 }
 
 func chooseFrom(desired int, hand []model.Card) [][]model.Card {
@@ -62,7 +60,7 @@ func chooseFrom(desired int, hand []model.Card) [][]model.Card {
 	min := uint(1<<uint(desired)) - 1
 	max := min << uint(len(hand)-desired)
 	for i := min; i <= max; i++ {
-		if n, idx := countBits(i); n == desired {
+		if idx := getBitInds(i); len(idx) == desired {
 			thisHand := make([]model.Card, desired)
 			for j, k := range idx {
 				thisHand[j] = hand[k]
