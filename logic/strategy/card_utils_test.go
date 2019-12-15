@@ -25,13 +25,13 @@ func validateHand(origHand, thisHand []model.Card) bool {
 			return false
 		}
 	}
-	for i := 0; i < len(thisHand)-2; i++ {
-		// check that no duplicates exist in this hand
-		for _, c2 := range thisHand[i+1:] {
-			if thisHand[i] == c2 {
-				return false
-			}
+	cardCache := make(map[model.Card]int)
+	for i, c := range thisHand {
+		_, inMap := cardCache[c]
+		if inMap {
+			return false
 		}
+		cardCache[c] = i
 	}
 	return true
 }
