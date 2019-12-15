@@ -50,7 +50,9 @@ func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
 		return all, nil
 	}
 	if k == len(hand) {
-		return [][]model.Card{hand}, nil
+		cpy := make([]model.Card, len(hand))
+		copy(cpy, hand)
+		return [][]model.Card{cpy}, nil
 	}
 	all := make([][]model.Card, 0)
 	for i := 0; i <= len(hand)-k; i++ {
