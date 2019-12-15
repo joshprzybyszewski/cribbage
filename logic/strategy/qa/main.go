@@ -37,11 +37,19 @@ func main() {
 
 func reportAboutHand(cstrs []string) {
 	fmt.Printf("Calculating for hand: %+v\n", strToCards(cstrs))
-	lowCrib := strategy.GiveCribLowestPotential(0, strToCards(cstrs))
-	fmt.Printf("GiveCribLowestPotential: %+v\n", lowCrib)
+	lowCrib, err := strategy.GiveCribLowestPotential(0, strToCards(cstrs))
+	if err != nil {
+		fmt.Printf("GiveCribLowestPotential: Error! %v\n", err)
+	} else {
+		fmt.Printf("GiveCribLowestPotential: %+v\n", lowCrib)
+	}
 
-	highCrib := strategy.GiveCribHighestPotential(0, strToCards(cstrs))
-	fmt.Printf("GiveCribHighestPotential: %+v\n", highCrib)
+	highCrib, err := strategy.GiveCribHighestPotential(0, strToCards(cstrs))
+	if err != nil {
+		fmt.Printf("GiveCribHighestPotential: Error! %v\n", err)
+	} else {
+		fmt.Printf("GiveCribHighestPotential: %+v\n", highCrib)
+	}
 }
 
 func strToCards(s []string) []model.Card {

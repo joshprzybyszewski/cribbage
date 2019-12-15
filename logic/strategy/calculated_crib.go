@@ -1,25 +1,27 @@
 package strategy
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 // GiveCribHighestPotential gives the crib the highest potential pointed crib
-func GiveCribHighestPotential(_ int, hand []model.Card) []model.Card {
+func GiveCribHighestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 	isBetter := func(old, new float64) bool { return new > old }
 	return getBestPotentialCrib(hand, isBetter)
 }
 
 // GiveCribLowestPotential gives the crib the lowest potential pointed hand
-func GiveCribLowestPotential(_ int, hand []model.Card) []model.Card {
+func GiveCribLowestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 	isBetter := func(old, new float64) bool { return new < old }
 	return getBestPotentialCrib(hand, isBetter)
 }
 
-func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) bool) []model.Card {
+func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) bool) ([]model.Card, error) {
 	if len(hand) > 6 || len(hand) <= 4 {
-		return nil
+		return nil, errors.New(`invalid input`)
 	}
 
 	lenDeposit := len(hand) - 4
@@ -28,7 +30,7 @@ func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) boo
 
 	allDeposits, err := chooseFrom(lenDeposit, hand)
 	if err != nil {
-		//TODO do something
+		return nil, err
 	}
 
 	seen := map[model.Card]struct{}{}
@@ -45,7 +47,7 @@ func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) boo
 		}
 	}
 
-	return bestCrib
+	return bestCrib, nil
 }
 
 func getPotentialForDeposit(prevSeen map[model.Card]struct{}, cribDeposit []model.Card) float64 {
