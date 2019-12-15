@@ -36,18 +36,25 @@ func validateHand(origHand, thisHand []model.Card) bool {
 	return true
 }
 
-func factorial(n int) int {
-	if n == 1 {
-		return n
+func factorial(n int, cache map[int]int) int {
+	res, inMap := cache[n]
+	if inMap {
+		return res
 	}
-	return n * factorial(n-1)
+	if n == 1 {
+		res = 1
+	} else {
+		res = n * factorial(n-1, cache)
+	}
+	cache[n] = res
+	return res
 }
 
-func nchoosek(n, k int) (int, error) {
+func nchoosek(n, k int, fCache map[int]int) (int, error) {
 	if k > n {
 		return 0, errors.New(`k must be less than or equal to n`)
 	}
-	return factorial(n) / (factorial(k) * factorial(n-k)), nil
+	return factorial(n, fCache) / (factorial(k, fCache) * factorial(n-k, fCache)), nil
 }
 
 func generateHand(n int) []model.Card {
@@ -105,13 +112,14 @@ func TestChooseFrom(t *testing.T) {
 		nCards: 0,
 		expErr: true,
 	}}
+	fCache := make(map[int]int)
 	for _, tc := range tests {
 		all, err := chooseFrom(tc.nCards, tc.hand)
 		if tc.expErr {
 			assert.NotNil(t, err)
 		} else {
 			assert.Nil(t, err)
-			expNum, err := nchoosek(len(tc.hand), tc.nCards)
+			expNum, err := nchoosek(len(tc.hand), tc.nCards, fCache)
 			require.Nil(t, err)
 			assert.Equal(t, expNum, len(all))
 			for _, h := range all {
