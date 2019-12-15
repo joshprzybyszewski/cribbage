@@ -55,6 +55,8 @@ func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
 		return [][]model.Card{cpy}, nil
 	}
 	all := make([][]model.Card, 0)
+	// for the first n-k cards, recursively find combinations of length k-1 which are
+	// combined with the current card to get combinations of length k
 	for i := 0; i <= len(hand)-k; i++ {
 		c := hand[i]
 		others := hand[i+1:]
