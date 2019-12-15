@@ -25,13 +25,13 @@ func validateHand(origHand, thisHand []model.Card) bool {
 			return false
 		}
 	}
-	cardCache := make(map[model.Card]int)
+	prev := make(map[model.Card]int)
 	for i, c := range thisHand {
-		_, inMap := cardCache[c]
+		_, inMap := prev[c]
 		if inMap {
 			return false
 		}
-		cardCache[c] = i
+		prev[c] = i
 	}
 	return true
 }
