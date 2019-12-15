@@ -65,7 +65,9 @@ func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
 			return nil, err
 		}
 		for _, s := range otherSets {
-			set := append([]model.Card{c}, s...)
+			set := make([]model.Card, 1, k)
+			set[0] = c
+			set = append(set, s...)
 			all = append(all, set)
 		}
 	}
