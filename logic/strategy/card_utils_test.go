@@ -10,21 +10,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func isIn(c model.Card, h []model.Card) bool {
-	for _, thisCard := range h {
-		if c == thisCard {
-			return true
-		}
-	}
-	return false
-}
-
 func validateHand(origHand, thisHand []model.Card) bool {
-	for _, c := range thisHand {
-		if !isIn(c, origHand) {
-			return false
-		}
-	}
 	prev := make(map[model.Card]int)
 	for i, c := range thisHand {
 		_, inMap := prev[c]
@@ -33,7 +19,14 @@ func validateHand(origHand, thisHand []model.Card) bool {
 		}
 		prev[c] = i
 	}
-	return true
+	ct := 0
+	for _, c := range origHand {
+		_, inMap := prev[c]
+		if inMap {
+			ct++
+		}
+	}
+	return ct == len(thisHand)
 }
 
 func factorial(n int, cache map[int]int) int {
