@@ -39,7 +39,7 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 }
 
 func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
-	if k < 1 || k > len(hand) {
+	if len(hand) > 6 || k < 1 || k > len(hand) {
 		return nil, errors.New(`invalid input`)
 	}
 	if k == 1 {
@@ -54,7 +54,8 @@ func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
 		copy(cpy, hand)
 		return [][]model.Card{cpy}, nil
 	}
-	all := make([][]model.Card, 0)
+	// 6 choose 3 = 20, the max number of combos we would ever have
+	all := make([][]model.Card, 0, 20)
 	// for the first n-k cards, recursively find combinations of length k-1 which are
 	// combined with the current card to get combinations of length k
 	for i := 0; i <= len(hand)-k; i++ {
