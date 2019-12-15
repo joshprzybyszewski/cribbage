@@ -63,40 +63,62 @@ func TestChooseFrom(t *testing.T) {
 		desc   string
 		hand   []model.Card
 		nCards int
+		expErr bool
 	}{{
 		desc:   `6 choose 2`,
 		hand:   generateHand(6),
 		nCards: 2,
+		expErr: false,
 	}, {
 		desc:   `6 choose 3`,
 		hand:   generateHand(6),
 		nCards: 3,
+		expErr: false,
 	}, {
 		desc:   `6 choose 4`,
 		hand:   generateHand(6),
 		nCards: 4,
+		expErr: false,
 	}, {
 		desc:   `5 choose 2`,
 		hand:   generateHand(5),
 		nCards: 2,
+		expErr: false,
 	}, {
 		desc:   `5 choose 3`,
 		hand:   generateHand(5),
 		nCards: 3,
+		expErr: false,
 	}, {
 		desc:   `5 choose 4`,
 		hand:   generateHand(5),
 		nCards: 4,
+		expErr: false,
+	}, {
+		desc:   `5 choose 6`,
+		hand:   generateHand(5),
+		nCards: 6,
+		expErr: true,
+	}, {
+		desc:   `choose zero cards`,
+		hand:   generateHand(5),
+		nCards: 0,
+		expErr: true,
 	}}
 	for _, tc := range tests {
-		all := chooseFrom(tc.nCards, tc.hand)
-		expNum, err := nchoosek(len(tc.hand), tc.nCards)
-		require.Nil(t, err)
-		assert.Equal(t, expNum, len(all))
-		for _, h := range all {
-			assert.Equal(t, tc.nCards, len(h))
-			ok := validateHand(tc.hand, h)
-			assert.True(t, ok)
+		all, err := chooseFrom(tc.nCards, tc.hand)
+		if tc.expErr {
+			assert.NotNil(t, err)
+		} else {
+			assert.Nil(t, err)
+			expNum, err := nchoosek(len(tc.hand), tc.nCards)
+			require.Nil(t, err)
+			assert.Equal(t, expNum, len(all))
+			for _, h := range all {
+				assert.Equal(t, tc.nCards, len(h))
+				ok := validateHand(tc.hand, h)
+				assert.True(t, ok)
+			}
 		}
 	}
 }

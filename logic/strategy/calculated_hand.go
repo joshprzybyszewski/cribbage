@@ -25,7 +25,10 @@ func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) boo
 	bestHand := make([]model.Card, 0, 4)
 	bestPotential := 0.0
 
-	allHands := chooseFrom(4, hand)
+	allHands, err := chooseFrom(4, hand)
+	if err != nil {
+		//TODO do something
+	}
 
 	seen := map[model.Card]struct{}{}
 	for _, c := range hand {

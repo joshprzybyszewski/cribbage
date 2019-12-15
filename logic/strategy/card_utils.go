@@ -1,6 +1,8 @@
 package strategy
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
@@ -36,28 +38,34 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func chooseFrom(k int, hand []model.Card) [][]model.Card {
+func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
+	if k < 1 || k > len(hand) {
+		return nil, errors.New(`invalid input`)
+	}
 	if k == 1 {
 		all := make([][]model.Card, len(hand))
 		for i, e := range hand {
 			all[i] = []model.Card{e}
 		}
-		return all
+		return all, nil
 	}
 	if k == len(hand) {
-		return [][]model.Card{hand}
+		return [][]model.Card{hand}, nil
 	}
 	all := make([][]model.Card, 0)
 	for i := 0; i <= len(hand)-k; i++ {
 		c := hand[i]
 		others := hand[i+1:]
-		otherSets := chooseFrom(k-1, others)
+		otherSets, err := chooseFrom(k-1, others)
+		if err != nil {
+			return nil, err
+		}
 		for _, s := range otherSets {
 			set := append([]model.Card{c}, s...)
 			all = append(all, set)
 		}
 	}
-	return all
+	return all, nil
 }
 
 // without returns the cards in superset minus the subsetToRemove

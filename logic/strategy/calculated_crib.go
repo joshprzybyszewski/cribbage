@@ -26,7 +26,10 @@ func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) boo
 	bestCrib := make([]model.Card, 0, lenDeposit)
 	bestPotential := 0.0
 
-	allDeposits := chooseFrom(lenDeposit, hand)
+	allDeposits, err := chooseFrom(lenDeposit, hand)
+	if err != nil {
+		//TODO do something
+	}
 
 	seen := map[model.Card]struct{}{}
 	for _, c := range hand {
