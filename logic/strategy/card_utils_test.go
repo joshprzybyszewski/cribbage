@@ -10,23 +10,23 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func validateHand(origHand, thisHand []model.Card) bool {
-	prev := make(map[model.Card]int)
-	for i, c := range thisHand {
-		_, ok := prev[c]
+func validateHand(superset, subset []model.Card) bool {
+	thisHandMap := make(map[model.Card]struct{}, len(subset))
+	for _, c := range subset {
+		_, ok := thisHandMap[c]
 		if ok {
 			return false
 		}
-		prev[c] = i
+		thisHandMap[c] = struct{}{}
 	}
 	ct := 0
-	for _, c := range origHand {
-		_, ok := prev[c]
+	for _, c := range superset {
+		_, ok := thisHandMap[c]
 		if ok {
 			ct++
 		}
 	}
-	return ct == len(thisHand)
+	return ct == len(subset)
 }
 
 func factorial(n int, cache map[int]int) int {
@@ -63,53 +63,58 @@ func TestChooseFrom(t *testing.T) {
 		desc   string
 		hand   []model.Card
 		nCards int
-		expErr bool
+		expErr string
 	}{{
 		desc:   `6 choose 2`,
 		hand:   generateHand(6),
 		nCards: 2,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `6 choose 3`,
 		hand:   generateHand(6),
 		nCards: 3,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `6 choose 4`,
 		hand:   generateHand(6),
 		nCards: 4,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `5 choose 2`,
 		hand:   generateHand(5),
 		nCards: 2,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `5 choose 3`,
 		hand:   generateHand(5),
 		nCards: 3,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `5 choose 4`,
 		hand:   generateHand(5),
 		nCards: 4,
-		expErr: false,
+		expErr: ``,
 	}, {
 		desc:   `5 choose 6`,
 		hand:   generateHand(5),
 		nCards: 6,
-		expErr: true,
+		expErr: `developer error: invalid k`,
 	}, {
 		desc:   `choose zero cards`,
 		hand:   generateHand(5),
 		nCards: 0,
-		expErr: true,
+		expErr: `developer error: invalid k`,
+	}, {
+		desc:   `hand too large`,
+		hand:   generateHand(7),
+		nCards: 3,
+		expErr: `too many cards in hand (maximum 6)`,
 	}}
 	fCache := make(map[int]int)
 	for _, tc := range tests {
 		all, err := chooseFrom(tc.nCards, tc.hand)
-		if tc.expErr {
-			assert.NotNil(t, err)
+		if tc.expErr != `` {
+			assert.EqualError(t, err, tc.expErr)
 		} else {
 			assert.Nil(t, err)
 			expNum, err := nchoosek(len(tc.hand), tc.nCards, fCache)
