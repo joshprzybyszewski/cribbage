@@ -25,7 +25,8 @@ func TestGiveCribHighestPotential(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := GiveCribHighestPotential(tc.inputDesired, strToCards(tc.inputHand))
+		actHand, err := GiveCribHighestPotential(tc.inputDesired, strToCards(tc.inputHand))
+		assert.Nil(t, err)
 		for _, c := range actHand {
 			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
@@ -52,7 +53,8 @@ func TestGiveCribLowestPotential(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := GiveCribLowestPotential(tc.inputDesired, strToCards(tc.inputHand))
+		actHand, err := GiveCribLowestPotential(tc.inputDesired, strToCards(tc.inputHand))
+		assert.Nil(t, err)
 		for _, c := range actHand {
 			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
