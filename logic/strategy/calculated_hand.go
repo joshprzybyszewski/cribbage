@@ -1,31 +1,36 @@
 package strategy
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 // KeepHandHighestPotential will keep the hand with the highest potential score
-func KeepHandHighestPotential(_ int, hand []model.Card) []model.Card {
+func KeepHandHighestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 	isBetter := func(old, new float64) bool { return new > old }
 	return getBestPotentialHand(hand, isBetter)
 }
 
 // KeepHandLowestPotential will keep the hand with the lowest potential score
-func KeepHandLowestPotential(_ int, hand []model.Card) []model.Card {
+func KeepHandLowestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 	isBetter := func(old, new float64) bool { return new < old }
 	return getBestPotentialHand(hand, isBetter)
 }
 
-func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) bool) []model.Card {
+func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) bool) ([]model.Card, error) {
 	if len(hand) > 6 || len(hand) <= 4 {
-		return nil
+		return nil, errors.New(`hand size must be between 4 and 6`)
 	}
 
 	bestHand := make([]model.Card, 0, 4)
 	bestPotential := 0.0
 
-	allHands := chooseFrom(4, hand)
+	allHands, err := chooseFrom(4, hand)
+	if err != nil {
+		return nil, err
+	}
 
 	seen := map[model.Card]struct{}{}
 	for _, c := range hand {
@@ -41,7 +46,7 @@ func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) boo
 		}
 	}
 
-	return without(hand, bestHand)
+	return without(hand, bestHand), nil
 }
 
 func getHandPotentialForCribDeposit(prevSeen map[model.Card]struct{}, hand []model.Card) float64 {

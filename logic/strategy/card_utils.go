@@ -1,6 +1,8 @@
 package strategy
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
@@ -36,44 +38,44 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-// TODO chooseFrom is producing hands which duplicate cards from the original
-// hand (e.g. with a hand of 2s, 3s, 4s, 5s, 6s, 7s, the first hand in allHands
-// was 2s, 3s, 3s, 3s) [see issue #22]
-func chooseFrom(desired int, hand []model.Card) [][]model.Card { //nolint:gocyclo
-	if desired > len(hand) || desired > 4 || desired <= 0 {
-		return nil
+func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
+	if k < 1 || k > len(hand) {
+		return nil, errors.New(`developer error: invalid k`)
 	}
-	// 6 choose 2 = 15, our largest number of potential deposits to the crib
-	allDeposits := make([][]model.Card, 0, 15)
-	for i, c1 := range hand {
-		if desired == 1 {
-			// it's a three or four player game, return one card
-			allDeposits = append(allDeposits, []model.Card{c1})
-			continue
+	if len(hand) > 6 {
+		return nil, errors.New(`too many cards in hand (maximum 6)`)
+	}
+	if k == 1 {
+		all := make([][]model.Card, len(hand))
+		for i, e := range hand {
+			all[i] = []model.Card{e}
 		}
-		for j := i + 1; j < len(hand); j++ {
-			c2 := hand[j]
-			if desired == 2 {
-				allDeposits = append(allDeposits, []model.Card{c1, c2})
-				continue
-			}
-			for k := i + 1; k < len(hand); k++ {
-				c3 := hand[k]
-				if desired == 3 {
-					allDeposits = append(allDeposits, []model.Card{c1, c2, c3})
-					continue
-				}
-				for l := i + 1; l < len(hand); l++ {
-					c4 := hand[l]
-					if desired == 4 {
-						allDeposits = append(allDeposits, []model.Card{c1, c2, c3, c4})
-						continue
-					}
-				}
-			}
+		return all, nil
+	}
+	if k == len(hand) {
+		cpy := make([]model.Card, len(hand))
+		copy(cpy, hand)
+		return [][]model.Card{cpy}, nil
+	}
+	// 6 choose 3 = 20, the max number of combos we would ever have
+	all := make([][]model.Card, 0, 20)
+	// for the first n-k cards, recursively find combinations of length k-1 which are
+	// combined with the current card to get combinations of length k
+	for i := 0; i <= len(hand)-k; i++ {
+		c := hand[i]
+		others := hand[i+1:]
+		otherSets, err := chooseFrom(k-1, others)
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range otherSets {
+			set := make([]model.Card, 1, k)
+			set[0] = c
+			set = append(set, s...)
+			all = append(all, set)
 		}
 	}
-	return allDeposits
+	return all, nil
 }
 
 // without returns the cards in superset minus the subsetToRemove

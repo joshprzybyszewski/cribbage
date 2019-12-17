@@ -36,18 +36,23 @@ func (npc *calcNPCInteraction) AskToShuffle() bool {
 }
 
 func (npc *calcNPCInteraction) AskForCribCards(dealerColor model.PlayerColor, desired int, hand []model.Card) []model.Card {
+	// shouldn't dogsled the errors here, but also shouldn't redefine the interface. This code is going away soon anyway :/
 	if dealerColor == npc.myColor {
 		if rand.Int()%2 == 0 {
 			// We might not want this, but it is a form of calculation
-			return strategy.KeepHandLowestPotential(desired, hand)
+			cards, _ := strategy.KeepHandLowestPotential(desired, hand)
+			return cards
 		}
-		return strategy.GiveCribHighestPotential(desired, hand)
+		cards, _ := strategy.GiveCribHighestPotential(desired, hand)
+		return cards
 	}
 
 	if rand.Int()%2 == 0 {
-		return strategy.KeepHandHighestPotential(desired, hand)
+		cards, _ := strategy.KeepHandHighestPotential(desired, hand)
+		return cards
 	}
-	return strategy.GiveCribLowestPotential(desired, hand)
+	cards, _ := strategy.GiveCribLowestPotential(desired, hand)
+	return cards
 }
 
 func (npc *calcNPCInteraction) AskForCut() float64 {
