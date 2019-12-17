@@ -14,6 +14,7 @@ type npcLogic interface {
 type getCribCards func(desired int, hand []model.Card) ([]model.Card, error)
 
 // TODO put this in a better place?
+// TODO make this function less ugly - should all strategies return errors?
 func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (model.BuildCribAction, error) {
 	var strats []getCribCards
 	switch npc {
