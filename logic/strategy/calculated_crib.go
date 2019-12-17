@@ -21,7 +21,7 @@ func GiveCribLowestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 
 func getBestPotentialCrib(hand []model.Card, isBetter func(old, new float64) bool) ([]model.Card, error) {
 	if len(hand) > 6 || len(hand) <= 4 {
-		return nil, errors.New(`invalid input`)
+		return nil, errors.New(`hand size must be between 4 and 6`)
 	}
 
 	lenDeposit := len(hand) - 4

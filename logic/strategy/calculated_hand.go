@@ -21,7 +21,7 @@ func KeepHandLowestPotential(_ int, hand []model.Card) ([]model.Card, error) {
 
 func getBestPotentialHand(hand []model.Card, isBetter func(old, new float64) bool) ([]model.Card, error) {
 	if len(hand) > 6 || len(hand) <= 4 {
-		return nil, errors.New(`invalid input`)
+		return nil, errors.New(`hand size must be between 4 and 6`)
 	}
 
 	bestHand := make([]model.Card, 0, 4)
