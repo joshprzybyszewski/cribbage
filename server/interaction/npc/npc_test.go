@@ -74,7 +74,8 @@ func TestDealAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.DealCards, model.Game{})
+		a, err := p.buildAction(model.DealCards, model.Game{})
+		assert.Nil(t, err)
 		assert.Equal(t, a.Overcomes, model.DealCards)
 
 		da, ok := a.Action.(model.DealAction)
@@ -100,7 +101,8 @@ func TestCutAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(model.CutCard, model.Game{})
+		a, err := p.buildAction(model.CutCard, model.Game{})
+		assert.Nil(t, err)
 		assert.Equal(t, a.Overcomes, model.CutCard)
 
 		cda, ok := a.Action.(model.CutDeckAction)
@@ -158,7 +160,8 @@ func TestCountHandAction(t *testing.T) {
 			tc.npc: hand,
 		}
 
-		a := p.buildAction(model.CountHand, g)
+		a, err := p.buildAction(model.CountHand, g)
+		assert.Nil(t, err)
 		assert.Equal(t, a.Overcomes, tc.exp.Overcomes)
 
 		cha, ok := a.Action.(model.CountHandAction)
@@ -214,7 +217,8 @@ func TestCountCribAction(t *testing.T) {
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
 
-		a := p.buildAction(tc.exp.Overcomes, g)
+		a, err := p.buildAction(tc.exp.Overcomes, g)
+		assert.Nil(t, err)
 		assert.Equal(t, a.Overcomes, tc.exp.Overcomes)
 
 		cca, ok := a.Action.(model.CountCribAction)
@@ -260,7 +264,8 @@ func TestPegAction(t *testing.T) {
 		p := createPlayer(t, tc.npc)
 
 		for i := 0; i < 10; i++ {
-			a := p.buildAction(model.PegCard, tc.g)
+			a, err := p.buildAction(model.PegCard, tc.g)
+			assert.Nil(t, err)
 			assert.Equal(t, a.Overcomes, model.PegCard)
 
 			pa, ok := a.Action.(model.PegAction)
@@ -332,7 +337,8 @@ func TestBuildCribAction(t *testing.T) {
 
 		// TODO when the calculated NPC bug is fixed, loop more than once
 		for i := 0; i < 1; i++ {
-			a := p.buildAction(model.CribCard, tc.g)
+			a, err := p.buildAction(model.CribCard, tc.g)
+			assert.Nil(t, err)
 			assert.Equal(t, a.Overcomes, model.CribCard)
 
 			bca, ok := a.Action.(model.BuildCribAction)

@@ -10,7 +10,7 @@ var _ npcLogic = (*simpleNPCLogic)(nil)
 
 type simpleNPCLogic struct{}
 
-func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) model.BuildCribAction {
+func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
 	return cribActionHelper(hand, Simple, isDealer)
 }
 

@@ -47,7 +47,10 @@ func (npc *npcPlayer) ID() model.PlayerID {
 }
 
 func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	a := npc.buildAction(b, g)
+	a, err := npc.buildAction(b, g)
+	if err != nil {
+		return err
+	}
 	return npc.handleActionCallback(a)
 }
 
@@ -59,7 +62,7 @@ func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
 
-func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAction {
+func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
 	a := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        npc.ID(),
@@ -71,7 +74,11 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 			NumShuffles: rand.Intn(10) + 1,
 		}
 	case model.CribCard:
-		a.Action = npc.logic.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
+		act, err := npc.logic.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
+		if err != nil {
+			return model.PlayerAction{}, err
+		}
+		a.Action = act
 	case model.CutCard:
 		a.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
@@ -87,5 +94,5 @@ func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) model.PlayerAct
 			Pts: scorer.CribPoints(g.CutCard, g.Crib),
 		}
 	}
-	return a
+	return a, nil
 }
