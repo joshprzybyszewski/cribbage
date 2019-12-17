@@ -335,8 +335,7 @@ func TestBuildCribAction(t *testing.T) {
 			tc.g.CurrentDealer = tc.npc
 		}
 
-		// TODO when the calculated NPC bug is fixed, loop more than once
-		for i := 0; i < 1; i++ {
+		for i := 0; i < 5; i++ {
 			a, err := p.buildAction(model.CribCard, tc.g)
 			assert.Nil(t, err)
 			assert.Equal(t, a.Overcomes, model.CribCard)
