@@ -13,16 +13,16 @@ import (
 func validateHand(origHand, thisHand []model.Card) bool {
 	prev := make(map[model.Card]int)
 	for i, c := range thisHand {
-		_, inMap := prev[c]
-		if inMap {
+		_, ok := prev[c]
+		if ok {
 			return false
 		}
 		prev[c] = i
 	}
 	ct := 0
 	for _, c := range origHand {
-		_, inMap := prev[c]
-		if inMap {
+		_, ok := prev[c]
+		if ok {
 			ct++
 		}
 	}
@@ -30,8 +30,8 @@ func validateHand(origHand, thisHand []model.Card) bool {
 }
 
 func factorial(n int, cache map[int]int) int {
-	res, inMap := cache[n]
-	if inMap {
+	res, ok := cache[n]
+	if ok {
 		return res
 	}
 	if n == 1 {
