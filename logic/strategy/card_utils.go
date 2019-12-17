@@ -39,8 +39,11 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 }
 
 func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
-	if len(hand) > 6 || k < 1 || k > len(hand) {
-		return nil, errors.New(`invalid input`)
+	if k < 1 || k > len(hand) {
+		return nil, errors.New(`developer error: invalid k`)
+	}
+	if len(hand) > 6 {
+		return nil, errors.New(`too many cards in hand (maximum 6)`)
 	}
 	if k == 1 {
 		all := make([][]model.Card, len(hand))
