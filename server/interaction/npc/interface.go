@@ -11,49 +11,47 @@ type npcLogic interface {
 	getPegAction([]model.Card, []model.PeggedCard, int) model.PegAction
 }
 
-type getCribCards func(desired int, hand []model.Card) ([]model.Card, error)
+type getCribCards func(desired int, hand []model.Card) []model.Card
+type getCribCardsWithErr func(desired int, hand []model.Card) ([]model.Card, error)
 
 // TODO put this in a better place?
 // TODO make this function less ugly - should all strategies return errors?
 func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (model.BuildCribAction, error) {
-	var strats []getCribCards
+	var cards []model.Card
+	n := len(hand) - 4
 	switch npc {
 	case `simpleNPC`:
 		if isDealer {
-			strats = []getCribCards{
-				func(d int, h []model.Card) ([]model.Card, error) {
-					return strategy.GiveCribFifteens(d, h), nil
-				},
-				func(d int, h []model.Card) ([]model.Card, error) {
-					return strategy.GiveCribPairs(d, h), nil
-				}}
+			strats := []getCribCards{
+				strategy.GiveCribFifteens,
+				strategy.GiveCribPairs,
+			}
+			cards = strats[rand.Int()%2](n, hand)
 		} else {
-			strats = []getCribCards{
-				func(d int, h []model.Card) ([]model.Card, error) {
-					return strategy.AvoidCribFifteens(d, h), nil
-				},
-				func(d int, h []model.Card) ([]model.Card, error) {
-					return strategy.AvoidCribPairs(d, h), nil
-				}}
+			strats := []getCribCards{
+				strategy.AvoidCribFifteens,
+				strategy.AvoidCribPairs,
+			}
+			cards = strats[rand.Int()%2](n, hand)
 		}
-
 	case `calculatedNPC`:
+		var err error
 		if isDealer {
-			strats = []getCribCards{
+			strats := []getCribCardsWithErr{
 				strategy.KeepHandLowestPotential,
-				strategy.GiveCribHighestPotential}
+				strategy.GiveCribHighestPotential,
+			}
+			cards, err = strats[rand.Int()%2](n, hand)
 		} else {
-			strats = []getCribCards{
+			strats := []getCribCardsWithErr{
 				strategy.KeepHandHighestPotential,
-				strategy.GiveCribLowestPotential}
+				strategy.GiveCribLowestPotential,
+			}
+			cards, err = strats[rand.Int()%2](n, hand)
 		}
-	}
-
-	n := len(hand) - 4
-	i := rand.Int() % len(strats)
-	cards, err := strats[i](n, hand)
-	if err != nil {
-		return model.BuildCribAction{}, err
+		if err != nil {
+			return model.BuildCribAction{}, err
+		}
 	}
 	return model.BuildCribAction{
 		Cards: cards,
