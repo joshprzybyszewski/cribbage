@@ -2,14 +2,20 @@ package server
 
 import (
 	"context"
+	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
+var (
+	errInvalidUsername error = errors.New(`invalid username`)
+)
+
 func HandleAction(ctx context.Context, action model.PlayerAction) error {
-	db, err := getDB()
+	db, err := getDB(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,7 +43,7 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 }
 
 func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) {
-	db, err := getDB()
+	db, err := getDB(ctx)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -78,4 +84,44 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 	}
 
 	return mg, nil
+}
+
+func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
+	db, err := getDB(ctx)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	return db.GetGame(gID)
+}
+
+func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
+	db, err := getDB(ctx)
+	if err != nil {
+		return model.Player{}, err
+	}
+
+	return db.GetPlayer(pID)
+}
+
+func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
+	db, err := getDB(ctx)
+	if err != nil {
+		return err
+	}
+
+	return db.SaveInteraction(pm)
+}
+
+func createPlayer(ctx context.Context, p model.Player) error {
+	db, err := getDB(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !model.IsValidPlayerID(p.ID) {
+		return errInvalidUsername
+	}
+
+	return db.CreatePlayer(p)
 }

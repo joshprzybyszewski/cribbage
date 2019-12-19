@@ -1,7 +1,13 @@
 package main
 
-import "github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+import (
+	"context"
+	"fmt"
+
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+)
 
 func main() {
-	mongodb.New(``)
+	db, err := mongodb.New(context.Background(), ``)
+	fmt.Printf("db, err := %+v, %+v", db, err)
 }

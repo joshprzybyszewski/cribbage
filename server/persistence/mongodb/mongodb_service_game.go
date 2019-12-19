@@ -29,8 +29,9 @@ type persistedGameList struct {
 }
 
 func bsonGameIDFilter(id model.GameID) interface{} {
-	// gameList{GameID: id}
-	// persistedGameList{GameID: id}
+	// This filter should satisfy each of these fields being set:
+	// gameList.GameID = id
+	// persistedGameList.GameID = id
 	return bson.M{gameCollectionIndex: id}
 }
 

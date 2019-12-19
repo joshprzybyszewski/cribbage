@@ -15,11 +15,11 @@ import (
 )
 
 type cribbageServer struct {
-	db persistence.DB
 }
 
 func (cs *cribbageServer) Serve() {
 	router := gin.Default()
+
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",

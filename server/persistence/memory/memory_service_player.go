@@ -27,7 +27,14 @@ func getPlayerService() persistence.PlayerService {
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
-	return model.Player{}, nil
+	ps.lock.Lock()
+	defer ps.lock.Unlock()
+
+	if i, ok := ps.players[id]; ok {
+		return i, nil
+	}
+
+	return model.Player{}, persistence.ErrPlayerNotFound
 }
 
 func (ps *playerService) Create(p model.Player) error {

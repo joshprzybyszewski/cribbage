@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"flag"
+	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
@@ -15,24 +17,18 @@ var (
 )
 
 func Setup() error {
-	db, err := getDB()
-	if err != nil {
-		return err
-	}
+	fmt.Printf("Using %s for persistence\n", *database)
 
-	cs := cribbageServer{
-		db: db,
-	}
-
+	cs := cribbageServer{}
 	cs.Serve()
 
 	return nil
 }
 
-func getDB() (persistence.DB, error) {
+func getDB(ctx context.Context) (persistence.DB, error) {
 	switch *database {
 	case `mongo`:
-		return mongodb.New(*dbURI)
+		return mongodb.New(ctx, *dbURI)
 	case `memory`:
 		return memory.New(), nil
 	}

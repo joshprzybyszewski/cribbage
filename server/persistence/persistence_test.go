@@ -1,6 +1,7 @@
 package persistence_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func TestDB(t *testing.T) {
 
 	if !testing.Short() {
 		// We assume you have mongodb stood up locally when running without -short
-		mongo, err := mongodb.New(``)
+		mongo, err := mongodb.New(context.Background(), ``)
 		require.NoError(t, err)
 
 		dbs[`mongodb`] = mongo
