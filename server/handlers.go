@@ -8,21 +8,28 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
+const (
+	defaultTimeout time.Duration = 10 * time.Second
+)
+
 func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+
 	return GetGame(ctx, gID)
 }
 
 func (cs *cribbageServer) getPlayer(pID model.PlayerID) (model.Player, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+
 	return GetPlayer(ctx, pID)
 }
 
 func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
+
 	return CreateGame(ctx, pIDs)
 }
 
@@ -33,7 +40,7 @@ func (cs *cribbageServer) createPlayer(username, name string) (model.Player, err
 		Games: make(map[model.GameID]model.PlayerColor),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	err := createPlayer(ctx, mp)
@@ -44,7 +51,7 @@ func (cs *cribbageServer) createPlayer(username, name string) (model.Player, err
 }
 
 func (cs *cribbageServer) setInteraction(pID model.PlayerID, im interaction.Means) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	// TODO have a way to get the previous interaction and then update with this as the preferred mode
@@ -53,7 +60,7 @@ func (cs *cribbageServer) setInteraction(pID model.PlayerID, im interaction.Mean
 }
 
 func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	return HandleAction(ctx, action)

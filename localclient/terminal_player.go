@@ -188,7 +188,6 @@ func (tc *terminalClient) processUserInput(wg *sync.WaitGroup) {
 
 			}
 		}
-		fmt.Printf("some reason, after the reqChan loop\n")
 	}()
 }
 
@@ -376,6 +375,15 @@ func (tc *terminalClient) createGame() error {
 
 	if tc.myCurrentGame == model.InvalidGameID {
 		tc.myCurrentGame = g.ID
+		msg := `Joined game with `
+		for i, p := range tc.myGames[tc.myCurrentGame].Players {
+			if i > 0 {
+				msg += `, `
+			}
+			msg += p.Name
+		}
+		msg += `.`
+		fmt.Println(msg)
 	} else {
 		tc.reqChan <- terminalRequest{
 			gameID: g.ID,
