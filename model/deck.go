@@ -51,7 +51,7 @@ func newDeckWithDealt(dealt map[Card]struct{}) Deck {
 	for i := 0; i < len(d.cards); i++ {
 		c := d.cards[i]
 		lastValidCard := 51 - d.numDealt
-		if i >= lastValidCard {
+		if i > lastValidCard {
 			break
 		}
 		if _, ok := dealt[c]; ok {

@@ -192,7 +192,15 @@ func TestGetDeck(t *testing.T) {
 
 		d1 := *d
 
-		assert.Equal(t, tc.expNumDealt, d1.numDealt, tc.msg)
+		d1numDealt := d1.numDealt
+		assert.Equal(t, tc.expNumDealt, d1numDealt, tc.msg)
+
+		gDeck.Deal()
+		assert.Equal(t, tc.expNumDealt+1, d.numDealt, tc.msg)
+		gDeck.Deal()
+		assert.Equal(t, tc.expNumDealt+2, d.numDealt, tc.msg)
+		gDeck.Deal()
+		assert.Equal(t, tc.expNumDealt+3, d.numDealt, tc.msg)
 
 		gDeck, err = g.GetDeck()
 		require.NoError(t, err, tc.msg)
@@ -202,8 +210,14 @@ func TestGetDeck(t *testing.T) {
 
 		d2 := *d
 
-		assert.Equal(t, d1.numDealt, d2.numDealt, tc.msg)
-		assert.ElementsMatch(t, d1.cards[:len(d1.cards)-d1.numDealt], d2.cards[:len(d1.cards)-d1.numDealt], tc.msg)
+		assert.Equal(t, tc.expNumDealt, d2.numDealt, tc.msg)
+		n := len(d1.cards) - tc.expNumDealt
+		assert.ElementsMatch(
+			t,
+			d1.cards[:n],
+			d2.cards[:n],
+			tc.msg,
+		)
 	}
 
 }
