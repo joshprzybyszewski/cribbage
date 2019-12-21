@@ -389,12 +389,7 @@ func (tc *terminalClient) createGame() error {
 	if tc.myCurrentGame == model.InvalidGameID {
 		tc.myCurrentGame = g.ID
 		msg := `Joined game with `
-		for i, p := range tc.myGames[tc.myCurrentGame].Players {
-			if i > 0 {
-				msg += `, `
-			}
-			msg += p.Name
-		}
+		msg += gamePlayerNames(tc.myGames[tc.myCurrentGame])
 		msg += `.`
 		fmt.Println(msg)
 	} else {
@@ -451,7 +446,14 @@ func (tc *terminalClient) updatePlayer() error {
 
 		tc.myGames[gID] = g
 
-		if !g.IsOver() {
+		if g.IsOver() {
+			playerNames := gamePlayerNames(g)
+			gameScore := gameScoreMessage(g, tc.me.ID)
+			tc.reqChan <- terminalRequest{
+				msg: fmt.Sprintf("Game with %s is over. Final score: \n%s", playerNames, gameScore),
+				req: info,
+			}
+		} else {
 			tc.myCurrentGame = gID
 		}
 	}
@@ -523,20 +525,10 @@ func (tc *terminalClient) askToSwitchGames(newGameID model.GameID) error {
 	should := true
 
 	msg := `Current game is with `
-	for i, p := range tc.myGames[tc.myCurrentGame].Players {
-		if i > 0 {
-			msg += `, `
-		}
-		msg += p.Name
-	}
+	msg += gamePlayerNames(tc.myGames[tc.myCurrentGame])
 	msg += `. `
 	msg += `Do you want to switch to game with `
-	for i, p := range tc.myGames[newGameID].Players {
-		if i > 0 {
-			msg += `, `
-		}
-		msg += p.Name
-	}
+	msg += gamePlayerNames(tc.myGames[newGameID])
 	msg += `? `
 
 	prompt := &survey.Confirm{
@@ -557,4 +549,15 @@ func (tc *terminalClient) askToSwitchGames(newGameID model.GameID) error {
 	}
 
 	return nil
+}
+
+func gamePlayerNames(g model.Game) string {
+	msg := ``
+	for i, p := range g.Players {
+		if i > 0 {
+			msg += `, `
+		}
+		msg += p.Name
+	}
+	return msg
 }
