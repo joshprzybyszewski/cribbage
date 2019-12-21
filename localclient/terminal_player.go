@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
@@ -274,11 +275,23 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 	}
 	defer response.Body.Close()
 
+	bytes, err := ioutil.ReadAll(response.Body)
+
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad response: %+v\n%s", response, response.Body)
+		// Keeping this here for debugging
+		fmt.Printf("full response: %+v\n%s\n%s\n", response, response.Body, string(bytes))
+
+		contentType := response.Header.Get("Content-Type")
+		if strings.Contains(contentType, `text/plain`) {
+			return nil, fmt.Errorf("bad response: \"%s\"", string(bytes))
+		}
+
+		return nil, fmt.Errorf("bad response from server")
+	} else if err != nil {
+		return nil, err
 	}
 
-	return ioutil.ReadAll(response.Body)
+	return bytes, nil
 }
 
 func (tc *terminalClient) createPlayer() error {

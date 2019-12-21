@@ -33,8 +33,8 @@ func AliceAndBob() (a, b model.Player, am, bm *interaction.Mock, pAPIs map[model
 
 func EmptyAliceAndBob() (a, b model.Player, pAPIs map[model.PlayerID]interaction.Player) {
 	alice, bob := aliceAndBob()
-	aAPI := &interaction.Empty{PID: alice.ID}
-	bAPI := &interaction.Empty{PID: bob.ID}
+	aAPI := interaction.Empty(alice.ID)
+	bAPI := interaction.Empty(bob.ID)
 	abAPIs := map[model.PlayerID]interaction.Player{
 		alice.ID: aAPI,
 		bob.ID:   bAPI,

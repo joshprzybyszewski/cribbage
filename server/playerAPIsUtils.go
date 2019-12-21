@@ -9,14 +9,21 @@ import (
 func getPlayerAPIs(db persistence.DB, players []model.Player) (map[model.PlayerID]interaction.Player, error) {
 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
 	for _, p := range players {
+		var pAPI interaction.Player
 		pm, err := db.GetInteraction(p.ID)
+
 		if err != nil {
-			return nil, err
+			if err != persistence.ErrInteractionNotFound {
+				return nil, err
+			}
+			pAPI = interaction.Empty(p.ID)
+		} else {
+			pAPI, err = interaction.FromPlayerMeans(pm)
+			if err != nil {
+				return nil, err
+			}
 		}
-		pAPI, err := interaction.FromPlayerMeans(pm)
-		if err != nil {
-			return nil, err
-		}
+
 		pAPIs[p.ID] = pAPI
 	}
 	return pAPIs, nil
