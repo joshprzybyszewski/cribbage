@@ -45,3 +45,14 @@ func TestFloat64(t *testing.T) {
 		assert.Greater(t, r, -0.00001)
 	}
 }
+
+func TestString(t *testing.T) {
+	s := String(0)
+	assert.Empty(t, s)
+
+	for i := 0; i < 100; i++ {
+		randLen := Intn(1000)
+		s = String(randLen)
+		assert.Equal(t, randLen, len(s))
+	}
+}

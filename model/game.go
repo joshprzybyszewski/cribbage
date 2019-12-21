@@ -1,5 +1,28 @@
 package model
 
+import (
+	"errors"
+)
+
+func (g *Game) GetDeck() (Deck, error) {
+	emptyCard := Card{}
+	if emptyCard != g.CutCard {
+		return nil, errors.New(`cannot get deck when there is a cut card`)
+	}
+
+	allDealtCards := map[Card]struct{}{}
+	for _, hand := range g.Hands {
+		for _, c := range hand {
+			allDealtCards[c] = struct{}{}
+		}
+	}
+	for _, c := range g.Crib {
+		allDealtCards[c] = struct{}{}
+	}
+
+	return newDeckWithDealt(allDealtCards), nil
+}
+
 func (g *Game) IsOver() bool {
 	for _, score := range g.CurrentScores {
 		if score >= WinningScore {
@@ -10,11 +33,11 @@ func (g *Game) IsOver() bool {
 }
 
 func (g *Game) NumActions() int {
-	return len(g.actions)
+	return len(g.Actions)
 }
 
 func (g *Game) AddAction(a PlayerAction) {
-	g.actions = append(g.actions, a)
+	g.Actions = append(g.Actions, a)
 }
 
 func (g *Game) CurrentPeg() int {
@@ -47,7 +70,7 @@ func (g *Game) goesAround() bool {
 	lastPeggedCard := g.PeggedCards[len(g.PeggedCards)-1]
 	lastPlayerWhoPlayed := lastPeggedCard.PlayerID
 	for actIndex := g.NumActions() - 1; actIndex >= lastPeggedCard.Action; actIndex-- {
-		act := g.actions[actIndex]
+		act := g.Actions[actIndex]
 		if pa, ok := act.Action.(PegAction); ok {
 			if !pa.SayGo {
 				// if anybody else has played a card, the goes have not gone around
