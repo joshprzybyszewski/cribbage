@@ -47,6 +47,10 @@ func TestIsValidPlayerID(t *testing.T) {
 		msg:     `special chars`,
 		input:   `what!`,
 		isValid: false,
+	}, {
+		msg:     `empty string`,
+		input:   ``,
+		isValid: false,
 	}}
 
 	for _, tc := range testCases {
