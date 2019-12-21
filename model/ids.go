@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	validPIDRegex = regexp.MustCompile("^[\\w]*$")
+	validPIDRegex = regexp.MustCompile(`^[\w]*$`)
 )
 
 func NewGameID() GameID {
