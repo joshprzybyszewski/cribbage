@@ -48,14 +48,18 @@ func newDeckWithDealt(dealt map[Card]struct{}) Deck {
 		return d
 	}
 
-	for i, c := range d.cards {
+	for i := 0; i < len(d.cards); i++ {
+		c := d.cards[i]
 		lastValidCard := 51 - d.numDealt
 		if i >= lastValidCard {
 			break
 		}
 		if _, ok := dealt[c]; ok {
-			d.cards[lastValidCard], d.cards[i] = d.cards[i], d.cards[lastValidCard]
+			tmp := d.cards[lastValidCard]
+			d.cards[lastValidCard] = d.cards[i]
+			d.cards[i] = tmp
 			d.numDealt++
+			i--
 		}
 	}
 
@@ -66,7 +70,9 @@ func (d *deck) Deal() Card {
 	lastValidCard := 51 - d.numDealt
 	if lastValidCard > 0 {
 		randomIndex := rand.Intn(lastValidCard)
-		d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
+		tmp := d.cards[lastValidCard]
+		d.cards[lastValidCard] = d.cards[randomIndex]
+		d.cards[randomIndex] = tmp
 	}
 
 	d.numDealt++
