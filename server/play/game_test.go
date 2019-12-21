@@ -132,7 +132,7 @@ func TestHandleAction_Crib(t *testing.T) {
 				model.NewCardFromString(`6c`),
 			},
 		},
-		CutCard:     model.NewCardFromString(`KH`),
+		CutCard:     model.Card{}, //NewCardFromString(`KH`),
 		Crib:        make([]model.Card, 0, 4),
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
@@ -201,6 +201,86 @@ func TestHandleAction_Crib(t *testing.T) {
 	assert.Contains(t, g.Crib, model.NewCardFromString(`2c`))
 	// verify that entering the cutting phase clears out the cut card until it _is_ cut
 	assert.Equal(t, model.Card{}, g.CutCard)
+
+	aliceAPI.AssertExpectations(t)
+	bobAPI.AssertExpectations(t)
+}
+
+func TestHandleAction_Cut(t *testing.T) {
+	alice, bob, aliceAPI, bobAPI, abAPIs := testutils.AliceAndBob()
+
+	g := model.Game{
+		ID:              model.GameID(5),
+		Players:         []model.Player{alice, bob},
+		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.CutCard},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Cut,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: {
+				model.NewCardFromString(`1s`),
+				model.NewCardFromString(`2s`),
+				model.NewCardFromString(`3s`),
+				model.NewCardFromString(`4s`),
+			},
+			bob.ID: {
+				model.NewCardFromString(`1c`),
+				model.NewCardFromString(`2c`),
+				model.NewCardFromString(`3c`),
+				model.NewCardFromString(`4c`),
+			},
+		},
+		CutCard: model.Card{},
+		Crib: []model.Card{
+			model.NewCardFromString(`6s`),
+			model.NewCardFromString(`6c`),
+			model.NewCardFromString(`6d`),
+			model.NewCardFromString(`6h`),
+		},
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+	}
+
+	action := model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.CutCard,
+		Action: model.CutDeckAction{
+			Percentage: 0.314,
+		},
+	}
+
+	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
+	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
+	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `please peg a card`).Return(nil).Once()
+
+	err := HandleAction(&g, action, abAPIs)
+	assert.Nil(t, err)
+	assert.Equal(t, model.Pegging, g.Phase)
+	assert.Equal(t, g.NumActions(), 1)
+	// now the game has moved on to pegging for bob
+	require.Len(t, g.BlockingPlayers, 1)
+	assert.NotContains(t, g.BlockingPlayers, alice.ID)
+	assert.Contains(t, g.BlockingPlayers, bob.ID)
+	// the players hand should all be developed, and the crib too
+	assert.Len(t, g.Hands[alice.ID], 4)
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`1s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`2s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`3s`))
+	assert.Contains(t, g.Hands[alice.ID], model.NewCardFromString(`4s`))
+	assert.Len(t, g.Hands[bob.ID], 4)
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`1c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`2c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`3c`))
+	assert.Contains(t, g.Hands[bob.ID], model.NewCardFromString(`4c`))
+	assert.Len(t, g.Crib, 4)
+	assert.Contains(t, g.Crib, model.NewCardFromString(`6s`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`6c`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`6d`))
+	assert.Contains(t, g.Crib, model.NewCardFromString(`6h`))
+	// verify that entering the cutting phase clears out the cut card until it _is_ cut
+	assert.NotEqual(t, model.Card{}, g.CutCard)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
