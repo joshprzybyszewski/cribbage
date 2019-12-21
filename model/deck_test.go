@@ -70,10 +70,10 @@ func TestDeckCuttingAvoidsDealtCards(t *testing.T) {
 
 func Test_newDeckWithDealt(t *testing.T) {
 	already := map[Card]struct{}{
-		Card{
+		{
 			Suit:  Spades,
 			Value: 2,
-		}: struct{}{},
+		}: {},
 	}
 	dealtDeck := newDeckWithDealt(already)
 
@@ -136,7 +136,7 @@ func TestGetDeck(t *testing.T) {
 		msg: `with hands`,
 		game: Game{
 			Hands: map[PlayerID][]Card{
-				PlayerID(`alice`): []Card{
+				PlayerID(`alice`): {
 					NewCardFromString(`1s`),
 					NewCardFromString(`2s`),
 					NewCardFromString(`3s`),
@@ -144,7 +144,7 @@ func TestGetDeck(t *testing.T) {
 					NewCardFromString(`5s`),
 					NewCardFromString(`6s`),
 				},
-				PlayerID(`bob`): []Card{
+				PlayerID(`bob`): {
 					NewCardFromString(`1c`),
 					NewCardFromString(`2c`),
 					NewCardFromString(`3c`),
@@ -159,13 +159,13 @@ func TestGetDeck(t *testing.T) {
 		msg: `with hands and crib`,
 		game: Game{
 			Hands: map[PlayerID][]Card{
-				PlayerID(`alice`): []Card{
+				PlayerID(`alice`): {
 					NewCardFromString(`1s`),
 					NewCardFromString(`2s`),
 					NewCardFromString(`3s`),
 					NewCardFromString(`4s`),
 				},
-				PlayerID(`bob`): []Card{
+				PlayerID(`bob`): {
 					NewCardFromString(`1c`),
 					NewCardFromString(`2c`),
 					NewCardFromString(`3c`),
