@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server"
+	"github.com/joshprzybyszewski/cribbage/server/interaction/npc"
 )
 
 type Player interface {
@@ -29,6 +31,8 @@ func FromPlayerMeans(pm PlayerMeans) (Player, error) {
 	switch means.Mode {
 	case Localhost:
 		return newLocalhostPlayer(pID, means.Info), nil
+	case NPC:
+		return npc.NewNPCPlayer(pID, server.HandleAction)
 	}
 
 	return nil, errors.New(`mode unsupported`)
