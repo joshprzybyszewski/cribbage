@@ -1,0 +1,38 @@
+<!--user.html-->
+
+<!doctype html>
+<html>
+
+  <head>
+    <!--Use the title variable to set the title of the page-->
+    <title>Your games</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+  </head>
+
+  <body class="container">
+    <h1>Game</h1>
+    <h2>Scores</h2>
+    <div>
+        {{ range .scores }}
+        <a> {{ .Color }} :  {{ .Score }}</a><br>
+        {{ end }}
+    </div>
+    
+    <h2>Your hand</h2>
+    <div>
+        {{ range .myHand }}
+        <a> {{ .Card }} </a><br>
+        {{ end }}
+    </div>
+
+    <h2>Phase</h2>
+    <div>
+        {{ .phase }}
+    </div>
+
+    <h2>Cut card</h2>
+    <div>
+        {{ .cutCard }}
+    </div>

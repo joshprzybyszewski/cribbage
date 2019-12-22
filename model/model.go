@@ -125,6 +125,36 @@ const (
 	DealingReady
 )
 
+func (p Phase) String() string {
+	switch p {
+	case Deal:
+		return `Deal`
+	case BuildCribReady:
+		return `BuildCribReady`
+	case BuildCrib:
+		return `BuildCrib`
+	case CutReady:
+		return `CutReady`
+	case Cut:
+		return `Cut`
+	case PeggingReady:
+		return `PeggingReady`
+	case Pegging:
+		return `Pegging`
+	case CountingReady:
+		return `CountingReady`
+	case Counting:
+		return `Counting`
+	case CribCountingReady:
+		return `CribCountingReady`
+	case CribCounting:
+		return `CribCounting`
+	case DealingReady:
+		return `DealingReady`
+	}
+	return `unknown`
+}
+
 const (
 	WinningScore    int = 121
 	MaxPeggingValue int = 31

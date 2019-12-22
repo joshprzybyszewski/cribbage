@@ -12,14 +12,14 @@ const (
 	defaultTimeout time.Duration = 10 * time.Second
 )
 
-func (cs *cribbageServer) getGame(gID model.GameID) (model.Game, error) {
+func getGame(gID model.GameID) (model.Game, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
 	return GetGame(ctx, gID)
 }
 
-func (cs *cribbageServer) getPlayer(pID model.PlayerID) (model.Player, error) {
+func getPlayer(pID model.PlayerID) (model.Player, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -33,7 +33,7 @@ func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) 
 	return CreateGame(ctx, pIDs)
 }
 
-func (cs *cribbageServer) createPlayer(username, name string) (model.Player, error) {
+func createPlayerFromNames(username, name string) (model.Player, error) {
 	mp := model.Player{
 		ID:    model.PlayerID(username),
 		Name:  name,

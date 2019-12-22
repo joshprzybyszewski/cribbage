@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,104 +28,15 @@ func (cs *cribbageServer) Serve() {
 		})
 	})
 
-	router.GET("/", func(c *gin.Context) {
-		c.HTML(
-			http.StatusOK,
-			"index.html",
-			// Pass the data that the page uses (in this case, 'title')
-			gin.H{
-				"title": "Home Page",
-			},
-		)
-	})
+	router.GET("/", handleIndex)
 
 	// Simple group: user. Used for serving pages affiliated with a given user
 	user := router.Group("/user")
 	{
-		user.GET("/", func(c *gin.Context) {
-			// read the username/displayname from the query params
-			// and redirect to /user/:username
-			username := c.Query(`username`)
-			name := c.Query(`displayName`)
-
-			fmt.Printf("username: %s, displayname: %s\n", username, name)
-
-			c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/user/%s`, username))
-		})
-
-		user.POST("/", func(c *gin.Context) {
-			// read the username/displayname from the request body
-			// create the user
-			// and redirect to /user/:username
-			reqBody, err := ioutil.ReadAll(c.Request.Body)
-			if err != nil {
-				c.String(http.StatusBadRequest, "Must send appropriate POST data")
-				return
-			}
-			var username, name string
-
-			fmt.Printf("username: %s, displayname: %s\n", username, name)
-			fmt.Printf("reqBody: %s\n", reqBody)
-
-			player, err := cs.createPlayer(username, name)
-			if err != nil && err != persistence.ErrPlayerAlreadyExists {
-				switch err {
-				case errInvalidUsername:
-					c.String(http.StatusBadRequest, "Username must be alphanumeric")
-				default:
-					c.String(http.StatusInternalServerError, "Error: %s", err)
-				}
-				return
-			}
-
-			c.Redirect(http.StatusOK, fmt.Sprintf(`/user/%s`, player.ID))
-		})
-
-		user.GET("/:username", func(c *gin.Context) {
-			// serve up a list of games this user is in
-			username := c.Param("username")
-			pID := model.PlayerID(username)
-			p, err := cs.getPlayer(pID)
-			if err != nil {
-				c.String(http.StatusInternalServerError, "Error: %s", err)
-				return
-			}
-
-			gameNames := make([]string, 0, len(p.Games))
-			for gID, color := range p.Games {
-				g, err := cs.getGame(gID)
-				if err != nil {
-					c.String(http.StatusInternalServerError, "Error getting game: %s", err)
-					return
-				}
-				gameDesc := `Against `
-				for _, p := range g.Players {
-					if p.ID == pID {
-						continue
-					}
-					// TODO support three and four player games
-					gameDesc += p.Name
-				}
-				gameDesc += `. `
-				gameDesc += `(` + color.String() + `)`
-				gameNames = append(gameNames, gameDesc)
-			}
-
-			c.HTML(
-				http.StatusOK,
-				"user.html",
-				// Pass the data that the page uses (in this case, 'title')
-				gin.H{
-					"displayName": username,
-					"games":       gameNames,
-				},
-			)
-		})
-
-		user.GET("/:username/game/:gameID", func(c *gin.Context) {
-			/*TODO*/
-
-		})
+		user.GET("/", handleGetUser)
+		user.POST("/", handlePostUser)
+		user.GET("/:username", handleGetUsername)
+		user.GET("/:username/game/:gameID", handleGetUsernameGame)
 	}
 
 	// Simple group: create
@@ -204,7 +114,7 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	username := c.Param("username")
 	name := c.Param("name")
-	player, err := cs.createPlayer(username, name)
+	player, err := createPlayerFromNames(username, name)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -255,7 +165,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		return
 	}
 	gID := model.GameID(n)
-	g, err := cs.getGame(gID)
+	g, err := getGame(gID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -266,7 +176,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param("username"))
-	p, err := cs.getPlayer(pID)
+	p, err := getPlayer(pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
