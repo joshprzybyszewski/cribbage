@@ -39,7 +39,8 @@ func seedNPCs(cs cribbageServer) error {
 	}
 	npcIDs := []model.PlayerID{npc.Dumb, npc.Simple, npc.Calc}
 	for _, id := range npcIDs {
-		p, err := npc.NewNPCPlayer(id, HandleAction)
+		// we don't need to pass in a callback function when seeding the db
+		p, err := npc.NewNPCPlayer(id, nil)
 		if err != nil {
 			return err
 		}
