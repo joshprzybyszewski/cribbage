@@ -1,6 +1,7 @@
 package npc
 
 import (
+	"context"
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
@@ -30,7 +31,7 @@ type npcPlayer struct {
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(pID model.PlayerID, cb func(a model.PlayerAction) error) (interaction.Player, error) {
+func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (interaction.Player, error) {
 	l, ok := npcs[pID]
 	if !ok {
 		return &npcPlayer{}, errors.New(`not a valid npc mode`)
