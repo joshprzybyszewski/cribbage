@@ -5,7 +5,7 @@
 
   <head>
     <!--Use the title variable to set the title of the page-->
-    <title>Your games</title>
+    <title>Game with {{ range .playerNames }} {{ . }} {{ end }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
@@ -13,17 +13,12 @@
 
   <body class="container">
     <h1>Game</h1>
+    <h4>Players: {{ range .playerNames }} {{ . }} {{ end }}</h4>
+    <h4>Your color: {{ .myColor }} </h4>
     <h2>Scores</h2>
     <div>
         {{ range .scores }}
         <a> {{ .Color }} :  {{ .Score }}</a><br>
-        {{ end }}
-    </div>
-    
-    <h2>Your hand</h2>
-    <div>
-        {{ range .myHand }}
-        <a> {{ .Card }} </a><br>
         {{ end }}
     </div>
 
@@ -32,7 +27,43 @@
         {{ .phase }}
     </div>
 
+    {{ if .cutCard }}
     <h2>Cut card</h2>
     <div>
         {{ .cutCard }}
     </div>
+    {{ end }}
+
+    {{ if .peggedCards }}
+    <h2>Pegged Cards</h2>
+    <div>
+        {{ range .peggedCards }}
+        <button disabled>{{ . }} </button>
+        {{ end }}
+    </div>
+    {{ end }}
+    
+    {{ if .myHand }}
+    <h2>Your hand</h2>
+    <div>
+        {{ range .myHand }}
+        <button {{ if .IsPegged }}disabled{{ end }}>{{ .Card }} </button>
+        {{ end }}
+    </div>
+    {{ end }}
+
+    {{ if .oppHands }}{{ range .oppHands }}
+    <h2>{{ .Name }}'s hand</h2>
+    <div>
+        {{ range .Hand }}
+        <button disabled>{{ . }} </button>
+        {{ end }}
+    </div>
+    {{ end }}{{ end }}
+
+    {{ if .crib }}
+    <h2>Crib</h2>
+    <div>
+        {{ .crib }}
+    </div>
+    {{ end }}

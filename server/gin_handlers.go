@@ -134,6 +134,13 @@ func handleGetUsernameGame(c *gin.Context) {
 		return
 	}
 
+	playerNames := make([]string, 0, len(g.Players))
+	nameMap := make(map[model.PlayerID]string, len(g.Players))
+	for _, p := range g.Players {
+		playerNames = append(playerNames, p.Name)
+		nameMap[p.ID] = p.Name
+	}
+
 	scores := []struct {
 		Color string
 		Score int
@@ -149,34 +156,85 @@ func handleGetUsernameGame(c *gin.Context) {
 		})
 	}
 
-	myHand := []struct {
-		Card string
-	}{}
-
-	for _, c := range g.Hands[pID] {
-		myHand = append(myHand, struct {
-			Card string
-		}{
-			Card: c.String(),
-		})
-	}
-
 	cutCard := g.CutCard.String()
 	emptyCard := model.Card{}
 	if g.CutCard == emptyCard {
-		cutCard = `not cut`
+		cutCard = ``
+	}
+
+	oppHands := []struct {
+		Name string
+		Hand []string
+	}{}
+
+	peggedCardMap := make(map[model.Card]struct{}, len(g.PeggedCards))
+	peggedCards := make([]string, 0, len(g.PeggedCards))
+	for _, pc := range g.PeggedCards {
+		peggedCards = append(peggedCards, pc.Card.String())
+		peggedCardMap[pc.Card] = struct{}{}
+	}
+
+	myHand := make([]struct {
+		Card     string
+		IsPegged bool
+	}, 0, len(g.Hands[pID]))
+
+	for _, c := range g.Hands[pID] {
+		_, ok := peggedCardMap[c]
+		myHand = append(myHand, struct {
+			Card     string
+			IsPegged bool
+		}{
+			Card:     c.String(),
+			IsPegged: ok,
+		})
+	}
+
+	for playerID, hand := range g.Hands {
+		if pID == playerID {
+			continue
+		}
+		handStrs := make([]string, 0, len(hand))
+
+		for _, c := range hand {
+			if _, ok := peggedCardMap[c]; !ok {
+				handStrs = append(handStrs, `--`)
+				continue
+			}
+			handStrs = append(handStrs, c.String())
+		}
+
+		oppHands = append(oppHands, struct {
+			Name string
+			Hand []string
+		}{
+			Name: nameMap[playerID],
+			Hand: handStrs,
+		})
+	}
+
+	cribHand := make([]string, 0, len(g.Crib))
+	if g.Phase >= model.CribCounting {
+		for _, c := range g.Crib {
+			cribHand = append(cribHand, c.String())
+		}
 	}
 
 	c.HTML(
 		http.StatusOK,
 		"game.html",
 		gin.H{
-			"myID":    string(pID),
-			"scores":  scores,
-			"myHand":  myHand,
-			"phase":   g.Phase.String(),
-			"cutCard": cutCard,
-			"game":    g,
+			"myID":        string(pID),
+			"myColor":     g.PlayerColors[pID].String(),
+			"scores":      scores,
+			"myHand":      myHand,
+			"oppHands":    oppHands,
+			"peggedCards": peggedCards,
+			"crib":        cribHand,
+			"phase":       g.Phase.String(),
+			"cutCard":     cutCard,
+			"playerNames": playerNames,
+			"game":        g,
 		},
 	)
 }
