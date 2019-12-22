@@ -8,9 +8,12 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server"
 )
 
+var (
+	legacy = flag.Bool(`legacy`, false, `set to true to play the legacy style game`)
+	client = flag.Bool(`client`, false, `set to true to talk to run as a terminal client against the server`)
+)
+
 func main() {
-	legacy := flag.Bool(`legacy`, false, `set to true to play the legacy style game`)
-	client := flag.Bool(`client`, false, `set to true to talk to run as a terminal client against the server`)
 
 	flag.Parse()
 

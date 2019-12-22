@@ -1,13 +1,15 @@
 package model
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 type Deck interface {
 	Deal() Card
 	Shuffle()
-	CutDeck(p float64) Card
+	CutDeck(p float64) (Card, error)
 }
 
 type deck struct {
@@ -16,6 +18,10 @@ type deck struct {
 }
 
 func NewDeck() Deck {
+	return newDeck()
+}
+
+func newDeck() *deck {
 	var cards [52]Card
 
 	for i := 0; i < NumCardsPerDeck; i++ {
@@ -36,11 +42,37 @@ func NewDeck() Deck {
 	return &d
 }
 
+func newDeckWithDealt(dealt map[Card]struct{}) Deck {
+	d := newDeck()
+	if len(dealt) == 0 {
+		return d
+	}
+
+	for i := 0; i < len(d.cards); i++ {
+		c := d.cards[i]
+		lastValidCard := 51 - d.numDealt
+		if i > lastValidCard {
+			break
+		}
+		if _, ok := dealt[c]; ok {
+			tmp := d.cards[lastValidCard]
+			d.cards[lastValidCard] = d.cards[i]
+			d.cards[i] = tmp
+			d.numDealt++
+			i--
+		}
+	}
+
+	return d
+}
+
 func (d *deck) Deal() Card {
 	lastValidCard := 51 - d.numDealt
 	if lastValidCard > 0 {
 		randomIndex := rand.Intn(lastValidCard)
-		d.cards[lastValidCard], d.cards[randomIndex] = d.cards[randomIndex], d.cards[lastValidCard]
+		tmp := d.cards[lastValidCard]
+		d.cards[lastValidCard] = d.cards[randomIndex]
+		d.cards[randomIndex] = tmp
 	}
 
 	d.numDealt++
@@ -62,12 +94,13 @@ func (d *deck) Shuffle() {
 	d.numDealt = 0
 }
 
-func (d *deck) CutDeck(p float64) Card {
+func (d *deck) CutDeck(p float64) (Card, error) {
+	if d.numDealt >= 52 {
+		return Card{}, errors.New(`cannot cut deck with all cards dealt`)
+	}
+
 	lastValidCard := int64(51 - d.numDealt)
 	cutCard := int(float64(lastValidCard) * p)
 
-	// say that all of the cards are dealt because once it's cut, we can't reuse it
-	d.numDealt = 51
-
-	return d.cards[cutCard]
+	return d.cards[cutCard], nil
 }

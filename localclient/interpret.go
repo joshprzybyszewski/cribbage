@@ -283,13 +283,18 @@ func (tc *terminalClient) getCountCribAction(g model.Game) model.CountCribAction
 
 func (tc *terminalClient) printCurrentScore() {
 	g := tc.myGames[tc.myCurrentGame]
-	myColor := g.PlayerColors[tc.me.ID]
-	fmt.Println(`----------`)
-	fmt.Printf("%5s (you): %3d\n", myColor.String(), g.CurrentScores[myColor])
+	fmt.Println(gameScoreMessage(g, tc.me.ID))
+}
+
+func gameScoreMessage(g model.Game, myID model.PlayerID) string {
+	myColor := g.PlayerColors[myID]
+	msg := fmt.Sprintln(`----------`)
+	msg += fmt.Sprintf("%5s (you): %3d\n", myColor.String(), g.CurrentScores[myColor])
 	for c, s := range g.CurrentScores {
 		if c != myColor {
-			fmt.Printf("%11s: %3d\n", c.String(), s)
+			msg += fmt.Sprintf("%11s: %3d\n", c.String(), s)
 		}
 	}
-	fmt.Println(`----------`)
+	msg += fmt.Sprintln(`----------`)
+	return msg
 }

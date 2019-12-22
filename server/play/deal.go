@@ -17,9 +17,8 @@ func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	for pID := range g.Hands {
 		g.Hands[pID] = g.Hands[pID][:0]
 	}
-
-	// shuffle the deck at least once
-	g.Deck.Shuffle()
+	g.Crib = g.Crib[:0]
+	g.CutCard = model.Card{}
 
 	addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs, ``)
 
@@ -54,20 +53,25 @@ func (*dealingHandler) HandleAction(g *model.Game,
 	}
 	removePlayerFromBlockers(g, action)
 
+	deck, err := g.GetDeck()
+	if err != nil {
+		return err
+	}
+
 	for i := 0; i < da.NumShuffles; i++ {
 		// shuffle
-		g.Deck.Shuffle()
+		deck.Shuffle()
 	}
 
 	// deal
-	if err := deal(g, pAPIs); err != nil {
+	if err := deal(g, deck, pAPIs); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
+func deal(g *model.Game, deck model.Deck, pAPIs map[model.PlayerID]interaction.Player) error {
 	// Get the order of players we need to deal to
 	pIDs := playersToDealTo(g)
 
@@ -81,7 +85,7 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 
 	for numDealt := 0; numDealt < numCardsToDeal; {
 		for _, pID := range pIDs {
-			c := g.Deck.Deal()
+			c := deck.Deal()
 			numDealt++
 			g.Hands[pID] = append(g.Hands[pID], c)
 		}
@@ -89,7 +93,7 @@ func deal(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
 
 	// For three player games, we need to deal another card to the crib
 	if len(pIDs) == 3 {
-		c := g.Deck.Deal()
+		c := deck.Deal()
 		g.Crib = append(g.Crib, c)
 	}
 

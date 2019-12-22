@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"errors"
-
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
@@ -13,12 +11,59 @@ type DB interface {
 	AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error
 
 	GetGame(id model.GameID) (model.Game, error)
+	GetGameAction(id model.GameID, numActions uint) (model.Game, error)
 	SaveGame(g model.Game) error
 
-	GetInteraction(id model.PlayerID) (interaction.Player, error)
-	SaveInteraction(i interaction.Player) error
+	GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error)
+	SaveInteraction(pm interaction.PlayerMeans) error
 }
 
-var (
-	ErrPlayerAlreadyExists error = errors.New(`username already exists`)
-)
+type db struct {
+	games        GameService
+	players      PlayerService
+	interactions InteractionService
+}
+
+func New(gs GameService, ps PlayerService, is InteractionService) DB {
+	return &db{
+		games:        gs,
+		players:      ps,
+		interactions: is,
+	}
+}
+
+func (d *db) CreatePlayer(p model.Player) error {
+	return d.players.Create(p)
+}
+
+func (d *db) GetPlayer(id model.PlayerID) (model.Player, error) {
+	return d.players.Get(id)
+}
+
+func (d *db) AddPlayerColorToGame(pID model.PlayerID, color model.PlayerColor, gID model.GameID) error {
+	err := d.games.UpdatePlayerColor(gID, pID, color)
+	if err != nil {
+		return err
+	}
+	return d.players.UpdateGameColor(pID, gID, color)
+}
+
+func (d *db) GetGame(id model.GameID) (model.Game, error) {
+	return d.games.Get(id)
+}
+
+func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
+	return d.games.GetAt(id, numActions)
+}
+
+func (d *db) SaveGame(g model.Game) error {
+	return d.games.Save(g)
+}
+
+func (d *db) GetInteraction(id model.PlayerID) (interaction.PlayerMeans, error) {
+	return d.interactions.Get(id)
+}
+
+func (d *db) SaveInteraction(pm interaction.PlayerMeans) error {
+	return d.interactions.Update(pm)
+}

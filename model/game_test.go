@@ -1,76 +1,59 @@
-package model
+package model_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-)
 
-func getFourPlayers() (alice, bob, charlie, diane Player) {
-	alice = Player{
-		ID:   PlayerID(`a`),
-		Name: `alice`,
-	}
-	bob = Player{
-		ID:   PlayerID(`b`),
-		Name: `bob`,
-	}
-	charlie = Player{
-		ID:   PlayerID(`c`),
-		Name: `charlie`,
-	}
-	diane = Player{
-		ID:   PlayerID(`d`),
-		Name: `diane`,
-	}
-	return alice, bob, charlie, diane
-}
+	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/utils/testutils"
+)
 
 func TestIsOver(t *testing.T) {
 	testCases := []struct {
 		msg     string
-		game    Game
+		game    model.Game
 		expOver bool
 	}{{
 		msg: `easy detection`,
-		game: Game{
-			CurrentScores: map[PlayerColor]int{
-				Blue: 121,
+		game: model.Game{
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue: 121,
 			},
 		},
 		expOver: true,
 	}, {
 		msg: `does not read lagging`,
-		game: Game{
-			LagScores: map[PlayerColor]int{
-				Blue: 121,
+		game: model.Game{
+			LagScores: map[model.PlayerColor]int{
+				model.Blue: 121,
 			},
 		},
 		expOver: false,
 	}, {
 		msg: `does not win when close to winning`,
-		game: Game{
-			CurrentScores: map[PlayerColor]int{
-				Blue: 120,
-				Red:  120,
+		game: model.Game{
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue: 120,
+				model.Red:  120,
 			},
 		},
 		expOver: false,
 	}, {
 		msg: `when green wins (what)`,
-		game: Game{
-			CurrentScores: map[PlayerColor]int{
-				Blue:  120,
-				Red:   120,
-				Green: 121,
+		game: model.Game{
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue:  120,
+				model.Red:   120,
+				model.Green: 121,
 			},
 		},
 		expOver: true,
 	}, {
 		msg: `when we get more than max`,
-		game: Game{
-			CurrentScores: map[PlayerColor]int{
-				Blue: 9001,
+		game: model.Game{
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue: 9001,
 			},
 		},
 		expOver: true,
@@ -82,47 +65,47 @@ func TestIsOver(t *testing.T) {
 }
 
 func TestNumActions(t *testing.T) {
-	alice, bob, charlie, diane := getFourPlayers()
+	alice, bob, charlie, diane := testutils.AliceBobCharlieDiane()
 
 	testCases := []struct {
 		msg    string
-		game   Game
+		game   model.Game
 		expNum int
 	}{{
 		msg:    `no actions is fine`,
-		game:   Game{},
+		game:   model.Game{},
 		expNum: 0,
 	}, {
 		msg: `just returns a count of the actions`,
-		game: Game{
-			actions: []PlayerAction{{
+		game: model.Game{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10s`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10d`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10d`)},
 			}, {
 				ID:        diane.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expNum: 7,
@@ -134,320 +117,320 @@ func TestNumActions(t *testing.T) {
 }
 
 func TestAddAction(t *testing.T) {
-	alice, bob, _, _ := getFourPlayers()
+	alice, bob, _, _ := testutils.AliceBobCharlieDiane()
 
-	g := Game{}
+	g := model.Game{}
 	assert.Zero(t, g.NumActions())
 
-	g.AddAction(PlayerAction{
+	g.AddAction(model.PlayerAction{
 		ID:        alice.ID,
-		Overcomes: PegCard,
-		Action:    PegAction{Card: NewCardFromString(`10s`)},
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 	})
 	assert.Equal(t, 1, g.NumActions())
 
-	g.AddAction(PlayerAction{
+	g.AddAction(model.PlayerAction{
 		ID:        bob.ID,
-		Overcomes: PegCard,
-		Action:    PegAction{Card: NewCardFromString(`10c`)},
+		Overcomes: model.PegCard,
+		Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 	})
 	assert.Equal(t, 2, g.NumActions())
 }
 
 func TestCurrentPeg(t *testing.T) {
-	alice, bob, charlie, diane := getFourPlayers()
+	alice, bob, charlie, diane := testutils.AliceBobCharlieDiane()
 
 	testCases := []struct {
 		msg    string
-		game   Game
+		game   model.Game
 		expPeg int
 	}{{
 		msg:    `no pegged cards`,
-		game:   Game{},
+		game:   model.Game{},
 		expPeg: 0,
 	}, {
 		msg: `one pegged card`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}},
 		},
 		expPeg: 4,
 	}, {
 		msg: `two pegged cards`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
-				NewPeggedCardFromString(bob.ID, `7c`, 1),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+				model.NewPeggedCardFromString(bob.ID, `7c`, 1),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`7c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`7c`)},
 			}},
 		},
 		expPeg: 11,
 	}, {
 		msg: `three pegged cards`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
-				NewPeggedCardFromString(bob.ID, `7c`, 1),
-				NewPeggedCardFromString(alice.ID, `10c`, 2),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+				model.NewPeggedCardFromString(bob.ID, `7c`, 1),
+				model.NewPeggedCardFromString(alice.ID, `10c`, 2),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`7c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`7c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}},
 		},
 		expPeg: 21,
 	}, {
 		msg: `four pegged cards`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
-				NewPeggedCardFromString(bob.ID, `7c`, 1),
-				NewPeggedCardFromString(alice.ID, `10c`, 2),
-				NewPeggedCardFromString(bob.ID, `9c`, 3),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+				model.NewPeggedCardFromString(bob.ID, `7c`, 1),
+				model.NewPeggedCardFromString(alice.ID, `10c`, 2),
+				model.NewPeggedCardFromString(bob.ID, `9c`, 3),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`7c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`7c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`9c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`9c`)},
 			}},
 		},
 		expPeg: 30,
 	}, {
 		msg: `after one go`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
-				NewPeggedCardFromString(bob.ID, `7c`, 1),
-				NewPeggedCardFromString(alice.ID, `10c`, 2),
-				NewPeggedCardFromString(bob.ID, `9c`, 3),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+				model.NewPeggedCardFromString(bob.ID, `7c`, 1),
+				model.NewPeggedCardFromString(alice.ID, `10c`, 2),
+				model.NewPeggedCardFromString(bob.ID, `9c`, 3),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`7c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`7c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`9c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`9c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 30,
 	}, {
 		msg: `after two go's should reset`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `4c`, 0),
-				NewPeggedCardFromString(bob.ID, `7c`, 1),
-				NewPeggedCardFromString(alice.ID, `10c`, 2),
-				NewPeggedCardFromString(bob.ID, `9c`, 3),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+				model.NewPeggedCardFromString(bob.ID, `7c`, 1),
+				model.NewPeggedCardFromString(alice.ID, `10c`, 2),
+				model.NewPeggedCardFromString(bob.ID, `9c`, 3),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`4c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`7c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`7c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`9c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`9c`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 0,
 	}, {
 		msg: `with three players, and three go's should reset`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `10s`, 0),
-				NewPeggedCardFromString(bob.ID, `10c`, 1),
-				NewPeggedCardFromString(charlie.ID, `10d`, 2),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `10s`, 0),
+				model.NewPeggedCardFromString(bob.ID, `10c`, 1),
+				model.NewPeggedCardFromString(charlie.ID, `10d`, 2),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10s`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10d`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10d`)},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 0,
 	}, {
 		msg: `with four players, and three go's should NOT reset`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `10s`, 0),
-				NewPeggedCardFromString(bob.ID, `10c`, 1),
-				NewPeggedCardFromString(charlie.ID, `10d`, 2),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `10s`, 0),
+				model.NewPeggedCardFromString(bob.ID, `10c`, 1),
+				model.NewPeggedCardFromString(charlie.ID, `10d`, 2),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10s`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10d`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10d`)},
 			}, {
 				ID:        diane.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 30,
 	}, {
 		msg: `with four players, and four go's should reset`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `10s`, 0),
-				NewPeggedCardFromString(bob.ID, `10c`, 1),
-				NewPeggedCardFromString(charlie.ID, `10d`, 2),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `10s`, 0),
+				model.NewPeggedCardFromString(bob.ID, `10c`, 1),
+				model.NewPeggedCardFromString(charlie.ID, `10d`, 2),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10s`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10d`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10d`)},
 			}, {
 				ID:        diane.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 0,
 	}, {
 		msg: `with four players, and the last player who played says go, should reset`,
-		game: Game{
-			PeggedCards: []PeggedCard{
-				NewPeggedCardFromString(alice.ID, `10s`, 0),
-				NewPeggedCardFromString(bob.ID, `10c`, 1),
-				NewPeggedCardFromString(charlie.ID, `10d`, 2),
+		game: model.Game{
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `10s`, 0),
+				model.NewPeggedCardFromString(bob.ID, `10c`, 1),
+				model.NewPeggedCardFromString(charlie.ID, `10d`, 2),
 			},
-			actions: []PlayerAction{{
+			Actions: []model.PlayerAction{{
 				ID:        alice.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10s`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10s`)},
 			}, {
 				ID:        bob.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10c`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10c`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{Card: NewCardFromString(`10d`)},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`10d`)},
 			}, {
 				ID:        charlie.ID,
-				Overcomes: PegCard,
-				Action:    PegAction{SayGo: true},
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{SayGo: true},
 			}},
 		},
 		expPeg: 0,

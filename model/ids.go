@@ -2,8 +2,13 @@ package model
 
 import (
 	"log"
+	"regexp"
 
 	"github.com/google/uuid"
+)
+
+var (
+	validPIDRegex = regexp.MustCompile(`^[\w]+$`)
 )
 
 func NewGameID() GameID {
@@ -19,4 +24,8 @@ func NewGameID() GameID {
 	}
 
 	return gID
+}
+
+func IsValidPlayerID(pID PlayerID) bool {
+	return validPIDRegex.MatchString(string(pID))
 }
