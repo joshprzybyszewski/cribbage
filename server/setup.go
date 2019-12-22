@@ -33,13 +33,13 @@ func Setup() error {
 }
 
 func seedNPCs(cs cribbageServer) error {
-	db, err := getDB(context.Background)
+	db, err := getDB(context.Background())
 	if err != nil {
 		return err
 	}
 	npcIDs := []model.PlayerID{npc.Dumb, npc.Simple, npc.Calc}
 	for _, id := range npcIDs {
-		p, err := npc.NewNPCPlayer(id, cs.handleAction)
+		p, err := npc.NewNPCPlayer(id, HandleAction)
 		if err != nil {
 			return err
 		}
