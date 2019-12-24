@@ -6,6 +6,7 @@
   </head>
 
   <body>
+  <button id="runButton">Run</button>
   <div id="status"></div>
 
   <h1>Cribbage</h1>
@@ -27,7 +28,7 @@
     </fieldset>
   </form>
 
-    <script src="assets/js/wasm_loader.js"></script>
+    <script src="assets/js/wasm_exec.js"></script>
   <script>
       const go = new Go();
       // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
@@ -36,34 +37,20 @@
       let imageType;
       document.getElementById('status').innerText = "Initializing wasm...";
       WebAssembly.instantiateStreaming(
-        fetch("assets/wasm/wa_output.wasm", {cache: 'no-cache'}), go.importObject).then((result) => {
+        fetch("assets/wasm/wa_output.wasm", 
+          {cache: 'no-cache'}), 
+          go.importObject).then((result) => {
         mod = result.module;
         inst = result.instance;
         memoryBytes = new Uint8Array(inst.exports.mem.buffer)
         document.getElementById('status').innerText = "Initialization complete.";
-        run();
       });
       async function run() {
         await go.run(inst);
       }
-      // displayImage takes the pointer to the target image in the wasm linear memory
-      // and its length. Gets the resulting byte slice and creates an image blob.
-      // function displayImage(buf) {
-      //   let blob = new Blob([buf], {'type': imageType});
-      //   document.getElementById('targetImg').src = URL.createObjectURL(blob);
-      // }
-      // document.getElementById('uploader').addEventListener('change', function() {
-      //   let reader = new FileReader();
-      //   reader.onload = (ev) => {
-      //     bytes = new Uint8Array(ev.target.result);
-      //     loadImage(bytes);
-      //     let blob = new Blob([bytes], {'type': imageType});
-      //     document.getElementById("sourceImg").src = URL.createObjectURL(blob);
-      //   };
-      //   imageType = this.files[0].type;
-      //   reader.readAsArrayBuffer(this.files[0]);
-      // });
+      document.getElementById('runButton').addEventListener('click', function() {
+        run();
+      });
     </script>
 </body>
-
 </html>
