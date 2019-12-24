@@ -63,6 +63,24 @@ func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
 
+func SeedNPCs(db persistence.DB) error {
+	npcIDs := []model.PlayerID{Dumb, Simple, Calc}
+	for _, id := range npcIDs {
+		// we don't need to pass in a callback function when seeding the db
+		p, err := NewNPCPlayer(id, nil)
+		if err != nil {
+			return err
+		}
+		if _, err := db.GetInteraction(p.ID()); err != nil {
+			if err == persistence.ErrPlayerNotFound {
+				return db.SaveInteraction(p)
+			}
+			return err
+		}
+	}
+	return nil
+}
+
 func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
 	a := model.PlayerAction{
 		GameID:    g.ID,

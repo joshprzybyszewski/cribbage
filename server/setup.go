@@ -23,34 +23,12 @@ func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
 	cs := cribbageServer{}
-	err := seedNPCs(cs)
+	err := npc.SeedNPCs(getDB(context.Background()))
 	if err != nil {
 		return err
 	}
 	cs.Serve()
 
-	return nil
-}
-
-func seedNPCs(cs cribbageServer) error {
-	db, err := getDB(context.Background())
-	if err != nil {
-		return err
-	}
-	npcIDs := []model.PlayerID{npc.Dumb, npc.Simple, npc.Calc}
-	for _, id := range npcIDs {
-		// we don't need to pass in a callback function when seeding the db
-		p, err := npc.NewNPCPlayer(id, nil)
-		if err != nil {
-			return err
-		}
-		if _, err := db.GetInteraction(p.ID()); err != nil {
-			if err == persistence.ErrPlayerNotFound {
-				return db.SaveInteraction(p)
-			}
-			return err
-		}
-	}
 	return nil
 }
 
