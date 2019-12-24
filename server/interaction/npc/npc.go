@@ -27,7 +27,7 @@ var _ interaction.Player = (*npcPlayer)(nil)
 type npcPlayer struct {
 	logic                npcLogic
 	id                   model.PlayerID
-	handleActionCallback func(a model.PlayerAction) error
+	handleActionCallback func(ctx context.Context, a model.PlayerAction) error
 }
 
 // NewNPCPlayer creates a new NPC with specified type
@@ -52,7 +52,7 @@ func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) er
 	if err != nil {
 		return err
 	}
-	return npc.handleActionCallback(a)
+	return npc.handleActionCallback(context.Background(), a)
 }
 
 // The NPC doesn't care about messages or score updates
