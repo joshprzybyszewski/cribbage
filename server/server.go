@@ -21,6 +21,7 @@ func (cs *cribbageServer) Serve() {
 	router := gin.Default()
 
 	router.LoadHTMLGlob("templates/*")
+	router.Static("/assets", "./assets")
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
