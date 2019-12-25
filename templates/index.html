@@ -6,9 +6,6 @@
   </head>
 
   <body>
-  <button id="runButton">Run</button>
-  <div id="status"></div>
-
   <h1>Cribbage</h1>
 
   <h2>Create user</h2>
@@ -16,7 +13,7 @@
     <fieldset>
       Username: <input type="text" name="username"><br>
       Display name: <input type="text" name="displayName"><br>
-      <input type="submit" value="Submit">
+      <input type="submit" value="Submit" id="create-user-submit">
     </fieldset>
   </form>
 
@@ -34,8 +31,7 @@
       // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
       let memoryBytes;
       let mod, inst, bytes;
-      let imageType;
-      document.getElementById('status').innerText = "Initializing wasm...";
+      println("initializing gowasm");
       WebAssembly.instantiateStreaming(
         fetch("assets/wasm/wa_output.wasm", 
           {cache: 'no-cache'}), 
@@ -43,14 +39,12 @@
         mod = result.module;
         inst = result.instance;
         memoryBytes = new Uint8Array(inst.exports.mem.buffer)
-        document.getElementById('status').innerText = "Initialization complete.";
+        println("initialized gowasm");
+        run();
       });
       async function run() {
         await go.run(inst);
       }
-      document.getElementById('runButton').addEventListener('click', function() {
-        run();
-      });
     </script>
 </body>
 </html>
