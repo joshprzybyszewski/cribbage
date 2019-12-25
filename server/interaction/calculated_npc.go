@@ -1,4 +1,4 @@
-package npc
+package interaction
 
 import (
 	"github.com/joshprzybyszewski/cribbage/logic/strategy"

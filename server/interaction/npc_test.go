@@ -1,4 +1,4 @@
-package npc
+package interaction
 
 import (
 	"fmt"
@@ -10,12 +10,12 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func createPlayer(t *testing.T, pID model.PlayerID) *npcPlayer {
+func createPlayer(t *testing.T, pID model.PlayerID) *NPCPlayer {
 	npc, err := NewNPCPlayer(pID, func(a model.PlayerAction) error {
 		return nil
 	})
 	require.Nil(t, err)
-	p, ok := npc.(*npcPlayer)
+	p, ok := npc.(*NPCPlayer)
 	assert.True(t, ok)
 	return p
 }
@@ -456,11 +456,11 @@ func TestNewNPCPlayer(t *testing.T) {
 		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
 			return nil
 		})
-		n, ok := p.(*npcPlayer)
+		n, ok := p.(*NPCPlayer)
 		assert.True(t, ok)
 		if tc.expErr {
 			assert.NotNil(t, err)
-			assert.Equal(t, &npcPlayer{}, p)
+			assert.Equal(t, &NPCPlayer{}, p)
 		} else {
 			assert.Nil(t, err)
 			assert.Equal(t, tc.expLogic, n.logic)

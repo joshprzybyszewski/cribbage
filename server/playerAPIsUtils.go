@@ -22,6 +22,11 @@ func getPlayerAPIs(db persistence.DB, players []model.Player) (map[model.PlayerI
 			if err != nil {
 				return nil, err
 			}
+			// TODO assign HandleAction callback here if the character is an NPC
+			if pAPI, ok := pAPI.(*interaction.NPCPlayer); ok {
+				pAPI.HandleActionCallback = HandleAction
+			}
+			pAPI.ID()
 		}
 
 		pAPIs[p.ID] = pAPI

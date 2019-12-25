@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction/npc"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
@@ -23,7 +23,12 @@ func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
 	cs := cribbageServer{}
-	err := npc.SeedNPCs(getDB(context.Background()))
+	ctx := context.Background()
+	db, err := getDB(ctx)
+	if err != nil {
+		return err
+	}
+	err = seedNPCs(db)
 	if err != nil {
 		return err
 	}
@@ -41,4 +46,19 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 	}
 
 	return nil, errors.New(`database type not supported`)
+}
+
+func seedNPCs(db persistence.DB) error {
+	npcIDs := []model.PlayerID{interaction.Dumb, interaction.Simple, interaction.Calc}
+	for _, id := range npcIDs {
+		// we don't need to pass in a callback function when seeding the db
+		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
+		if _, err := db.GetInteraction(pm.PlayerID); err != nil {
+			if err == persistence.ErrPlayerNotFound {
+				return db.SaveInteraction(pm)
+			}
+			return err
+		}
+	}
+	return nil
 }

@@ -1,4 +1,4 @@
-package npc
+package interaction
 
 import (
 	"context"
@@ -6,8 +6,6 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
@@ -23,66 +21,48 @@ var npcs = map[model.PlayerID]npcLogic{
 	Calc:   &calcNPCLogic{},
 }
 
-var _ interaction.Player = (*npcPlayer)(nil)
+var _ Player = (*NPCPlayer)(nil)
 
-type npcPlayer struct {
+type NPCPlayer struct {
+	HandleActionCallback func(ctx context.Context, a model.PlayerAction) error
 	logic                npcLogic
 	id                   model.PlayerID
-	handleActionCallback func(ctx context.Context, a model.PlayerAction) error
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (interaction.Player, error) {
+func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (Player, error) {
 	l, ok := npcs[pID]
 	if !ok {
-		return &npcPlayer{}, errors.New(`not a valid npc mode`)
+		return &NPCPlayer{}, errors.New(`not a valid npc mode`)
 	}
-	return &npcPlayer{
+	return &NPCPlayer{
 		logic:                l,
 		id:                   pID,
-		handleActionCallback: cb,
+		HandleActionCallback: cb,
 	}, nil
 }
 
-func (npc *npcPlayer) ID() model.PlayerID {
+func (npc *NPCPlayer) ID() model.PlayerID {
 	return npc.id
 }
 
-func (npc *npcPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
+func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
 	a, err := npc.buildAction(b, g)
 	if err != nil {
 		return err
 	}
-	return npc.handleActionCallback(context.Background(), a)
+	return npc.HandleActionCallback(context.Background(), a)
 }
 
 // The NPC doesn't care about messages or score updates
-func (npc *npcPlayer) NotifyMessage(g model.Game, s string) error {
+func (npc *NPCPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
 }
-func (npc *npcPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
-	return nil
-}
-
-func SeedNPCs(db persistence.DB) error {
-	npcIDs := []model.PlayerID{Dumb, Simple, Calc}
-	for _, id := range npcIDs {
-		// we don't need to pass in a callback function when seeding the db
-		p, err := NewNPCPlayer(id, nil)
-		if err != nil {
-			return err
-		}
-		if _, err := db.GetInteraction(p.ID()); err != nil {
-			if err == persistence.ErrPlayerNotFound {
-				return db.SaveInteraction(p)
-			}
-			return err
-		}
-	}
+func (npc *NPCPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
 
-func (npc *npcPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
+func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
 	a := model.PlayerAction{
 		GameID:    g.ID,
 		ID:        npc.ID(),
