@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	Dumb   model.PlayerID = `dumbNPC`
-	Simple model.PlayerID = `simpleNPC`
-	Calc   model.PlayerID = `calculatedNPC`
+	Dumb   model.PlayerID = `DumbNPC`
+	Simple model.PlayerID = `SimpleNPC`
+	Calc   model.PlayerID = `CalculatedNPC`
 )
 
 var npcs = map[model.PlayerID]npcLogic{
