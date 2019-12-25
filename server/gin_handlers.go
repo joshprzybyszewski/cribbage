@@ -198,7 +198,7 @@ func handleGetUsernameGame(c *gin.Context) {
 
 		for _, c := range hand {
 			if _, ok := peggedCardMap[c]; !ok {
-				handStrs = append(handStrs, `--`)
+				handStrs = append(handStrs, ``)
 				continue
 			}
 			handStrs = append(handStrs, c.String())

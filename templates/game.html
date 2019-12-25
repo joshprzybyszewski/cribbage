@@ -8,6 +8,31 @@
     <title>Game with {{ range .playerNames }} {{ . }} {{ end }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
+    <style>
+        .card {
+            display: inline-block;
+            height: 5rem;
+            width: 4rem;
+            text-align: center;
+            vertical-align: center;
+            border: 2px solid black;
+        }
+        .cut {
+            background: blue;
+        }
+        .pegged {
+            background: yellow;
+        }
+        .opponent {
+            background: green;
+        }
+        .crib {
+            background: red;
+        }
+        /* .separator {
+            clear: both;
+        } */
+    </style>
 
   </head>
 
@@ -30,7 +55,7 @@
     {{ if .cutCard }}
     <h2>Cut card</h2>
     <div>
-        {{ .cutCard }}
+        <div class="card cut">{{ .cutCard }}</div>
     </div>
     {{ end }}
 
@@ -38,7 +63,7 @@
     <h2>Pegged Cards</h2>
     <div>
         {{ range .peggedCards }}
-        <button disabled>{{ . }} </button>
+        <div class="card pegged">{{ . }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -47,7 +72,7 @@
     <h2>Your hand</h2>
     <div>
         {{ range .myHand }}
-        <button {{ if .IsPegged }}disabled{{ end }}>{{ .Card }} </button>
+        <div class="card {{ if .IsPegged }}pegged{{ end }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -56,7 +81,7 @@
     <h2>{{ .Name }}'s hand</h2>
     <div>
         {{ range .Hand }}
-        <button disabled>{{ . }} </button>
+        <div class="card opponent" >{{ . }} </div>
         {{ end }}
     </div>
     {{ end }}{{ end }}
@@ -64,6 +89,10 @@
     {{ if .crib }}
     <h2>Crib</h2>
     <div>
-        {{ .crib }}
+        {{ range .crib}}
+        <div class="card crib" >{{ . }} </div>
+        {{ end }}
     </div>
     {{ end }}
+
+</body>

@@ -31,7 +31,7 @@
       // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
       let memoryBytes;
       let mod, inst, bytes;
-      println("initializing gowasm");
+      console.log("initializing gowasm");
       WebAssembly.instantiateStreaming(
         fetch("assets/wasm/wa_output.wasm", 
           {cache: 'no-cache'}), 
@@ -39,7 +39,7 @@
         mod = result.module;
         inst = result.instance;
         memoryBytes = new Uint8Array(inst.exports.mem.buffer)
-        println("initialized gowasm");
+        console.log("initialized gowasm");
         run();
       });
       async function run() {
