@@ -303,9 +303,27 @@ func TestPegAction(t *testing.T) {
 		g:     newGame(Calc, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
-		desc: `test go`,
+		desc: `test dumb go`,
 		npc:  Dumb,
 		g: newGame(Dumb, 2, []model.Card{
+			model.NewCardFromString(`10c`),
+			model.NewCardFromString(`10s`),
+			model.NewCardFromString(`10h`),
+		}),
+		expGo: true,
+	}, {
+		desc: `test simple go`,
+		npc:  Simple,
+		g: newGame(Simple, 2, []model.Card{
+			model.NewCardFromString(`10c`),
+			model.NewCardFromString(`10s`),
+			model.NewCardFromString(`10h`),
+		}),
+		expGo: true,
+	}, {
+		desc: `test calculated go`,
+		npc:  Calc,
+		g: newGame(Calc, 2, []model.Card{
 			model.NewCardFromString(`10c`),
 			model.NewCardFromString(`10s`),
 			model.NewCardFromString(`10h`),
