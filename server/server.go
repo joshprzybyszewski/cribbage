@@ -93,7 +93,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		return
 	}
 
-	g, err := cs.createGame(pIDs)
+	g, err := createGameFromIDs(pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "createGame error: %s", err)
 		return
@@ -147,7 +147,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 
 	info := c.Param(`info`)
-	err := cs.setInteraction(pID, interaction.Means{
+	err := setInteraction(pID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
@@ -193,7 +193,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = cs.handleAction(action)
+	err = handlePlayerAction(action)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error: %s", err)
 		return

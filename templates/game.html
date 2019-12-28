@@ -4,10 +4,9 @@
 <html>
 
   <head>
-    <!--Use the title variable to set the title of the page-->
+    <meta charset="UTF-8">
     <title>Game with {{ range .playerNames }} {{ . }} {{ end }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
     <style>
         .card {
             display: inline-block;
@@ -17,7 +16,10 @@
             vertical-align: center;
             border: 2px solid black;
         }
-        .cut {
+        .card.unknown {
+            background: black;  
+        }
+        /* .cut {
             background: blue;
         }
         .pegged {
@@ -28,9 +30,6 @@
         }
         .crib {
             background: red;
-        }
-        /* .separator {
-            clear: both;
         } */
     </style>
 
@@ -81,7 +80,7 @@
     <h2>{{ .Name }}'s hand</h2>
     <div>
         {{ range .Hand }}
-        <div class="card opponent" >{{ . }} </div>
+        <div class="card opponent {{ if .IsKnown}}unknown{{ end }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}{{ end }}
@@ -95,4 +94,26 @@
     </div>
     {{ end }}
 
+    <script src="/assets/js/wasm_exec.js"></script>
+    <script>
+        const go = new Go();
+        // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
+        let memoryBytes;
+        let mod, inst, bytes;
+        console.log("initializing gowasm");
+        WebAssembly.instantiateStreaming(
+          fetch("/assets/wasm/wa_output.wasm", 
+            {cache: 'no-cache'}), 
+            go.importObject).then((result) => {
+          mod = result.module;
+          inst = result.instance;
+          memoryBytes = new Uint8Array(inst.exports.mem.buffer)
+          console.log("initialized gowasm");
+          run();
+        });
+        async function run() {
+          await go.run(inst);
+        }
+      </script>
 </body>
+</html>

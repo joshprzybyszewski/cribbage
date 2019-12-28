@@ -15,10 +15,7 @@ func handleIndex(c *gin.Context) {
 	c.HTML(
 		http.StatusOK,
 		"index.html",
-		// Pass the data that the page uses (in this case, 'title')
-		gin.H{
-			"title": "Home Page",
-		},
+		gin.H{},
 	)
 }
 
@@ -164,7 +161,10 @@ func handleGetUsernameGame(c *gin.Context) {
 
 	oppHands := []struct {
 		Name string
-		Hand []string
+		Hand []struct {
+			Card    string
+			IsKnown bool
+		}
 	}{}
 
 	peggedCardMap := make(map[model.Card]struct{}, len(g.PeggedCards))
@@ -194,22 +194,34 @@ func handleGetUsernameGame(c *gin.Context) {
 		if pID == playerID {
 			continue
 		}
-		handStrs := make([]string, 0, len(hand))
+		hands := make([]struct {
+			Card    string
+			IsKnown bool
+		}, 0, len(hand))
 
 		for _, c := range hand {
-			if _, ok := peggedCardMap[c]; !ok {
-				handStrs = append(handStrs, ``)
-				continue
+			cStr := ``
+			if _, ok := peggedCardMap[c]; ok {
+				cStr = c.String()
 			}
-			handStrs = append(handStrs, c.String())
+			hands = append(hands, struct {
+				Card    string
+				IsKnown bool
+			}{
+				Card:    cStr,
+				IsKnown: true,
+			})
 		}
 
 		oppHands = append(oppHands, struct {
 			Name string
-			Hand []string
+			Hand []struct {
+				Card    string
+				IsKnown bool
+			}
 		}{
 			Name: nameMap[playerID],
-			Hand: handStrs,
+			Hand: hands,
 		})
 	}
 
@@ -237,4 +249,6 @@ func handleGetUsernameGame(c *gin.Context) {
 			"game":        g,
 		},
 	)
+
+	c.JSON(http.StatusOK, g)
 }

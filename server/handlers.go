@@ -26,7 +26,7 @@ func getPlayer(pID model.PlayerID) (model.Player, error) {
 	return GetPlayer(ctx, pID)
 }
 
-func (cs *cribbageServer) createGame(pIDs []model.PlayerID) (model.Game, error) {
+func createGameFromIDs(pIDs []model.PlayerID) (model.Game, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -50,7 +50,7 @@ func createPlayerFromNames(username, name string) (model.Player, error) {
 	return mp, nil
 }
 
-func (cs *cribbageServer) setInteraction(pID model.PlayerID, im interaction.Means) error {
+func setInteraction(pID model.PlayerID, im interaction.Means) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
@@ -59,7 +59,7 @@ func (cs *cribbageServer) setInteraction(pID model.PlayerID, im interaction.Mean
 	return saveInteraction(ctx, pm)
 }
 
-func (cs *cribbageServer) handleAction(action model.PlayerAction) error {
+func handlePlayerAction(action model.PlayerAction) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 

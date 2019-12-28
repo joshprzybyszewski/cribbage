@@ -6,14 +6,15 @@
   </head>
 
   <body>
+    <button id="something">here</button>
   <h1>Cribbage</h1>
 
   <h2>Create user</h2>
-  <form action="/user/" method="post">
+  <form action="/user/" method="get" id="createForm">
     <fieldset>
-      Username: <input type="text" name="username"><br>
-      Display name: <input type="text" name="displayName"><br>
-      <input type="submit" value="Submit" id="create-user-submit">
+      Username: <input type="text" name="username" id="createUN"><br>
+      Display name: <input type="text" id="createDN"><br>
+      <input type="submit" value="Submit" id="create-user-submit" disabled>
     </fieldset>
   </form>
 
@@ -25,7 +26,7 @@
     </fieldset>
   </form>
 
-    <script src="assets/js/wasm_exec.js"></script>
+  <script src="assets/js/wasm_exec.js"></script>
   <script>
       const go = new Go();
       // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
