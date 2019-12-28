@@ -28,6 +28,24 @@ func TestPegHighestCardNow(t *testing.T) {
 		curPeg:   0,
 		expGo:    false,
 		expCard:  model.NewCardFromString(`ah`),
+	}, {
+		desc: `test when no card can score`,
+		hand: []model.Card{
+			model.NewCardFromString(`ah`),
+			model.NewCardFromString(`2h`),
+			model.NewCardFromString(`3h`),
+			model.NewCardFromString(`4h`),
+		},
+		prevPegs: []model.PeggedCard{
+			{
+				Card:     model.NewCardFromString(`jc`),
+				Action:   0,
+				PlayerID: `otherGuy`,
+			},
+		},
+		curPeg:  10,
+		expGo:   false,
+		expCard: model.NewCardFromString(`ah`),
 	}}
 	for _, tc := range tests {
 		c, sayGo := PegHighestCardNow(tc.hand, tc.prevPegs, tc.curPeg)
