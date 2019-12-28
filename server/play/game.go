@@ -5,6 +5,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
 var (
@@ -13,7 +14,7 @@ var (
 	ErrGameAlreadyOver  error = errors.New(`game is already over`)
 )
 
-func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Player) (model.Game, error) {
+func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Player, db persistence.DB) (model.Game, error) {
 	playersCopy := make([]model.Player, len(players))
 	colorsByID := make(map[model.PlayerID]model.PlayerColor, len(players))
 	curScores := make(map[model.PlayerColor]int, len(players))
@@ -52,7 +53,14 @@ func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Pla
 		PeggedCards:     make([]model.PeggedCard, 0, 4*len(players)),
 	}
 
-	err := runStartHandlers(&g, pAPIs)
+	err := db.SaveGame(g)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	// TODO should we actually run start handlers upon game creation? This can lead to
+	// trying to get this game from the DB before it's saved to the DB
+	err = runStartHandlers(&g, pAPIs)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -98,7 +106,6 @@ func HandleAction(g *model.Game,
 	if g.IsOver() {
 		return ErrGameAlreadyOver
 	}
-
 	switch p := g.Phase; p {
 	case model.Deal,
 		model.BuildCrib,
