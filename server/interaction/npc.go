@@ -3,6 +3,8 @@ package interaction
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -47,11 +49,17 @@ func (npc *NPCPlayer) ID() model.PlayerID {
 }
 
 func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
+	fmt.Printf("Hey NPC, you're blocking for [%s]\n", s)
 	a, err := npc.buildAction(b, g)
 	if err != nil {
 		return err
 	}
-	return npc.HandleActionCallback(context.Background(), a)
+	go func() {
+		time.Sleep(time.Second * 1)
+		fmt.Printf("Handling NPC action: %+v\n", a)
+		npc.HandleActionCallback(context.Background(), a)
+	}()
+	return nil
 }
 
 // The NPC doesn't care about messages or score updates
@@ -59,7 +67,23 @@ func (npc *NPCPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
 }
 func (npc *NPCPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
+	fmt.Println(`NOTIFYING NPC OF SCORE UPDATE`)
 	return nil
+}
+
+func cardsLeftInHand(hand []model.Card, pc []model.PeggedCard) []model.Card {
+	peggedMap := make(map[model.Card]struct{}, len(pc))
+	cardsLeft := make([]model.Card, 0, len(hand))
+	for _, c := range pc {
+		peggedMap[c.Card] = struct{}{}
+	}
+	for _, c := range hand {
+		if _, ok := peggedMap[c]; ok {
+			continue
+		}
+		cardsLeft = append(cardsLeft, c)
+	}
+	return cardsLeft
 }
 
 func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
@@ -84,7 +108,8 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		a.Action = npc.logic.getPegAction(g.Hands[npc.ID()], g.PeggedCards, g.CurrentPeg())
+		cardsLeft := cardsLeftInHand(g.Hands[npc.ID()], g.PeggedCards)
+		a.Action = npc.logic.getPegAction(cardsLeft, g.PeggedCards, g.CurrentPeg())
 	case model.CountHand:
 		a.Action = model.CountHandAction{
 			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),

@@ -230,6 +230,57 @@ func TestCountCribAction(t *testing.T) {
 	}
 }
 
+func TestPegTwice(t *testing.T) {
+	tests := []struct {
+		desc  string
+		npc   model.PlayerID
+		g     model.Game
+		expGo bool
+	}{{
+		desc:  `test dumb npc`,
+		npc:   Dumb,
+		g:     newGame(Dumb, 2, make([]model.Card, 0)),
+		expGo: false,
+	}, {
+		desc:  `test simple npc`,
+		npc:   Simple,
+		g:     newGame(Simple, 2, make([]model.Card, 0)),
+		expGo: false,
+	}, {
+		desc:  `test calculated npc`,
+		npc:   Calc,
+		g:     newGame(Calc, 2, make([]model.Card, 0)),
+		expGo: false,
+	}}
+	for _, tc := range tests {
+		p := createPlayer(t, tc.npc)
+		a, err := p.buildAction(model.PegCard, tc.g)
+		assert.NoError(t, err)
+		assert.Equal(t, a.Overcomes, model.PegCard)
+
+		pa, ok := a.Action.(model.PegAction)
+		assert.True(t, ok)
+		if !pa.SayGo {
+			tc.g.PeggedCards = append(tc.g.PeggedCards, model.PeggedCard{
+				Card:     pa.Card,
+				PlayerID: a.ID,
+			})
+		}
+
+		a, err = p.buildAction(model.PegCard, tc.g)
+		assert.NoError(t, err)
+		assert.Equal(t, a.Overcomes, model.PegCard)
+
+		pa, ok = a.Action.(model.PegAction)
+		assert.True(t, ok)
+		c := model.PeggedCard{
+			Card:     pa.Card,
+			PlayerID: a.ID,
+		}
+		assert.NotContains(t, tc.g.PeggedCards, c)
+	}
+}
+
 func TestPegAction(t *testing.T) {
 	tests := []struct {
 		desc  string
