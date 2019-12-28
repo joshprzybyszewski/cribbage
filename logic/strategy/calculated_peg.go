@@ -6,15 +6,13 @@ import (
 )
 
 func PegHighestCardNow(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
-	if curPeg == 0 {
-		return hand[0], false
-	}
-
 	bestCard := model.Card{}
-	bestPoints := 0
+	bestPoints := -1
+	cardsOverMax := 0
 
 	for _, c := range hand {
 		if curPeg+c.PegValue() > 31 {
+			cardsOverMax++
 			continue
 		}
 
@@ -28,6 +26,8 @@ func PegHighestCardNow(hand []model.Card, prevPegs []model.PeggedCard, curPeg in
 			bestPoints = p
 		}
 	}
-
-	return bestCard, bestCard == model.Card{}
+	if cardsOverMax == len(hand) {
+		return model.Card{}, true
+	}
+	return bestCard, false
 }
