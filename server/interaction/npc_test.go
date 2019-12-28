@@ -1,6 +1,7 @@
 package interaction
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func createPlayer(t *testing.T, pID model.PlayerID) *NPCPlayer {
-	npc, err := NewNPCPlayer(pID, func(a model.PlayerAction) error {
+	npc, err := NewNPCPlayer(pID, func(ctx context.Context, a model.PlayerAction) error {
 		return nil
 	})
 	require.Nil(t, err)
@@ -63,13 +64,13 @@ func TestDealAction(t *testing.T) {
 		npc  model.PlayerID
 	}{{
 		desc: `test dumb npc`,
-		npc:  `dumbNPC`,
+		npc:  Dumb,
 	}, {
 		desc: `test simple npc`,
-		npc:  `simpleNPC`,
+		npc:  Simple,
 	}, {
 		desc: `test calculated npc`,
-		npc:  `calculatedNPC`,
+		npc:  Calc,
 	}}
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
@@ -90,13 +91,13 @@ func TestCutAction(t *testing.T) {
 		npc  model.PlayerID
 	}{{
 		desc: `test dumb npc`,
-		npc:  `dumbNPC`,
+		npc:  Dumb,
 	}, {
 		desc: `test simple npc`,
-		npc:  `simpleNPC`,
+		npc:  Simple,
 	}, {
 		desc: `test calculated npc`,
-		npc:  `calculatedNPC`,
+		npc:  Calc,
 	}}
 	for _, tc := range tests {
 		p := createPlayer(t, tc.npc)
@@ -237,23 +238,23 @@ func TestPegAction(t *testing.T) {
 		expGo bool
 	}{{
 		desc:  `test dumb npc`,
-		npc:   `dumbNPC`,
-		g:     newGame(`dumbNPC`, 2, make([]model.Card, 0)),
+		npc:   Dumb,
+		g:     newGame(Dumb, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc:  `test simple npc`,
-		npc:   `simpleNPC`,
-		g:     newGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		npc:   Simple,
+		g:     newGame(Simple, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc:  `test calculated npc`,
-		npc:   `calculatedNPC`,
-		g:     newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		npc:   Calc,
+		g:     newGame(Calc, 2, make([]model.Card, 0)),
 		expGo: false,
 	}, {
 		desc: `test go`,
-		npc:  `dumbNPC`,
-		g: newGame(`dumbNPC`, 2, []model.Card{
+		npc:  Dumb,
+		g: newGame(Dumb, 2, []model.Card{
 			model.NewCardFromString(`10c`),
 			model.NewCardFromString(`10s`),
 			model.NewCardFromString(`10h`),
@@ -288,45 +289,45 @@ func TestBuildCribAction(t *testing.T) {
 		expNCards int
 	}{{
 		desc:      `test dumb npc`,
-		npc:       `dumbNPC`,
+		npc:       Dumb,
 		isDealer:  false,
-		g:         newGame(`dumbNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(Dumb, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test simple npc, not dealer`,
-		npc:       `simpleNPC`,
+		npc:       Simple,
 		isDealer:  false,
-		g:         newGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(Simple, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test simple npc, dealer`,
-		npc:       `simpleNPC`,
+		npc:       Simple,
 		isDealer:  true,
-		g:         newGame(`simpleNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(Simple, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test calculated npc, not dealer`,
-		npc:       `calculatedNPC`,
+		npc:       Calc,
 		isDealer:  false,
-		g:         newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(Calc, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test calculated npc, dealer`,
-		npc:       `calculatedNPC`,
+		npc:       Calc,
 		isDealer:  true,
-		g:         newGame(`calculatedNPC`, 2, make([]model.Card, 0)),
+		g:         newGame(Calc, 2, make([]model.Card, 0)),
 		expNCards: 2,
 	}, {
 		desc:      `test 3 player game`,
-		npc:       `dumbNPC`,
+		npc:       Dumb,
 		isDealer:  false,
-		g:         newGame(`dumbNPC`, 3, make([]model.Card, 0)),
+		g:         newGame(Dumb, 3, make([]model.Card, 0)),
 		expNCards: 1,
 	}, {
 		desc:      `test 4 player game`,
-		npc:       `dumbNPC`,
+		npc:       Dumb,
 		isDealer:  false,
-		g:         newGame(`dumbNPC`, 4, make([]model.Card, 0)),
+		g:         newGame(Dumb, 4, make([]model.Card, 0)),
 		expNCards: 1,
 	}}
 	for _, tc := range tests {
@@ -363,7 +364,7 @@ func TestNotifyBlocking(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		cb := func(a model.PlayerAction) error {
+		cb := func(ctx context.Context, a model.PlayerAction) error {
 			da, ok := a.Action.(model.DealAction)
 			assert.True(t, ok)
 			assert.GreaterOrEqual(t, da.NumShuffles, 1)
@@ -392,7 +393,7 @@ func TestNotifyMessage(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
 			return nil
 		})
 		require.Nil(t, err)
@@ -416,7 +417,7 @@ func TestNotifyScoreUpdate(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
 			return nil
 		})
 		require.Nil(t, err)
@@ -453,7 +454,7 @@ func TestNewNPCPlayer(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(a model.PlayerAction) error {
+		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
 			return nil
 		})
 		n, ok := p.(*NPCPlayer)
