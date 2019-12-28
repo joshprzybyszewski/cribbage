@@ -20,7 +20,7 @@ func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (mod
 	var cards []model.Card
 	n := len(hand) - 4
 	switch npc {
-	case `simpleNPC`:
+	case Simple:
 		if isDealer {
 			strats := []getCribCards{
 				strategy.GiveCribFifteens,
@@ -34,7 +34,7 @@ func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (mod
 			}
 			cards = strats[rand.Int()%2](n, hand)
 		}
-	case `calculatedNPC`:
+	case Calc:
 		var err error
 		if isDealer {
 			strats := []getCribCardsWithErr{
