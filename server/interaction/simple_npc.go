@@ -15,6 +15,18 @@ func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) (mode
 }
 
 func (npc *simpleNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+	// try random strategies until we either have to say go or have a valid peg card
+	card, sayGo := randomPegStrategy(hand, prevPegs, curPeg)
+	for card.PegValue()+curPeg > 31 && !sayGo {
+		card, sayGo = randomPegStrategy(hand, prevPegs, curPeg)
+	}
+	return model.PegAction{
+		Card:  card,
+		SayGo: sayGo,
+	}
+}
+
+func randomPegStrategy(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (model.Card, bool) {
 	var card model.Card
 	var sayGo bool
 	switch rand.Int() % 4 {
@@ -27,8 +39,5 @@ func (npc *simpleNPCLogic) getPegAction(hand []model.Card, prevPegs []model.Pegg
 	default:
 		card, sayGo = strategy.PegToRun(hand, prevPegs, curPeg)
 	}
-	return model.PegAction{
-		Card:  card,
-		SayGo: sayGo,
-	}
+	return card, sayGo
 }
