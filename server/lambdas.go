@@ -64,15 +64,20 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 	}
 
 	// TODO CreateGame should not handle any actions before the game gets saved to the DB
-	mg, err := play.CreateGame(players, pAPIs, db)
+	mg, err := play.CreateGame(players, pAPIs)
 	if err != nil {
 		return model.Game{}, err
 	}
 
-	// err = db.SaveGame(mg)
-	// if err != nil {
-	// 	return model.Game{}, err
-	// }
+	err = play.StartGame(&mg, pAPIs)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	err = db.SaveGame(mg)
+	if err != nil {
+		return model.Game{}, err
+	}
 
 	for _, pID := range pIDs {
 		err = db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
