@@ -26,23 +26,26 @@
         .card.activated {
             border: 2px solid red;
         }
-        /* .cut {
-            background: blue;
+        #container {
+            margin: auto;
         }
-        .pegged {
-            background: yellow;
+        #summary {
+            width: fit-content;
+            float: left;
         }
-        .opponent {
-            background: green;
+        #interaction {
+            width: fit-content;
+            float: left;
+            border: 2px solid black;
+            text-align: right;
         }
-        .crib {
-            background: red;
-        } */
     </style>
 
   </head>
 
-  <body class="container">
+  <body>
+      <div id="container">
+      <div id="summary">
     <h1>Game</h1>
     <h4>Players: {{ range .playerNames }} {{ . }} {{ end }}</h4>
     <h4>Your color: {{ .myColor }} </h4>
@@ -100,6 +103,16 @@
         {{ end }}
     </div>
     {{ end }}
+</div>
+    <div id="interaction">
+        <button disabled>Deal</button><br>
+        <button disabled>Build crib</button><br>
+        Cut Percent: <input disabled type="number" name="cut percent" id="cut"><br>
+        <button disabled>Peg</button><br>
+        Hand Points: <input disabled type="number" name="hand points" id="handPts"><br>
+        Crib Points: <input disabled type="number" name="crib points" id="cribPts"><br>
+    </div>
+</div>
 
     <script src="/assets/js/wasm_exec.js"></script>
     <script>

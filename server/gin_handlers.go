@@ -249,6 +249,4 @@ func handleGetUsernameGame(c *gin.Context) {
 			"game":        g,
 		},
 	)
-
-	c.JSON(http.StatusOK, g)
 }
