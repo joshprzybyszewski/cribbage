@@ -7,9 +7,8 @@ import (
 	"net/url"
 	"syscall/js"
 
-	"honnef.co/go/js/dom/v2"
-
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/wasm/callbacks"
 )
 
 func main() {
@@ -80,28 +79,11 @@ func startGamePage() {
 	println(`startGamePage`)
 	var done chan struct{} = make(chan struct{}, 1)
 
-	// TODO populate game
+	// TODO populate game and myID
 	g := model.Game{}
+	var myID model.PlayerID
 
-	cardClickCB := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		fmt.Printf("this, args := %+v, %+v\n", this, args)
-		return nil
-	})
-
-	fmt.Printf("dom.GetWindow(): %+v\n", dom.GetWindow())
-	fmt.Printf("dom.GetWindow().Document(): %+v\n", dom.GetWindow().Document())
-	elems := dom.GetWindow().Document().GetElementsByClassName(".card")
-	fmt.Printf("elems: %+v\n", elems)
-
-	ret := js.Global().Get("document").
-		Call("getElementsByClassName", "card")
-	// Call("addEventListener", "change", cardClickCB)
-	fmt.Printf("ret: %+v\n", ret)
-
-	fmt.Printf("g: %+v\n", g)
+	callbacks.SetupGamePage(g, myID)
 
 	<-done
-
-	cardClickCB.Release()
-
 }

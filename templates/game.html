@@ -17,7 +17,14 @@
             border: 2px solid black;
         }
         .card.unknown {
+            /* TODO make this be the cool bicycle photo */
             background: black;  
+        }
+        .card.disabled {
+            background: gray;  
+        }
+        .card.activated {
+            border: 2px solid red;
         }
         /* .cut {
             background: blue;
@@ -54,7 +61,7 @@
     {{ if .cutCard }}
     <h2>Cut card</h2>
     <div>
-        <div class="card cut">{{ .cutCard }}</div>
+        <div class="card disabled">{{ .cutCard }}</div>
     </div>
     {{ end }}
 
@@ -62,7 +69,7 @@
     <h2>Pegged Cards</h2>
     <div>
         {{ range .peggedCards }}
-        <div class="card pegged">{{ . }} </div>
+        <div class="card disabled">{{ . }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -71,7 +78,7 @@
     <h2>Your hand</h2>
     <div>
         {{ range .myHand }}
-        <div class="card {{ if .IsPegged }}pegged{{ end }}" >{{ .Card }} </div>
+        <div class="card mine {{ if .IsPegged }}disabled{{ end }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -80,7 +87,7 @@
     <h2>{{ .Name }}'s hand</h2>
     <div>
         {{ range .Hand }}
-        <div class="card opponent {{ if .IsKnown}}unknown{{ end }}" >{{ .Card }} </div>
+        <div class="card {{ if .IsKnown}}unknown{{ end }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}{{ end }}
@@ -89,7 +96,7 @@
     <h2>Crib</h2>
     <div>
         {{ range .crib}}
-        <div class="card crib" >{{ . }} </div>
+        <div class="card disabled" >{{ . }} </div>
         {{ end }}
     </div>
     {{ end }}
