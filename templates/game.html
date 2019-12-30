@@ -81,7 +81,7 @@
     <h2>Your hand</h2>
     <div>
         {{ range .myHand }}
-        <div class="card mine {{ if .IsPegged }}disabled{{ end }}" >{{ .Card }} </div>
+        <div class="card mine {{ if .IsPegged }}disabled{{ end }}" id="{{ .Card }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -106,7 +106,7 @@
 </div>
     <div id="interaction">
         <button disabled>Deal</button><br>
-        <button disabled>Build crib</button><br>
+        <button disabled id="buildCribButton">Build crib</button><br>
         Cut Percent: <input disabled type="number" name="cut percent" id="cut"><br>
         <button disabled>Peg</button><br>
         Hand Points: <input disabled type="number" name="hand points" id="handPts"><br>

@@ -9,15 +9,14 @@ import (
 	"github.com/joshprzybyszewski/cribbage/wasm/consts"
 )
 
-// TODO call this when we've clicked a button to submit...
-func getCribAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
+func GetCribAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 	cards := make([]model.Card, 0, 2)
 
 	// get all of "my cards" that are activated
-	elems := dom.GetWindow().Document().QuerySelector(".card.mine." + consts.ActivatedCardClassName)
+	elems := dom.GetWindow().Document().QuerySelectorAll(".card.mine." + consts.ActivatedCardClassName)
 	for _, elem := range elems {
-		htmlElem := elem.(*dom.HTMLDivElement)
-		cards = append(cards, model.NewCardFromString(htmlElem.TextContent()))
+		div := elem.(*dom.HTMLDivElement)
+		cards = append(cards, model.NewCardFromString(div.ID()))
 	}
 
 	bca := model.BuildCribAction{
