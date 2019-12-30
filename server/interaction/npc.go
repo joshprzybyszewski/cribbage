@@ -3,7 +3,6 @@ package interaction
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
@@ -49,14 +48,13 @@ func (npc *NPCPlayer) ID() model.PlayerID {
 }
 
 func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	fmt.Printf("Hey NPC, you're blocking for [%s]\n", s)
 	a, err := npc.buildAction(b, g)
 	if err != nil {
 		return err
 	}
+	// TODO find a better way to solve this problem...
 	go func() {
 		time.Sleep(time.Second * 1)
-		fmt.Printf("Handling NPC action: %+v\n", a)
 		npc.HandleActionCallback(context.Background(), a)
 	}()
 	return nil
@@ -67,7 +65,6 @@ func (npc *NPCPlayer) NotifyMessage(g model.Game, s string) error {
 	return nil
 }
 func (npc *NPCPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
-	fmt.Println(`NOTIFYING NPC OF SCORE UPDATE`)
 	return nil
 }
 

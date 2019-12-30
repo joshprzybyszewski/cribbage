@@ -2,7 +2,6 @@ package play
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -146,7 +145,6 @@ func runStartHandlers(g *model.Game, pAPIs map[model.PlayerID]interaction.Player
 		if g.Phase > model.DealingReady {
 			g.Phase = model.Deal
 		}
-		fmt.Printf("GAME PHASE: %d\n", g.Phase)
 	}
 
 	return nil
