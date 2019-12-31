@@ -13,15 +13,25 @@
             height: 5rem;
             width: 4rem;
             text-align: center;
-            vertical-align: center;
+            /* vertical-align: center; */
             border: 2px solid black;
         }
         .card.unknown {
             /* TODO make this be the cool bicycle photo */
             background: black;  
         }
+        .card.cut {
+            background: gray;
+        }
+        .card.pegged {
+            opacity: 0.6;
+        }
+        .card.opponent:not(.unknown) {
+            /* known opponent cards should be gray */
+            background: gray;
+        }
         .card.disabled {
-            background: gray;  
+            background: lightgray;  
         }
         .card.activated {
             border: 2px solid red;
@@ -47,32 +57,30 @@
       <div id="container">
       <div id="summary">
     <h1>Game</h1>
-    <h4>Players: {{ range .playerNames }} {{ . }} {{ end }}</h4>
-    <h4>Your color: {{ .myColor }} </h4>
+    <h4>Players: <br>{{ range .playerNames }} - {{ . }}<br> {{ end }}</h4>
+    <div>Current dealer: {{ .currentDealer }} </div>
+    <div>Current phase: {{ .phase }} </div>
     <h2>Scores</h2>
     <div>
-        {{ range .scores }}
+    <div>You are: {{ .myColor }} </div><br>
+    {{ range .scores }}
         <a> {{ .Color }} :  {{ .Score }}</a><br>
         {{ end }}
-    </div>
-
-    <h2>Phase</h2>
-    <div>
-        {{ .phase }}
     </div>
 
     {{ if .cutCard }}
     <h2>Cut card</h2>
     <div>
-        <div class="card disabled">{{ .cutCard }}</div>
+        <div class="card cut">{{ .cutCard }}</div>
     </div>
     {{ end }}
 
     {{ if .peggedCards }}
     <h2>Pegged Cards</h2>
+    <h3>Current Peg: {{ .currentPeg }}</h3>
     <div>
         {{ range .peggedCards }}
-        <div class="card disabled">{{ . }} </div>
+        <div class="card pegged">{{ . }} </div>
         {{ end }}
     </div>
     {{ end }}
@@ -90,7 +98,7 @@
     <h2>{{ .Name }}'s hand</h2>
     <div>
         {{ range .Hand }}
-        <div class="card {{ if .IsKnown}}unknown{{ end }}" >{{ .Card }} </div>
+        <div class="card {{ if not .IsKnown}}unknown{{ end }} opponent" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}{{ end }}
@@ -99,19 +107,19 @@
     <h2>Crib</h2>
     <div>
         {{ range .crib}}
-        <div class="card disabled" >{{ . }} </div>
+        <div class="card {{ if not .IsKnown}}unknown{{ else if not $.myCrib }}opponent{{ end }}" >{{ .Card }} </div>
         {{ end }}
     </div>
     {{ end }}
 </div>
     <div id="interaction">
         <button id="refreshGame">Refresh</button><br>
-        <button disabled>Deal</button><br>
+        <button disabled id="dealButton">Deal</button><br>
         <button disabled id="buildCribButton">Build crib</button><br>
-        Cut Percent: <input disabled type="number" name="cut percent" id="cut"><br>
-        <button disabled>Peg</button><br>
-        Hand Points: <input disabled type="number" name="hand points" id="handPts"><br>
-        Crib Points: <input disabled type="number" name="crib points" id="cribPts"><br>
+        Cut Percent: <input disabled type="number" name="cut percent" id="cutInput"><br>
+        <button disabled id="pegButton">Peg</button><br>
+        Hand Points: <input disabled type="number" name="hand points" id="handPtsInput"><br>
+        Crib Points: <input disabled type="number" name="crib points" id="cribPtsInput"><br>
     </div>
 </div>
 
@@ -124,7 +132,8 @@
         console.log("initializing gowasm");
         WebAssembly.instantiateStreaming(
           fetch("/assets/wasm/wa_output.wasm", 
-            {cache: 'no-cache'}), 
+            // change default to 'no-cache' while deving to force getting it
+            {cache: 'default'}), 
             go.importObject).then((result) => {
           mod = result.module;
           inst = result.instance;

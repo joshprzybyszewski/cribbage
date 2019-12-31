@@ -81,6 +81,10 @@ func handleGetUsername(c *gin.Context) {
 	for gID, color := range p.Games {
 		g, err := getGame(gID)
 		if err != nil {
+			if err == persistence.ErrGameNotFound {
+				// the player knows about a game that's been deleted
+				continue
+			}
 			c.String(http.StatusInternalServerError, "Error getting game: %s", err)
 			return
 		}
@@ -194,6 +198,9 @@ func handleGetUsernameGame(c *gin.Context) {
 		if pID == playerID {
 			continue
 		}
+		if len(hand) == 0 {
+			continue
+		}
 		hands := make([]struct {
 			Card    string
 			IsKnown bool
@@ -201,15 +208,17 @@ func handleGetUsernameGame(c *gin.Context) {
 
 		for _, c := range hand {
 			cStr := ``
+			known := false
 			if _, ok := peggedCardMap[c]; ok {
 				cStr = c.String()
+				known = true
 			}
 			hands = append(hands, struct {
 				Card    string
 				IsKnown bool
 			}{
 				Card:    cStr,
-				IsKnown: true,
+				IsKnown: known,
 			})
 		}
 
@@ -225,28 +234,51 @@ func handleGetUsernameGame(c *gin.Context) {
 		})
 	}
 
-	cribHand := make([]string, 0, len(g.Crib))
-	if g.Phase >= model.CribCounting {
+	cribHand := make([]struct {
+		Card    string
+		IsKnown bool
+	}, 0, len(g.Crib))
+	if g.Phase >= model.BuildCribReady {
 		for _, c := range g.Crib {
-			cribHand = append(cribHand, c.String())
+			cStr := ``
+			known := false
+			if g.Phase >= model.CribCounting {
+				cStr = c.String()
+				known = true
+			}
+			cribHand = append(cribHand, struct {
+				Card    string
+				IsKnown bool
+			}{
+				Card:    cStr,
+				IsKnown: known,
+			})
 		}
+	}
+
+	currentDealerName := nameMap[g.CurrentDealer]
+	if g.CurrentDealer == pID {
+		currentDealerName = `You`
 	}
 
 	c.HTML(
 		http.StatusOK,
 		"game.html",
 		gin.H{
-			"myID":        string(pID),
-			"myColor":     g.PlayerColors[pID].String(),
-			"scores":      scores,
-			"myHand":      myHand,
-			"oppHands":    oppHands,
-			"peggedCards": peggedCards,
-			"crib":        cribHand,
-			"phase":       g.Phase.String(),
-			"cutCard":     cutCard,
-			"playerNames": playerNames,
-			"game":        g,
+			"myID":          string(pID),
+			"myColor":       g.PlayerColors[pID].String(),
+			"scores":        scores,
+			"currentDealer": currentDealerName,
+			"myHand":        myHand,
+			"oppHands":      oppHands,
+			"peggedCards":   peggedCards,
+			"currentPeg":    g.CurrentPeg(),
+			"crib":          cribHand,
+			"myCrib":        g.CurrentDealer == pID,
+			"phase":         g.Phase.String(),
+			"cutCard":       cutCard,
+			"playerNames":   playerNames,
+			"game":          g,
 		},
 	)
 }

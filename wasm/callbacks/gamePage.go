@@ -15,9 +15,7 @@ import (
 func SetupGamePage(g model.Game, myID model.PlayerID) []Releaser {
 	var r []Releaser
 
-	elem := dom.GetWindow().Document().GetElementByID("refreshGame")
-	button := elem.(*dom.HTMLButtonElement)
-	listener := button.AddEventListener(`click`, false, func(e dom.Event) {
+	listener := getClickHandlerForID(consts.RefreshButtonID, func(e dom.Event) {
 		e.PreventDefault()
 		// TODO this is terribly inefficient. We should have websockets on the game page
 		// so that we can get updates for just what we need. But since this is POC, let's
@@ -32,44 +30,105 @@ func SetupGamePage(g model.Game, myID model.PlayerID) []Releaser {
 		return r
 	}
 
-	switch g.Phase {
-	case model.BuildCrib:
-		enableBuildCribElems()
-		rels := addBuildCribCallbacks(g.ID, myID)
-		r = append(r, rels...)
-	}
+	enableElemsForPhase(g.Phase)
+	newRels := getListenersForPhase(g.ID, myID, g.Phase)
+	r = append(r, newRels...)
 
 	return r
 }
 
-func enableBuildCribElems() {
-	elem := dom.GetWindow().Document().GetElementByID("buildCribButton")
-	button := elem.(*dom.HTMLButtonElement)
-	button.SetDisabled(false)
+func enableElemsForPhase(phase model.Phase) {
+	ids := []string{}
+
+	switch phase {
+	case model.Deal:
+		ids = append(ids, consts.DealButtonID)
+	case model.BuildCrib:
+		ids = append(ids, consts.BuildCribButtonID)
+	case model.Cut:
+		ids = append(ids, consts.CutInputID)
+	case model.Pegging:
+		ids = append(ids, consts.PegButtonID)
+	case model.Counting:
+		ids = append(ids, consts.CountHandPtsInputID)
+	case model.CribCounting:
+		ids = append(ids, consts.CountCribPtsInputID)
+	}
+
+	for _, id := range ids {
+		elem := dom.GetWindow().Document().GetElementByID(id)
+		if button, ok := elem.(*dom.HTMLButtonElement); ok {
+			button.SetDisabled(false)
+		} else if input, ok := elem.(*dom.HTMLInputElement); ok {
+			input.SetDisabled(false)
+		} else {
+			fmt.Printf("could not enable desired id %s\n", id)
+		}
+	}
 }
 
-func addBuildCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+func getListenersForPhase(gID model.GameID, myID model.PlayerID, phase model.Phase) []Releaser {
+	var rels []Releaser
+
+	switch phase {
+	case model.Deal:
+		rels = getDealCallbacks(gID, myID)
+
+	case model.BuildCrib:
+		rels = getBuildCribCallbacks(gID, myID)
+
+	case model.Cut:
+		rels = getCutCallbacks(gID, myID)
+
+	case model.Pegging:
+		rels = getPegCallbacks(gID, myID)
+
+	case model.Counting:
+		rels = getCountHandCallbacks(gID, myID)
+
+	case model.CribCounting:
+		rels = getCountCribCallbacks(gID, myID)
+	}
+
+	return rels
+}
+
+func getDealCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	// add a callback to the deal button
+	listener := getClickHandlerForID(consts.DealButtonID, func(e dom.Event) {
+		e.PreventDefault()
+		pa := actions.GetDealAction(gID, pID)
+		sendAction(gID, pa)
+	})
+	r = append(r, listener)
+
+	return r
+}
+
+func getBuildCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
 	var r []Releaser
 
 	// add listeners to my cards to signal activated or not
 	elems := dom.GetWindow().Document().QuerySelectorAll(".card.mine")
-	for _, elem := range elems {
-		htmlElem := elem.(*dom.HTMLDivElement)
-		listener := htmlElem.AddEventListener(`click`, false, func(e dom.Event) {
+	for i := range elems {
+		// we need to assign here (not in the for-range)
+		// so that each callback has its own memory ref
+		elem := elems[i]
+		listener := elem.AddEventListener(`click`, false, func(e dom.Event) {
 			e.PreventDefault()
-			if htmlElem.Class().Contains(consts.ActivatedCardClassName) {
-				htmlElem.Class().Remove(consts.ActivatedCardClassName)
+			if elem.Class().Contains(consts.ActivatedCardClassName) {
+				elem.Class().Remove(consts.ActivatedCardClassName)
 			} else {
-				htmlElem.Class().Add(consts.ActivatedCardClassName)
+				elem.Class().Add(consts.ActivatedCardClassName)
 			}
 		})
 		r = append(r, listener)
 	}
 
 	// add a callback to the build crib button
-	elem := dom.GetWindow().Document().GetElementByID("buildCribButton")
-	button := elem.(*dom.HTMLButtonElement)
-	listener := button.AddEventListener(`click`, false, func(e dom.Event) {
+	listener := getClickHandlerForID(consts.BuildCribButtonID, func(e dom.Event) {
 		e.PreventDefault()
 		pa := actions.GetCribAction(gID, pID)
 		sendAction(gID, pa)
@@ -77,6 +136,94 @@ func addBuildCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
 	r = append(r, listener)
 
 	return r
+}
+
+func getCutCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	// add a callback to the cut button
+	listener := getEnterKeyHandlerForID(consts.CutInputID, func(e dom.Event) {
+		e.PreventDefault()
+		pa := actions.GetCutAction(gID, pID)
+		sendAction(gID, pa)
+	})
+	r = append(r, listener)
+
+	return r
+}
+
+func getPegCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	// add listeners to my cards to signal activated or not
+	elems := dom.GetWindow().Document().QuerySelectorAll(".card.mine:not(.disabled)")
+	for i := range elems {
+		// we need to assign here (not in the for-range)
+		// so that each callback has its own memory ref
+		elem := elems[i]
+		listener := elem.AddEventListener(`click`, false, func(e dom.Event) {
+			e.PreventDefault()
+			if elem.Class().Contains(consts.ActivatedCardClassName) {
+				elem.Class().Remove(consts.ActivatedCardClassName)
+			} else {
+				elem.Class().Add(consts.ActivatedCardClassName)
+			}
+		})
+		r = append(r, listener)
+	}
+
+	// add a callback to the cut button
+	listener := getClickHandlerForID(consts.PegButtonID, func(e dom.Event) {
+		e.PreventDefault()
+		pa := actions.GetPegAction(gID, pID)
+		sendAction(gID, pa)
+	})
+	r = append(r, listener)
+
+	return r
+}
+
+func getCountHandCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	// add a callback to the cut button
+	listener := getEnterKeyHandlerForID(consts.CountHandPtsInputID, func(e dom.Event) {
+		e.PreventDefault()
+		pa := actions.GetCountHandAction(gID, pID)
+		sendAction(gID, pa)
+	})
+	r = append(r, listener)
+
+	return r
+}
+
+func getCountCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	// add a callback to the cut button
+	listener := getEnterKeyHandlerForID(consts.CountCribPtsInputID, func(e dom.Event) {
+		e.PreventDefault()
+		pa := actions.GetCountCribAction(gID, pID)
+		sendAction(gID, pa)
+	})
+	r = append(r, listener)
+
+	return r
+}
+
+func getClickHandlerForID(id string, cb func(e dom.Event)) Releaser {
+	elem := dom.GetWindow().Document().GetElementByID(id)
+	return elem.AddEventListener(`click`, false, cb)
+}
+
+func getEnterKeyHandlerForID(id string, cb func(e dom.Event)) Releaser {
+	elem := dom.GetWindow().Document().GetElementByID(id)
+	return elem.AddEventListener(`keyup`, false, func(e dom.Event) {
+		ke, ok := e.(*dom.KeyboardEvent)
+		if ok && ke.Key() == `Enter` {
+			cb(e)
+		}
+	})
 }
 
 func sendAction(gID model.GameID, pa model.PlayerAction) {
