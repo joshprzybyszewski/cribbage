@@ -13,12 +13,24 @@ import (
 )
 
 func SetupGamePage(g model.Game, myID model.PlayerID) []Releaser {
+	var r []Releaser
+
+	elem := dom.GetWindow().Document().GetElementByID("refreshGame")
+	button := elem.(*dom.HTMLButtonElement)
+	listener := button.AddEventListener(`click`, false, func(e dom.Event) {
+		e.PreventDefault()
+		// TODO this is terribly inefficient. We should have websockets on the game page
+		// so that we can get updates for just what we need. But since this is POC, let's
+		// do something hacky
+		dom.GetWindow().Location().Call(`reload`, true)
+	})
+	r = append(r, listener)
+
 	if _, ok := g.BlockingPlayers[myID]; !ok {
 		// Nothing to do when I'm not blocking
-		return nil
+		// TODO this may not always be true
+		return r
 	}
-
-	var r []Releaser
 
 	switch g.Phase {
 	case model.BuildCrib:
@@ -60,10 +72,18 @@ func addBuildCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
 	listener := button.AddEventListener(`click`, false, func(e dom.Event) {
 		e.PreventDefault()
 		pa := actions.GetCribAction(gID, pID)
-		err := actions.Send(gID, pa)
-		fmt.Printf("got error sending action: %+v\n", err)
+		sendAction(gID, pa)
 	})
 	r = append(r, listener)
 
 	return r
+}
+
+func sendAction(gID model.GameID, pa model.PlayerAction) {
+	go func() {
+		err := actions.Send(gID, pa)
+		if err != nil {
+			fmt.Printf("got error sending action: %+v\n", err)
+		}
+	}()
 }

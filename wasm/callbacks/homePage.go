@@ -71,6 +71,7 @@ func getListenersForCreateUser() []Releaser {
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
 
+		// we might need to wrap this in a go func
 		respBytes, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
 		if err != nil {
 			fmt.Printf("Got error on MakeRequest: %v\n", err)

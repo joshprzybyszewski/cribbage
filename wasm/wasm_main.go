@@ -82,11 +82,16 @@ func parseOutGamePageIDs(path string) (model.GameID, model.PlayerID, error) {
 }
 
 func startGamePage(gID model.GameID, myID model.PlayerID) ([]callbacks.Releaser, error) {
+	println(`startGamePage`)
+
 	g, err := requestGame(gID)
 	if err != nil {
+		fmt.Printf("got error requesting game: %+v\n", err)
 		return nil, err
 	}
+
 	rels := callbacks.SetupGamePage(g, myID)
+
 	return rels, nil
 }
 
