@@ -9,3 +9,7 @@ vendor:
 .PHONY: golint
 golint:
 	golangci-lint run -v ./...
+
+.PHONY: gotest
+gotest:
+	go test ./...
