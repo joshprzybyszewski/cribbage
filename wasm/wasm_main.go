@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	fmt.Println("hello wasm")
+	println("hello wasm")
 
 	path := getCurrentURLPath()
 
@@ -39,13 +39,6 @@ func main() {
 	} else {
 		println(`unsupported page`)
 		return
-	}
-
-	elem := dom.GetWindow().Document().GetElementByID("kill")
-	if htmlElem, ok := elem.(*dom.HTMLDivElement); ok {
-		rels = append(rels, htmlElem.AddEventListener(`click`, false, func(e dom.Event) {
-			done <- struct{}{}
-		}))
 	}
 
 	<-done
@@ -86,7 +79,7 @@ func startGamePage(gID model.GameID, myID model.PlayerID) ([]callbacks.Releaser,
 
 	g, err := requestGame(gID)
 	if err != nil {
-		fmt.Printf("got error requesting game: %+v\n", err)
+		println("got error requesting game: " + err.Error())
 		return nil, err
 	}
 

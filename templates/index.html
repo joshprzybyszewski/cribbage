@@ -1,11 +1,12 @@
 <!--index.html-->
 <html>
-  <head>
-      <meta charset="utf-8">
-      <title>Cribbage Home Page</title>
-  </head>
 
-  <body>
+<head>
+  <meta charset="utf-8">
+  <title>Cribbage Home Page</title>
+</head>
+
+<body>
   <h1>Cribbage</h1>
 
   <h2>Create user</h2>
@@ -13,7 +14,7 @@
     <fieldset>
       Username: <input type="text" name="username" id="createUN"><br>
       Display name: <input type="text" id="createDN"><br>
-      <input type="submit" value="Submit" id="create-user-submit" disabled>
+      <button disabled id="createUserButton">Create</button>
     </fieldset>
   </form>
 
@@ -27,24 +28,26 @@
 
   <script src="assets/js/wasm_exec.js"></script>
   <script>
-      const go = new Go();
-      // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
-      let memoryBytes;
-      let mod, inst, bytes;
-      console.log("initializing gowasm");
-      WebAssembly.instantiateStreaming(
-        fetch("assets/wasm/wa_output.wasm", 
-          {cache: 'no-cache'}), 
-          go.importObject).then((result) => {
+    const go = new Go();
+    // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
+    let memoryBytes;
+    let mod, inst, bytes;
+    console.log("initializing gowasm");
+    WebAssembly.instantiateStreaming(
+      fetch("assets/wasm/wa_output.wasm",
+        // change default to 'no-cache' while deving to force getting it
+        { cache: 'no-cache' }),
+      go.importObject).then((result) => {
         mod = result.module;
         inst = result.instance;
         memoryBytes = new Uint8Array(inst.exports.mem.buffer)
         console.log("initialized gowasm");
         run();
       });
-      async function run() {
-        await go.run(inst);
-      }
-    </script>
+    async function run() {
+      await go.run(inst);
+    }
+  </script>
 </body>
+
 </html>

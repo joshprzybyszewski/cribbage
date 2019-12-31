@@ -4,7 +4,6 @@ package callbacks
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"honnef.co/go/js/dom/v2"
 
@@ -32,61 +31,44 @@ func addHomePageCallbacks() []Releaser {
 func getListenersForCreateUser() []Releaser {
 	var r []Releaser
 
-	elem := dom.GetWindow().Document().GetElementByID("create-user-submit")
-	submitButton := elem.(*dom.HTMLInputElement)
+	elem := dom.GetWindow().Document().GetElementByID(consts.CreateUserButtonID)
+	submitButton := elem.(*dom.HTMLButtonElement)
 
-	elem = dom.GetWindow().Document().GetElementByID("createUN")
+	elem = dom.GetWindow().Document().GetElementByID(consts.CreateUsernameInputID)
 	usernameInput := elem.(*dom.HTMLInputElement)
-	elem = dom.GetWindow().Document().GetElementByID("createDN")
+	elem = dom.GetWindow().Document().GetElementByID(consts.CreateDisplaynameInputID)
 	displayNameInput := elem.(*dom.HTMLInputElement)
 
 	recalcEnabled := func() {
 		oldDisabled := submitButton.Disabled()
-		newDisabled := usernameInput.Value() == `` || displayNameInput.Value() == ``
+		newDisabled := len(usernameInput.Value()) == 0 || len(displayNameInput.Value()) == 0
 		if newDisabled != oldDisabled {
 			submitButton.SetDisabled(newDisabled)
 		}
 	}
 
-	listener := usernameInput.AddEventListener(`change`, false, func(e dom.Event) {
+	cb := func(e dom.Event) {
 		recalcEnabled()
-	})
-	r = append(r, listener)
-	listener = usernameInput.AddEventListener(`input`, false, func(e dom.Event) {
-		recalcEnabled()
-	})
-	r = append(r, listener)
-	listener = displayNameInput.AddEventListener(`change`, false, func(e dom.Event) {
-		recalcEnabled()
-	})
-	r = append(r, listener)
-	listener = displayNameInput.AddEventListener(`input`, false, func(e dom.Event) {
-		recalcEnabled()
-	})
-	r = append(r, listener)
+	}
+	r = append(r, getChangeHandlerForID(consts.CreateUsernameInputID, cb))
+	r = append(r, getInputHandlerForID(consts.CreateUsernameInputID, cb))
+	r = append(r, getChangeHandlerForID(consts.CreateDisplaynameInputID, cb))
+	r = append(r, getInputHandlerForID(consts.CreateDisplaynameInputID, cb))
 
-	elem = dom.GetWindow().Document().GetElementByID("createForm")
-	form := elem.(*dom.HTMLFormElement)
-	listener = form.AddEventListener(`submit`, false, func(e dom.Event) {
+	listener := getClickHandlerForID(consts.CreateUserButtonID, func(e dom.Event) {
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
 
 		// we might need to wrap this in a go func
-		respBytes, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
-		if err != nil {
-			fmt.Printf("Got error on MakeRequest: %v\n", err)
-			return
+		go func() {
+			_, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
+			if err != nil {
+				println("Got error on MakeRequest: " + err.Error())
+				return
+			}
 		}
-
-		player := model.Player{}
-		err = json.Unmarshal(respBytes, &player)
-		if err != nil {
-			fmt.Printf("Got error on Unmarshal: %v\n", err)
-			return
-		}
-
-		fmt.Printf("Your player ID is: %v\n", player.ID)
 	})
+
 	r = append(r, listener)
 	return r
 }

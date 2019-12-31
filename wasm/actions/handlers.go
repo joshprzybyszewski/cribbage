@@ -3,8 +3,6 @@
 package actions
 
 import (
-	"fmt"
-
 	"honnef.co/go/js/dom/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -49,12 +47,10 @@ func GetCribAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 func GetCutAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 	elem := dom.GetWindow().Document().GetElementByID(consts.CutInputID)
 	input := elem.(*dom.HTMLInputElement)
-	val := input.ValueAsNumber()
-	fmt.Printf("val is: %+v\n", val)
-	perc := val
-	if val >= 1.0 && val <= 100.0 {
+	perc := input.ValueAsNumber()
+	if perc >= 1.0 && perc <= 100.0 {
 		// assume it's entered in hundredths
-		perc = val / 100.0
+		perc = perc / 100.0
 	}
 
 	cda := model.CutDeckAction{
@@ -97,16 +93,11 @@ func GetPegAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 func GetCountHandAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 	elem := dom.GetWindow().Document().GetElementByID(consts.CountHandPtsInputID)
 	input := elem.(*dom.HTMLInputElement)
-	val := input.ValueAsNumber()
-	pts := int(val)
+	pts := int(input.ValueAsNumber())
 
 	cha := model.CountHandAction{
 		Pts: pts,
 	}
-
-	fmt.Printf("val is: %T %+v\n", val, val)
-	fmt.Printf("pts is: %T %+v\n", pts, pts)
-	fmt.Printf("cha is: %T %+v\n", cha, cha)
 
 	return model.PlayerAction{
 		GameID:    gID,
@@ -119,9 +110,7 @@ func GetCountHandAction(gID model.GameID, pID model.PlayerID) model.PlayerAction
 func GetCountCribAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 	elem := dom.GetWindow().Document().GetElementByID(consts.CountCribPtsInputID)
 	input := elem.(*dom.HTMLInputElement)
-	val := input.ValueAsNumber()
-	fmt.Printf("val is: %+v\n", val)
-	pts := int(val)
+	pts := int(input.ValueAsNumber())
 
 	cca := model.CountCribAction{
 		Pts: pts,

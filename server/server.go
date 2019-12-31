@@ -35,7 +35,6 @@ func (cs *cribbageServer) Serve() {
 	user := router.Group("/user")
 	{
 		user.GET("/", handleGetUser)
-		user.POST("/", handlePostUser)
 		user.GET("/:username", handleGetUsername)
 		user.GET("/:username/game/:gameID", handleGetUsernameGame)
 	}

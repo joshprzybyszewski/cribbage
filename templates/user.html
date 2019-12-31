@@ -3,15 +3,14 @@
 <!doctype html>
 <html>
 
-  <head>
-    <!--Use the title variable to set the title of the page-->
+<head>
     <title>Your games</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="UTF-8">
 
-  </head>
+</head>
 
-  <body class="container">
+<body class="container">
     <h1>Hello {{ .displayName }}</h1>
     <h2>Games</h2>
     <table>
@@ -23,19 +22,20 @@
             <th>Green Score</th>
             <th>Go to game</th>
         </tr>
-    {{ range .games }}
-    <tr>
-        <td>{{ .Desc }}</td>
-        <td>{{ .MyColor }}</td>
-        <td>{{ .BlueScore }}</td>
-        <td>{{ .RedScore }}</td>
-        <td>{{ .GreenScore }}</td>
-        <td>
-            <button onclick="window.location.href = '/user/{{ $.myID }}/game/{{ .GameID }}';">
-                Go to game
-            </button>
-        </td>
-    </tr>
-    {{ end }}
+        {{ range .games }}
+        <tr>
+            <td>{{ .Desc }}</td>
+            <td>{{ .MyColor }}</td>
+            <td>{{ .BlueScore }}</td>
+            <td>{{ .RedScore }}</td>
+            <td>{{ .GreenScore }}</td>
+            <td>
+                <button onclick="window.location.href = '/user/{{ $.myID }}/game/{{ .GameID }}';">
+                    Go to game
+                </button>
+            </td>
+        </tr>
+        {{ end }}
     </table>
-    
+
+</body>

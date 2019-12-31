@@ -5,6 +5,7 @@ package actions
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,8 +27,6 @@ func Send(gID model.GameID, pa model.PlayerAction) error {
 	buf := bytes.NewBuffer(b)
 
 	url := fmt.Sprintf("/action/%d", gID)
-
-	fmt.Printf("url: %+v\n", url)
 
 	_, err = MakeRequest(`POST`, url, buf)
 	return err
@@ -52,10 +51,10 @@ func MakeRequest(method, apiURL string, data io.Reader) ([]byte, error) {
 	if response.StatusCode != http.StatusOK {
 		contentType := response.Header.Get("Content-Type")
 		if strings.Contains(contentType, `text/plain`) {
-			return nil, fmt.Errorf("bad response: \"%s\"", string(bytes))
+			return nil, errors.New(`bad response: "` + string(bytes) + `"`)
 		}
 
-		return nil, fmt.Errorf("bad response from server")
+		return nil, errors.New(`bad response from server`)
 	} else if err != nil {
 		return nil, err
 	}

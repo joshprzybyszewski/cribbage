@@ -3,8 +3,6 @@
 package callbacks
 
 import (
-	"fmt"
-
 	"honnef.co/go/js/dom/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -62,7 +60,7 @@ func enableElemsForPhase(phase model.Phase) {
 		} else if input, ok := elem.(*dom.HTMLInputElement); ok {
 			input.SetDisabled(false)
 		} else {
-			fmt.Printf("could not enable desired id %s\n", id)
+			println(`could not enable desired id: ` + id)
 		}
 	}
 }
@@ -211,26 +209,11 @@ func getCountCribCallbacks(gID model.GameID, pID model.PlayerID) []Releaser {
 	return r
 }
 
-func getClickHandlerForID(id string, cb func(e dom.Event)) Releaser {
-	elem := dom.GetWindow().Document().GetElementByID(id)
-	return elem.AddEventListener(`click`, false, cb)
-}
-
-func getEnterKeyHandlerForID(id string, cb func(e dom.Event)) Releaser {
-	elem := dom.GetWindow().Document().GetElementByID(id)
-	return elem.AddEventListener(`keyup`, false, func(e dom.Event) {
-		ke, ok := e.(*dom.KeyboardEvent)
-		if ok && ke.Key() == `Enter` {
-			cb(e)
-		}
-	})
-}
-
 func sendAction(gID model.GameID, pa model.PlayerAction) {
 	go func() {
 		err := actions.Send(gID, pa)
 		if err != nil {
-			fmt.Printf("got error sending action: %+v\n", err)
+			println("got error sending action:" + err.Error())
 		}
 	}()
 }
