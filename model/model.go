@@ -125,7 +125,7 @@ const (
 	DealingReady
 )
 
-func (p Phase) String() string {
+func (p Phase) String() string { //nolint:gocyclo
 	switch p {
 	case Deal:
 		return `Deal`

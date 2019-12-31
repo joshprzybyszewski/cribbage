@@ -159,13 +159,11 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
-	gIDStr := c.Param("gameID")
-	n, err := strconv.Atoi(gIDStr)
+	gID, err := getGameIDFromContext(c)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+		c.String(http.StatusBadRequest, "Invalid GameID: %v", err)
 		return
 	}
-	gID := model.GameID(n)
 	g, err := getGame(gID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
@@ -173,6 +171,15 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
 	c.JSON(http.StatusOK, g)
+}
+
+func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
+	gIDStr := c.Param("gameID")
+	n, err := strconv.Atoi(gIDStr)
+	if err != nil {
+		return model.InvalidGameID, err
+	}
+	return model.GameID(n), nil
 }
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {

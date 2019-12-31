@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -118,19 +117,20 @@ func handleGetUsername(c *gin.Context) {
 	)
 }
 
-func handleGetUsernameGame(c *gin.Context) {
+func handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
 	// serve up this game for this user
 	pID := model.PlayerID(c.Param("username"))
-	gIDStr := c.Param("gameID")
-	n, err := strconv.Atoi(gIDStr)
+	gID, err := getGameIDFromContext(c)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+		c.String(http.StatusBadRequest, "Invalid GameID: %v", err)
 		return
 	}
-	gID := model.GameID(n)
 
 	g, err := getGame(gID)
 	if err != nil {
+		if err == persistence.ErrGameNotFound {
+			c.String(http.StatusBadRequest, "Game (%v) does not exist", gID)
+		}
 		c.String(http.StatusInternalServerError, "Problem getting game: %s", err)
 		return
 	}
@@ -140,6 +140,11 @@ func handleGetUsernameGame(c *gin.Context) {
 	for _, p := range g.Players {
 		playerNames = append(playerNames, p.Name)
 		nameMap[p.ID] = p.Name
+	}
+
+	if _, ok := nameMap[pID]; !ok {
+		c.String(http.StatusBadRequest, "Player %v not in game %v", pID, gID)
+		return
 	}
 
 	scores := []struct {
@@ -238,6 +243,7 @@ func handleGetUsernameGame(c *gin.Context) {
 		Card    string
 		IsKnown bool
 	}, 0, len(g.Crib))
+
 	if g.Phase >= model.BuildCribReady {
 		for _, c := range g.Crib {
 			cStr := ``
