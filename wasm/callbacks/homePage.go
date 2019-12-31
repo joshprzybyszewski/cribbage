@@ -3,12 +3,10 @@
 package callbacks
 
 import (
-	"encoding/json"
-
 	"honnef.co/go/js/dom/v2"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
+	"github.com/joshprzybyszewski/cribbage/wasm/consts"
 )
 
 func SetupHomePage() []Releaser {
@@ -66,7 +64,7 @@ func getListenersForCreateUser() []Releaser {
 				println("Got error on MakeRequest: " + err.Error())
 				return
 			}
-		}
+		}()
 	})
 
 	r = append(r, listener)
