@@ -63,7 +63,6 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 		return model.Game{}, err
 	}
 
-	// TODO CreateGame should not handle any actions before the game gets saved to the DB
 	mg, err := play.CreateGame(players, pAPIs)
 	if err != nil {
 		return model.Game{}, err
