@@ -16,6 +16,10 @@ const (
 	Calc   model.PlayerID = `CalculatedNPC`
 )
 
+var (
+	ErrUnknownNPCType = errors.New(`unknown NPC type`)
+)
+
 var npcs = map[model.PlayerID]npc{
 	Dumb:   &dumbNPC{},
 	Simple: &simpleNPC{},
@@ -34,7 +38,7 @@ type NPCPlayer struct {
 func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (Player, error) {
 	p, ok := npcs[pID]
 	if !ok {
-		return &NPCPlayer{}, errors.New(`not a valid npc mode`)
+		return nil, ErrUnknownNPCType
 	}
 	return &NPCPlayer{
 		player:               p,
