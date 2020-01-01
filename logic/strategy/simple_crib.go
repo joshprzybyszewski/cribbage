@@ -5,50 +5,47 @@ import (
 )
 
 // AvoidCribFifteens tries to return a set of cards which does not add up to 15
-func AvoidCribFifteens(desired int, hand []model.Card) []model.Card {
+func AvoidCribFifteens(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() != 15
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // GiveCribFifteens tries to return a set of cards which adds up to 15
-func GiveCribFifteens(desired int, hand []model.Card) []model.Card {
+func GiveCribFifteens(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() == 15
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // AvoidCribPairs tries to return a set of cards which does not make a pair (unequal value)
-func AvoidCribPairs(desired int, hand []model.Card) []model.Card {
+func AvoidCribPairs(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value != c2.Value
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // GiveCribPairs tries to return a set of cards that makes a pair (equal value)
-func GiveCribPairs(desired int, hand []model.Card) []model.Card {
+func GiveCribPairs(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value == c2.Value
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 func determineCribCards(desired int, hand []model.Card, objectiveFunc func(c1, c2 model.Card) bool) []model.Card {
-	// Currently this function uses a very piecewise solution... but it passes the tests :)
-	cribCards := make([]model.Card, 0, desired)
 	if desired == 1 {
-		cribCards = append(cribCards, hand[0])
-		return cribCards
+		return []model.Card{hand[0]}
 	}
 	for i := 0; i < len(hand)-1; i++ {
 		c1 := hand[i]
 		otherCards := hand[i+1:]
 		for _, c2 := range otherCards {
 			if objectiveFunc(c1, c2) {
-				return append(cribCards, c1, c2)
+				return []model.Card{c1, c2}
 			}
 		}
 	}

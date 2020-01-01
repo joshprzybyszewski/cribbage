@@ -98,7 +98,6 @@ func HandleAction(g *model.Game,
 	if g.IsOver() {
 		return ErrGameAlreadyOver
 	}
-
 	switch p := g.Phase; p {
 	case model.Deal,
 		model.BuildCrib,

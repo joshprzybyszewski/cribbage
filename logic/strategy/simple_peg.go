@@ -40,6 +40,9 @@ func PegToPair(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) (_ mo
 	if mustSayGo(hand, curPeg) {
 		return model.Card{}, true
 	}
+	if len(prevPegs) == 0 {
+		return firstValidCard(hand, curPeg)
+	}
 	lastCard := prevPegs[len(prevPegs)-1]
 	for _, c := range hand {
 		if c.Value == lastCard.Value && curPeg+c.PegValue() <= 31 {
