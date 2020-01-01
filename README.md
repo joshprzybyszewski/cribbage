@@ -12,18 +12,16 @@ It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cri
 1. Go get this project
 
 ```bash
-go get github.com/joshprzybyszewski/cribbage
+go get -u github.com/joshprzybyszewski/cribbage
 ```
 
-2. Vendor the dependencies
+2. Install everything you need
 
 ```bash
-GO111MODULE=on go mod vendor
+make install
 ```
 
-3. Download mongodb from [here](https://www.mongodb.com/download-center/community) using [these instructions](https://docs.mongodb.com/manual/installation/). Make sure you have a mongodb server running.
-
-4. In one terminal, start the server
+3. In one terminal, start the server
 
 ```bash
 go run main.go
@@ -31,13 +29,16 @@ go run main.go
 
   - to start with an in-memory database, use `-db=memory`
 
-5. In a couple other terminals, start a couple clients:
+4. Start playing cribbage. 
+  - In a couple other terminals, start a couple clients:
 
 ```bash
 go run main.go -client
 ```
 
-6. From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey). Happy Playing!
+  - From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).
+  
+Happy Playing!
 
 ## Legacy Binary
 If you'd like to play the first version of our game, you can run the legacy player, which allows you to play dumb and calculated NPCs:
