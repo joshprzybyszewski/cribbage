@@ -3,6 +3,8 @@ package interaction
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -55,9 +57,16 @@ func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) er
 	if err != nil {
 		return err
 	}
-	// TODO find a better way to solve this problem...
 	go func() {
-		npc.HandleActionCallback(context.Background(), pa)
+		// This is an arbitrary amount of time to sleep. We just need to give
+		// the server a chance to increment the phase and get ready to handle
+		// our action
+		time.Sleep(time.Millisecond * 20)
+		err := npc.HandleActionCallback(context.Background(), pa)
+		// TODO do something better with the error...
+		if err != nil {
+			fmt.Printf("ope! %v\n", err)
+		}
 	}()
 	return nil
 }
