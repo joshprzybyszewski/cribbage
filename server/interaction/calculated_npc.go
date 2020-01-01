@@ -13,8 +13,8 @@ func (npc *calculatedNPC) getBuildCribAction(hand []model.Card, isDealer bool) (
 	return cribActionHelper(hand, Calc, isDealer)
 }
 
-func (npc *calculatedNPC) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
-	card, sayGo := strategy.PegHighestCardNow(hand, prevPegs, curPeg)
+func (npc *calculatedNPC) getPegAction(unpegged []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+	card, sayGo := strategy.PegHighestCardNow(unpegged, prevPegs, curPeg)
 	return model.PegAction{
 		Card:  card,
 		SayGo: sayGo,

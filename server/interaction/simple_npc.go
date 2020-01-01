@@ -14,11 +14,11 @@ func (npc *simpleNPC) getBuildCribAction(hand []model.Card, isDealer bool) (mode
 	return cribActionHelper(hand, Simple, isDealer)
 }
 
-func (npc *simpleNPC) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+func (npc *simpleNPC) getPegAction(unpegged []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
 	// try random strategies until we either have to say go or have a valid peg card
-	card, sayGo := randomPegStrategy(hand, prevPegs, curPeg)
+	card, sayGo := randomPegStrategy(unpegged, prevPegs, curPeg)
 	for card.PegValue()+curPeg > 31 && !sayGo {
-		card, sayGo = randomPegStrategy(hand, prevPegs, curPeg)
+		card, sayGo = randomPegStrategy(unpegged, prevPegs, curPeg)
 	}
 	return model.PegAction{
 		Card:  card,

@@ -7,8 +7,8 @@ import (
 )
 
 type npc interface {
-	getBuildCribAction([]model.Card, bool) (model.BuildCribAction, error)
-	getPegAction([]model.Card, []model.PeggedCard, int) model.PegAction
+	getBuildCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error)
+	getPegAction(unpegged []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction
 }
 
 type getCribCards func(desired int, hand []model.Card) ([]model.Card, error)
