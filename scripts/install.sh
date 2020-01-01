@@ -26,3 +26,7 @@ else
         echo "Did not find MongoDB running. Try 'mongo' to start it."
     fi
 fi
+
+# TODO consider these commands
+# npm install run-rs -g
+# run-rs -v 4.2.1 --shell

@@ -1,3 +1,4 @@
+//nolint:dupl
 package mongodb
 
 import (
@@ -20,12 +21,14 @@ const (
 var _ persistence.InteractionService = (*interactionService)(nil)
 
 type interactionService struct {
-	ctx context.Context
-	col *mongo.Collection
+	ctx     context.Context
+	session mongo.Session
+	col     *mongo.Collection
 }
 
 func getInteractionService(
 	ctx context.Context,
+	session mongo.Session,
 	mdb *mongo.Database,
 	r *bsoncodec.Registry,
 ) (persistence.InteractionService, error) {
@@ -47,8 +50,9 @@ func getInteractionService(
 	}
 
 	return &interactionService{
-		ctx: ctx,
-		col: col,
+		ctx:     ctx,
+		session: session,
+		col:     col,
 	}, nil
 }
 
@@ -68,11 +72,17 @@ func bsonInteractionFilter(id model.PlayerID) interface{} {
 func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {
 	result := interaction.PlayerMeans{}
 	filter := bsonInteractionFilter(id)
-	err := s.col.FindOne(s.ctx, filter).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return interaction.PlayerMeans{}, persistence.ErrInteractionNotFound
+	err := mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
+		err := s.col.FindOne(sc, filter).Decode(&result)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return persistence.ErrInteractionNotFound
+			}
+			return err
 		}
+		return nil
+	})
+	if err != nil {
 		return interaction.PlayerMeans{}, err
 	}
 
@@ -85,19 +95,31 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 		return err
 	}
 
-	_, err = s.col.InsertOne(s.ctx, pm)
-	return err
+	return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
+		_, err := s.col.InsertOne(sc, pm)
+		// TODO could check the returned result to see how we did
+
+		return err
+	})
 }
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 	if _, err := s.Get(pm.PlayerID); err == persistence.ErrInteractionNotFound {
-		_, err = s.col.InsertOne(s.ctx, pm)
-		return err
+		return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
+			_, err := s.col.InsertOne(sc, pm)
+			// TODO could check the returned result to see how we did
+
+			return err
+		})
 	}
 
 	opt := &options.ReplaceOptions{}
 	opt.SetUpsert(true)
 
-	_, err := s.col.ReplaceOne(s.ctx, pm, opt)
-	return err
+	return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
+		_, err := s.col.ReplaceOne(sc, pm, opt)
+		// TODO could check the returned result to see how we did
+
+		return err
+	})
 }

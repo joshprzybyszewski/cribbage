@@ -142,7 +142,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g1 := model.Game{
-		ID:              model.GameID(rand.Intn(1000)),
+		ID:              model.NewGameID(),
 		Players:         []model.Player{alice, bob},
 		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
 		CurrentDealer:   alice.ID,
@@ -384,4 +384,130 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	// splice out an action
 	g.Actions = append(g.Actions[:1], g.Actions[2:]...)
 	require.Error(t, db.SaveGame(g), `saving a game with a missing action is a :badtime:`)
+}
+
+func TestTransactionality(t *testing.T) {
+	inmem := memory.New()
+	dbs := map[string]func() persistence.DB{
+		`memory`: func() persistence.DB { return inmem },
+	}
+
+	if !testing.Short() {
+		dbs[`mongodb`] = func() persistence.DB {
+			// We assume you have mongodb stood up locally when running without -short
+			mongo, err := mongodb.New(context.Background(), ``)
+			require.NoError(t, err)
+			return mongo
+		}
+	}
+
+	txTests := map[string]txTest{
+		`player service`: playerTxTest,
+		`game service`:   gameTxTest,
+	}
+
+	for dbName, db := range dbs {
+		for testName, txTest := range txTests {
+			t.Run(dbName+`:`+testName, func(t1 *testing.T) { txTest(t1, db(), db(), db()) })
+		}
+	}
+}
+
+type txTest func(t *testing.T, db1, db2, postCommitDB persistence.DB)
+
+func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+	require.NoError(t, db1.Start())
+	require.NoError(t, db2.Start())
+
+	p1 := model.Player{
+		ID:    model.PlayerID(rand.String(50)),
+		Name:  `player 1`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NoError(t, db1.CreatePlayer(p1))
+	p1Mod := p1
+	p1Mod.Name = `different player 1 name`
+	assert.NoError(t, db2.CreatePlayer(p1Mod))
+
+	err := db1.CreatePlayer(p1)
+	assert.EqualError(t, err, persistence.ErrPlayerAlreadyExists.Error())
+
+	savedP1, err := db1.GetPlayer(p1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, p1, savedP1)
+
+	savedP1Mod, err := db2.GetPlayer(p1.ID)
+	require.NoError(t, err)
+	assert.NotEqual(t, p1, savedP1Mod)
+
+	assert.NoError(t, db1.Commit())
+	// the second connection tried to save a different player one, so committing should error
+	assert.Error(t, db2.Commit())
+	assert.NoError(t, db2.Rollback())
+
+	postCommitP1, err := postCommitDB.GetPlayer(p1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, p1, postCommitP1)
+	assert.NotEqual(t, p1Mod, postCommitP1)
+}
+
+func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+	require.NoError(t, db1.Start())
+	require.NoError(t, db2.Start())
+
+	alice, bob, _ := testutils.EmptyAliceAndBob()
+
+	g1 := model.Game{
+		ID:              model.NewGameID(),
+		Players:         []model.Player{alice, bob},
+		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
+		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		Phase:           model.Pegging,
+		Hands: map[model.PlayerID][]model.Card{
+			alice.ID: {
+				model.NewCardFromString(`7s`),
+				model.NewCardFromString(`8s`),
+				model.NewCardFromString(`10s`),
+				model.NewCardFromString(`js`),
+			},
+			bob.ID: {
+				model.NewCardFromString(`7c`),
+				model.NewCardFromString(`9c`),
+				model.NewCardFromString(`10c`),
+				model.NewCardFromString(`jc`),
+			},
+		},
+		CutCard: model.NewCardFromString(`KH`),
+		Crib: []model.Card{
+			model.NewCardFromString(`as`),
+			model.NewCardFromString(`ah`),
+			model.NewCardFromString(`ac`),
+			model.NewCardFromString(`ad`),
+		},
+		PeggedCards: make([]model.PeggedCard, 0, 8),
+	}
+	g1Copy := g1
+
+	require.NoError(t, db1.SaveGame(g1))
+
+	actGame, err := db1.GetGame(g1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, g1Copy, actGame)
+
+	actGame, err = db2.GetGame(g1.ID)
+	assert.Error(t, err)
+	assert.NotEqual(t, g1Copy, actGame)
+
+	assert.NoError(t, db1.Commit())
+	// the second connection tried to save a different player one, so committing should error
+	assert.Error(t, db2.Commit())
+	assert.NoError(t, db2.Rollback())
+
+	postCommitGame, err := postCommitDB.GetGame(g1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, g1Copy, postCommitGame)
 }

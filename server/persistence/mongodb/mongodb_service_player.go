@@ -1,3 +1,4 @@
+//nolint:dupl
 package mongodb
 
 import (
@@ -20,12 +21,14 @@ const (
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
-	ctx context.Context
-	col *mongo.Collection
+	ctx     context.Context
+	session mongo.Session
+	col     *mongo.Collection
 }
 
 func getPlayerService(
 	ctx context.Context,
+	session mongo.Session,
 	mdb *mongo.Database,
 	r *bsoncodec.Registry,
 ) (persistence.PlayerService, error) {
@@ -47,8 +50,9 @@ func getPlayerService(
 	}
 
 	return &playerService{
-		ctx: ctx,
-		col: col,
+		ctx:     ctx,
+		session: session,
+		col:     col,
 	}, nil
 }
 
@@ -67,7 +71,9 @@ func bsonPlayerIDFilter(id model.PlayerID) interface{} {
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	result := model.Player{}
 	filter := bsonPlayerIDFilter(id)
-	err := ps.col.FindOne(ps.ctx, filter).Decode(&result)
+	err := mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
+		return ps.col.FindOne(sc, filter).Decode(&result)
+	})
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -81,16 +87,25 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 func (ps *playerService) Create(p model.Player) error {
 	// check if the player already exists
 	filter := bsonPlayerIDFilter(p.ID)
-	c, err := ps.col.Find(ps.ctx, filter)
+	err := mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
+		c, err := ps.col.Find(sc, filter)
+		if err != nil {
+			return err
+		}
+		if c.Next(sc) {
+			return persistence.ErrPlayerAlreadyExists
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
-	if c.Next(ps.ctx) {
-		return persistence.ErrPlayerAlreadyExists
-	}
 
-	_, err = ps.col.InsertOne(ps.ctx, p)
-	return err
+	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
+		_, err := ps.col.InsertOne(sc, p)
+		// TODO could check the returned result to see how we did
+		return err
+	})
 }
 
 func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
@@ -117,6 +132,9 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 	filter := bsonPlayerIDFilter(pID)
 	opt := &options.FindOneAndReplaceOptions{}
 	opt.SetUpsert(true)
-	sr := ps.col.FindOneAndReplace(ps.ctx, filter, p)
-	return sr.Err()
+	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
+		sr := ps.col.FindOneAndReplace(sc, filter, p)
+		// TODO could check the returned result to see how we did
+		return sr.Err()
+	})
 }

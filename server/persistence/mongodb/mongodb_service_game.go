@@ -1,3 +1,4 @@
+//nolint:dupl
 package mongodb
 
 import (
@@ -44,12 +45,14 @@ type getGameOptions struct {
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
-	ctx context.Context
-	col *mongo.Collection
+	ctx     context.Context
+	session mongo.Session
+	col     *mongo.Collection
 }
 
 func getGameService(
 	ctx context.Context,
+	session mongo.Session,
 	mdb *mongo.Database,
 	r *bsoncodec.Registry,
 ) (persistence.GameService, error) {
@@ -71,8 +74,9 @@ func getGameService(
 	}
 
 	return &gameService{
-		ctx: ctx,
-		col: col,
+		ctx:     ctx,
+		session: session,
+		col:     col,
 	}, nil
 }
 
@@ -110,12 +114,19 @@ func (gs *gameService) getSingleGame(id model.GameID, opts getGameOptions) (mode
 func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) {
 	pgl := persistedGameList{}
 	filter := bsonGameIDFilter(id)
-	err := gs.col.FindOne(gs.ctx, filter).Decode(&pgl)
+
+	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		err := gs.col.FindOne(sc, filter).Decode(&pgl)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return persistence.ErrGameNotFound
+			}
+			return err
+		}
+		return nil
+	})
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, persistence.ErrGameNotFound
-		}
 		return nil, err
 	}
 
@@ -192,7 +203,11 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 func (gs *gameService) Save(g model.Game) error {
 	saved := gameList{}
 	filter := bsonGameIDFilter(g.ID)
-	err := gs.col.FindOne(gs.ctx, filter).Decode(&saved)
+
+	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		return gs.col.FindOne(sc, filter).Decode(&saved)
+	})
+
 	if err != nil {
 		// if this is the first time saving the game, then we get ErrNoDocuments
 		if err != mongo.ErrNoDocuments {
@@ -206,9 +221,13 @@ func (gs *gameService) Save(g model.Game) error {
 
 		saved.GameID = g.ID
 		saved.Games = []model.Game{g}
-		// we have to InsertOne the first time (compared to ReplaceOne)
-		_, err = gs.col.InsertOne(gs.ctx, saved)
-		return err
+
+		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+			_, err = gs.col.InsertOne(sc, saved)
+			// TODO could check the returned result to see how we did
+
+			return err
+		})
 	}
 
 	if saved.GameID != g.ID {
@@ -245,6 +264,10 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 
 func (gs *gameService) saveGameList(saved gameList) error {
 	filter := bsonGameIDFilter(saved.GameID)
-	_, err := gs.col.ReplaceOne(gs.ctx, filter, saved)
-	return err
+	return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		_, err := gs.col.ReplaceOne(sc, filter, saved)
+		// TODO could check the returned result to see how we did
+
+		return err
+	})
 }
