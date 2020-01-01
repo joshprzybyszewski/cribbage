@@ -1,7 +1,6 @@
 package interaction
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -11,10 +10,26 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
+var _ ActionHandler = (*mockActionHandler)(nil)
+
+type mockActionHandler struct {
+	handleActionFunc func(a model.PlayerAction) error
+}
+
+func (ah *mockActionHandler) Handle(pa model.PlayerAction) error {
+	return ah.handleActionFunc(pa)
+}
+
+func NewNilHandler() ActionHandler {
+	return &mockActionHandler{
+		handleActionFunc: func(a model.PlayerAction) error {
+			return nil
+		},
+	}
+}
+
 func createPlayer(t *testing.T, pID model.PlayerID) *NPCPlayer {
-	npc, err := NewNPCPlayer(pID, func(ctx context.Context, a model.PlayerAction) error {
-		return nil
-	})
+	npc, err := NewNPCPlayer(pID, NewNilHandler())
 	require.Nil(t, err)
 	p, ok := npc.(*NPCPlayer)
 	assert.True(t, ok)
@@ -433,14 +448,16 @@ func TestNotifyBlocking(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		cb := func(ctx context.Context, a model.PlayerAction) error {
-			da, ok := a.Action.(model.DealAction)
-			assert.True(t, ok)
-			assert.GreaterOrEqual(t, da.NumShuffles, 1)
-			assert.LessOrEqual(t, da.NumShuffles, 10)
-			return nil
+		ah := &mockActionHandler{
+			handleActionFunc: func(a model.PlayerAction) error {
+				da, ok := a.Action.(model.DealAction)
+				assert.True(t, ok)
+				assert.GreaterOrEqual(t, da.NumShuffles, 1)
+				assert.LessOrEqual(t, da.NumShuffles, 10)
+				return nil
+			},
 		}
-		p, err := NewNPCPlayer(tc.npc, cb)
+		p, err := NewNPCPlayer(tc.npc, ah)
 		require.Nil(t, err)
 		err = p.NotifyBlocking(model.DealCards, model.Game{}, ``)
 		assert.Nil(t, err)
@@ -462,9 +479,7 @@ func TestNotifyMessage(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
-			return nil
-		})
+		p, err := NewNPCPlayer(tc.npc, NewNilHandler())
 		require.Nil(t, err)
 		err = p.NotifyMessage(model.Game{}, ``)
 		assert.Nil(t, err)
@@ -486,9 +501,7 @@ func TestNotifyScoreUpdate(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
-			return nil
-		})
+		p, err := NewNPCPlayer(tc.npc, NewNilHandler())
 		require.Nil(t, err)
 		err = p.NotifyScoreUpdate(model.Game{}, ``)
 		assert.Nil(t, err)
@@ -523,9 +536,7 @@ func TestNewNPCPlayer(t *testing.T) {
 	}}
 
 	for _, tc := range tests {
-		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
-			return nil
-		})
+		p, err := NewNPCPlayer(tc.npc, NewNilHandler())
 		if tc.expErr {
 			assert.Error(t, err)
 			assert.Nil(t, p)
