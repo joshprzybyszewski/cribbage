@@ -1,7 +1,7 @@
 # cribbage
-This repo is a little free-time exercise that has turned into a little free-time project.
+This repo started as a challenge from a friend to calculate the distribution of all hands' points for every possible cribbage hand faster than his Matlab implementation. Spoilers: golang is faster than Matlab. Now it's a place to teach some friends how to code and a playground to mess with unfamiliar technologies in golang (like [mongodb](https://www.mongodb.com), [web assembly](https://webassembly.org/), and hopefully [aws lambdas](https://aws.amazon.com/lambda/) and more).
 
-It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cribbage/), and now it is evolving into an interactive game playing application.
+Cribbage has a ton of [seemingly made up rules](https://bicyclecards.com/how-to-play/cribbage/), and this project is my attempt to turn those into an interactive game for humans.
 
 [![codecov](https://codecov.io/gh/joshprzybyszewski/cribbage/branch/master/graph/badge.svg)](https://codecov.io/gh/joshprzybyszewski/cribbage)
 
