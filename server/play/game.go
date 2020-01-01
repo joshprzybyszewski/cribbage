@@ -54,16 +54,12 @@ func CreateGame(players []model.Player, pAPIs map[model.PlayerID]interaction.Pla
 
 	// TODO should we actually run start handlers upon game creation? This can lead to
 	// trying to get this game from the DB before it's saved to the DB
-	// err = runStartHandlers(&g, pAPIs)
-	// if err != nil {
-	// 	return model.Game{}, err
-	// }
+	err := runStartHandlers(&g, pAPIs)
+	if err != nil {
+		return model.Game{}, err
+	}
 
 	return g, nil
-}
-
-func StartGame(g *model.Game, pAPIs map[model.PlayerID]interaction.Player) error {
-	return runStartHandlers(g, pAPIs)
 }
 
 var (
