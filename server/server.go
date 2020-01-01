@@ -79,7 +79,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		return
 	}
 
-	g, err := cs.createGame(pIDs)
+	g, err := createGameFromIDs(pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "createGame error: %s", err)
 		return
@@ -101,7 +101,7 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	username := c.Param("username")
 	name := c.Param("name")
-	player, err := cs.createPlayer(username, name)
+	player, err := createPlayerFromNames(username, name)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -133,7 +133,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 
 	info := c.Param(`info`)
-	err := cs.setInteraction(pID, interaction.Means{
+	err := setInteraction(pID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
@@ -145,14 +145,12 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
-	gIDStr := c.Param("gameID")
-	n, err := strconv.Atoi(gIDStr)
+	gID, err := getGameIDFromContext(c)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid GameID: %s", gIDStr)
+		c.String(http.StatusBadRequest, "Invalid GameID: %v", err)
 		return
 	}
-	gID := model.GameID(n)
-	g, err := cs.getGame(gID)
+	g, err := getGame(gID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -161,9 +159,18 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	c.JSON(http.StatusOK, g)
 }
 
+func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
+	gIDStr := c.Param("gameID")
+	n, err := strconv.Atoi(gIDStr)
+	if err != nil {
+		return model.InvalidGameID, err
+	}
+	return model.GameID(n), nil
+}
+
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param("username"))
-	p, err := cs.getPlayer(pID)
+	p, err := getPlayer(pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -179,7 +186,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = cs.handleAction(action)
+	err = handlePlayerAction(action)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Error: %s", err)
 		return
