@@ -10,7 +10,7 @@ golint:
 gotest:
 	go test ./...
 
-.PHONy: install
+.PHONY: install
 install:
 	./scripts/install.sh
 	$(MAKE) vendor
