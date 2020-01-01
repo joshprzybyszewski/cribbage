@@ -11,5 +11,6 @@ gotest:
 	go test ./...
 
 .PHONy: install
-install: vendor
+install:
 	./scripts/install.sh
+	$(MAKE) vendor
