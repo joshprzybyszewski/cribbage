@@ -254,6 +254,8 @@ func TestHandleAction_Cut(t *testing.T) {
 	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `please peg a card`).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
 
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
