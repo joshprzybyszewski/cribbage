@@ -9,7 +9,7 @@ var _ npc = (*calculatedNPC)(nil)
 
 type calculatedNPC struct{}
 
-func (npc *calculatedNPC) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
+func (npc *calculatedNPC) getBuildCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
 	return cribActionHelper(hand, Calc, isDealer)
 }
 

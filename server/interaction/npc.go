@@ -91,27 +91,28 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 		ID:        npc.ID(),
 		Overcomes: b,
 	}
+	myHand := g.Hands[npc.ID()]
 	switch b {
 	case model.DealCards:
 		a.Action = model.DealAction{
 			NumShuffles: rand.Intn(10) + 1,
 		}
 	case model.CribCard:
-		act, err := npc.player.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
+		bca, err := npc.player.getBuildCribAction(myHand, g.CurrentDealer == npc.ID())
 		if err != nil {
 			return model.PlayerAction{}, err
 		}
-		a.Action = act
+		a.Action = bca
 	case model.CutCard:
 		a.Action = model.CutDeckAction{
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		cardsLeft := getUnpeggedCards(g.Hands[npc.ID()], g.PeggedCards)
+		cardsLeft := getUnpeggedCards(myHand, g.PeggedCards)
 		a.Action = npc.player.getPegAction(cardsLeft, g.PeggedCards, g.CurrentPeg())
 	case model.CountHand:
 		a.Action = model.CountHandAction{
-			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),
+			Pts: scorer.HandPoints(g.CutCard, myHand),
 		}
 	case model.CountCrib:
 		a.Action = model.CountCribAction{

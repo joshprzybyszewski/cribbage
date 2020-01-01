@@ -8,7 +8,7 @@ var _ npc = (*dumbNPC)(nil)
 
 type dumbNPC struct{}
 
-func (npc *dumbNPC) getCribAction(hand []model.Card, _ bool) (model.BuildCribAction, error) {
+func (npc *dumbNPC) getBuildCribAction(hand []model.Card, _ bool) (model.BuildCribAction, error) {
 	n := len(hand) - 4
 	return model.BuildCribAction{
 		Cards: hand[0:n],
