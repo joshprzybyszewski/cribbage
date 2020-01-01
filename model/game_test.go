@@ -434,9 +434,70 @@ func TestCurrentPeg(t *testing.T) {
 			}},
 		},
 		expPeg: 0,
+	}, {
+		msg: `one pegged card, but after the pegging phase`,
+		game: model.Game{
+			Phase: model.Counting,
+			PeggedCards: []model.PeggedCard{
+				model.NewPeggedCardFromString(alice.ID, `4c`, 0),
+			},
+			Actions: []model.PlayerAction{{
+				ID:        alice.ID,
+				Overcomes: model.PegCard,
+				Action:    model.PegAction{Card: model.NewCardFromString(`4c`)},
+			}},
+		},
+		expPeg: 0,
 	}}
 
 	for _, tc := range testCases {
 		assert.Equal(t, tc.expPeg, tc.game.CurrentPeg(), tc.msg)
+	}
+}
+
+func TestPhaseString(t *testing.T) {
+	testCases := []struct {
+		input model.Phase
+		exp   string
+	}{{
+		input: model.Deal,
+		exp:   `Deal`,
+	}, {
+		input: model.BuildCribReady,
+		exp:   `BuildCribReady`,
+	}, {
+		input: model.BuildCrib,
+		exp:   `BuildCrib`,
+	}, {
+		input: model.CutReady,
+		exp:   `CutReady`,
+	}, {
+		input: model.Cut,
+		exp:   `Cut`,
+	}, {
+		input: model.PeggingReady,
+		exp:   `PeggingReady`,
+	}, {
+		input: model.Pegging,
+		exp:   `Pegging`,
+	}, {
+		input: model.CountingReady,
+		exp:   `CountingReady`,
+	}, {
+		input: model.Counting,
+		exp:   `Counting`,
+	}, {
+		input: model.CribCountingReady,
+		exp:   `CribCountingReady`,
+	}, {
+		input: model.CribCounting,
+		exp:   `CribCounting`,
+	}, {
+		input: model.DealingReady,
+		exp:   `DealingReady`,
+	}}
+
+	for _, tc := range testCases {
+		assert.Equal(t, tc.exp, tc.input.String())
 	}
 }
