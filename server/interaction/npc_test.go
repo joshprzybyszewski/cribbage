@@ -496,30 +496,30 @@ func TestNotifyScoreUpdate(t *testing.T) {
 }
 func TestNewNPCPlayer(t *testing.T) {
 	tests := []struct {
-		desc     string
-		npc      model.PlayerID
-		expErr   bool
-		expLogic interface{}
+		desc      string
+		npc       model.PlayerID
+		expErr    bool
+		expPlayer interface{}
 	}{{
-		desc:     `test dumb NPC`,
-		npc:      Dumb,
-		expErr:   false,
-		expLogic: &dumbNPCLogic{},
+		desc:      `test dumb NPC`,
+		npc:       Dumb,
+		expErr:    false,
+		expPlayer: &dumbNPC{},
 	}, {
-		desc:     `test simple NPC`,
-		npc:      Simple,
-		expErr:   false,
-		expLogic: &simpleNPCLogic{},
+		desc:      `test simple NPC`,
+		npc:       Simple,
+		expErr:    false,
+		expPlayer: &simpleNPC{},
 	}, {
-		desc:     `test calculated NPC`,
-		npc:      Calc,
-		expErr:   false,
-		expLogic: &calcNPCLogic{},
+		desc:      `test calculated NPC`,
+		npc:       Calc,
+		expErr:    false,
+		expPlayer: &calculatedNPC{},
 	}, {
-		desc:     `test unsupported type`,
-		npc:      `unsupported`,
-		expErr:   true,
-		expLogic: nil,
+		desc:      `test unsupported type`,
+		npc:       `unsupported`,
+		expErr:    true,
+		expPlayer: nil,
 	}}
 
 	for _, tc := range tests {
@@ -533,7 +533,7 @@ func TestNewNPCPlayer(t *testing.T) {
 			assert.Equal(t, &NPCPlayer{}, p)
 		} else {
 			assert.Nil(t, err)
-			assert.Equal(t, tc.expLogic, n.logic)
+			assert.Equal(t, tc.expPlayer, n.player)
 		}
 	}
 }

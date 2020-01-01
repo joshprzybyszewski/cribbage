@@ -16,28 +16,28 @@ const (
 	Calc   model.PlayerID = `CalculatedNPC`
 )
 
-var npcs = map[model.PlayerID]npcLogic{
-	Dumb:   &dumbNPCLogic{},
-	Simple: &simpleNPCLogic{},
-	Calc:   &calcNPCLogic{},
+var npcs = map[model.PlayerID]npc{
+	Dumb:   &dumbNPC{},
+	Simple: &simpleNPC{},
+	Calc:   &calculatedNPC{},
 }
 
 var _ Player = (*NPCPlayer)(nil)
 
 type NPCPlayer struct {
 	HandleActionCallback func(ctx context.Context, a model.PlayerAction) error
-	logic                npcLogic
+	player               npc
 	id                   model.PlayerID
 }
 
 // NewNPCPlayer creates a new NPC with specified type
 func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (Player, error) {
-	l, ok := npcs[pID]
+	p, ok := npcs[pID]
 	if !ok {
 		return &NPCPlayer{}, errors.New(`not a valid npc mode`)
 	}
 	return &NPCPlayer{
-		logic:                l,
+		player:               p,
 		id:                   pID,
 		HandleActionCallback: cb,
 	}, nil
@@ -95,7 +95,7 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 			NumShuffles: rand.Intn(10) + 1,
 		}
 	case model.CribCard:
-		act, err := npc.logic.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
+		act, err := npc.player.getCribAction(g.Hands[npc.ID()], g.CurrentDealer == npc.ID())
 		if err != nil {
 			return model.PlayerAction{}, err
 		}
@@ -106,7 +106,7 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 		}
 	case model.PegCard:
 		cardsLeft := cardsLeftInHand(g.Hands[npc.ID()], g.PeggedCards)
-		a.Action = npc.logic.getPegAction(cardsLeft, g.PeggedCards, g.CurrentPeg())
+		a.Action = npc.player.getPegAction(cardsLeft, g.PeggedCards, g.CurrentPeg())
 	case model.CountHand:
 		a.Action = model.CountHandAction{
 			Pts: scorer.HandPoints(g.CutCard, g.Hands[npc.ID()]),

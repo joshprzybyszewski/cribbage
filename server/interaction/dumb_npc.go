@@ -6,18 +6,18 @@ import (
 
 const maxPeggingValue = 31
 
-var _ npcLogic = (*dumbNPCLogic)(nil)
+var _ npc = (*dumbNPC)(nil)
 
-type dumbNPCLogic struct{}
+type dumbNPC struct{}
 
-func (npc *dumbNPCLogic) getCribAction(hand []model.Card, _ bool) (model.BuildCribAction, error) {
+func (npc *dumbNPC) getCribAction(hand []model.Card, _ bool) (model.BuildCribAction, error) {
 	n := len(hand) - 4
 	return model.BuildCribAction{
 		Cards: hand[0:n],
 	}, nil
 }
 
-func (npc *dumbNPCLogic) getPegAction(hand []model.Card, _ []model.PeggedCard, curPeg int) model.PegAction {
+func (npc *dumbNPC) getPegAction(hand []model.Card, _ []model.PeggedCard, curPeg int) model.PegAction {
 	maxVal := maxPeggingValue - curPeg
 	for _, c := range hand {
 		if c.PegValue() > maxVal {

@@ -6,7 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-type npcLogic interface {
+type npc interface {
 	getCribAction([]model.Card, bool) (model.BuildCribAction, error)
 	getPegAction([]model.Card, []model.PeggedCard, int) model.PegAction
 }

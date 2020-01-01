@@ -6,15 +6,15 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
-var _ npcLogic = (*simpleNPCLogic)(nil)
+var _ npc = (*simpleNPC)(nil)
 
-type simpleNPCLogic struct{}
+type simpleNPC struct{}
 
-func (npc *simpleNPCLogic) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
+func (npc *simpleNPC) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
 	return cribActionHelper(hand, Simple, isDealer)
 }
 
-func (npc *simpleNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+func (npc *simpleNPC) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
 	// try random strategies until we either have to say go or have a valid peg card
 	card, sayGo := randomPegStrategy(hand, prevPegs, curPeg)
 	for card.PegValue()+curPeg > 31 && !sayGo {

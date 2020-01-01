@@ -5,15 +5,15 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-var _ npcLogic = (*calcNPCLogic)(nil)
+var _ npc = (*calculatedNPC)(nil)
 
-type calcNPCLogic struct{}
+type calculatedNPC struct{}
 
-func (npc *calcNPCLogic) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
+func (npc *calculatedNPC) getCribAction(hand []model.Card, isDealer bool) (model.BuildCribAction, error) {
 	return cribActionHelper(hand, Calc, isDealer)
 }
 
-func (npc *calcNPCLogic) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
+func (npc *calculatedNPC) getPegAction(hand []model.Card, prevPegs []model.PeggedCard, curPeg int) model.PegAction {
 	card, sayGo := strategy.PegHighestCardNow(hand, prevPegs, curPeg)
 	return model.PegAction{
 		Card:  card,
