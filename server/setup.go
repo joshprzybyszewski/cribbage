@@ -23,12 +23,7 @@ func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
 	cs := cribbageServer{}
-	ctx := context.Background()
-	db, err := getDB(ctx)
-	if err != nil {
-		return err
-	}
-	err = seedNPCs(db)
+	err := seedNPCs()
 	if err != nil {
 		return err
 	}
@@ -48,7 +43,13 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 	return nil, errors.New(`database type not supported`)
 }
 
-func seedNPCs(db persistence.DB) error {
+func seedNPCs() error {
+	ctx := context.Background()
+	db, err := getDB(ctx)
+	if err != nil {
+		return err
+	}
+
 	npcIDs := []model.PlayerID{interaction.Dumb, interaction.Simple, interaction.Calc}
 	for _, id := range npcIDs {
 		p := model.Player{
