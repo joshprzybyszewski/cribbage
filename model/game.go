@@ -44,6 +44,9 @@ func (g *Game) CurrentPeg() int {
 	if len(g.PeggedCards) == 0 {
 		return 0
 	}
+	if g.Phase > Pegging {
+		return 0
+	}
 	if g.goesAround() {
 		return 0
 	}
