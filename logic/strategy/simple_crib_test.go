@@ -50,7 +50,8 @@ func TestAvoidCribFifteens(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := AvoidCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
+		actHand, err := AvoidCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
+		assert.NoError(t, err)
 		sum := 0
 		for _, c := range actHand {
 			sum += c.PegValue()
@@ -123,7 +124,8 @@ func TestGiveCribFifteens(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := GiveCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
+		actHand, err := GiveCribFifteens(tc.inputDesired, strToCards(tc.inputHand))
+		assert.NoError(t, err)
 		sum := 0
 		for _, c := range actHand {
 			sum += c.PegValue()
@@ -169,7 +171,8 @@ func TestAvoidCribPairs(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := AvoidCribPairs(2, strToCards(tc.inputHand))
+		actHand, err := AvoidCribPairs(2, strToCards(tc.inputHand))
+		assert.NoError(t, err)
 		for _, c := range actHand {
 			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
@@ -180,7 +183,8 @@ func TestAvoidCribPairs(t *testing.T) {
 		}
 	}
 
-	actHand := AvoidCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	actHand, err := AvoidCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	assert.NoError(t, err)
 	assert.Len(t, actHand, 1)
 }
 
@@ -224,7 +228,8 @@ func TestGiveCribPairs(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		actHand := GiveCribPairs(2, strToCards(tc.inputHand))
+		actHand, err := GiveCribPairs(2, strToCards(tc.inputHand))
+		assert.NoError(t, err)
 		for _, c := range actHand {
 			assert.True(t, containsCard(tc.inputHand, c), tc.msg+`: unexpected card `+c.String())
 		}
@@ -235,6 +240,7 @@ func TestGiveCribPairs(t *testing.T) {
 		}
 	}
 
-	actHand := GiveCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	actHand, err := GiveCribPairs(1, strToCards([]string{`7s`, `8c`, `9d`, `10h`, `Js`, `Qc`}))
+	assert.NoError(t, err)
 	assert.Len(t, actHand, 1)
 }
