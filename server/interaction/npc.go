@@ -51,13 +51,13 @@ func (npc *NPCPlayer) ID() model.PlayerID {
 }
 
 func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) error {
-	a, err := npc.buildAction(b, g)
+	pa, err := npc.buildAction(b, g)
 	if err != nil {
 		return err
 	}
 	// TODO find a better way to solve this problem...
 	go func() {
-		npc.HandleActionCallback(context.Background(), a)
+		npc.HandleActionCallback(context.Background(), pa)
 	}()
 	return nil
 }
