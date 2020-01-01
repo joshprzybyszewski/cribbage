@@ -526,13 +526,13 @@ func TestNewNPCPlayer(t *testing.T) {
 		p, err := NewNPCPlayer(tc.npc, func(ctx context.Context, a model.PlayerAction) error {
 			return nil
 		})
-		n, ok := p.(*NPCPlayer)
-		assert.True(t, ok)
 		if tc.expErr {
-			assert.NotNil(t, err)
-			assert.Equal(t, &NPCPlayer{}, p)
+			assert.Error(t, err)
+			assert.Nil(t, p)
 		} else {
-			assert.Nil(t, err)
+			n, ok := p.(*NPCPlayer)
+			assert.True(t, ok)
+			assert.NoError(t, err)
 			assert.Equal(t, tc.expPlayer, n.player)
 		}
 	}
