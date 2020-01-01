@@ -9,21 +9,6 @@ import (
 )
 
 var iservice *interactionService
-
-func saveInteractionService(newIS *interactionService) error {
-	iservice.lock.Lock()
-	defer iservice.lock.Unlock()
-
-	newIS.lock.Lock()
-	defer newIS.lock.Unlock()
-
-	for pid, pm := range newIS.interactions {
-		iservice.interactions[pid] = pm
-	}
-
-	return nil
-}
-
 var _ persistence.InteractionService = (*interactionService)(nil)
 
 type interactionService struct {
@@ -39,21 +24,6 @@ func getInteractionService() persistence.InteractionService {
 		}
 	}
 	return iservice
-}
-
-func (is *interactionService) Copy() *interactionService {
-	is.lock.Lock()
-	defer is.lock.Unlock()
-
-	cpy := make(map[model.PlayerID]interaction.PlayerMeans, len(is.interactions))
-	for id, player := range is.interactions {
-		pCpy := player
-		cpy[id] = pCpy
-	}
-
-	return &interactionService{
-		interactions: cpy,
-	}
 }
 
 func (is *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {

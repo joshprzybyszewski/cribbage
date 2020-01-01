@@ -94,7 +94,7 @@ func (mw *mongoWrapper) Start() error {
 		return errors.New(`no session to use`)
 	}
 
-	txOpts := &options.TransactionOptions{}
+	txOpts := options.Transaction()
 	txOpts.SetReadConcern(readconcern.Local())                         // local
 	txOpts.SetReadPreference(readpref.Primary())                       // primary
 	txOpts.SetWriteConcern(writeconcern.New(writeconcern.WMajority())) // majority
@@ -104,13 +104,15 @@ func (mw *mongoWrapper) Start() error {
 	return mw.session.StartTransaction(txOpts)
 }
 
-func (mw *mongoWrapper) Commit() (err error) {
+func (mw *mongoWrapper) Commit() error {
+	fmt.Printf("commit: %+v\n", mw.session)
 	return mw.finishTx(func(sc mongo.SessionContext) error {
 		return mw.session.CommitTransaction(sc)
 	})
 }
 
-func (mw *mongoWrapper) Rollback() (err error) {
+func (mw *mongoWrapper) Rollback() error {
+	fmt.Printf("rollback: %+v\n", mw.session)
 	return mw.finishTx(func(sc mongo.SessionContext) error {
 		return mw.session.AbortTransaction(sc)
 	})
@@ -123,6 +125,7 @@ func (mw *mongoWrapper) finishTx(finisher func(mongo.SessionContext) error) (err
 
 	defer func() {
 		if err != nil {
+			fmt.Printf("got error: %+v\n", err)
 			// only end session & disconnect client if there was no error
 			return
 		}
