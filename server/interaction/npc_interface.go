@@ -11,47 +11,38 @@ type npc interface {
 	getPegAction([]model.Card, []model.PeggedCard, int) model.PegAction
 }
 
-type getCribCards func(desired int, hand []model.Card) []model.Card
-type getCribCardsWithErr func(desired int, hand []model.Card) ([]model.Card, error)
+type getCribCards func(desired int, hand []model.Card) ([]model.Card, error)
 
-// TODO put this in a better place?
-// TODO make this function less ugly - should all strategies return errors?
 func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (model.BuildCribAction, error) {
 	var cards []model.Card
 	n := len(hand) - 4
-	switch npc {
-	case Simple:
-		if isDealer {
-			strats := []getCribCards{
-				strategy.GiveCribFifteens,
-				strategy.GiveCribPairs,
-			}
-			cards = strats[rand.Int()%2](n, hand)
-		} else {
-			strats := []getCribCards{
+	stratMap := map[model.PlayerID]map[bool][]getCribCards{
+		Simple: {
+			false: []getCribCards{
 				strategy.AvoidCribFifteens,
 				strategy.AvoidCribPairs,
-			}
-			cards = strats[rand.Int()%2](n, hand)
-		}
-	case Calc:
-		var err error
-		if isDealer {
-			strats := []getCribCardsWithErr{
-				strategy.KeepHandLowestPotential,
-				strategy.GiveCribHighestPotential,
-			}
-			cards, err = strats[rand.Int()%2](n, hand)
-		} else {
-			strats := []getCribCardsWithErr{
+			},
+			true: []getCribCards{
+				strategy.GiveCribFifteens,
+				strategy.GiveCribPairs,
+			},
+		},
+		Calc: {
+			false: []getCribCards{
 				strategy.KeepHandHighestPotential,
 				strategy.GiveCribLowestPotential,
-			}
-			cards, err = strats[rand.Int()%2](n, hand)
-		}
-		if err != nil {
-			return model.BuildCribAction{}, err
-		}
+			},
+			true: []getCribCards{
+				strategy.KeepHandLowestPotential,
+				strategy.GiveCribHighestPotential,
+			},
+		},
+	}
+	strats := stratMap[npc][isDealer]
+	idx := rand.Int() % len(strats)
+	cards, err := strats[idx](n, hand)
+	if err != nil {
+		return model.BuildCribAction{}, err
 	}
 	return model.BuildCribAction{
 		Cards: cards,

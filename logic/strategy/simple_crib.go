@@ -5,35 +5,35 @@ import (
 )
 
 // AvoidCribFifteens tries to return a set of cards which does not add up to 15
-func AvoidCribFifteens(desired int, hand []model.Card) []model.Card {
+func AvoidCribFifteens(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() != 15
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // GiveCribFifteens tries to return a set of cards which adds up to 15
-func GiveCribFifteens(desired int, hand []model.Card) []model.Card {
+func GiveCribFifteens(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.PegValue()+c2.PegValue() == 15
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // AvoidCribPairs tries to return a set of cards which does not make a pair (unequal value)
-func AvoidCribPairs(desired int, hand []model.Card) []model.Card {
+func AvoidCribPairs(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value != c2.Value
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 // GiveCribPairs tries to return a set of cards that makes a pair (equal value)
-func GiveCribPairs(desired int, hand []model.Card) []model.Card {
+func GiveCribPairs(desired int, hand []model.Card) ([]model.Card, error) {
 	objFunc := func(c1, c2 model.Card) bool {
 		return c1.Value == c2.Value
 	}
-	return determineCribCards(desired, hand, objFunc)
+	return determineCribCards(desired, hand, objFunc), nil
 }
 
 func determineCribCards(desired int, hand []model.Card, objectiveFunc func(c1, c2 model.Card) bool) []model.Card {
