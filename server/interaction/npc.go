@@ -1,7 +1,6 @@
 package interaction
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -30,21 +29,21 @@ var npcs = map[model.PlayerID]npc{
 var _ Player = (*NPCPlayer)(nil)
 
 type NPCPlayer struct {
-	HandleActionCallback func(ctx context.Context, a model.PlayerAction) error
-	player               npc
-	id                   model.PlayerID
+	actionHandler ActionHandler
+	id            model.PlayerID
+	player        npc
 }
 
 // NewNPCPlayer creates a new NPC with specified type
-func NewNPCPlayer(pID model.PlayerID, cb func(ctx context.Context, a model.PlayerAction) error) (Player, error) {
+func NewNPCPlayer(pID model.PlayerID, ah ActionHandler) (Player, error) {
 	p, ok := npcs[pID]
 	if !ok {
 		return nil, ErrUnknownNPCType
 	}
 	return &NPCPlayer{
-		player:               p,
-		id:                   pID,
-		HandleActionCallback: cb,
+		player:        p,
+		id:            pID,
+		actionHandler: ah,
 	}, nil
 }
 
@@ -62,7 +61,7 @@ func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) er
 		// the server a chance to increment the phase and get ready to handle
 		// our action
 		time.Sleep(time.Millisecond * 20)
-		err := npc.HandleActionCallback(context.Background(), pa)
+		err := npc.actionHandler.Handle(pa)
 		// TODO do something better with the error...
 		if err != nil {
 			fmt.Printf("ope! %v\n", err)

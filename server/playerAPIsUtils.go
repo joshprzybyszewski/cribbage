@@ -12,6 +12,13 @@ func getPlayerAPIs(db persistence.DB, players []model.Player) (map[model.PlayerI
 		var pAPI interaction.Player
 		pm, err := db.GetInteraction(p.ID)
 
+		for i, m := range pm.Interactions {
+			if m.Mode == interaction.NPC {
+				m.Info = &npcActionHandler{}
+				pm.Interactions[i] = m
+			}
+		}
+
 		if err != nil {
 			if err != persistence.ErrInteractionNotFound {
 				return nil, err
@@ -21,10 +28,6 @@ func getPlayerAPIs(db persistence.DB, players []model.Player) (map[model.PlayerI
 			pAPI, err = interaction.FromPlayerMeans(pm)
 			if err != nil {
 				return nil, err
-			}
-			// TODO assign HandleAction callback here if the character is an NPC
-			if pAPI, ok := pAPI.(*interaction.NPCPlayer); ok {
-				pAPI.HandleActionCallback = HandleAction
 			}
 		}
 
