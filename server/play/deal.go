@@ -21,8 +21,6 @@ func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	g.CutCard = model.Card{}
 	g.PeggedCards = g.PeggedCards[:0]
 
-	// The problem with NPCs right now is that addPlauyerToBlocker kicks off a call to HandleAction
-	// while still in the "ready" phase, which causes a cycle
 	addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs, ``)
 
 	return nil
