@@ -3,7 +3,6 @@ package interaction
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/joshprzybyszewski/cribbage/logic/scorer"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -58,7 +57,6 @@ func (npc *NPCPlayer) NotifyBlocking(b model.Blocker, g model.Game, s string) er
 	}
 	// TODO find a better way to solve this problem...
 	go func() {
-		time.Sleep(time.Second * 1)
 		npc.HandleActionCallback(context.Background(), a)
 	}()
 	return nil
@@ -72,7 +70,7 @@ func (npc *NPCPlayer) NotifyScoreUpdate(g model.Game, msgs ...string) error {
 	return nil
 }
 
-func cardsLeftInHand(hand []model.Card, pc []model.PeggedCard) []model.Card {
+func getUnpeggedCards(hand []model.Card, pc []model.PeggedCard) []model.Card {
 	peggedMap := make(map[model.Card]struct{}, len(pc))
 	cardsLeft := make([]model.Card, 0, len(hand))
 	for _, c := range pc {
@@ -109,7 +107,7 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 			Percentage: rand.Float64(),
 		}
 	case model.PegCard:
-		cardsLeft := cardsLeftInHand(g.Hands[npc.ID()], g.PeggedCards)
+		cardsLeft := getUnpeggedCards(g.Hands[npc.ID()], g.PeggedCards)
 		a.Action = npc.player.getPegAction(cardsLeft, g.PeggedCards, g.CurrentPeg())
 	case model.CountHand:
 		a.Action = model.CountHandAction{
