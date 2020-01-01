@@ -39,7 +39,7 @@ func cribActionHelper(hand []model.Card, npc model.PlayerID, isDealer bool) (mod
 		},
 	}
 	strats := stratMap[npc][isDealer]
-	idx := rand.Int() % len(strats)
+	idx := rand.Intn(len(strats))
 	cards, err := strats[idx](n, hand)
 	if err != nil {
 		return model.BuildCribAction{}, err
