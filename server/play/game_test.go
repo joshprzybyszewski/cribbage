@@ -254,6 +254,8 @@ func TestHandleAction_Cut(t *testing.T) {
 	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `please peg a card`).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
 
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -537,7 +539,7 @@ func TestHandleAction_Pegging(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, g.PeggedCards, 8)
 	assert.Contains(t, g.PeggedCards, model.NewPeggedCardFromString(alice.ID, `js`, g.NumActions()))
-	assert.Equal(t, 10, g.CurrentPeg())
+	assert.Equal(t, 0, g.CurrentPeg(), `should not have a "current peg" in another phase`)
 	assert.Equal(t, 10, g.CurrentScores[g.PlayerColors[alice.ID]])
 
 	// we have moved on to counting hands, and bob is up
@@ -585,13 +587,29 @@ func TestHandleAction_Counting(t *testing.T) {
 		ID:        bob.ID,
 		Overcomes: model.CountHand,
 		Action: model.CountHandAction{
+			Pts: 100,
+		},
+	}
+	bobAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), `you did not submit the correct number of points for your hand`).Return(nil).Once()
+	err := HandleAction(&g, action, abAPIs)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `wrong number of points`)
+	assert.Equal(t, 0, g.CurrentScores[g.PlayerColors[bob.ID]])
+	assert.NotContains(t, g.BlockingPlayers, alice.ID)
+	assert.Contains(t, g.BlockingPlayers, bob.ID)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        bob.ID,
+		Overcomes: model.CountHand,
+		Action: model.CountHandAction{
 			Pts: 18,
 		},
 	}
 	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`hand (7H: 7C, 8C, 9C, 10C)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyBlocking`, model.CountHand, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
-	err := HandleAction(&g, action, abAPIs)
+	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Equal(t, 18, g.CurrentScores[g.PlayerColors[bob.ID]])
 	assert.Contains(t, g.BlockingPlayers, alice.ID)
@@ -649,14 +667,29 @@ func TestHandleAction_CribCounting(t *testing.T) {
 		ID:        alice.ID,
 		Overcomes: model.CountCrib,
 		Action: model.CountCribAction{
+			Pts: 100,
+		},
+	}
+	aliceAPI.On(`NotifyBlocking`, model.CountCrib, mock.AnythingOfType(`model.Game`), `you did not submit the correct number of points for the crib`).Return(nil).Once()
+	err := HandleAction(&g, action, abAPIs)
+	assert.Error(t, err)
+	assert.EqualError(t, err, `wrong number of points`)
+	assert.Equal(t, 0, g.CurrentScores[g.PlayerColors[alice.ID]])
+	assert.NotContains(t, g.BlockingPlayers, bob.ID)
+	assert.Contains(t, g.BlockingPlayers, alice.ID)
+
+	action = model.PlayerAction{
+		GameID:    g.ID,
+		ID:        alice.ID,
+		Overcomes: model.CountCrib,
+		Action: model.CountCribAction{
 			Pts: 14,
 		},
 	}
 	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`crib (7H: 7S, 8S, 9S, 10S)`}).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
-	err := HandleAction(&g, action, abAPIs)
-
+	err = HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
 	assert.Equal(t, 14, g.CurrentScores[g.PlayerColors[alice.ID]])
 	assert.Contains(t, g.BlockingPlayers, bob.ID)
@@ -701,8 +734,18 @@ func TestHandleAction_DealAgain(t *testing.T) {
 			model.NewCardFromString(`9d`),
 			model.NewCardFromString(`10d`),
 		},
-		PeggedCards: make([]model.PeggedCard, 0, 8),
+		PeggedCards: []model.PeggedCard{
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`7c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`7s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`8c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`8s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`9c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`9s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`10c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`10s`), 0),
+		},
 	}
+	assert.NotEmpty(t, g.PeggedCards)
 
 	action := model.PlayerAction{
 		GameID:    g.ID,
@@ -717,6 +760,7 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 	require.Nil(t, err)
+	assert.Empty(t, g.PeggedCards)
 
 	action = model.PlayerAction{
 		GameID:    g.ID,
@@ -735,6 +779,7 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
+	assert.Empty(t, g.PeggedCards)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)

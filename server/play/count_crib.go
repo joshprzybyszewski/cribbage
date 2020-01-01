@@ -44,7 +44,7 @@ func (*cribCountingHandler) HandleAction(
 
 	if cca.Pts != pts {
 		addPlayerToBlocker(g, pID, model.CountCrib, pAPIs, `you did not submit the correct number of points for the crib`)
-		return nil
+		return errors.New(`wrong number of points`)
 	}
 
 	addPoints(g, pID, pts, pAPIs, `crib (`+leadCard.String()+`: `+handString(crib)+`)`)

@@ -1,7 +1,7 @@
 # cribbage
-This repo is a little free-time exercise that has turned into a little free-time project.
+This repo started as a challenge from a friend to calculate the distribution of all hands' points for every possible cribbage hand faster than his MATLAB implementation. Spoilers: golang is faster than MATLAB. Now it's a place to teach some friends how to code and a playground to mess with unfamiliar technologies in golang (like [mongodb](https://www.mongodb.com), [web assembly](https://webassembly.org/), and hopefully [aws lambdas](https://aws.amazon.com/lambda/) and more).
 
-It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cribbage/), and now it is evolving into an interactive game playing application.
+Cribbage has a ton of [seemingly made up rules](https://bicyclecards.com/how-to-play/cribbage/), and this project is my attempt to turn those into an interactive game for humans.
 
 [![codecov](https://codecov.io/gh/joshprzybyszewski/cribbage/branch/master/graph/badge.svg)](https://codecov.io/gh/joshprzybyszewski/cribbage)
 
@@ -12,18 +12,16 @@ It started as a [cribbbage hand scorer](https://bicyclecards.com/how-to-play/cri
 1. Go get this project
 
 ```bash
-go get github.com/joshprzybyszewski/cribbage
+go get -u github.com/joshprzybyszewski/cribbage
 ```
 
-2. Vendor the dependencies
+2. Install everything you need
 
 ```bash
-GO111MODULE=on go mod vendor
+make install
 ```
 
-3. Download mongodb from [here](https://www.mongodb.com/download-center/community) using [these instructions](https://docs.mongodb.com/manual/installation/). Make sure you have a mongodb server running.
-
-4. In one terminal, start the server
+3. In one terminal, start the server
 
 ```bash
 go run main.go
@@ -31,13 +29,16 @@ go run main.go
 
   - to start with an in-memory database, use `-db=memory`
 
-5. In a couple other terminals, start a couple clients:
+4. Start playing cribbage. 
+  - In a couple other terminals, start a couple clients:
 
 ```bash
 go run main.go -client
 ```
 
-6. From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey). Happy Playing!
+  - From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).
+  
+Happy Playing!
 
 ## Legacy Binary
 If you'd like to play the first version of our game, you can run the legacy player, which allows you to play dumb and calculated NPCs:
