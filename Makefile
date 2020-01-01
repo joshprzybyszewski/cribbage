@@ -12,6 +12,8 @@ gotest:
 
 .PHONY: mongo
 mongo:
+	# See http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner
+	# sudo npm install --unsafe-perm run-rs -g
 	# See https://www.npmjs.com/package/run-rs
 	sudo run-rs -v 4.2.1 --shell
 
