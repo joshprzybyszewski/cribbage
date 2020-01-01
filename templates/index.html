@@ -10,7 +10,7 @@
   <h1>Cribbage</h1>
 
   <h2>Create user</h2>
-  <form action="/user/" method="get" id="createForm">
+  <form>
     <fieldset>
       Username: <input type="text" name="username" id="createUN"><br>
       Display name: <input type="text" id="createDN"><br>
@@ -26,7 +26,7 @@
     </fieldset>
   </form>
 
-  <script src="assets/js/wasm_exec.js"></script>
+  <script src="/assets/js/wasm_exec.js"></script>
   <script>
     const go = new Go();
     // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
@@ -34,9 +34,9 @@
     let mod, inst, bytes;
     console.log("initializing gowasm");
     WebAssembly.instantiateStreaming(
-      fetch("assets/wasm/wa_output.wasm",
+      fetch("/assets/wasm/wa_output.wasm",
         // change default to 'no-cache' while deving to force getting it
-        { cache: 'no-cache' }),
+        { cache: 'default' }),
       go.importObject).then((result) => {
         mod = result.module;
         inst = result.instance;

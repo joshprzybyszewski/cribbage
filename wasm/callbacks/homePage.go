@@ -3,8 +3,11 @@
 package callbacks
 
 import (
+	"encoding/json"
+
 	"honnef.co/go/js/dom/v2"
 
+	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
 	"github.com/joshprzybyszewski/cribbage/wasm/consts"
 )
@@ -54,16 +57,21 @@ func getListenersForCreateUser() []Releaser {
 	r = append(r, getInputHandlerForID(consts.CreateDisplaynameInputID, cb))
 
 	listener := getClickHandlerForID(consts.CreateUserButtonID, func(e dom.Event) {
+		e.PreventDefault()
+		// TODO for some reason the username and displayname are the same
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
 
-		// we might need to wrap this in a go func
 		go func() {
-			_, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
+			bytes, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
 			if err != nil {
 				println("Got error on MakeRequest: " + err.Error())
 				return
 			}
+			me := model.Player{}
+			json.Unmarshal(bytes, &me)
+			myUsername := string(me.ID)
+			goToPath(`/user/` + myUsername)
 		}()
 	})
 

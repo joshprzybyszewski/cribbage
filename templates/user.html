@@ -1,6 +1,5 @@
 <!--user.html-->
 
-<!doctype html>
 <html>
 
 <head>
@@ -38,4 +37,37 @@
         {{ end }}
     </table>
 
+    <h2>Create Game</h2>
+    <form>
+        <fieldset>
+            Opponent's username: <input type="text" name="oppUN" id="oppUsername"><br>
+            <button disabled id="createGameButton">Create</button>
+        </fieldset>
+    </form>
+
+    <script src="/assets/js/wasm_exec.js"></script>
+    <script>
+        const go = new Go();
+        // memoryBytes is an Uint8Array pointing to the webassembly linear memory.
+        let memoryBytes;
+        let mod, inst, bytes;
+        console.log("initializing gowasm");
+        WebAssembly.instantiateStreaming(
+            fetch("/assets/wasm/wa_output.wasm",
+                // change default to 'no-cache' while deving to force getting it
+                { cache: 'default' }),
+            go.importObject).then((result) => {
+                mod = result.module;
+                inst = result.instance;
+                memoryBytes = new Uint8Array(inst.exports.mem.buffer)
+                console.log("initialized gowasm");
+                run();
+            });
+        async function run() {
+            await go.run(inst);
+        }
+    </script>
+
 </body>
+
+</html>

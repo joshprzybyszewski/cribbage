@@ -16,7 +16,10 @@ import (
 )
 
 func main() {
-	println("hello wasm")
+	println(`starting gowasm`)
+	defer func() {
+		println(`exiting gowasm`)
+	}()
 
 	path := getCurrentURLPath()
 
@@ -25,6 +28,9 @@ func main() {
 
 	if path == `/` {
 		rels = callbacks.SetupHomePage()
+	} else if isUserPagePath(path) {
+		myID := parseOutUserPageIDs(path)
+		rels = callbacks.SetupUserPage(myID)
 	} else if isGamePagePath(path) {
 		gID, myID, err := parseOutGamePageIDs(path)
 		if err != nil {
@@ -72,6 +78,20 @@ func parseOutGamePageIDs(path string) (model.GameID, model.PlayerID, error) {
 	gID := model.GameID(gIDInt)
 
 	return gID, model.PlayerID(pIDStr), nil
+}
+
+var userPagePathRegex = regexp.MustCompile(`/user/([a-zA-Z0-9_]+)$`)
+
+func isUserPagePath(path string) bool {
+	return userPagePathRegex.MatchString(path)
+}
+
+func parseOutUserPageIDs(path string) model.PlayerID {
+	found := userPagePathRegex.FindAllStringSubmatch(path, 1)
+	chooseFrom := found[0]
+	pIDStr := chooseFrom[1]
+
+	return model.PlayerID(pIDStr)
 }
 
 func startGamePage(gID model.GameID, myID model.PlayerID) ([]callbacks.Releaser, error) {

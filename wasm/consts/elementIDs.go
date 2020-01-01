@@ -7,6 +7,12 @@ const (
 	CreateDisplaynameInputID string = `createUN`
 )
 
+// user page
+const (
+	CreateGameOpponentInputID string = `oppUsername`
+	CreateGameButtonID        string = `createGameButton`
+)
+
 // game page
 const (
 	RefreshButtonID string = `refreshGame`
