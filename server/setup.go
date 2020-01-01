@@ -50,31 +50,32 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 
 func seedNPCs(db persistence.DB) error {
 	npcIDs := []model.PlayerID{interaction.Dumb, interaction.Simple, interaction.Calc}
-	var err error
 	for _, id := range npcIDs {
 		p := model.Player{
 			ID:   id,
 			Name: string(id),
 		}
 		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
-		_, err = db.GetInteraction(id)
-		if err == persistence.ErrInteractionNotFound {
+		_, err := db.GetInteraction(id)
+		if err != nil {
+			if err != persistence.ErrInteractionNotFound {
+				return err
+			}
 			err = db.SaveInteraction(pm)
 			if err != nil {
-				break
+				return err
 			}
-		} else {
-			break
 		}
 		_, err = db.GetPlayer(p.ID)
-		if err == persistence.ErrPlayerNotFound {
+		if err != nil {
+			if err != persistence.ErrPlayerNotFound {
+				return err
+			}
 			err = db.CreatePlayer(p)
 			if err != nil {
-				break
+				return err
 			}
-		} else {
-			break
 		}
 	}
-	return err
+	return nil
 }
