@@ -10,6 +10,11 @@ golint:
 gotest:
 	go test ./...
 
+.PHONY: mongo
+mongo:
+	# See https://www.npmjs.com/package/run-rs
+	sudo run-rs -v 4.2.1 --shell
+
 .PHONY: install
 install:
 	./scripts/install.sh
