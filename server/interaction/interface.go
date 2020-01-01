@@ -29,7 +29,17 @@ func FromPlayerMeans(pm PlayerMeans) (Player, error) {
 	switch means.Mode {
 	case Localhost:
 		return newLocalhostPlayer(pID, means.Info), nil
+	case NPC:
+		ah, ok := means.Info.(ActionHandler)
+		if !ok {
+			return nil, errors.New(`player means info should contain an action handler, but it doesn't`)
+		}
+		return NewNPCPlayer(pID, ah)
 	}
 
 	return nil, errors.New(`mode unsupported`)
+}
+
+type ActionHandler interface {
+	Handle(action model.PlayerAction) error
 }
