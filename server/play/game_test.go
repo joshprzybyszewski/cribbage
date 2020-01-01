@@ -254,6 +254,8 @@ func TestHandleAction_Cut(t *testing.T) {
 	aliceAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyMessage`, mock.AnythingOfType(`model.Game`), mock.Anything).Return(nil).Once()
 	bobAPI.On(`NotifyBlocking`, model.PegCard, mock.AnythingOfType(`model.Game`), `please peg a card`).Return(nil).Once()
+	aliceAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
+	bobAPI.On(`NotifyScoreUpdate`, mock.AnythingOfType(`model.Game`), []string{`his nibs`}).Return(nil).Maybe()
 
 	err := HandleAction(&g, action, abAPIs)
 	assert.Nil(t, err)
@@ -732,8 +734,18 @@ func TestHandleAction_DealAgain(t *testing.T) {
 			model.NewCardFromString(`9d`),
 			model.NewCardFromString(`10d`),
 		},
-		PeggedCards: make([]model.PeggedCard, 0, 8),
+		PeggedCards: []model.PeggedCard{
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`7c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`7s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`8c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`8s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`9c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`9s`), 0),
+			model.NewPeggedCard(bob.ID, model.NewCardFromString(`10c`), 0),
+			model.NewPeggedCard(alice.ID, model.NewCardFromString(`10s`), 0),
+		},
 	}
+	assert.NotEmpty(t, g.PeggedCards)
 
 	action := model.PlayerAction{
 		GameID:    g.ID,
@@ -748,6 +760,7 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	bobAPI.On(`NotifyBlocking`, model.DealCards, mock.AnythingOfType(`model.Game`), ``).Return(nil).Once()
 	err := HandleAction(&g, action, abAPIs)
 	require.Nil(t, err)
+	assert.Empty(t, g.PeggedCards)
 
 	action = model.PlayerAction{
 		GameID:    g.ID,
@@ -766,6 +779,7 @@ func TestHandleAction_DealAgain(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, g.Hands[alice.ID], 6)
 	assert.Len(t, g.Hands[bob.ID], 6)
+	assert.Empty(t, g.PeggedCards)
 
 	aliceAPI.AssertExpectations(t)
 	bobAPI.AssertExpectations(t)
