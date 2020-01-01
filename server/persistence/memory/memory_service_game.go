@@ -9,6 +9,21 @@ import (
 )
 
 var gservice *gameService
+
+func saveGameService(newGS *gameService) error {
+	gservice.lock.Lock()
+	defer gservice.lock.Unlock()
+
+	newGS.lock.Lock()
+	defer newGS.lock.Unlock()
+
+	for gid, g := range newGS.games {
+		gservice.games[gid] = g
+	}
+
+	return nil
+}
+
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
@@ -24,6 +39,22 @@ func getGameService() persistence.GameService {
 		}
 	}
 	return gservice
+}
+
+func (gs *gameService) Copy() *gameService {
+	gs.lock.Lock()
+	defer gs.lock.Unlock()
+
+	cpy := make(map[model.GameID][]model.Game, len(gs.games))
+	for id, games := range gs.games {
+		gCpy := make([]model.Game, 0, len(games))
+		copy(gCpy, games)
+		cpy[id] = gCpy
+	}
+
+	return &gameService{
+		games: cpy,
+	}
 }
 
 func (gs *gameService) Get(id model.GameID) (model.Game, error) {

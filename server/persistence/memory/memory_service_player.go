@@ -9,6 +9,21 @@ import (
 )
 
 var pservice *playerService
+
+func savePlayerService(newPS *playerService) error {
+	pservice.lock.Lock()
+	defer pservice.lock.Unlock()
+
+	newPS.lock.Lock()
+	defer newPS.lock.Unlock()
+
+	for pid, p := range newPS.players {
+		pservice.players[pid] = p
+	}
+
+	return nil
+}
+
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
@@ -24,6 +39,21 @@ func getPlayerService() persistence.PlayerService {
 		}
 	}
 	return pservice
+}
+
+func (ps *playerService) Copy() *playerService {
+	ps.lock.Lock()
+	defer ps.lock.Unlock()
+
+	cpy := make(map[model.PlayerID]model.Player, len(ps.players))
+	for id, player := range ps.players {
+		pCpy := player
+		cpy[id] = pCpy
+	}
+
+	return &playerService{
+		players: cpy,
+	}
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
