@@ -402,8 +402,9 @@ func TestTransactionality(t *testing.T) {
 	}
 
 	txTests := map[string]txTest{
-		`player service`: playerTxTest,
-		`game service`:   gameTxTest,
+		`player service`:              playerTxTest,
+		`game service`:                gameTxTest,
+		`rollback the player service`: rollbackPlayerTxTest,
 	}
 
 	for dbName, db := range dbs {
@@ -450,6 +451,53 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	require.NoError(t, err)
 	assert.Equal(t, p1, postCommitP1)
 	assert.NotEqual(t, p1Mod, postCommitP1)
+}
+
+func rollbackPlayerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+	require.NoError(t, db1.Start())
+	require.NoError(t, db2.Start())
+
+	p1 := model.Player{
+		ID:    model.PlayerID(rand.String(50)),
+		Name:  `player 1`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NoError(t, db1.CreatePlayer(p1))
+	p2 := model.Player{
+		ID:    model.PlayerID(rand.String(50)),
+		Name:  `player 2`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+	assert.NoError(t, db2.CreatePlayer(p2))
+
+	savedP1, err := db1.GetPlayer(p1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, p1, savedP1)
+
+	savedP2, err := db1.GetPlayer(p2.ID)
+	assert.Error(t, err)
+	assert.NotEqual(t, p2, savedP2)
+
+	savedP1, err = db2.GetPlayer(p1.ID)
+	assert.Error(t, err)
+	assert.NotEqual(t, p1, savedP1)
+
+	savedP2, err = db2.GetPlayer(p2.ID)
+	require.NoError(t, err)
+	assert.Equal(t, p2, savedP2)
+
+	assert.NoError(t, db1.Rollback())
+	assert.NoError(t, db2.Rollback())
+
+	postCommitP1, err := postCommitDB.GetPlayer(p1.ID)
+	assert.Error(t, err)
+	assert.NotEqual(t, p1, postCommitP1)
+
+	postCommitP2, err := postCommitDB.GetPlayer(p2.ID)
+	assert.Error(t, err)
+	assert.NotEqual(t, p2, postCommitP2)
+
 }
 
 func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
