@@ -3,6 +3,11 @@ language: go
 go:
 - 1.12.x
 
+# for mongo replica setup
+node_js:
+  - "0.11"
+  - "0.10"
+
 # Only clone the most recent commit.
 git:
   depth: 1
@@ -11,8 +16,19 @@ git:
 services:
   - mongodb
 
+
 before_script:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.20.1
+  # the following is for mongodb to have a replica set
+  - echo "replSet = rs" | sudo tee -a /etc/mongodb.conf
+  # TODO do we need to set up all of the replicas, or is one good enough?
+  # TODO --dbpath data/27017 --port 27017 --replSet rs
+  # TODO --dbpath data/27018 --port 27018 --replSet rs
+  # TODO --dbpath data/27019 --port 27019 --replSet rs
+  - sudo service mongodb restart
+  - sleep 20
+  - mongo --eval 'rs.initiate()'
+  - sleep 15
 
 script:
   - GO111MODULE=on go mod vendor

@@ -15,7 +15,9 @@ mongo:
 	# See http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner
 	# sudo npm install --unsafe-perm run-rs -g
 	# See https://www.npmjs.com/package/run-rs
+	echo "spinning up mongo in replica mode"
 	sudo run-rs -v 4.2.1 --shell
+	# else you should do mongod
 
 .PHONY: install
 install:
