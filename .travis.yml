@@ -25,6 +25,7 @@ before_script:
   # TODO --dbpath data/27017 --port 27017 --replSet rs
   # TODO --dbpath data/27018 --port 27018 --replSet rs
   # TODO --dbpath data/27019 --port 27019 --replSet rs
+  - sudo systemctl unmask mongodb
   - sudo service mongodb restart
   - sleep 20
   - mongo --eval 'rs.initiate()'
