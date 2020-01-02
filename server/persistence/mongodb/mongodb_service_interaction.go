@@ -3,6 +3,7 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -96,20 +97,32 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 	}
 
 	return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-		_, err := s.col.InsertOne(sc, pm)
-		// TODO could check the returned result to see how we did
+		ior, err := s.col.InsertOne(sc, pm)
+		if err != nil {
+			return err
+		}
+		if ior.InsertedID == nil {
+			// TODO not sure if this is the right thing to check
+			return errors.New(`interaction not created`)
+		}
 
-		return err
+		return nil
 	})
 }
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 	if _, err := s.Get(pm.PlayerID); err == persistence.ErrInteractionNotFound {
 		return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-			_, err := s.col.InsertOne(sc, pm)
-			// TODO could check the returned result to see how we did
+			ior, err := s.col.InsertOne(sc, pm)
+			if err != nil {
+				return err
+			}
+			if ior.InsertedID == nil {
+				// TODO not sure if this is the right thing to check
+				return errors.New(`interaction not updated`)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -117,9 +130,20 @@ func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 	opt.SetUpsert(true)
 
 	return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-		_, err := s.col.ReplaceOne(sc, pm, opt)
-		// TODO could check the returned result to see how we did
+		ur, err := s.col.ReplaceOne(sc, pm, opt)
+		if err != nil {
+			return err
+		}
 
-		return err
+		switch {
+		case ur.ModifiedCount > 1:
+			return errors.New(`modified too many interactions`)
+		case ur.MatchedCount > 1:
+			return errors.New(`matched more than one interaction`)
+		case ur.UpsertedCount > 1:
+			return errors.New(`upserted more than one interaction`)
+		}
+
+		return nil
 	})
 }

@@ -102,9 +102,16 @@ func (ps *playerService) Create(p model.Player) error {
 	}
 
 	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
-		_, err := ps.col.InsertOne(sc, p)
-		// TODO could check the returned result to see how we did
-		return err
+		ior, err := ps.col.InsertOne(sc, p)
+		if err != nil {
+			return err
+		}
+		if ior.InsertedID == nil {
+			// not sure if this is the right thing to check
+			return errors.New(`game not saved`)
+		}
+
+		return nil
 	})
 }
 
@@ -134,7 +141,6 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 	opt.SetUpsert(true)
 	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
 		sr := ps.col.FindOneAndReplace(sc, filter, p)
-		// TODO could check the returned result to see how we did
 		return sr.Err()
 	})
 }

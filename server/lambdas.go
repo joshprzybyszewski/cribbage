@@ -32,6 +32,7 @@ func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	err = db.Start()
 	if err != nil {
@@ -64,6 +65,8 @@ func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) 
 	if err != nil {
 		return model.Game{}, err
 	}
+	defer db.Close()
+
 	err = db.Start()
 	if err != nil {
 		return model.Game{}, err
@@ -113,6 +116,13 @@ func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
 	if err != nil {
 		return model.Game{}, err
 	}
+	defer db.Close()
+
+	err = db.Start()
+	if err != nil {
+		return model.Game{}, err
+	}
+	defer commitOrRollback(db, &err)
 
 	return db.GetGame(gID)
 }
@@ -122,6 +132,13 @@ func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
 	if err != nil {
 		return model.Player{}, err
 	}
+	defer db.Close()
+
+	err = db.Start()
+	if err != nil {
+		return model.Player{}, err
+	}
+	defer commitOrRollback(db, &err)
 
 	return db.GetPlayer(pID)
 }
@@ -131,6 +148,8 @@ func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
+
 	err = db.Start()
 	if err != nil {
 		return err
@@ -145,6 +164,7 @@ func createPlayer(ctx context.Context, p model.Player) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	if !model.IsValidPlayerID(p.ID) {
 		return errInvalidUsername

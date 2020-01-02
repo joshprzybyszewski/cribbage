@@ -3,14 +3,12 @@ package mongodb
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
-
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -40,7 +38,7 @@ type mongoWrapper struct {
 
 func New(ctx context.Context, uri string) (persistence.DB, error) {
 	if uri == `` {
-		// If we don't know where to connect, use the default localhost URI
+		// If we don't know where to connect, use the default localhost URI without replicas
 		// uri = `mongodb://localhost:27017`
 		// Now we should be running with replicaset, so let's talk to all three
 		// Followed instructions here: http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner
@@ -52,7 +50,7 @@ func New(ctx context.Context, uri string) (persistence.DB, error) {
 		return nil, err
 	}
 
-	// start a session so we can create a transaction
+	// Always start a session so we can create a transaction if needed
 	sess, err := client.StartSession()
 	if err != nil {
 		return nil, err
@@ -89,15 +87,19 @@ func New(ctx context.Context, uri string) (persistence.DB, error) {
 	return &mw, nil
 }
 
+func (mw *mongoWrapper) Close() error {
+	return mw.client.Disconnect(mw.ctx)
+}
+
 func (mw *mongoWrapper) Start() error {
 	if mw.session == nil {
 		return errors.New(`no session to use`)
 	}
 
 	txOpts := options.Transaction()
-	txOpts.SetReadConcern(readconcern.Local())                         // local
-	txOpts.SetReadPreference(readpref.Primary())                       // primary
-	txOpts.SetWriteConcern(writeconcern.New(writeconcern.WMajority())) // majority
+	txOpts.SetReadConcern(readconcern.Local())
+	txOpts.SetReadPreference(readpref.Primary())
+	txOpts.SetWriteConcern(writeconcern.New(writeconcern.WMajority()))
 	mct := maxCommitTime
 	txOpts.SetMaxCommitTime(&mct)
 
@@ -105,14 +107,12 @@ func (mw *mongoWrapper) Start() error {
 }
 
 func (mw *mongoWrapper) Commit() error {
-	fmt.Printf("commit: %+v\n", mw.session)
 	return mw.finishTx(func(sc mongo.SessionContext) error {
 		return mw.session.CommitTransaction(sc)
 	})
 }
 
 func (mw *mongoWrapper) Rollback() error {
-	fmt.Printf("rollback: %+v\n", mw.session)
 	return mw.finishTx(func(sc mongo.SessionContext) error {
 		return mw.session.AbortTransaction(sc)
 	})
@@ -124,14 +124,9 @@ func (mw *mongoWrapper) finishTx(finisher func(mongo.SessionContext) error) (err
 	}
 
 	defer func() {
-		if err != nil {
-			fmt.Printf("got error: %+v\n", err)
-			// only end session & disconnect client if there was no error
-			return
-		}
-		mw.session.EndSession(mw.ctx)
-		if err = mw.client.Disconnect(mw.ctx); err != nil {
-			fmt.Printf("got error on disconnect: %+v\n", err)
+		if err == nil {
+			// only end session if there was no error
+			mw.session.EndSession(mw.ctx)
 		}
 	}()
 

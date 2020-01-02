@@ -6,8 +6,14 @@ import (
 )
 
 type DB interface {
+	// Close should be called to close any connections needed on the database
+	Close() error
+
+	// Start will start a transaction on the database
 	Start() error
+	// Commit will commit a transaction, if one exists
 	Commit() error
+	// Rollback will rollback the transaction of changes on the database
 	Rollback() error
 
 	ServicesWrapper

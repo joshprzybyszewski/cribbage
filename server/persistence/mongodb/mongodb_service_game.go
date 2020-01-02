@@ -223,10 +223,17 @@ func (gs *gameService) Save(g model.Game) error {
 		saved.Games = []model.Game{g}
 
 		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-			_, err = gs.col.InsertOne(sc, saved)
-			// TODO could check the returned result to see how we did
+			var ior *mongo.InsertOneResult
+			ior, err = gs.col.InsertOne(sc, saved)
+			if err != nil {
+				return err
+			}
+			if ior.InsertedID == nil {
+				// not sure if this is the right thing to check
+				return errors.New(`game not saved`)
+			}
 
-			return err
+			return nil
 		})
 	}
 
@@ -265,9 +272,20 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 func (gs *gameService) saveGameList(saved gameList) error {
 	filter := bsonGameIDFilter(saved.GameID)
 	return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-		_, err := gs.col.ReplaceOne(sc, filter, saved)
-		// TODO could check the returned result to see how we did
+		ur, err := gs.col.ReplaceOne(sc, filter, saved)
+		if err != nil {
+			return err
+		}
 
-		return err
+		switch {
+		case ur.ModifiedCount > 1:
+			return errors.New(`modified too many games`)
+		case ur.MatchedCount > 1:
+			return errors.New(`matched more than one game entry`)
+		case ur.UpsertedCount > 1:
+			return errors.New(`replaced more than one game`)
+		}
+
+		return nil
 	})
 }

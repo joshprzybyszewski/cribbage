@@ -26,6 +26,12 @@ func New() persistence.DB {
 	}
 }
 
+func (mdb *memDB) Close() error {
+	mdb.ServicesWrapper = nil
+
+	return nil
+}
+
 func (mdb *memDB) Start() error {
 	mdb.lock.Lock()
 	defer mdb.lock.Unlock()
