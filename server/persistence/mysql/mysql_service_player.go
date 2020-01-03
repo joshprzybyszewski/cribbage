@@ -1,16 +1,56 @@
 package mysql
 
 import (
+	"context"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+
+	"database/sql"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 var _ persistence.PlayerService = (*playerService)(nil)
 
-type playerService struct{}
+type playerService struct {
+	ctx context.Context
+	db  *sql.DB
+}
+
+func getPlayerService(ctx context.Context, db *sql.DB) *playerService {
+	return &playerService{
+		ctx: ctx,
+		db:  db,
+	}
+}
 
 func (ps *playerService) Create(p model.Player) error {
-	// check if the player already exists
+	tx, err := ps.db.BeginTx(ps.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO ? VALUES ( ?, ? )`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.ExecContext(ps.ctx, playerTableName, p.ID, p.Name)
+
+	if err != nil {
+		if me, ok := err.(*mysql.MySQLError); !ok {
+			return err
+		} else if me.Number == ErrNumDuplicateEntry {
+			return persistence.ErrPlayerAlreadyExists
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
 	return nil
 }
 
