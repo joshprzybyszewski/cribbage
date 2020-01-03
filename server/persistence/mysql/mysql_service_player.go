@@ -26,12 +26,15 @@ func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
 }
 
 func (ps *playerService) Create(p model.Player) error {
-	tx, err := ps.db.BeginTx(ps.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := ps.beginTx()
 	if err != nil {
 		return err
 	}
+	// according to https://golang.org/pkg/database/sql/#Tx.ExecContext:
+	// The rollback will be ignored if the tx has been committed later in the function.
 	defer tx.Rollback()
 
+	// TODO how to use a constant for the table name?
 	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO players VALUES ( ?, ? )`)
 	if err != nil {
 		return err
@@ -55,9 +58,37 @@ func (ps *playerService) Create(p model.Player) error {
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
-	return model.Player{}, nil
+	result := model.Player{}
+	tx, err := ps.beginTx()
+	if err != nil {
+		return model.Player{}, err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.PrepareContext(ps.ctx, `SELECT * FROM players WHERE id=?`)
+	if err != nil {
+		return model.Player{}, err
+	}
+	defer stmt.Close()
+
+	r := stmt.QueryRowContext(ps.ctx, id)
+	err = r.Scan(&result.ID, &result.Name)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return model.Player{}, err
+		}
+		return model.Player{}, persistence.ErrPlayerNotFound
+	}
+
+	return result, nil
 }
 
 func (ps *playerService) UpdateGameColor(id model.PlayerID, gID model.GameID, color model.PlayerColor) error {
 	return nil
+}
+
+func (ps *playerService) beginTx() (*sql.Tx, error) {
+	// https://en.wikipedia.org/wiki/Isolation_(database_systems)#Isolation_levels
+	// let's use the highest level of isolation for now (which apparently uses read and write locks)
+	return ps.db.BeginTx(ps.ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 }

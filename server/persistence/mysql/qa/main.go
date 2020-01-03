@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -9,11 +10,11 @@ import (
 )
 
 func main() {
-	mysql, err := cribsql.New(context.Background())
+	per, err := cribsql.New(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	err = mysql.CreatePlayer(model.Player{
+	err = per.CreatePlayer(model.Player{
 		ID:   `c`,
 		Name: `connor`,
 	})
@@ -21,4 +22,9 @@ func main() {
 		panic(err)
 	}
 
+	player, err := per.GetPlayer(`c`)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("got player: %+v\n", player)
 }
