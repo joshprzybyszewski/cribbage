@@ -18,9 +18,6 @@ services:
 
 
 before_script:
-  # Install golangci-lint
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.20.1
-
   # Get a mongodb with replica set stood up
   # Found the following at https://github.com/bottlepy/bottle-mongo/blob/5f359898fb81b9168b79a0c8fb60bbe892763d51/.travis.yml
   # # Set up a shared authentication key
@@ -64,6 +61,7 @@ before_script:
 
 script:
   - GO111MODULE=on go mod vendor
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.20.1 # Install golangci-lint
   - golangci-lint run -v    # run a bunch of code checkers/linters in parallel
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...  # Run all the tests with the race detector enabled
 
