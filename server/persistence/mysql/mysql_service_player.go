@@ -34,8 +34,7 @@ func (ps *playerService) Create(p model.Player) error {
 	// The rollback will be ignored if the tx has been committed later in the function.
 	defer tx.Rollback()
 
-	// TODO how to use a constant for the table name?
-	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO players VALUES ( ?, ? )`)
+	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO `+playerTableName+` VALUES ( ?, ? )`)
 	if err != nil {
 		return err
 	}
@@ -65,7 +64,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ps.ctx, `SELECT * FROM players WHERE id=?`)
+	stmt, err := tx.PrepareContext(ps.ctx, `SELECT * FROM `+playerTableName+` WHERE id=?`)
 	if err != nil {
 		return model.Player{}, err
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joshprzybyszewski/cribbage/model"
 	cribsql "github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
@@ -12,19 +14,22 @@ import (
 func main() {
 	per, err := cribsql.New(context.Background())
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: %v\n", err)
 	}
+	id := model.PlayerID(rand.String(5))
 	err = per.CreatePlayer(model.Player{
-		ID:   `c`,
+		ID:   id,
 		Name: `connor`,
 	})
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: %v\n", err)
+	} else {
+		fmt.Println(`created player.`)
 	}
 
-	player, err := per.GetPlayer(`c`)
+	player, err := per.GetPlayer(id)
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: %v\n", err)
 	}
 	fmt.Printf("got player: %+v\n", player)
 }
