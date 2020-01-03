@@ -78,7 +78,7 @@ func TestDB(t *testing.T) {
 	if !testing.Short() {
 		// We assume you have mongodb stood up locally when running without -short
 		// we change the uri because travis sets up a different mongodb replica set than run-rs does
-		mongo, err := mongodb.New(context.Background(), `mongodb://localhost:27017/?replicaSet=rs`)
+		mongo, err := mongodb.New(context.Background(), `mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
 		require.NoError(t, err)
 
 		dbs[`mongodb`] = mongo
@@ -397,7 +397,7 @@ func TestTransactionality(t *testing.T) {
 		dbs[`mongodb`] = func() persistence.DB {
 			// We assume you have mongodb stood up locally when running without -short
 			// we change the uri because travis sets up a different mongodb replica set than run-rs does
-			mongo, err := mongodb.New(context.Background(), `mongodb://localhost:27017/?replicaSet=rs`)
+			mongo, err := mongodb.New(context.Background(), `mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
 			require.NoError(t, err)
 			return mongo
 		}
