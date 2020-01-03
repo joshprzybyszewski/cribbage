@@ -18,11 +18,11 @@ type playerService struct {
 	db  *sql.DB
 }
 
-func getPlayerService(ctx context.Context, db *sql.DB) *playerService {
+func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
 	return &playerService{
 		ctx: ctx,
 		db:  db,
-	}
+	}, nil
 }
 
 func (ps *playerService) Create(p model.Player) error {
@@ -32,12 +32,12 @@ func (ps *playerService) Create(p model.Player) error {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO ? VALUES ( ?, ? )`)
+	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO players VALUES ( ?, ? )`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ps.ctx, playerTableName, p.ID, p.Name)
+	_, err = stmt.ExecContext(ps.ctx, p.ID, p.Name)
 
 	if err != nil {
 		if me, ok := err.(*mysql.MySQLError); !ok {
