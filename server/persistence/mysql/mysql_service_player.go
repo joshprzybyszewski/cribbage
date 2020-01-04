@@ -71,6 +71,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	defer stmt.Close()
 
 	r := stmt.QueryRowContext(ps.ctx, id)
+	// TODO get games from the db
 	err = r.Scan(&result.ID, &result.Name)
 	if err != nil {
 		if err != sql.ErrNoRows {
