@@ -20,6 +20,11 @@ func main() {
 	err = per.CreatePlayer(model.Player{
 		ID:   id,
 		Name: `connor`,
+		Games: map[model.GameID]model.PlayerColor{
+			1:  model.Blue,
+			7:  model.Red,
+			11: model.Green,
+		},
 	})
 	if err != nil {
 		fmt.Printf("ERROR: %v\n", err)

@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -16,6 +17,7 @@ var _ persistence.PlayerService = (*playerService)(nil)
 type playerService struct {
 	ctx context.Context
 	db  *sql.DB
+	gs  gameService
 }
 
 func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
@@ -26,6 +28,19 @@ func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
 }
 
 func (ps *playerService) Create(p model.Player) error {
+	var gIDJson []byte
+	if len(p.Games) > 0 {
+		ids := make([]model.GameID, 0, len(p.Games))
+		for id := range p.Games {
+			ids = append(ids, id)
+		}
+		j, err := json.Marshal(ids)
+		if err != nil {
+			return err
+		}
+		gIDJson = j
+	}
+
 	tx, err := ps.beginTx()
 	if err != nil {
 		return err
@@ -34,12 +49,12 @@ func (ps *playerService) Create(p model.Player) error {
 	// The rollback will be ignored if the tx has been committed later in the function.
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO `+playerTableName+` VALUES ( ?, ? )`)
+	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO `+playerTableName+` VALUES ( ?, ?, ? )`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ps.ctx, p.ID, p.Name)
+	_, err = stmt.ExecContext(ps.ctx, p.ID, p.Name, gIDJson)
 
 	if err != nil {
 		if me, ok := err.(*mysql.MySQLError); !ok {
@@ -58,6 +73,7 @@ func (ps *playerService) Create(p model.Player) error {
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	result := model.Player{}
+	var gameIDs []model.GameID
 	tx, err := ps.beginTx()
 	if err != nil {
 		return model.Player{}, err
@@ -71,13 +87,29 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	defer stmt.Close()
 
 	r := stmt.QueryRowContext(ps.ctx, id)
-	// TODO get games from the db
-	err = r.Scan(&result.ID, &result.Name)
+
+	var gIDJson []byte
+	err = r.Scan(&result.ID, &result.Name, &gIDJson)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return model.Player{}, err
 		}
 		return model.Player{}, persistence.ErrPlayerNotFound
+	}
+	if len(gIDJson) > 0 {
+		err = json.Unmarshal(gIDJson, &gameIDs)
+		if err != nil {
+			return model.Player{}, err
+		}
+		gameMap := make(map[model.GameID]model.PlayerColor, len(gameIDs))
+		for _, id := range gameIDs {
+			g, err := ps.gs.Get(id)
+			if err != nil {
+				return model.Player{}, err
+			}
+			gameMap[id] = g.PlayerColors[result.ID]
+		}
+		result.Games = gameMap
 	}
 
 	return result, nil
