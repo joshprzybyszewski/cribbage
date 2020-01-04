@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
@@ -105,7 +104,7 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 
 	if c, ok := p.Games[gID]; ok {
 		if c != color {
-			return errors.New(`mismatched player-games color`)
+			return persistence.ErrPlayerColorMismatch
 		}
 
 		// Nothing to do; the player already knows its color

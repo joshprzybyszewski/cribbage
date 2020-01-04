@@ -120,7 +120,25 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	return result, nil
 }
 
-func (ps *playerService) UpdateGameColor(id model.PlayerID, gID model.GameID, color model.PlayerColor) error {
+func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
+	p, err := ps.Get(pID)
+	if err != nil {
+		return err
+	}
+
+	if p.Games == nil {
+		p.Games = make(map[model.GameID]model.PlayerColor, 1)
+	}
+
+	if c, ok := p.Games[gID]; ok {
+		if c != color {
+			return persistence.ErrPlayerColorMismatch
+		}
+
+		// Nothing to do; the player already knows its color
+		return nil
+	}
+
 	return nil
 }
 
