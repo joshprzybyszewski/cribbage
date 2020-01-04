@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	ErrNumDuplicateEntry = 1062
+	sqlErrCodeDuplicateEntry = 1062
 
 	dbName          = `cribbage`
 	playerTableName = `players`

@@ -106,7 +106,7 @@ func (ps *playerService) Create(p model.Player) error {
 	if err != nil {
 		if me, ok := err.(*mysql.MySQLError); !ok {
 			return err
-		} else if me.Number == ErrNumDuplicateEntry {
+		} else if me.Number == sqlErrCodeDuplicateEntry {
 			return persistence.ErrPlayerAlreadyExists
 		}
 		return err
