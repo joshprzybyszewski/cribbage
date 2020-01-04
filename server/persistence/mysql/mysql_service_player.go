@@ -15,9 +15,9 @@ import (
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
+	gs  gameService
 	ctx context.Context
 	db  *sql.DB
-	gs  gameService
 }
 
 func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
@@ -95,6 +95,11 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 			return model.Player{}, err
 		}
 		return model.Player{}, persistence.ErrPlayerNotFound
+	}
+	// transaction is done now
+	err = tx.Commit()
+	if err != nil {
+		return model.Player{}, err
 	}
 	if len(gIDJson) > 0 {
 		err = json.Unmarshal(gIDJson, &gameIDs)
