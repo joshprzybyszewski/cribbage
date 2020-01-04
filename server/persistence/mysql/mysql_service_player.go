@@ -69,8 +69,10 @@ type playerService struct {
 	db  *sql.DB
 }
 
-func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
+func getPlayerService(gs gameService, ctx context.Context, db *sql.DB) (*playerService, error) {
+	// TODO create the player table in the db if it doesn't exist
 	return &playerService{
+		gs:  gs,
 		ctx: ctx,
 		db:  db,
 	}, nil
