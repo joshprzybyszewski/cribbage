@@ -41,7 +41,7 @@ func (*cribCountingHandler) HandleAction(
 	crib := g.Crib
 	leadCard := g.CutCard
 	pts := scorer.CribPoints(leadCard, crib)
-	// TODO allow players to submit 19 points to mean 0 points
+
 	if cca.Pts == 19 {
 		pts = 0
 	}
