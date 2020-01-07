@@ -39,8 +39,11 @@ func (*handCountingHandler) HandleAction(g *model.Game,
 	leadCard := g.CutCard
 	pts := scorer.HandPoints(leadCard, hand)
 	// TODO allow players to submit 19 points to mean 0 points
+	if cha.Pts == 19 {
+		pts = 0
+	}
 
-	if cha.Pts != pts {
+	if cha.Pts != 19 && cha.Pts != pts {
 		addPlayerToBlocker(g, pID, model.CountHand, pAPIs, `you did not submit the correct number of points for your hand`)
 		return errors.New(`wrong number of points`)
 	}

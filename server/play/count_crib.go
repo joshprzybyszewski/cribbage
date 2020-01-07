@@ -42,8 +42,11 @@ func (*cribCountingHandler) HandleAction(
 	leadCard := g.CutCard
 	pts := scorer.CribPoints(leadCard, crib)
 	// TODO allow players to submit 19 points to mean 0 points
+	if cca.Pts == 19 {
+		pts = 0
+	}
 
-	if cca.Pts != pts {
+	if cca.Pts != 19 && cca.Pts != pts {
 		addPlayerToBlocker(g, pID, model.CountCrib, pAPIs, `you did not submit the correct number of points for the crib`)
 		return errors.New(`wrong number of points`)
 	}
