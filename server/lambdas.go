@@ -19,7 +19,6 @@ func HandleAction(ctx context.Context, action model.PlayerAction) error {
 	if err != nil {
 		return err
 	}
-
 	return handleAction(ctx, db, action)
 }
 
@@ -33,12 +32,10 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 	if err != nil {
 		return err
 	}
-
 	err = play.HandleAction(&g, action, pAPIs)
 	if err != nil {
 		return err
 	}
-
 	return db.SaveGame(g)
 }
 
@@ -77,7 +74,7 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 	}
 
 	for _, pID := range pIDs {
-		err := db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
+		err = db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
 		if err != nil {
 			return model.Game{}, err
 		}

@@ -42,7 +42,7 @@ func (*handCountingHandler) HandleAction(g *model.Game,
 
 	if cha.Pts != pts {
 		addPlayerToBlocker(g, pID, model.CountHand, pAPIs, `you did not submit the correct number of points for your hand`)
-		return nil
+		return errors.New(`wrong number of points`)
 	}
 
 	addPoints(g, pID, pts, pAPIs, `hand (`+leadCard.String()+`: `+handString(hand)+`)`)

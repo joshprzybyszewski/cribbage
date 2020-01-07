@@ -7,6 +7,7 @@ import (
 const (
 	Unset Mode = iota
 	Localhost
+	NPC
 	Unknown
 )
 

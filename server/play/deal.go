@@ -19,6 +19,7 @@ func (*dealingHandler) Start(g *model.Game, pAPIs map[model.PlayerID]interaction
 	}
 	g.Crib = g.Crib[:0]
 	g.CutCard = model.Card{}
+	g.PeggedCards = g.PeggedCards[:0]
 
 	addPlayerToBlocker(g, g.CurrentDealer, model.DealCards, pAPIs, ``)
 
