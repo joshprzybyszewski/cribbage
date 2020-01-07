@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -12,67 +11,16 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-type dbPlayer struct {
-	id      model.PlayerID
-	name    string
-	gIDJson []byte
-}
-
-func playerToDBPlayer(p model.Player) (dbPlayer, error) {
-	res := dbPlayer{
-		id:   p.ID,
-		name: p.Name,
-	}
-	if len(p.Games) > 0 {
-		gIDs := make([]model.GameID, 0, len(p.Games))
-		for gID := range p.Games {
-			gIDs = append(gIDs, gID)
-		}
-		j, err := json.Marshal(gIDs)
-		if err != nil {
-			return dbPlayer{}, err
-		}
-		res.gIDJson = j
-	}
-	return res, nil
-}
-
-func dbPlayerToPlayer(p dbPlayer, gs gameService) (model.Player, error) {
-	res := model.Player{
-		ID:   p.id,
-		Name: p.name,
-	}
-	var gameIDs []model.GameID
-	if len(p.gIDJson) > 0 {
-		err := json.Unmarshal(p.gIDJson, &gameIDs)
-		if err != nil {
-			return model.Player{}, err
-		}
-		gameMap := make(map[model.GameID]model.PlayerColor, len(gameIDs))
-		for _, id := range gameIDs {
-			g, err := gs.Get(id)
-			if err != nil {
-				return model.Player{}, err
-			}
-			gameMap[id] = g.PlayerColors[res.ID]
-		}
-		res.Games = gameMap
-	}
-	return res, nil
-}
-
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
-	gs  gameService
 	ctx context.Context
 	db  *sql.DB
 }
 
-func getPlayerService(gs gameService, ctx context.Context, db *sql.DB) (*playerService, error) {
+func getPlayerService(ctx context.Context, db *sql.DB) (*playerService, error) {
 	// TODO create the player table in the db if it doesn't exist
 	return &playerService{
-		gs:  gs,
 		ctx: ctx,
 		db:  db,
 	}, nil
@@ -85,11 +33,6 @@ func (ps *playerService) beginTx() (*sql.Tx, error) {
 }
 
 func (ps *playerService) Create(p model.Player) error {
-	dbp, err := playerToDBPlayer(p)
-	if err != nil {
-		return err
-	}
-
 	tx, err := ps.beginTx()
 	if err != nil {
 		return err
@@ -98,12 +41,12 @@ func (ps *playerService) Create(p model.Player) error {
 	// The rollback will be ignored if the tx has been committed later in the function.
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO `+playerTableName+` VALUES ( ?, ?, ? )`)
+	stmt, err := tx.PrepareContext(ps.ctx, `INSERT INTO `+playerTableName+` VALUES ( ?, ?)`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.ExecContext(ps.ctx, dbp.id, dbp.name, dbp.gIDJson)
+	_, err = stmt.ExecContext(ps.ctx, p.ID, p.Name)
 
 	if err != nil {
 		if me, ok := err.(*mysql.MySQLError); !ok {
@@ -135,8 +78,8 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 
 	r := stmt.QueryRowContext(ps.ctx, id)
 
-	dbp := dbPlayer{}
-	err = r.Scan(&dbp.id, &dbp.name, &dbp.gIDJson)
+	p := model.Player{}
+	err = r.Scan(&p.ID, &p.Name)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return model.Player{}, err
@@ -148,10 +91,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	if err != nil {
 		return model.Player{}, err
 	}
-	p, err := dbPlayerToPlayer(dbp, ps.gs)
-	if err != nil {
-		return model.Player{}, err
-	}
+	// TODO query the games table to populate Games on p
 	return p, nil
 }
 
@@ -174,31 +114,6 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 		return nil
 	}
 	p.Games[gID] = color
-
-	dbp, err := playerToDBPlayer(p)
-	if err != nil {
-		return err
-	}
-
-	tx, err := ps.beginTx()
-	if err != nil {
-		return err
-	}
-
-	stmt, err := tx.PrepareContext(ps.ctx, `UPDATE `+playerTableName+` SET gameIDs = ? WHERE id = ?`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ps.ctx, dbp.gIDJson, dbp.id)
-	if err != nil {
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
+	// TODO update this game in the games table
 	return nil
 }
