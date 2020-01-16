@@ -24,3 +24,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 func (gs *gameService) Save(g model.Game) error {
 	return nil
 }
+
+func decodeHand(cards uint64, idx int) model.Card {
+	// we need 6 bits per card to store 0-51
+	bitsToShift := uint(idx * 6)
+	cardRank := int((cards >> bitsToShift) & 0x3F)
+	return model.NewCardFromNumber(cardRank)
+}
