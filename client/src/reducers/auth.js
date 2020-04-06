@@ -1,4 +1,4 @@
-import { LOGIN_SUCCESS, REGISTER_SUCCESS } from './types';
+import { LOGIN_SUCCESS, REGISTER_SUCCESS } from '../actions/types';
 
 const initialState = {
   user: '',
