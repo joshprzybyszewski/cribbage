@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import Landing from './components/layout/Landing';
+import './App.css';
 
 function App() {
   return (
-    <div>
-      <Landing />
-    </div>
+    <Fragment>
+      <section className='container'>
+        <Landing />
+      </section>
+    </Fragment>
   );
 }
 
