@@ -1,6 +1,9 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, Profiler } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { login, register } from '../../actions/auth';
 
-export default () => {
+const Landing = ({ login, register }) => {
   const [formData, setFormData] = useState({
     username: '',
     displayName: '',
@@ -9,9 +12,13 @@ export default () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {};
+  const onSubmit = (e) => {
+    login(formData.username);
+  };
 
-  const handleRegister = (e) => {};
+  const handleRegister = (e) => {
+    register(formData.username);
+  };
 
   return (
     <Fragment>
@@ -39,10 +46,21 @@ export default () => {
         <button type='submit' className='btn btn-primary my-1'>
           Login
         </button>
-        <button onClick={(e) => handleRegister(e)} className='btn my-1'>
+        <button
+          type='button'
+          onClick={(e) => handleRegister(e)}
+          className='btn my-1'
+        >
           Register
         </button>
       </form>
     </Fragment>
   );
 };
+
+Landing.propTypes = {
+  login: PropTypes.func.isRequired,
+  register: PropTypes.func.isRequired,
+};
+
+export default connect(null, { login, register })(Landing);
