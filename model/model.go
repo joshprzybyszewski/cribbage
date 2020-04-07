@@ -54,6 +54,7 @@ func (c PlayerColor) String() string {
 }
 
 type Player struct {
+	Auth
 	ID    PlayerID               `protobuf:"varint,1,req,name=id,proto3" json:"id" bson:"id"`                           //nolint:lll
 	Name  string                 `protobuf:"string,2,req,name=name,proto3" json:"n" bson:"n"`                           //nolint:lll
 	Games map[GameID]PlayerColor `protobuf:"map<varint, varint>,3,opt,name=games,proto3" json:"gs,omitempty" bson:"gs"` //nolint:lll
