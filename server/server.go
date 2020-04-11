@@ -4,10 +4,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/joshprzybyszewski/cribbage/auth"
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -18,6 +20,13 @@ type cribbageServer struct {
 }
 
 func (cs *cribbageServer) Serve() {
+	authService = auth.New(auth.ProviderData{
+		Provider:     auth.Google,
+		RedirectURL:  `http://localhost:8080/auth/cb`,
+		ClientID:     os.Getenv(`OAUTH_GOOGLE_CLIENT_ID`),
+		ClientSecret: os.Getenv(`OAUTH_GOOGLE_CLIENT_SECRET`),
+	})
+
 	router := gin.Default()
 
 	router.GET("/ping", func(c *gin.Context) {
@@ -25,6 +34,9 @@ func (cs *cribbageServer) Serve() {
 			"message": "pong",
 		})
 	})
+
+	router.GET(`/auth`, cs.ginGetAuthURL)
+	router.GET(`/auth/cb`, cs.ginGetAuthToken)
 
 	// Simple group: create
 	create := router.Group("/create")

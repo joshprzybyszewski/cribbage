@@ -1,47 +1,27 @@
 package server
 
 import (
-	"errors"
+	"context"
+	"fmt"
+	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/gin-gonic/gin"
+	"github.com/joshprzybyszewski/cribbage/auth"
 )
 
-type AuthService struct {
-	db persistence.DB
+var authService *auth.AuthService
+
+func (cs *cribbageServer) ginGetAuthURL(c *gin.Context) {
+	url := authService.GetAuthURL()
+	c.String(http.StatusOK, url)
 }
 
-func NewAuthService(db persistence.DB) AuthService {
-	return AuthService{
-		db: db,
-	}
-}
-
-func (as *AuthService) RegisterUser(username, password string) error {
-	if len(password) < 6 {
-		return errors.New(`password must be at least 6 characters`)
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+func (cs *cribbageServer) ginGetAuthToken(c *gin.Context) {
+	state, code := c.Query(`state`), c.Query(`code`)
+	fmt.Println(`hit callback!`)
+	tok, err := authService.GetAccessToken(context.Background(), state, code)
 	if err != nil {
-		return err
+		c.String(http.StatusInternalServerError, err.Error())
 	}
-	player := model.Player{
-		Auth: model.Auth{
-			Username: username,
-			Password: string(hash),
-		},
-		Name: username,
-	}
-	return as.db.CreatePlayer(player)
-}
-
-func (as *AuthService) LoginUser(username, password string) error {
-	// TODO is the PlayerID the username?
-	player, err := as.db.GetPlayer(model.PlayerID(username))
-	if err != nil {
-		return err
-	}
-	return bcrypt.CompareHashAndPassword([]byte(player.Auth.Password), []byte(password))
+	c.String(http.StatusOK, tok)
 }
