@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/joho/godotenv"
 	"github.com/joshprzybyszewski/cribbage/localclient"
 	"github.com/joshprzybyszewski/cribbage/server"
 )
@@ -12,7 +13,6 @@ var (
 )
 
 func main() {
-
 	flag.Parse()
 
 	if *client {
@@ -22,8 +22,12 @@ func main() {
 		}
 		return
 	}
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 
-	err := playServer()
+	err = playServer()
 	if err != nil {
 		panic(err)
 	}
