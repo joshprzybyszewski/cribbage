@@ -1,4 +1,4 @@
-import React, { Fragment, useState, Profiler } from 'react';
+import React, { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { login, register } from '../../actions/auth';
@@ -9,24 +9,24 @@ const Landing = ({ login, register }) => {
     displayName: '',
   });
 
-  const onChange = (e) =>
+  const onChange = e =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = e => {
     login(formData.username);
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = e => {
     register(formData.username);
   };
 
   return (
     <Fragment>
       <h1 className='large text-primary'>Welcome to Cribbage!</h1>
-      <form className='form' onSubmit={(e) => onSubmit(e)}>
+      <form className='form' onSubmit={e => onSubmit(e)}>
         <div className='form-group'>
           <input
-            onChange={(e) => onChange(e)}
+            onChange={e => onChange(e)}
             type='text'
             placeholder='Username'
             name='username'
@@ -35,7 +35,7 @@ const Landing = ({ login, register }) => {
         </div>
         <div className='form-group'>
           <input
-            onChange={(e) => onChange(e)}
+            onChange={e => onChange(e)}
             type='text'
             placeholder='Display Name'
             name='displayName'
@@ -48,7 +48,7 @@ const Landing = ({ login, register }) => {
         </button>
         <button
           type='button'
-          onClick={(e) => handleRegister(e)}
+          onClick={e => handleRegister(e)}
           className='btn my-1'
         >
           Register
