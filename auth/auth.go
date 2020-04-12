@@ -7,6 +7,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
 )
 
@@ -17,7 +18,8 @@ var (
 type Service string
 
 const (
-	Google Service = `google`
+	Google   Service = `google`
+	Facebook Service = `facebook`
 )
 
 // Service provides methods to use OAuth2
@@ -35,6 +37,13 @@ func New() *Provider {
 				ClientSecret: os.Getenv(`OAUTH_GOOGLE_CLIENT_SECRET`),
 				Scopes:       []string{`https://www.googleapis.com/auth/userinfo.email`},
 				Endpoint:     google.Endpoint,
+			},
+			Facebook: {
+				RedirectURL:  `http://localhost:8080/auth/` + string(Facebook) + `/cb`,
+				ClientID:     os.Getenv(`OAUTH_FACEBOOK_CLIENT_ID`),
+				ClientSecret: os.Getenv(`OAUTH_FACEBOOK_CLIENT_SECRET`),
+				Scopes:       []string{`public_profile`, `email`},
+				Endpoint:     facebook.Endpoint,
 			},
 		},
 		oauthStateString: rand.String(16),
