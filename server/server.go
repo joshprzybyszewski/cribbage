@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -110,7 +109,6 @@ func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
 	player, err := getPlayer(model.PlayerID(u))
 	if err != nil {
 		if err == persistence.ErrPlayerNotFound {
-			fmt.Println(`player not found`)
 			c.String(http.StatusUnauthorized, `Invalid credentials`)
 			return
 		}
@@ -122,7 +120,6 @@ func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
 		return
 	}
 	if !isAuthorized {
-		fmt.Println(`passwords don't match`)
 		c.String(http.StatusUnauthorized, `Invalid credentials`)
 		return
 	}

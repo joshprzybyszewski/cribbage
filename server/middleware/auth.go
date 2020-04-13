@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -22,7 +21,6 @@ func Auth() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		fmt.Println(`setting user to: ` + user)
 		c.Set(`user`, user)
 	}
 }
