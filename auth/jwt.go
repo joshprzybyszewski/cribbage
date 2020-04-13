@@ -45,9 +45,12 @@ func (js JWTService) CreateCookie(username string) (http.Cookie, error) {
 		return http.Cookie{}, err
 	}
 	return http.Cookie{
-		Name:    `token`,
-		Value:   tokStr,
-		Expires: expTime,
+		Name:     `token`,
+		Value:    tokStr,
+		Expires:  expTime,
+		MaxAge:   int(js.validFor.Seconds()),
+		Secure:   false,
+		HttpOnly: true,
 	}, nil
 }
 

@@ -92,12 +92,12 @@ func (cs *cribbageServer) ginPostRegister(c *gin.Context) {
 	}
 	// TODO make the key more secret (environment var), change expiration duration to much shorter
 	jwtSvc := auth.NewJWTService(`somethingSecret`, time.Minute*180)
-	tok, err := jwtSvc.CreateToken(creds.Username)
+	cookie, err := jwtSvc.CreateCookie(creds.Username)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.JSON(http.StatusOK, tok)
+	c.SetCookie(cookie.Name, cookie.Value, cookie.MaxAge, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
 }
 
 func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
@@ -124,12 +124,12 @@ func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
 		return
 	}
 	jwtSvc := auth.NewJWTService(`somethingSecret`, time.Minute*180)
-	tok, err := jwtSvc.CreateToken(player.Credentials.Username)
+	cookie, err := jwtSvc.CreateCookie(player.Credentials.Username)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.JSON(http.StatusOK, tok)
+	c.SetCookie(cookie.Name, cookie.Value, cookie.MaxAge, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
 }
 
 func decodeUserAndPass(c *gin.Context) (string, string, error) {
