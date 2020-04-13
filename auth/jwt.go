@@ -18,13 +18,13 @@ type Token struct {
 
 // JWTService is used to generate tokens
 type JWTService struct {
-	jwtKey   string
+	jwtKey   []byte
 	validFor time.Duration
 }
 
 func NewJWTService(key string, validFor time.Duration) JWTService {
 	return JWTService{
-		jwtKey:   key,
+		jwtKey:   []byte(key),
 		validFor: validFor,
 	}
 }
