@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/joshprzybyszewski/cribbage/server/middleware"
+
 	"github.com/joshprzybyszewski/cribbage/auth"
 
 	"github.com/gin-gonic/gin"
@@ -37,6 +39,14 @@ func (cs *cribbageServer) Serve() {
 	{
 		authGroup.POST(`/login`, cs.ginPostLogin)
 		authGroup.POST(`/register`, cs.ginPostRegister)
+	}
+	// Group: private
+	private := router.Group(`/private`)
+	private.Use(middleware.Auth())
+	{
+		private.GET(`/`, func(c *gin.Context) {
+			c.String(http.StatusOK, `SUPER SECRET, user: %s`, c.GetString(`user`))
+		})
 	}
 
 	// Simple group: create
