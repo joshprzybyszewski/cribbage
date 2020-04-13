@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -64,8 +66,17 @@ func (cs *cribbageServer) ginPostRegister(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO store these in the DB
 	creds, err := auth.NewCredentials(u, p)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	player := model.Player{
+		Credentials: creds,
+		ID:          model.PlayerID(creds.Username),
+		Name:        `player`,
+	}
+	err = createPlayer(context.Background(), player)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -81,12 +92,37 @@ func (cs *cribbageServer) ginPostRegister(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
-	u, _, err := decodeUserAndPass(c)
+	u, p, err := decodeUserAndPass(c)
 	if err != nil {
-		c.String(http.StatusInternalServerError, `something went wrong :(`)
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
 	}
-	// TODO get the user from the DB, make sure the password matches, respond with the JWT
-	c.String(http.StatusNotImplemented, `user: `+u+` tried to log in. logging in not yet supported :shrug:`)
+	player, err := getPlayer(model.PlayerID(u))
+	if err != nil {
+		if err == persistence.ErrPlayerNotFound {
+			fmt.Println(`player not found`)
+			c.String(http.StatusUnauthorized, `Invalid credentials`)
+			return
+		}
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+	}
+	isAuthorized, err := auth.ValidateCredentials(u, p, player.Credentials)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	if !isAuthorized {
+		fmt.Println(`passwords don't match`)
+		c.String(http.StatusUnauthorized, `Invalid credentials`)
+		return
+	}
+	jwtSvc := auth.NewJWTService(`somethingSecret`, time.Minute*180)
+	tok, err := jwtSvc.CreateToken(player.Credentials.Username)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	c.JSON(http.StatusOK, tok)
 }
 
 func decodeUserAndPass(c *gin.Context) (string, string, error) {
