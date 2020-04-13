@@ -6,8 +6,8 @@ import (
 
 // Credentials are used to authorize a user
 type Credentials struct {
-	Username     string
-	PasswordHash string
+	Username     string `json:"username"`
+	PasswordHash string `json:"-"`
 }
 
 // NewCredentials takes a username and plaintext password, hashes the password, and returns Credentials
