@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -30,19 +31,24 @@ func NewJWTService(key string, validFor time.Duration) JWTService {
 	}
 }
 
-// CreateToken creates and signs a JSON web token
-func (js JWTService) CreateToken(username string) (Token, error) {
+// CreateCookie creates and signs a JSON web token and puts it into a cookie to be sent to the client
+func (js JWTService) CreateCookie(username string) (http.Cookie, error) {
+	expTime := time.Now().Add(js.validFor)
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims{
 		Username: username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(js.validFor).Unix(),
+			ExpiresAt: expTime.Unix(),
 		},
 	})
 	tokStr, err := tok.SignedString(js.jwtKey)
 	if err != nil {
-		return Token{}, err
+		return http.Cookie{}, err
 	}
-	return Token{Token: tokStr}, nil
+	return http.Cookie{
+		Name:    `token`,
+		Value:   tokStr,
+		Expires: expTime,
+	}, nil
 }
 
 // ValidateAndParseToken makes sure the token is valid given the token key, then returns the username contained within
