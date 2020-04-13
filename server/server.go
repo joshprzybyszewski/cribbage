@@ -1,10 +1,14 @@
 package server
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
+
+	"github.com/joshprzybyszewski/cribbage/auth"
 
 	"github.com/gin-gonic/gin"
 
@@ -26,6 +30,13 @@ func (cs *cribbageServer) Serve() {
 		})
 	})
 
+	// Group: auth
+	authGroup := router.Group(`/auth`)
+	{
+		authGroup.POST(`/login`, cs.ginPostLogin)
+		authGroup.POST(`/register`, cs.ginPostRegister)
+	}
+
 	// Simple group: create
 	create := router.Group("/create")
 	{
@@ -45,6 +56,49 @@ func (cs *cribbageServer) Serve() {
 	if err != nil {
 		log.Printf("router.Run errored: %+v\n", err)
 	}
+}
+
+func (cs *cribbageServer) ginPostRegister(c *gin.Context) {
+	u, p, err := decodeUserAndPass(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	// TODO store these in the DB
+	creds, err := auth.NewCredentials(u, p)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	// TODO make the key more secret (environment var), change expiration duration to much shorter
+	jwtSvc := auth.NewJWTService(`somethingSecret`, time.Minute*180)
+	tok, err := jwtSvc.CreateToken(creds.Username)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	c.JSON(http.StatusOK, tok)
+}
+
+func (cs *cribbageServer) ginPostLogin(c *gin.Context) {
+	u, _, err := decodeUserAndPass(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `something went wrong :(`)
+	}
+	// TODO get the user from the DB, make sure the password matches, respond with the JWT
+	c.String(http.StatusNotImplemented, `user: `+u+` tried to log in. logging in not yet supported :shrug:`)
+}
+
+func decodeUserAndPass(c *gin.Context) (string, string, error) {
+	var creds struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	err := json.NewDecoder(c.Request.Body).Decode(&creds)
+	if err != nil {
+		return ``, ``, err
+	}
+	return creds.Username, creds.Password, nil
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
