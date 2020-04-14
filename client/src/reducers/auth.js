@@ -1,4 +1,4 @@
-import { LOGIN } from '../sagas/types';
+import { LOGIN, REGISTER } from '../sagas/types';
 
 const initialState = {
   user: '',
@@ -7,7 +7,10 @@ const initialState = {
 export default (state = initialState, { type, payload }) => {
   switch (type) {
     case LOGIN:
-      console.log(`PAYLOAD: ${payload}`);
+      console.log(`LOGIN: ${payload}`);
+      return { ...state, user: payload };
+    case REGISTER:
+      console.log(`REGISTER: ${payload}`);
       return { ...state, user: payload };
     default:
       return state;

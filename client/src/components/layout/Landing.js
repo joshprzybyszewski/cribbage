@@ -2,9 +2,9 @@ import React from 'react';
 import { Button, Space } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { LOGIN_ASYNC } from '../../sagas/types';
+import { LOGIN_ASYNC, REGISTER_ASYNC } from '../../sagas/types';
 
-const Landing = ({ loginAsync }) => {
+const Landing = ({ loginAsync, registerAsync }) => {
   return (
     <section className="landing">
       <div className="dark-overlay">
@@ -15,7 +15,9 @@ const Landing = ({ loginAsync }) => {
             <Button onClick={(e) => loginAsync()} size="large" type="primary">
               Login
             </Button>
-            <Button size="large">Register</Button>
+            <Button onClick={(e) => registerAsync()} size="large">
+              Register
+            </Button>
           </Space>
         </div>
       </div>
@@ -30,6 +32,7 @@ Landing.propTypes = {
 const mapDispatchToProps = (dispatch) => {
   return {
     loginAsync: () => dispatch({ type: LOGIN_ASYNC, payload: `user!` }),
+    registerAsync: () => dispatch({ type: REGISTER_ASYNC, payload: `user!` }),
   };
 };
 
