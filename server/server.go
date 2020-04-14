@@ -9,15 +9,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joshprzybyszewski/cribbage/server/middleware"
-
-	"github.com/joshprzybyszewski/cribbage/auth"
-
 	"github.com/gin-gonic/gin"
 
+	"github.com/joshprzybyszewski/cribbage/auth"
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/middleware"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
