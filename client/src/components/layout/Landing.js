@@ -12,10 +12,10 @@ const Landing = ({ loginAsync, registerAsync }) => {
           <h1>Welcome to Cribbage!</h1>
           <p>Login or register to play cribbage against your friends online</p>
           <Space>
-            <Button onClick={(e) => loginAsync()} size="large" type="primary">
+            <Button onClick={e => loginAsync()} size="large" type="primary">
               Login
             </Button>
-            <Button onClick={(e) => registerAsync()} size="large">
+            <Button onClick={e => registerAsync()} size="large">
               Register
             </Button>
           </Space>
@@ -29,7 +29,7 @@ Landing.propTypes = {
   loginAsync: PropTypes.func.isRequired,
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = dispatch => {
   return {
     loginAsync: () => dispatch({ type: LOGIN_ASYNC, payload: `user!` }),
     registerAsync: () => dispatch({ type: REGISTER_ASYNC, payload: `user!` }),
