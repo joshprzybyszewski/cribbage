@@ -1,16 +1,14 @@
-import { LOGIN_SUCCESS, REGISTER_SUCCESS } from '../actions/types';
+import { LOGIN } from '../sagas/types';
 
 const initialState = {
   user: '',
-  loading: true,
 };
 
 export default (state = initialState, { type, payload }) => {
   switch (type) {
-    case LOGIN_SUCCESS:
-      return { ...state, user: payload, loading: false };
-    case REGISTER_SUCCESS:
-      return { ...state, user: payload, loading: false };
+    case LOGIN:
+      console.log(`PAYLOAD: ${payload}`);
+      return { ...state, user: payload };
     default:
       return state;
   }

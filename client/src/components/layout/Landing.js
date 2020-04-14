@@ -2,20 +2,20 @@ import React from 'react';
 import { Button, Space } from 'antd';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { login, register } from '../../actions/auth';
+import { LOGIN_ASYNC } from '../../sagas/types';
 
-const Landing = props => {
+const Landing = ({ loginAsync }) => {
   return (
-    <section className='landing'>
-      <div className='dark-overlay'>
-        <div className='landing-inner'>
+    <section className="landing">
+      <div className="dark-overlay">
+        <div className="landing-inner">
           <h1>Welcome to Cribbage!</h1>
           <p>Login or register to play cribbage against your friends online</p>
           <Space>
-            <Button size='large' type='primary'>
+            <Button onClick={(e) => loginAsync()} size="large" type="primary">
               Login
             </Button>
-            <Button size='large'>Register</Button>
+            <Button size="large">Register</Button>
           </Space>
         </div>
       </div>
@@ -24,8 +24,13 @@ const Landing = props => {
 };
 
 Landing.propTypes = {
-  login: PropTypes.func.isRequired,
-  register: PropTypes.func.isRequired,
+  loginAsync: PropTypes.func.isRequired,
 };
 
-export default connect(null, { login, register })(Landing);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    loginAsync: () => dispatch({ type: LOGIN_ASYNC, payload: `user!` }),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(Landing);
