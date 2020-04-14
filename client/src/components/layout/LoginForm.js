@@ -1,16 +1,25 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
+import { LOGIN_ASYNC } from '../../sagas/types';
 
-const LoginForm = props => {
+const LoginForm = ({ loginAsync }) => {
+  const onFinish = vals => {
+    loginAsync(vals.username);
+  };
   return (
-    <Form onFinish={vals => console.log(vals)}>
-      <Form.Item name="username" label="Username">
-        <Input placeholder="Username" prefix={<UserOutlined />} />
+    <Form onFinish={onFinish}>
+      <Form.Item
+        name='username'
+        label='Username'
+        rules={[{ required: true, message: 'Please input your username!' }]}
+      >
+        <Input placeholder='Username' prefix={<UserOutlined />} />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type='primary' htmlType='submit'>
           Login
         </Button>
       </Form.Item>
@@ -18,6 +27,14 @@ const LoginForm = props => {
   );
 };
 
-LoginForm.propTypes = {};
+LoginForm.propTypes = {
+  loginAsync: PropTypes.func.isRequired,
+};
 
-export default LoginForm;
+const mapDispatchToProps = dispatch => {
+  return {
+    loginAsync: username => dispatch({ type: LOGIN_ASYNC, payload: username }),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(LoginForm);

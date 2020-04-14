@@ -15,12 +15,12 @@ const Landing = props => {
 
   const [tabKey, setTabKey] = useState('login');
   return (
-    <section className="landing">
-      <div className="dark-overlay">
-        <div className="landing-inner">
+    <section className='landing'>
+      <div className='dark-overlay'>
+        <div className='landing-inner'>
           <h1>Welcome to Cribbage!</h1>
           <Card
-            title="Login or register to play cribbage against your friends online"
+            title='Login or register to play cribbage against your friends online'
             tabList={tabList}
             activeTabKey={tabKey}
             onTabChange={k => setTabKey(k)}
