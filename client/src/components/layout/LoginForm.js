@@ -6,11 +6,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { LOGIN_ASYNC } from '../../sagas/types';
 
 const LoginForm = ({ loginAsync }) => {
-  const onFinish = formData => {
-    loginAsync(formData);
-  };
   return (
-    <Form onFinish={onFinish}>
+    <Form onFinish={formData => loginAsync(formData)}>
       <Form.Item
         name='username'
         label='Username'

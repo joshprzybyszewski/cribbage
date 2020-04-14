@@ -6,11 +6,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { REGISTER_ASYNC } from '../../sagas/types';
 
 const RegisterForm = ({ registerAsync }) => {
-  const onFinish = formData => {
-    registerAsync(formData);
-  };
   return (
-    <Form onFinish={onFinish}>
+    <Form onFinish={formData => registerAsync(formData)}>
       <Form.Item
         name='username'
         label='Username'
