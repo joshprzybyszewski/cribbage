@@ -6,8 +6,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { LOGIN_ASYNC } from '../../sagas/types';
 
 const LoginForm = ({ loginAsync }) => {
-  const onFinish = vals => {
-    loginAsync(vals.username);
+  const onFinish = formData => {
+    loginAsync(formData);
   };
   return (
     <Form onFinish={onFinish}>
@@ -33,7 +33,7 @@ LoginForm.propTypes = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    loginAsync: username => dispatch({ type: LOGIN_ASYNC, payload: username }),
+    loginAsync: formData => dispatch({ type: LOGIN_ASYNC, payload: formData }),
   };
 };
 

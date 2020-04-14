@@ -6,8 +6,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { REGISTER_ASYNC } from '../../sagas/types';
 
 const RegisterForm = ({ registerAsync }) => {
-  const onFinish = vals => {
-    registerAsync(vals.username);
+  const onFinish = formData => {
+    registerAsync(formData);
   };
   return (
     <Form onFinish={onFinish}>
@@ -40,8 +40,8 @@ RegisterForm.propTypes = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    registerAsync: username =>
-      dispatch({ type: REGISTER_ASYNC, payload: username }),
+    registerAsync: formData =>
+      dispatch({ type: REGISTER_ASYNC, payload: formData }),
   };
 };
 

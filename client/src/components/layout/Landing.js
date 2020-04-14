@@ -8,10 +8,6 @@ const Landing = props => {
     { key: 'login', tab: 'Login' },
     { key: 'register', tab: 'Register' },
   ];
-  const contentList = {
-    login: <LoginForm />,
-    register: <RegisterForm />,
-  };
 
   const [tabKey, setTabKey] = useState('login');
   return (
@@ -25,7 +21,7 @@ const Landing = props => {
             activeTabKey={tabKey}
             onTabChange={k => setTabKey(k)}
           >
-            {contentList[tabKey]}
+            {tabKey === 'login' ? <LoginForm /> : <RegisterForm />}
           </Card>
         </div>
       </div>
