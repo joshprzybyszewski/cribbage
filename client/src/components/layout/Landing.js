@@ -1,39 +1,36 @@
-import React from 'react';
-import { Button, Space } from 'antd';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { LOGIN_ASYNC, REGISTER_ASYNC } from '../../sagas/types';
+import React, { useState } from 'react';
+import { Card } from 'antd';
+import LoginForm from './LoginForm';
+import RegisterForm from './RegisterForm';
 
-const Landing = ({ loginAsync, registerAsync }) => {
+const Landing = props => {
+  const tabList = [
+    { key: 'login', tab: 'Login' },
+    { key: 'register', tab: 'Register' },
+  ];
+  const contentList = {
+    login: <LoginForm />,
+    register: <RegisterForm />,
+  };
+
+  const [tabKey, setTabKey] = useState('login');
   return (
     <section className="landing">
       <div className="dark-overlay">
         <div className="landing-inner">
           <h1>Welcome to Cribbage!</h1>
-          <p>Login or register to play cribbage against your friends online</p>
-          <Space>
-            <Button onClick={e => loginAsync()} size="large" type="primary">
-              Login
-            </Button>
-            <Button onClick={e => registerAsync()} size="large">
-              Register
-            </Button>
-          </Space>
+          <Card
+            title="Login or register to play cribbage against your friends online"
+            tabList={tabList}
+            activeTabKey={tabKey}
+            onTabChange={k => setTabKey(k)}
+          >
+            {contentList[tabKey]}
+          </Card>
         </div>
       </div>
     </section>
   );
 };
 
-Landing.propTypes = {
-  loginAsync: PropTypes.func.isRequired,
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    loginAsync: () => dispatch({ type: LOGIN_ASYNC, payload: `user!` }),
-    registerAsync: () => dispatch({ type: REGISTER_ASYNC, payload: `user!` }),
-  };
-};
-
-export default connect(null, mapDispatchToProps)(Landing);
+export default Landing;
