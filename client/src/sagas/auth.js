@@ -1,5 +1,12 @@
-import { delay, put, takeLatest } from 'redux-saga/effects';
-import { LOGIN, LOGIN_ASYNC, REGISTER, REGISTER_ASYNC } from './types';
+import { delay, put, takeLatest, call } from 'redux-saga/effects';
+import {
+  LOGIN,
+  LOGIN_ASYNC,
+  REGISTER_FAIL,
+  REGISTER_SUCCESS,
+  REGISTER_ASYNC,
+} from './types';
+import axios from 'axios';
 
 export function* loginAsync({ payload }) {
   yield delay(1000);
@@ -7,8 +14,16 @@ export function* loginAsync({ payload }) {
 }
 
 export function* registerAsync({ payload }) {
-  yield delay(1000);
-  yield put({ type: REGISTER, payload });
+  const { username, displayName } = payload;
+  try {
+    const res = yield call(
+      axios.post,
+      `/create/player/${username}/${displayName}`
+    );
+    yield put({ type: REGISTER_SUCCESS, payload: res.data });
+  } catch (err) {
+    yield put({ type: REGISTER_FAIL, payload: err.response.data });
+  }
 }
 
 export function* watchLoginAsync() {

@@ -1,8 +1,7 @@
-import { LOGIN, REGISTER } from '../sagas/types';
+import { LOGIN, REGISTER_FAIL, REGISTER_SUCCESS } from '../sagas/types';
 
 const initialState = {
-  user: '',
-  displayName: '',
+  player: {},
 };
 
 export default (state = initialState, { type, payload }) => {
@@ -10,10 +9,11 @@ export default (state = initialState, { type, payload }) => {
     case LOGIN:
       console.log(`LOGIN: ${payload.username}`);
       return { ...state, user: payload.username };
-    case REGISTER:
-      console.log(
-        `REGISTER: ${payload.username} with displayName = ${payload.displayName}`
-      );
+    case REGISTER_FAIL:
+      console.log(`REGISTER ERRORED: ${payload}`);
+      return state;
+    case REGISTER_SUCCESS:
+      console.log(`REGISTERED PLAYER: ${payload}`);
       return { ...state, ...payload };
     default:
       return state;
