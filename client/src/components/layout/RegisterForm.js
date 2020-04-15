@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { REGISTER_ASYNC } from '../../sagas/types';
+import { register } from '../../sagas/auth';
 
-const RegisterForm = ({ registerAsync }) => {
+const RegisterForm = ({ register }) => {
   return (
-    <Form onFinish={formData => registerAsync(formData)}>
+    <Form onFinish={formData => register(formData)}>
       <Form.Item
         name='username'
         label='Username'
@@ -32,13 +32,13 @@ const RegisterForm = ({ registerAsync }) => {
 };
 
 RegisterForm.propTypes = {
-  registerAsync: PropTypes.func.isRequired,
+  register: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    registerAsync: formData =>
-      dispatch({ type: REGISTER_ASYNC, payload: formData }),
+    register: formData =>
+      dispatch(register(formData.username, formData.displayName)),
   };
 };
 
