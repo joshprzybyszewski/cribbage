@@ -6,7 +6,9 @@ import { Alert as AntAlert } from 'antd';
 const Alert = ({ alerts }) =>
   alerts !== null &&
   alerts.length > 0 &&
-  alerts.map(a => <AntAlert message={a.message} type={a.type} showIcon />);
+  alerts.map(a => (
+    <AntAlert key={a.id} message={a.message} type={a.type} showIcon />
+  ));
 
 Alert.propTypes = {
   alerts: PropTypes.array.isRequired,
