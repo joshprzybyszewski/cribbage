@@ -7,6 +7,7 @@ import {
   REGISTER_ASYNC,
 } from './types';
 import axios from 'axios';
+import { setAlert } from './alert';
 
 export function* loginAsync({ payload }) {
   yield delay(1000);
@@ -22,6 +23,7 @@ export function* registerAsync({ payload }) {
     );
     yield put({ type: REGISTER_SUCCESS, payload: res.data });
   } catch (err) {
+    yield put(setAlert(err.response.data, 'error'));
     yield put({ type: REGISTER_FAIL, payload: err.response.data });
   }
 }

@@ -10,10 +10,8 @@ export default (state = initialState, { type, payload }) => {
       console.log(`LOGIN: ${payload.username}`);
       return { ...state, user: payload.username };
     case REGISTER_FAIL:
-      console.log(`REGISTER ERRORED: ${payload}`);
-      return state;
+      return { ...state, player: {} };
     case REGISTER_SUCCESS:
-      console.log(`REGISTERED PLAYER: ${payload}`);
       return { ...state, ...payload };
     default:
       return state;
