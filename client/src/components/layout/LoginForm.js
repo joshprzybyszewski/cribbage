@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { LOGIN_ASYNC } from '../../sagas/types';
+import { login } from '../../sagas/auth';
 
-const LoginForm = ({ loginAsync }) => {
+const LoginForm = ({ login }) => {
   return (
-    <Form onFinish={formData => loginAsync(formData)}>
+    <Form onFinish={formData => login(formData)}>
       <Form.Item
         name='username'
         label='Username'
@@ -25,12 +25,12 @@ const LoginForm = ({ loginAsync }) => {
 };
 
 LoginForm.propTypes = {
-  loginAsync: PropTypes.func.isRequired,
+  login: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    loginAsync: formData => dispatch({ type: LOGIN_ASYNC, payload: formData }),
+    login: formData => dispatch(login(formData.username)),
   };
 };
 
