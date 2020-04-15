@@ -1,8 +1,8 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import store from './store';
-import Alert from './components/Alert';
-import Landing from './components/layout/Landing';
+import Alert from './components/layout/Alert';
+import Landing from './components/landing/Landing';
 import './App.css';
 
 function App() {
