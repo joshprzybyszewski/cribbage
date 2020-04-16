@@ -24,9 +24,7 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	// Simple group: create
 	create := router.Group(`/create`)
 	{
-		create.POST(`/game/:player1/:player2`, cs.ginPostCreateGame)
-		create.POST(`/game/:player1/:player2/:player3`, cs.ginPostCreateGame)
-		create.POST(`/game/:player1/:player2/:player3/:player4`, cs.ginPostCreateGame)
+		create.POST(`/game`, cs.ginPostCreateGame)
 		create.POST(`/player`, cs.ginPostCreatePlayer)
 		create.POST(`/interaction/:playerId/:mode/:info`, cs.ginPostCreateInteraction)
 	}
@@ -53,38 +51,33 @@ func (cs *cribbageServer) Serve() {
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
-	var pIDs []model.PlayerID
-
-	pID := getPlayerID(c, `player1`)
-	if pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, `Needs player1`)
+	var cgr network.CreateGameRequest
+	err := c.ShouldBindJSON(&cgr)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	pIDs = append(pIDs, pID)
-
-	pID = getPlayerID(c, `player2`)
-	if pID == model.InvalidPlayerID {
+	switch len(cgr.PlayerIDs) {
+	case 1:
+		c.String(http.StatusBadRequest, `Needs player1`)
+		return
+	case 2:
 		c.String(http.StatusBadRequest, `Needs player2`)
 		return
 	}
-	pIDs = append(pIDs, pID)
-
-	pID = getPlayerID(c, `player3`)
-	if pID != model.InvalidPlayerID {
-		pIDs = append(pIDs, pID)
+	for i, pID := range cgr.PlayerIDs {
+		if pID == model.InvalidPlayerID {
+			c.String(http.StatusBadRequest, `Invalid player ID at index %d`, i)
+			return
+		}
 	}
 
-	pID = getPlayerID(c, `player4`)
-	if pID != model.InvalidPlayerID {
-		pIDs = append(pIDs, pID)
-	}
-
-	if len(pIDs) < model.MinPlayerGame || len(pIDs) > model.MaxPlayerGame {
-		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(pIDs))
+	if len(cgr.PlayerIDs) < model.MinPlayerGame || len(cgr.PlayerIDs) > model.MaxPlayerGame {
+		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(cgr.PlayerIDs))
 		return
 	}
 
-	g, err := createGameFromIDs(pIDs)
+	g, err := createGameFromIDs(cgr.PlayerIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
