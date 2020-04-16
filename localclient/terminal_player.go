@@ -293,7 +293,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 		return nil, err
 	}
 
-	return bytes, nil
+	return resBytes, nil
 }
 
 func (tc *terminalClient) createPlayer() error {
