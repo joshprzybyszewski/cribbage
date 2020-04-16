@@ -7,8 +7,15 @@ import { UserOutlined } from '@ant-design/icons';
 import { login } from '../../sagas/auth';
 
 const LoginForm = ({ login, history }) => {
+  const layout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 18 },
+  };
+  const tailLayout = {
+    wrapperCol: { offset: 6, span: 18 },
+  };
   return (
-    <Form onFinish={formData => login(formData, history)}>
+    <Form {...layout} onFinish={formData => login(formData, history)}>
       <Form.Item
         name='username'
         label='Username'
@@ -16,7 +23,7 @@ const LoginForm = ({ login, history }) => {
       >
         <Input placeholder='Username' prefix={<UserOutlined />} />
       </Form.Item>
-      <Form.Item>
+      <Form.Item {...tailLayout}>
         <Button type='primary' htmlType='submit'>
           Login
         </Button>
