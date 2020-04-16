@@ -297,6 +297,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
+	// TODO maybe we should define this type in the server -- but do we want to import server here?
 	var reqData = struct {
 		Username    string `json:"username"`
 		DisplayName string `json:"displayName"`
