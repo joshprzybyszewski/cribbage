@@ -32,7 +32,7 @@ func (cs *cribbageServer) Serve() {
 		create.POST("/game/:player1/:player2", cs.ginPostCreateGame)
 		create.POST("/game/:player1/:player2/:player3", cs.ginPostCreateGame)
 		create.POST("/game/:player1/:player2/:player3/:player4", cs.ginPostCreateGame)
-		create.POST("/player/:username/:name", cs.ginPostCreatePlayer)
+		create.POST("/player", cs.ginPostCreatePlayer)
 		create.POST("/interaction/:playerId/:mode/:info", cs.ginPostCreateInteraction)
 	}
 
