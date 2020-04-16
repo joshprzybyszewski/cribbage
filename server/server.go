@@ -26,7 +26,7 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	{
 		create.POST(`/game`, cs.ginPostCreateGame)
 		create.POST(`/player`, cs.ginPostCreatePlayer)
-		create.POST(`/interaction/:playerId/:mode/:info`, cs.ginPostCreateInteraction)
+		create.POST(`/interaction`, cs.ginPostCreateInteraction)
 	}
 
 	router.GET(`/game/:gameID`, cs.ginGetGame)
@@ -111,14 +111,19 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
-	pID := getPlayerID(c, `playerId`)
-	if pID == model.InvalidPlayerID {
+	var cir network.CreateInteractionRequest
+	err := c.ShouldBindJSON(&cir)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	if cir.PlayerID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Needs playerId`)
 		return
 	}
 
 	var mode interaction.Mode
-	switch c.Param(`mode`) {
+	switch cir.Mode {
 	case `localhost`:
 		mode = interaction.Localhost
 	default:
@@ -126,8 +131,8 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		return
 	}
 
-	info := c.Param(`info`)
-	err := setInteraction(pID, interaction.Means{
+	info := cir.Info
+	err = setInteraction(cir.PlayerID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
