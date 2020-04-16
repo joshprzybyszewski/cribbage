@@ -10,6 +10,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
@@ -103,7 +104,7 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	var reqData CreatePlayerData
+	var reqData network.CreatePlayerModel
 	err := c.ShouldBindJSON(&reqData)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)

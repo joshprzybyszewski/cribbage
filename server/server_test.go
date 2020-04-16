@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 )
 
 func performRequest(r http.Handler, method, path string, body io.Reader) (*httptest.ResponseRecorder, error) {
@@ -37,7 +38,7 @@ func readBody(t *testing.T, r io.Reader, v interface{}) {
 func TestGinPostCreatePlayer(t *testing.T) {
 	testCases := []struct {
 		msg     string
-		data    CreatePlayerData
+		data    network.CreatePlayerModel
 		expRes  model.Player
 		expCode int
 	}{

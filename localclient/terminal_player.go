@@ -21,6 +21,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 )
 
 const (
@@ -276,15 +277,15 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 	}
 	defer response.Body.Close()
 
-	bytes, err := ioutil.ReadAll(response.Body)
+	resBytes, err := ioutil.ReadAll(response.Body)
 
 	if response.StatusCode != http.StatusOK {
 		// Keeping this here for debugging
-		fmt.Printf("full response: %+v\n%s\n%s\n", response, response.Body, string(bytes))
+		fmt.Printf("full response: %+v\n%s\n%s\n", response, response.Body, string(resBytes))
 
 		contentType := response.Header.Get("Content-Type")
 		if strings.Contains(contentType, `text/plain`) {
-			return nil, fmt.Errorf("bad response: \"%s\"", string(bytes))
+			return nil, fmt.Errorf("bad response: \"%s\"", string(resBytes))
 		}
 
 		return nil, fmt.Errorf("bad response from server")
@@ -297,11 +298,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	// TODO maybe we should define this type in the server -- but do we want to import server here?
-	var reqData = struct {
-		Username    string `json:"username"`
-		DisplayName string `json:"displayName"`
-	}{username, name}
+	var reqData = network.CreatePlayerModel{Username: username, DisplayName: name}
 	b, err := json.Marshal(reqData)
 	if err != nil {
 		return err
