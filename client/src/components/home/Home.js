@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 const Home = ({ player }) => {
   return (
     <div>
-      <h1>Welcome, {player.n}!</h1>
+      <h1 className='center xl'>Welcome, {player.n}!</h1>
     </div>
   );
 };
