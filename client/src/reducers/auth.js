@@ -14,11 +14,11 @@ export default (state = initialState, { type, payload }) => {
     case LOGIN_FAIL:
       return { ...state, player: {} };
     case LOGIN_SUCCESS:
-      return { ...state, ...payload };
+      return { ...state, player: payload };
     case REGISTER_FAIL:
       return { ...state, player: {} };
     case REGISTER_SUCCESS:
-      return { ...state, ...payload };
+      return { ...state, player: payload };
     default:
       return state;
   }
