@@ -2,6 +2,7 @@ package localclient
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -296,8 +297,16 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-
-	respBytes, err := tc.makeRequest(`POST`, `/create/player/`+username+`/`+name, nil)
+	var reqData = struct {
+		Username    string `json:"username"`
+		DisplayName string `json:"displayName"`
+	}{username, name}
+	b, err := json.Marshal(reqData)
+	if err != nil {
+		return err
+	}
+	// TODO do we need makeRequest to set Content-Type to application/json in the header?
+	respBytes, err := tc.makeRequest(`POST`, `/create/player`, bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
