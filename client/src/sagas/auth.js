@@ -27,12 +27,14 @@ export function* loginAsync({ payload: { username, history } }) {
   }
 }
 
-export const register = (username, displayName) => ({
+export const register = (username, displayName, history) => ({
   type: REGISTER_ASYNC,
-  payload: { username, displayName },
+  payload: { username, displayName, history },
 });
 
-export function* registerAsync({ payload: { username, displayName } }) {
+export function* registerAsync({
+  payload: { username, displayName, history },
+}) {
   try {
     const res = yield call(
       axios.post,
@@ -40,6 +42,7 @@ export function* registerAsync({ payload: { username, displayName } }) {
     );
     yield put({ type: REGISTER_SUCCESS, payload: res.data });
     yield put(setAlert('Successfully registered!', 'success'));
+    yield call(history.push, '/home');
   } catch (err) {
     yield put(setAlert(err.response.data, 'error'));
     yield put({ type: REGISTER_FAIL, payload: err.response.data });

@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { register } from '../../sagas/auth';
 
-const RegisterForm = ({ register }) => {
+const RegisterForm = ({ register, history }) => {
   return (
-    <Form onFinish={formData => register(formData)}>
+    <Form onFinish={formData => register(formData, history)}>
       <Form.Item
         name='username'
         label='Username'
@@ -37,9 +38,9 @@ RegisterForm.propTypes = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    register: formData =>
-      dispatch(register(formData.username, formData.displayName)),
+    register: (formData, history) =>
+      dispatch(register(formData.username, formData.displayName, history)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(RegisterForm);
+export default connect(null, mapDispatchToProps)(withRouter(RegisterForm));
