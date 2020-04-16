@@ -20,12 +20,6 @@ type cribbageServer struct {
 func (cs *cribbageServer) Serve() {
 	router := gin.Default()
 
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-
 	// Simple group: create
 	create := router.Group("/create")
 	{
