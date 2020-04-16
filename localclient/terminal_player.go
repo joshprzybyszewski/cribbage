@@ -151,8 +151,12 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 	go func() {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
-		url := fmt.Sprintf("/create/interaction/%s/localhost/%d", tc.me.ID, port)
-		_, err := tc.makeRequest(`POST`, url, nil, nil)
+		cir := network.CreateInteractionRequest{
+			PlayerID: tc.me.ID,
+			Mode:     `localhost`,
+			Info:     port,
+		}
+		_, err := tc.makeJSONBodiedRequest(`POST`, `create/interaction`, cir)
 		if err != nil {
 			fmt.Printf("Error telling server about interaction: %+v\n", err)
 		}
