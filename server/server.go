@@ -17,7 +17,7 @@ import (
 type cribbageServer struct {
 }
 
-func (cs *cribbageServer) Serve() {
+func (cs *cribbageServer) NewRouter() http.Handler {
 	router := gin.Default()
 
 	// Simple group: create
@@ -35,7 +35,17 @@ func (cs *cribbageServer) Serve() {
 
 	router.POST(`/action/:gameID`, cs.ginPostAction)
 
-	err := router.Run() // listen and serve on 0.0.0.0:8080
+	return router
+}
+
+func (cs *cribbageServer) Serve() {
+	router := cs.NewRouter()
+	eng, ok := router.(*gin.Engine)
+	if !ok {
+		log.Println(`router type assertion failed`)
+	}
+
+	err := eng.Run() // listen and serve on 0.0.0.0:8080
 	if err != nil {
 		log.Printf("router.Run errored: %+v\n", err)
 	}
@@ -93,10 +103,7 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	var reqData struct {
-		Username    string `json:"username"`
-		DisplayName string `json:"displayName"`
-	}
+	var reqData CreatePlayerData
 	err := c.ShouldBindJSON(&reqData)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
