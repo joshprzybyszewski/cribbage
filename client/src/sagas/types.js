@@ -5,8 +5,8 @@ export const SET_ALERT_WORKER = 'SET_ALERT_WORKER';
 
 // Login and register
 export const LOGIN_ASYNC = 'LOGIN_ASYNC';
-export const LOGIN_FAIL = 'LOGIN';
-export const LOGIN_SUCCESS = 'LOGIN';
+export const LOGIN_FAIL = 'LOGIN_FAIL';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const REGISTER_ASYNC = 'REGISTER_ASYNC';
 export const REGISTER_FAIL = 'REGISTER_FAIL';
 export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
