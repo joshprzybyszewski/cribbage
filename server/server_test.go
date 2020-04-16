@@ -38,7 +38,7 @@ func readBody(t *testing.T, r io.Reader, v interface{}) {
 func TestGinPostCreatePlayer(t *testing.T) {
 	testCases := []struct {
 		msg     string
-		data    network.CreatePlayerModel
+		data    network.CreatePlayerRequest
 		expRes  model.Player
 		expCode int
 	}{

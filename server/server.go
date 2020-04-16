@@ -104,7 +104,7 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	var reqData network.CreatePlayerModel
+	var reqData network.CreatePlayerRequest
 	err := c.ShouldBindJSON(&reqData)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)

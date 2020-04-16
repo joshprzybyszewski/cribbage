@@ -1,6 +1,6 @@
 package network
 
-type CreatePlayerModel struct {
+type CreatePlayerRequest struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"displayName"`
 }

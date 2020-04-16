@@ -301,7 +301,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	var reqData = network.CreatePlayerModel{Username: username, DisplayName: name}
+	var reqData = network.CreatePlayerRequest{Username: username, DisplayName: name}
 	b, err := json.Marshal(reqData)
 	if err != nil {
 		return err
