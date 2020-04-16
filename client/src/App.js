@@ -6,6 +6,7 @@ import store from './store';
 import Alert from './components/layout/Alert';
 import Home from './components/home/Home';
 import Landing from './components/landing/Landing';
+import Navbar from './components/layout/Navbar';
 import './App.css';
 
 const { Content, Header } = Layout;
@@ -16,7 +17,7 @@ function App() {
       <Router>
         <Layout>
           <Header>
-            <h1 style={{ color: '#fff' }}>CRIBBAGE</h1>
+            <Navbar />
           </Header>
           <Alert />
           <Switch>
