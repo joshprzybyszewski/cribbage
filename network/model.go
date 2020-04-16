@@ -14,5 +14,5 @@ type CreateGameRequest struct {
 type CreateInteractionRequest struct {
 	PlayerID model.PlayerID `json:"playerID"`
 	Mode     string         `json:"mode"`
-	Info     string         `json:"info"`
+	Info     interface{}    `json:"info"`
 }
