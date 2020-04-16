@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { login } from '../../sagas/auth';
 
-const LoginForm = ({ login }) => {
+const LoginForm = ({ login, history }) => {
   return (
-    <Form onFinish={formData => login(formData)}>
+    <Form onFinish={formData => login(formData, history)}>
       <Form.Item
         name='username'
         label='Username'
@@ -30,8 +31,8 @@ LoginForm.propTypes = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: formData => dispatch(login(formData.username)),
+    login: (formData, history) => dispatch(login(formData.username, history)),
   };
 };
 
-export default connect(null, mapDispatchToProps)(LoginForm);
+export default connect(null, mapDispatchToProps)(withRouter(LoginForm));

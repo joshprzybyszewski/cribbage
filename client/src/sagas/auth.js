@@ -10,17 +10,17 @@ import {
 import axios from 'axios';
 import { setAlert } from './alert';
 
-export const login = username => ({
+export const login = (username, history) => ({
   type: LOGIN_ASYNC,
-  payload: username,
+  payload: { username, history },
 });
 
-export function* loginAsync({ payload }) {
+export function* loginAsync({ payload: { username, history } }) {
   try {
-    console.log(`endpoint: /player/${payload}`);
-    const res = yield call(axios.get, `/player/${payload}`);
+    const res = yield call(axios.get, `/player/${username}`);
     yield put({ type: LOGIN_SUCCESS, payload: res.data });
     yield put(setAlert('Successfully logged in!', 'success'));
+    yield call(history.push, '/home');
   } catch (err) {
     yield put(setAlert(err.response.data, 'error'));
     yield put({ type: LOGIN_FAIL, payload: err.response.data });
