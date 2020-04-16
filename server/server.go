@@ -57,14 +57,6 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	switch len(cgr.PlayerIDs) {
-	case 1:
-		c.String(http.StatusBadRequest, `Needs player1`)
-		return
-	case 2:
-		c.String(http.StatusBadRequest, `Needs player2`)
-		return
-	}
 	for i, pID := range cgr.PlayerIDs {
 		if pID == model.InvalidPlayerID {
 			c.String(http.StatusBadRequest, `Invalid player ID at index %d`, i)
