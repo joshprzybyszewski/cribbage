@@ -99,9 +99,16 @@ func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	username := c.Param("username")
-	name := c.Param("name")
-	player, err := createPlayerFromNames(username, name)
+	var reqData struct {
+		Username    string `json:"username"`
+		DisplayName string `json:"displayName"`
+	}
+	err := c.ShouldBindJSON(&reqData)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	player, err := createPlayerFromNames(reqData.Username, reqData.DisplayName)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
