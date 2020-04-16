@@ -19,7 +19,7 @@ function App() {
             <h1 style={{ color: '#fff' }}>CRIBBAGE</h1>
           </Header>
           <Alert />
-          <Content>
+          <Content style={{ height: '100vh' }}>
             <Switch>
               <Route exact path='/' component={Landing} />
               <Route exact path='/home' component={Home} />
