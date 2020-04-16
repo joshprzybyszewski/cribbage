@@ -264,6 +264,17 @@ func getGameIDAndBody(c *gin.Context, defBody string) (model.GameID, string, err
 	return model.GameID(n), msg, nil
 }
 
+func (tc *terminalClient) makeJSONBodiedRequest(method, apiURL string, v interface{}) ([]byte, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	header := http.Header{
+		`Content-Type`: []string{`application/json`},
+	}
+	return tc.makeRequest(method, apiURL, bytes.NewReader(b), header)
+}
+
 func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, header http.Header) ([]byte, error) {
 	urlStr := serverDomain + apiURL
 	req, err := http.NewRequest(method, urlStr, data)
@@ -301,15 +312,8 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	var reqData = network.CreatePlayerRequest{Username: username, DisplayName: name}
-	b, err := json.Marshal(reqData)
-	if err != nil {
-		return err
-	}
-	header := http.Header{
-		`Content-Type`: []string{`application/json`},
-	}
-	respBytes, err := tc.makeRequest(`POST`, `/create/player`, bytes.NewReader(b), header)
+	reqData := network.CreatePlayerRequest{Username: username, DisplayName: name}
+	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/player`, reqData)
 	if err != nil {
 		return err
 	}
@@ -383,10 +387,12 @@ func (tc *terminalClient) shouldCreateGame() bool {
 }
 
 func (tc *terminalClient) createGame() error {
-	opID := tc.getPlayerID("What's your opponent's username?")
-	url := fmt.Sprintf("/create/game/%s/%s", opID, tc.me.ID)
+	opID := tc.getPlayerID(`What's your opponent's username?`)
+	cgr := network.CreateGameRequest{
+		PlayerIDs: []model.PlayerID{opID, tc.me.ID},
+	}
 
-	respBytes, err := tc.makeRequest(`POST`, url, nil, nil)
+	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/game`, cgr)
 	if err != nil {
 		return err
 	}
