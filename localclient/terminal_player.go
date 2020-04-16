@@ -152,7 +152,7 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
 		url := fmt.Sprintf("/create/interaction/%s/localhost/%d", tc.me.ID, port)
-		_, err := tc.makeRequest(`POST`, url, nil)
+		_, err := tc.makeRequest(`POST`, url, nil, nil)
 		if err != nil {
 			fmt.Printf("Error telling server about interaction: %+v\n", err)
 		}
@@ -264,11 +264,14 @@ func getGameIDAndBody(c *gin.Context, defBody string) (model.GameID, string, err
 	return model.GameID(n), msg, nil
 }
 
-func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader) ([]byte, error) {
+func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, header http.Header) ([]byte, error) {
 	urlStr := serverDomain + apiURL
 	req, err := http.NewRequest(method, urlStr, data)
 	if err != nil {
 		return nil, err
+	}
+	if header != nil {
+		req.Header = header
 	}
 
 	response, err := tc.server.Do(req)
@@ -303,8 +306,10 @@ func (tc *terminalClient) createPlayer() error {
 	if err != nil {
 		return err
 	}
-	// TODO do we need makeRequest to set Content-Type to application/json in the header?
-	respBytes, err := tc.makeRequest(`POST`, `/create/player`, bytes.NewReader(b))
+	header := http.Header{
+		`Content-Type`: []string{`application/json`},
+	}
+	respBytes, err := tc.makeRequest(`POST`, `/create/player`, bytes.NewReader(b), header)
 	if err != nil {
 		return err
 	}
@@ -381,7 +386,7 @@ func (tc *terminalClient) createGame() error {
 	opID := tc.getPlayerID("What's your opponent's username?")
 	url := fmt.Sprintf("/create/game/%s/%s", opID, tc.me.ID)
 
-	respBytes, err := tc.makeRequest(`POST`, url, nil)
+	respBytes, err := tc.makeRequest(`POST`, url, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -430,7 +435,7 @@ func (tc *terminalClient) getPlayerID(msg string) model.PlayerID {
 func (tc *terminalClient) updatePlayer() error {
 	url := fmt.Sprintf("/player/%s", tc.me.ID)
 
-	respBytes, err := tc.makeRequest(`GET`, url, nil)
+	respBytes, err := tc.makeRequest(`GET`, url, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -471,7 +476,7 @@ func (tc *terminalClient) updatePlayer() error {
 func (tc *terminalClient) requestGame(gID model.GameID) (model.Game, error) {
 	url := fmt.Sprintf("/game/%v", gID)
 
-	respBytes, err := tc.makeRequest(`GET`, url, nil)
+	respBytes, err := tc.makeRequest(`GET`, url, nil, nil)
 	if err != nil {
 		return model.Game{}, err
 	}
