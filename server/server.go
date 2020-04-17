@@ -94,6 +94,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	}
 	if !model.IsValidPlayerID(reqData.Username) {
 		c.String(http.StatusBadRequest, `Error: %s`, `Username must be alphanumeric`)
+		return
 	}
 	player, err := createPlayer(cs.dbService, reqData.Username, reqData.DisplayName)
 	if err != nil {
