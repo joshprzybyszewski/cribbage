@@ -89,25 +89,25 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	var reqData network.CreatePlayerRequest
-	err := c.ShouldBindJSON(&reqData)
+	var player model.Player
+	err := c.ShouldBindJSON(&player)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if reqData.Username == `` {
+	if player.ID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Username is required`)
 		return
 	}
-	if reqData.DisplayName == `` {
+	if player.Name == `` {
 		c.String(http.StatusBadRequest, `Display name is required`)
 		return
 	}
-	if !model.IsValidPlayerID(model.PlayerID(reqData.Username)) {
+	if !model.IsValidPlayerID(player.ID) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
-	player, err := createPlayer(cs.dbService, reqData.Username, reqData.DisplayName)
+	err = cs.dbService.CreatePlayer(player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
