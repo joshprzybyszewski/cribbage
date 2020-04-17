@@ -8,13 +8,13 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-var _ interaction.ActionHandler = (*npcActionHandler)(nil)
+var _ interaction.ActionHandler = (*NPCActionHandler)(nil)
 
-type npcActionHandler struct {
+type NPCActionHandler struct {
 	lock sync.Mutex
 }
 
-func (ah *npcActionHandler) Handle(pa model.PlayerAction) error {
+func (ah *NPCActionHandler) Handle(pa model.PlayerAction) error {
 	ah.lock.Lock()
 	defer ah.lock.Unlock()
 

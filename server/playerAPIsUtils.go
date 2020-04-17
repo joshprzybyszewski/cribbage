@@ -6,7 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-var actionHandler = &npcActionHandler{}
+var actionHandler = &NPCActionHandler{}
 
 func getPlayerAPIs(db persistence.DB, players []model.Player) (map[model.PlayerID]interaction.Player, error) {
 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
