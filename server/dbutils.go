@@ -6,6 +6,23 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
+func handleAction(db persistence.DB, action model.PlayerAction) error {
+	g, err := db.GetGame(action.GameID)
+	if err != nil {
+		return err
+	}
+
+	pAPIs, err := getPlayerAPIs(db, g.Players)
+	if err != nil {
+		return err
+	}
+	err = play.HandleAction(&g, action, pAPIs)
+	if err != nil {
+		return err
+	}
+	return db.SaveGame(g)
+}
+
 func createPlayer(db persistence.DB, id model.PlayerID, displayName string) (model.Player, error) {
 	player := model.Player{
 		ID:    model.PlayerID(id),

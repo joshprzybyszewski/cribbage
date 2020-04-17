@@ -6,8 +6,6 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
-	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
 var (
@@ -19,24 +17,7 @@ func HandleAction(ctx context.Context, action model.PlayerAction) error {
 	if err != nil {
 		return err
 	}
-	return handleAction(ctx, db, action)
-}
-
-func handleAction(_ context.Context, db persistence.DB, action model.PlayerAction) error {
-	g, err := db.GetGame(action.GameID)
-	if err != nil {
-		return err
-	}
-
-	pAPIs, err := getPlayerAPIs(db, g.Players)
-	if err != nil {
-		return err
-	}
-	err = play.HandleAction(&g, action, pAPIs)
-	if err != nil {
-		return err
-	}
-	return db.SaveGame(g)
+	return handleAction(db, action)
 }
 
 func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) {
