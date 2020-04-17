@@ -69,82 +69,75 @@ func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
 }
 
 type testRequest struct {
+	// body is raw json
 	reqData interface{}
+	body    string
 	expCode int
 	expErr  string
 }
 
 func TestGinPostCreatePlayer(t *testing.T) {
+	type testRequest struct {
+		PlayerID string `json:"id"`
+		DispName string `json:"n"`
+		expCode  int
+		expErr   string
+	}
 	testCases := []struct {
 		msg  string
 		reqs []testRequest
 	}{{
 		msg: `normal stuff`,
 		reqs: []testRequest{{
-			reqData: network.CreatePlayerRequest{
-				Username:    `abc`,
-				DisplayName: `def`,
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
+			PlayerID: `abc`,
+			DispName: `def`,
+			expCode:  http.StatusOK,
+			expErr:   ``,
 		}},
 	}, {
 		msg: `username with weird characters shouldn't return 404`,
 		reqs: []testRequest{{
-			reqData: network.CreatePlayerRequest{
-				Username:    `#`,
-				DisplayName: `#`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Username must be alphanumeric`,
+			PlayerID: `#`,
+			DispName: `#`,
+			expCode:  http.StatusBadRequest,
+			expErr:   `Username must be alphanumeric`,
 		}},
 	}, {
 		msg: `creating the same player errors`,
 		reqs: []testRequest{{
-			reqData: network.CreatePlayerRequest{
-				Username:    `abc`,
-				DisplayName: `def`,
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
+			PlayerID: `abc`,
+			DispName: `def`,
+			expCode:  http.StatusOK,
+			expErr:   ``,
 		}, {
-			reqData: network.CreatePlayerRequest{
-				Username:    `abc`,
-				DisplayName: `def`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Username already exists`,
+			PlayerID: `abc`,
+			DispName: `def`,
+			expCode:  http.StatusBadRequest,
+			expErr:   `Username already exists`,
 		}},
 	}, {
 		msg: `empty username`,
 		reqs: []testRequest{{
-			reqData: network.CreatePlayerRequest{
-				Username:    ``,
-				DisplayName: `def`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Username is required`,
+			PlayerID: ``,
+			DispName: `def`,
+			expCode:  http.StatusBadRequest,
+			expErr:   `Username is required`,
 		}},
 	}, {
 		msg: `empty display name`,
 		reqs: []testRequest{{
-			reqData: network.CreatePlayerRequest{
-				Username:    `abc`,
-				DisplayName: ``,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Display name is required`,
+			PlayerID: `abc`,
+			DispName: ``,
+			expCode:  http.StatusBadRequest,
+			expErr:   `Display name is required`,
 		}},
 	}, {
-		msg: `send wrong JSON data`,
+		msg: `send wrong JSON data - this is equivalent to PlayerID and DispName being empty`,
 		reqs: []testRequest{{
-			reqData: struct {
-				Field1 string `json:"field1"`
-			}{
-				Field1: `abc`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Username is required`,
+			PlayerID: ``,
+			DispName: ``,
+			expCode:  http.StatusBadRequest,
+			expErr:   `Username is required`,
 		}},
 	}}
 	for _, tc := range testCases {
@@ -152,20 +145,19 @@ func TestGinPostCreatePlayer(t *testing.T) {
 
 		// make the requests
 		for _, r := range tc.reqs {
-			body := prepareBody(t, r.reqData)
+			body := prepareBody(t, r)
 			w, err := performRequest(router, `POST`, `/create/player`, body)
 			require.NoError(t, err)
 			// verify
 			require.Equal(t, r.expCode, w.Code)
-			cpr, ok := r.reqData.(network.CreatePlayerRequest)
-			if !ok || r.expCode != http.StatusOK {
+			if r.expCode != http.StatusOK {
 				errMsg := readError(t, w)
 				assert.Equal(t, r.expErr, errMsg)
 				continue
 			}
 			expPlayer := model.Player{
-				ID:   model.PlayerID(cpr.Username),
-				Name: cpr.DisplayName,
+				ID:   model.PlayerID(r.PlayerID),
+				Name: r.DispName,
 			}
 			var player model.Player
 			readBody(t, w.Body, &player)
@@ -427,3 +419,80 @@ func TestGinGetGame(t *testing.T) {
 		assert.Equal(t, g.ID, game.ID)
 	}
 }
+func TestGinGetPlayer(t *testing.T) {
+	testCases := []struct {
+		msg      string
+		playerID string
+		req      testRequest
+	}{{
+		msg:      `good request`,
+		playerID: `p1`,
+		req: testRequest{
+			expCode: http.StatusOK,
+			expErr:  ``,
+		},
+	}, {
+		msg:      `nonexistent player`,
+		playerID: `p9`,
+		req: testRequest{
+			expCode: http.StatusNotFound,
+			expErr:  `Player not found`,
+		},
+	}}
+	cs, router := newServerAndRouter()
+	seedPlayers(t, cs.dbService, 2)
+	for _, tc := range testCases {
+		// make the request
+		url := `/player/` + tc.playerID
+		w, err := performRequest(router, `GET`, url, nil)
+		require.NoError(t, err)
+		// verify
+		require.Equal(t, tc.req.expCode, w.Code)
+		if tc.req.expCode != http.StatusOK {
+			errMsg := readError(t, w)
+			assert.Equal(t, tc.req.expErr, errMsg)
+			continue
+		}
+		var player model.Player
+		readBody(t, w.Body, &player)
+		assert.Equal(t, model.PlayerID(tc.playerID), player.ID)
+	}
+}
+
+// func TestGinPostAction(t *testing.T) {
+// 	testCases := []struct {
+// 		msg  string
+// 		reqs []testRequest
+// 	}{{
+// 		msg: `good requests`,
+// 		reqs: []testRequest{{
+// 			reqData: model.PlayerAction{
+// 				ID:        `p1`,
+// 				Overcomes: model.DealCards,
+// 				Action: model.DealAction{
+// 					NumShuffles: 1,
+// 				},
+// 			},
+// 			expCode: http.StatusOK,
+// 			expErr:  ``,
+// 		}},
+// 	}}
+// 	cs, router := newServerAndRouter()
+// 	seedPlayers(t, cs.dbService, 2)
+// 	for _, tc := range testCases {
+// 		// make the request
+// 		url := `/player/` + tc.playerID
+// 		w, err := performRequest(router, `GET`, url, nil)
+// 		require.NoError(t, err)
+// 		// verify
+// 		require.Equal(t, tc.req.expCode, w.Code)
+// 		if tc.req.expCode != http.StatusOK {
+// 			errMsg := readError(t, w)
+// 			assert.Equal(t, tc.req.expErr, errMsg)
+// 			continue
+// 		}
+// 		var player model.Player
+// 		readBody(t, w.Body, &player)
+// 		assert.Equal(t, model.PlayerID(tc.playerID), player.ID)
+// 	}
+// }
