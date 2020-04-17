@@ -11,3 +11,9 @@ func New() persistence.DB {
 		getInteractionService(),
 	)
 }
+
+func Clear() {
+	clearGameService()
+	clearPlayerService()
+	clearInteractionService()
+}

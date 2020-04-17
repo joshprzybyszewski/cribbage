@@ -26,6 +26,10 @@ func getInteractionService() persistence.InteractionService {
 	return iservice
 }
 
+func clearInteractionService() {
+	iservice.interactions = map[model.PlayerID]interaction.PlayerMeans{}
+}
+
 func (is *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {
 	is.lock.Lock()
 	defer is.lock.Unlock()
