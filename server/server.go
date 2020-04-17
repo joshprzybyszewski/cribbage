@@ -187,6 +187,10 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
 	p, err := cs.dbService.GetPlayer(pID)
 	if err != nil {
+		if err == persistence.ErrPlayerNotFound {
+			c.String(http.StatusNotFound, `Player not found`)
+			return
+		}
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
