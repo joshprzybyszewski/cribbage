@@ -75,7 +75,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(cgr.PlayerIDs))
 		return
 	}
-	g, err := cs.dbService.CreateGame(cgr.PlayerIDs)
+	g, err := createGame(cs.dbService, cgr.PlayerIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
@@ -132,10 +132,11 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 
 	info := cir.Info
-	err = cs.dbService.setInteraction(cir.PlayerID, interaction.Means{
+	pm := interaction.New(cir.PlayerID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
+	err = cs.dbService.SaveInteraction(pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -149,7 +150,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := cs.dbService.db.GetGame(gID)
+	g, err := cs.dbService.GetGame(gID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -169,7 +170,7 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
-	p, err := getPlayer(pID)
+	p, err := cs.dbService.GetPlayer(pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -185,7 +186,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = handlePlayerAction(action)
+	err = handleAction(cs.dbService, action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
