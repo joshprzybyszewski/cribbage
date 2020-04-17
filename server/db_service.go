@@ -1,8 +1,7 @@
-package services
+package server
 
 import (
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/play"
@@ -18,7 +17,7 @@ func NewDBService(db persistence.DB) *DBService {
 	}
 }
 
-func (service *DBService) CreatePlayer(id, displayName string) (model.Player, error) {
+func (service *DBService) CreatePlayer(id model.PlayerID, displayName string) (model.Player, error) {
 	player := model.Player{
 		ID:    model.PlayerID(id),
 		Name:  displayName,
@@ -74,8 +73,7 @@ func (service *DBService) getPlayerAPIs(players []model.Player) (map[model.Playe
 
 		for i, m := range pm.Interactions {
 			if m.Mode == interaction.NPC {
-				// TODO I get the sense we shouldn't import server here...
-				m.Info = &server.NPCActionHandler{}
+				m.Info = &npcActionHandler{}
 				pm.Interactions[i] = m
 			}
 		}
