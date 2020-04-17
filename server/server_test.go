@@ -15,6 +15,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/network"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 )
 
 func performRequest(r http.Handler, method, path string, body io.Reader) (*httptest.ResponseRecorder, error) {
@@ -35,32 +36,53 @@ func readBody(t *testing.T, r io.Reader, v interface{}) {
 	require.NoError(t, err)
 }
 
+func prepareBody(t *testing.T, v interface{}) io.Reader {
+	reqBytes, err := json.Marshal(v)
+	require.NoError(t, err)
+	return bytes.NewReader(reqBytes)
+}
+
 func TestGinPostCreatePlayer(t *testing.T) {
 	testCases := []struct {
-		msg     string
-		data    network.CreatePlayerRequest
-		expRes  model.Player
-		expCode int
-	}{
-		/*
-			TODO add test cases once the server is more testable. We need to rewrite it to inject persistence in so we can mock it here
-			(or at least set it to memory instead of mongo by default)
-		*/
-	}
-	cs := &cribbageServer{}
-	router := cs.NewRouter()
+		msg         string
+		username    string
+		displayName string
+		expCode     int
+	}{{
+		msg:         `normal stuff`,
+		username:    `abc`,
+		displayName: `def`,
+		expCode:     http.StatusOK,
+	}, {
+		msg:         `username with weird characters shouldn't return 404`,
+		username:    `#`,
+		displayName: `#`,
+		expCode:     http.StatusBadRequest,
+	}}
 	for _, tc := range testCases {
-		reqBytes, err := json.Marshal(tc.data)
-		require.NoError(t, err)
-		body := bytes.NewReader(reqBytes)
+		// setup a new instance of the server each time to clear the db
+		cs := newCribbageServer(memory.New())
+		router := cs.NewRouter()
+
+		// make the request
+		body := prepareBody(t, network.CreatePlayerRequest{
+			Username:    model.PlayerID(tc.username),
+			DisplayName: tc.displayName,
+		})
 		w, err := performRequest(router, `POST`, `/create/player`, body)
 		require.NoError(t, err)
+
+		// verify
 		assert.Equal(t, tc.expCode, w.Code)
 		if tc.expCode == http.StatusOK {
+			expPlayer := model.Player{
+				ID:   model.PlayerID(tc.username),
+				Name: tc.displayName,
+			}
 			var player model.Player
 			readBody(t, w.Body, &player)
 			assert.NoError(t, err)
-			assert.Equal(t, tc.expRes, player)
+			assert.Equal(t, expPlayer, player)
 		}
 	}
 }
