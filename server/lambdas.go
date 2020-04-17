@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
 var (
@@ -45,13 +44,4 @@ func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
 	}
 
 	return db.GetPlayer(pID)
-}
-
-func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
-	db, err := getDB(ctx)
-	if err != nil {
-		return err
-	}
-
-	return db.SaveInteraction(pm)
 }
