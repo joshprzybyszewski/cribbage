@@ -163,6 +163,10 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	}
 	g, err := cs.dbService.GetGame(gID)
 	if err != nil {
+		if err == persistence.ErrGameNotFound {
+			c.String(http.StatusNotFound, `Game not found`)
+			return
+		}
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
