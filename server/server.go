@@ -75,7 +75,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(cgr.PlayerIDs))
 		return
 	}
-	g, err := createGameFromIDs(cgr.PlayerIDs)
+	g, err := cs.dbService.CreateGame(cgr.PlayerIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
