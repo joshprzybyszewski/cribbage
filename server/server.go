@@ -16,12 +16,12 @@ import (
 )
 
 type cribbageServer struct {
-	dbService *DBService
+	dbService persistence.DB
 }
 
 func newCribbageServer(db persistence.DB) *cribbageServer {
 	return &cribbageServer{
-		dbService: NewDBService(db),
+		dbService: db,
 	}
 }
 
@@ -95,7 +95,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	if !model.IsValidPlayerID(reqData.Username) {
 		c.String(http.StatusBadRequest, `Error: %s`, `Username must be alphanumeric`)
 	}
-	player, err := cs.dbService.CreatePlayer(reqData.Username, reqData.DisplayName)
+	player, err := createPlayer(cs.dbService, reqData.Username, reqData.DisplayName)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -132,7 +132,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 
 	info := cir.Info
-	err = setInteraction(cir.PlayerID, interaction.Means{
+	err = cs.dbService.setInteraction(cir.PlayerID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
@@ -149,7 +149,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := getGame(gID)
+	g, err := cs.dbService.db.GetGame(gID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
