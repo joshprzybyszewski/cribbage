@@ -58,24 +58,23 @@ func (cs *cribbageServer) Serve() {
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
-	var cgr network.CreateGameRequest
-	err := c.ShouldBindJSON(&cgr)
+	var gameReq model.Game
+	err := c.ShouldBindJSON(&gameReq)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	pIDs := make([]model.PlayerID, len(cgr.PlayerIDs))
-	for i, idStr := range cgr.PlayerIDs {
-		pID := model.PlayerID(idStr)
-		if pID == model.InvalidPlayerID {
+	pIDs := make([]model.PlayerID, len(gameReq.Players))
+	for i, p := range gameReq.Players {
+		if p.ID == model.InvalidPlayerID {
 			c.String(http.StatusBadRequest, `Invalid player ID at index %d`, i)
 			return
 		}
-		pIDs[i] = pID
+		pIDs[i] = p.ID
 	}
 
 	if len(pIDs) < model.MinPlayerGame || len(pIDs) > model.MaxPlayerGame {
-		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(cgr.PlayerIDs))
+		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.Players))
 		return
 	}
 	g, err := createGame(cs.dbService, pIDs)

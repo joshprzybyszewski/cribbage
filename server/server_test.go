@@ -168,101 +168,60 @@ func TestGinPostCreatePlayer(t *testing.T) {
 }
 func TestGinPostCreateGame(t *testing.T) {
 	testCases := []struct {
-		msg  string
-		pIDs []string
-		req  testRequest
+		msg     string
+		pIDs    []string
+		expCode int
+		expErr  string
 	}{{
-		msg: `two player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`},
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
+		msg:     `two player game`,
+		pIDs:    []string{`p1`, `p2`},
+		expCode: http.StatusOK,
+		expErr:  ``,
 	}, {
-		msg: `three player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`},
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
+		msg:     `three player game`,
+		pIDs:    []string{`p1`, `p2`, `p3`},
+		expCode: http.StatusOK,
+		expErr:  ``,
 	}, {
-		msg: `four player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`, `p4`},
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
+		msg:     `four player game`,
+		pIDs:    []string{`p1`, `p2`, `p3`, `p4`},
+		expCode: http.StatusOK,
+		expErr:  ``,
 	}, {
-		msg: `one player game is an error`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 1`,
-		},
+		msg:     `one player game is an error`,
+		pIDs:    []string{`p1`},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid num players: 1`,
 	}, {
-		msg: `five player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`, `p4`, `p5`},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 5`,
-		},
+		msg:     `five player game`,
+		pIDs:    []string{`p1`, `p2`, `p3`, `p4`, `p5`},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid num players: 5`,
 	}, {
-		msg: `zero player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 0`,
-		},
+		msg:     `zero player game`,
+		pIDs:    []string{},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid num players: 0`,
 	}, {
-		msg: `missing player id`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, ``, `p4`},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid player ID at index 2`,
-		},
+		msg:     `missing player id`,
+		pIDs:    []string{`p1`, `p2`, ``, `p4`},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid player ID at index 2`,
 	}, {
-		msg: `invalid player id`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `#`, `p4`},
-			},
-			expCode: http.StatusInternalServerError,
-			expErr:  `createGame error: player not found`,
-		},
+		msg:     `invalid player id`,
+		pIDs:    []string{`p1`, `p2`, `#`, `p4`},
+		expCode: http.StatusInternalServerError,
+		expErr:  `createGame error: player not found`,
 	}, {
-		msg: `create a game with nonexistent players`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p6`},
-			},
-			expCode: http.StatusInternalServerError,
-			expErr:  `createGame error: player not found`,
-		},
+		msg:     `create a game with nonexistent players`,
+		pIDs:    []string{`p1`, `p6`},
+		expCode: http.StatusInternalServerError,
+		expErr:  `createGame error: player not found`,
 	}, {
-		msg: `bad request body`,
-		req: testRequest{
-			reqData: struct {
-				Field1 string `json:"Field1"`
-			}{
-				Field1: `abc`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 0`,
-		},
+		msg:     `bad request body - equivalent to having no player IDs`,
+		pIDs:    []string{},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid num players: 0`,
 	}}
 	cs, router := newServerAndRouter()
 	// seed the db with players
@@ -271,24 +230,27 @@ func TestGinPostCreateGame(t *testing.T) {
 		require.NoError(t, err)
 	}
 	for _, tc := range testCases {
-
+		g := model.Game{}
+		g.Players = make([]model.Player, len(tc.pIDs))
+		for i, id := range tc.pIDs {
+			g.Players[i] = model.Player{ID: model.PlayerID(id)}
+		}
 		// make the request
-		body := prepareBody(t, tc.req.reqData)
+		body := prepareBody(t, g)
 		w, err := performRequest(router, `POST`, `/create/game`, body)
 		require.NoError(t, err)
 		// verify
-		require.Equal(t, tc.req.expCode, w.Code)
-		cgr, ok := tc.req.reqData.(network.CreateGameRequest)
-		if !ok || tc.req.expCode != http.StatusOK {
+		require.Equal(t, tc.expCode, w.Code)
+		if tc.expCode != http.StatusOK {
 			errMsg := readError(t, w)
-			assert.Equal(t, tc.req.expErr, errMsg)
+			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
 		var game model.Game
 		readBody(t, w.Body, &game)
 		// verify the players are in the game
-		for _, pID := range cgr.PlayerIDs {
-			_, ok := game.PlayerColors[model.PlayerID(pID)]
+		for _, p := range g.Players {
+			_, ok := game.PlayerColors[p.ID]
 			assert.True(t, ok)
 		}
 	}
