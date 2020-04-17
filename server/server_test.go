@@ -68,14 +68,6 @@ func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
 	return pIDs
 }
 
-type testRequest struct {
-	// body is raw json
-	reqData interface{}
-	body    string
-	expCode int
-	expErr  string
-}
-
 func TestGinPostCreatePlayer(t *testing.T) {
 	type testRequest struct {
 		PlayerID string `json:"id"`
@@ -257,67 +249,56 @@ func TestGinPostCreateGame(t *testing.T) {
 }
 func TestGinPostCreateInteraction(t *testing.T) {
 	testCases := []struct {
-		msg  string
-		pIDs []string
-		req  testRequest
+		msg     string
+		pIDs    []string
+		reqData network.CreateInteractionRequest
+		expCode int
+		expErr  string
 	}{{
 		msg: `missing player ID`,
-		req: testRequest{
-			reqData: network.CreateInteractionRequest{
-				PlayerID: ``,
-				Mode:     ``,
-				Info:     ``,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Needs playerId`,
+		reqData: network.CreateInteractionRequest{
+			PlayerID: ``,
+			Mode:     `localclient`,
+			Info:     ``,
 		},
+		expCode: http.StatusBadRequest,
+		expErr:  `Needs playerId`,
 	}, {
-		msg: `bad request body`,
-		req: testRequest{
-			reqData: struct {
-				Field1 string `json:"field1"`
-			}{
-				Field1: `abc`,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Needs playerId`,
-		},
+		msg:     `bad request body - equivalent to an empty network.CreateInteractionRequest`,
+		reqData: network.CreateInteractionRequest{},
+		expCode: http.StatusBadRequest,
+		expErr:  `Needs playerId`,
 	}, {
 		msg: `good request`,
-		req: testRequest{
-			reqData: network.CreateInteractionRequest{
-				PlayerID: `p1`,
-				Mode:     `localhost`,
-				Info:     ``,
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
+		reqData: network.CreateInteractionRequest{
+			PlayerID: `p1`,
+			Mode:     `localhost`,
+			Info:     ``,
 		},
+		expCode: http.StatusOK,
+		expErr:  ``,
 	}, {
 		msg: `unsupported interaction mode`,
-		req: testRequest{
-			reqData: network.CreateInteractionRequest{
-				PlayerID: `p1`,
-				Mode:     `abc`,
-				Info:     ``,
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `unsupported interaction mode`,
+		reqData: network.CreateInteractionRequest{
+			PlayerID: `p1`,
+			Mode:     `abc`,
+			Info:     ``,
 		},
+		expCode: http.StatusBadRequest,
+		expErr:  `unsupported interaction mode`,
 	}}
 	cs, router := newServerAndRouter()
 	seedPlayers(t, cs.dbService, 5)
 	for _, tc := range testCases {
 		// make the request
-		body := prepareBody(t, tc.req.reqData)
+		body := prepareBody(t, tc.reqData)
 		w, err := performRequest(router, `POST`, `/create/interaction`, body)
 		require.NoError(t, err)
 		// verify
-		require.Equal(t, tc.req.expCode, w.Code)
-		_, ok := tc.req.reqData.(network.CreateInteractionRequest)
-		if !ok || tc.req.expCode != http.StatusOK {
+		require.Equal(t, tc.expCode, w.Code)
+		if tc.expCode != http.StatusOK {
 			errMsg := readError(t, w)
-			assert.Equal(t, tc.req.expErr, errMsg)
+			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
 		bs, err := ioutil.ReadAll(w.Body)
@@ -329,30 +310,25 @@ func TestGinPostCreateInteraction(t *testing.T) {
 }
 func TestGinGetGame(t *testing.T) {
 	testCases := []struct {
-		msg    string
-		gameID string
-		req    testRequest
+		msg     string
+		gameID  string
+		expCode int
+		expErr  string
 	}{{
-		msg:    `bad game ID`,
-		gameID: `123zzz`,
-		req: testRequest{
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
-		},
+		msg:     `bad game ID`,
+		gameID:  `123zzz`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
 	}, {
-		msg:    `normal request`,
-		gameID: ``,
-		req: testRequest{
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
+		msg:     `normal request`,
+		gameID:  ``,
+		expCode: http.StatusOK,
+		expErr:  ``,
 	}, {
-		msg:    `nonexistent game`,
-		gameID: `123`,
-		req: testRequest{
-			expCode: http.StatusNotFound,
-			expErr:  `Game not found`,
-		},
+		msg:     `nonexistent game`,
+		gameID:  `123`,
+		expCode: http.StatusNotFound,
+		expErr:  `Game not found`,
 	}}
 	cs, router := newServerAndRouter()
 	pIDs := seedPlayers(t, cs.dbService, 2)
@@ -370,10 +346,10 @@ func TestGinGetGame(t *testing.T) {
 		w, err := performRequest(router, `GET`, url, nil)
 		require.NoError(t, err)
 		// verify
-		require.Equal(t, tc.req.expCode, w.Code)
-		if tc.req.expCode != http.StatusOK {
+		require.Equal(t, tc.expCode, w.Code)
+		if tc.expCode != http.StatusOK {
 			errMsg := readError(t, w)
-			assert.Equal(t, tc.req.expErr, errMsg)
+			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
 		var game model.Game
@@ -385,21 +361,18 @@ func TestGinGetPlayer(t *testing.T) {
 	testCases := []struct {
 		msg      string
 		playerID string
-		req      testRequest
+		expCode  int
+		expErr   string
 	}{{
 		msg:      `good request`,
 		playerID: `p1`,
-		req: testRequest{
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
+		expCode:  http.StatusOK,
+		expErr:   ``,
 	}, {
 		msg:      `nonexistent player`,
 		playerID: `p9`,
-		req: testRequest{
-			expCode: http.StatusNotFound,
-			expErr:  `Player not found`,
-		},
+		expCode:  http.StatusNotFound,
+		expErr:   `Player not found`,
 	}}
 	cs, router := newServerAndRouter()
 	seedPlayers(t, cs.dbService, 2)
@@ -409,10 +382,10 @@ func TestGinGetPlayer(t *testing.T) {
 		w, err := performRequest(router, `GET`, url, nil)
 		require.NoError(t, err)
 		// verify
-		require.Equal(t, tc.req.expCode, w.Code)
-		if tc.req.expCode != http.StatusOK {
+		require.Equal(t, tc.expCode, w.Code)
+		if tc.expCode != http.StatusOK {
 			errMsg := readError(t, w)
-			assert.Equal(t, tc.req.expErr, errMsg)
+			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
 		var player model.Player
