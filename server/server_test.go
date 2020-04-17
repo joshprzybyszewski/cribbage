@@ -307,85 +307,48 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		pIDs []string
 		req  testRequest
 	}{{
-		msg: `two player game`,
+		msg: `missing player ID`,
 		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`},
+			reqData: network.CreateInteractionRequest{
+				PlayerID: ``,
+				Mode:     ``,
+				Info:     ``,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Needs playerId`,
+		},
+	}, {
+		msg: `bad request body`,
+		req: testRequest{
+			reqData: struct {
+				Field1 string `json:"field1"`
+			}{
+				Field1: `abc`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Needs playerId`,
+		},
+	}, {
+		msg: `good request`,
+		req: testRequest{
+			reqData: network.CreateInteractionRequest{
+				PlayerID: `p1`,
+				Mode:     `localhost`,
+				Info:     ``,
 			},
 			expCode: http.StatusOK,
 			expErr:  ``,
 		},
 	}, {
-		msg: `three player game`,
+		msg: `unsupported interaction mode`,
 		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`},
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
-	}, {
-		msg: `four player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`, `p4`},
-			},
-			expCode: http.StatusOK,
-			expErr:  ``,
-		},
-	}, {
-		msg: `one player game is an error`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`},
+			reqData: network.CreateInteractionRequest{
+				PlayerID: `p1`,
+				Mode:     `abc`,
+				Info:     ``,
 			},
 			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 1`,
-		},
-	}, {
-		msg: `five player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `p3`, `p4`, `p5`},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 5`,
-		},
-	}, {
-		msg: `zero player game`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid num players: 0`,
-		},
-	}, {
-		msg: `missing player id`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, ``, `p4`},
-			},
-			expCode: http.StatusBadRequest,
-			expErr:  `Invalid player ID at index 2`,
-		},
-	}, {
-		msg: `invalid player id`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p2`, `#`, `p4`},
-			},
-			expCode: http.StatusInternalServerError,
-			expErr:  `createGame error: player not found`,
-		},
-	}, {
-		msg: `create a game with nonexistent players`,
-		req: testRequest{
-			reqData: network.CreateGameRequest{
-				PlayerIDs: []string{`p1`, `p6`},
-			},
-			expCode: http.StatusInternalServerError,
-			expErr:  `createGame error: player not found`,
+			expErr:  `unsupported interaction mode`,
 		},
 	}}
 	cs, router := newServerAndRouter()
@@ -395,25 +358,22 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		require.NoError(t, err)
 	}
 	for _, tc := range testCases {
-
 		// make the request
 		body := prepareBody(t, tc.req.reqData)
-		w, err := performRequest(router, `POST`, `/create/game`, body)
+		w, err := performRequest(router, `POST`, `/create/interaction`, body)
 		require.NoError(t, err)
 		// verify
 		require.Equal(t, tc.req.expCode, w.Code)
-		cgr, ok := tc.req.reqData.(network.CreateGameRequest)
+		_, ok := tc.req.reqData.(network.CreateInteractionRequest)
 		if !ok || tc.req.expCode != http.StatusOK {
 			errMsg := readError(t, w)
 			assert.Equal(t, tc.req.expErr, errMsg)
 			continue
 		}
-		var game model.Game
-		readBody(t, w.Body, &game)
+		bs, err := ioutil.ReadAll(w.Body)
+		require.NoError(t, err)
+		msg := string(bs)
 		// verify the players are in the game
-		for _, pID := range cgr.PlayerIDs {
-			_, ok := game.PlayerColors[model.PlayerID(pID)]
-			assert.True(t, ok)
-		}
+		assert.Equal(t, `Updated player interaction`, msg)
 	}
 }
