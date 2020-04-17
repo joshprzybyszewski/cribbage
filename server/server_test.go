@@ -68,13 +68,13 @@ func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
 	return pIDs
 }
 
-func TestGinPostCreatePlayer(t *testing.T) {
-	type testRequest struct {
-		reqData interface{}
-		expCode int
-		expErr  string
-	}
+type testRequest struct {
+	reqData interface{}
+	expCode int
+	expErr  string
+}
 
+func TestGinPostCreatePlayer(t *testing.T) {
 	testCases := []struct {
 		msg  string
 		reqs []testRequest
@@ -175,12 +175,6 @@ func TestGinPostCreatePlayer(t *testing.T) {
 	}
 }
 func TestGinPostCreateGame(t *testing.T) {
-	type testRequest struct {
-		reqData interface{}
-		expCode int
-		expErr  string
-	}
-
 	testCases := []struct {
 		msg  string
 		pIDs []string
@@ -308,12 +302,6 @@ func TestGinPostCreateGame(t *testing.T) {
 	}
 }
 func TestGinPostCreateInteraction(t *testing.T) {
-	type testRequest struct {
-		reqData interface{}
-		expCode int
-		expErr  string
-	}
-
 	testCases := []struct {
 		msg  string
 		pIDs []string
@@ -386,12 +374,6 @@ func TestGinPostCreateInteraction(t *testing.T) {
 	}
 }
 func TestGinGetGame(t *testing.T) {
-	type testRequest struct {
-		reqData interface{}
-		expCode int
-		expErr  string
-	}
-
 	testCases := []struct {
 		msg    string
 		gameID string
