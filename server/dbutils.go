@@ -2,15 +2,9 @@ package server
 
 import (
 	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
-
-func setInteraction(db persistence.DB, pID model.PlayerID, im interaction.Means) error {
-	pm := interaction.New(pID, im)
-	return db.SaveInteraction(pm)
-}
 
 func createPlayer(db persistence.DB, id model.PlayerID, displayName string) (model.Player, error) {
 	player := model.Player{
