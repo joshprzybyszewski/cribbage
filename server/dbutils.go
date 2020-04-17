@@ -25,7 +25,7 @@ func handleAction(db persistence.DB, action model.PlayerAction) error {
 
 func createPlayer(db persistence.DB, id model.PlayerID, displayName string) (model.Player, error) {
 	player := model.Player{
-		ID:    model.PlayerID(id),
+		ID:    id,
 		Name:  displayName,
 		Games: make(map[model.GameID]model.PlayerColor),
 	}
