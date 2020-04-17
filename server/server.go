@@ -64,18 +64,21 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	for i, pID := range cgr.PlayerIDs {
+	pIDs := make([]model.PlayerID, len(cgr.PlayerIDs))
+	for i, idStr := range cgr.PlayerIDs {
+		pID := model.PlayerID(idStr)
 		if pID == model.InvalidPlayerID {
 			c.String(http.StatusBadRequest, `Invalid player ID at index %d`, i)
 			return
 		}
+		pIDs[i] = pID
 	}
 
-	if len(cgr.PlayerIDs) < model.MinPlayerGame || len(cgr.PlayerIDs) > model.MaxPlayerGame {
+	if len(pIDs) < model.MinPlayerGame || len(pIDs) > model.MaxPlayerGame {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(cgr.PlayerIDs))
 		return
 	}
-	g, err := createGame(cs.dbService, cgr.PlayerIDs)
+	g, err := createGame(cs.dbService, pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
@@ -92,7 +95,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if !model.IsValidPlayerID(reqData.Username) {
+	if !model.IsValidPlayerID(model.PlayerID(reqData.Username)) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
@@ -116,7 +119,8 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if cir.PlayerID == model.InvalidPlayerID {
+	pID := model.PlayerID(cir.PlayerID)
+	if pID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Needs playerId`)
 		return
 	}
@@ -131,7 +135,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	}
 
 	info := cir.Info
-	pm := interaction.New(cir.PlayerID, interaction.Means{
+	pm := interaction.New(pID, interaction.Means{
 		Mode: mode,
 		Info: info,
 	})
