@@ -93,7 +93,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		return
 	}
 	if !model.IsValidPlayerID(reqData.Username) {
-		c.String(http.StatusBadRequest, `Error: %s`, `Username must be alphanumeric`)
+		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
 	player, err := createPlayer(cs.dbService, reqData.Username, reqData.DisplayName)
@@ -101,8 +101,6 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
 			c.String(http.StatusBadRequest, `Username already exists`)
-		case errInvalidUsername:
-			c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		default:
 			c.String(http.StatusInternalServerError, `Error: %s`, err)
 		}
