@@ -95,6 +95,14 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
+	if reqData.Username == `` {
+		c.String(http.StatusBadRequest, `Username is required`)
+		return
+	}
+	if reqData.DisplayName == `` {
+		c.String(http.StatusBadRequest, `Display name is required`)
+		return
+	}
 	if !model.IsValidPlayerID(model.PlayerID(reqData.Username)) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return

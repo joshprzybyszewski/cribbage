@@ -34,6 +34,12 @@ func readBody(t *testing.T, r io.Reader, v interface{}) {
 	require.NoError(t, err)
 }
 
+func readError(t *testing.T, w *httptest.ResponseRecorder) string {
+	errMsgBytes, err := ioutil.ReadAll(w.Body)
+	require.NoError(t, err)
+	return string(errMsgBytes)
+}
+
 func prepareBody(t *testing.T, v interface{}) io.Reader {
 	reqBytes, err := json.Marshal(v)
 	require.NoError(t, err)
@@ -42,10 +48,9 @@ func prepareBody(t *testing.T, v interface{}) io.Reader {
 
 func TestGinPostCreatePlayer(t *testing.T) {
 	type testRequest struct {
-		username    string
-		displayName string
-		expCode     int
-		expErr      string
+		reqData interface{}
+		expCode int
+		expErr  string
 	}
 
 	testCases := []struct {
@@ -54,31 +59,70 @@ func TestGinPostCreatePlayer(t *testing.T) {
 	}{{
 		msg: `normal stuff`,
 		reqs: []testRequest{{
-			username:    `abc`,
-			displayName: `def`,
-			expCode:     http.StatusOK,
-			expErr:      ``,
+			reqData: network.CreatePlayerRequest{
+				Username:    `abc`,
+				DisplayName: `def`,
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
 		}},
 	}, {
 		msg: `username with weird characters shouldn't return 404`,
 		reqs: []testRequest{{
-			username:    `#`,
-			displayName: `#`,
-			expCode:     http.StatusBadRequest,
-			expErr:      `Username must be alphanumeric`,
+			reqData: network.CreatePlayerRequest{
+				Username:    `#`,
+				DisplayName: `#`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username must be alphanumeric`,
 		}},
 	}, {
 		msg: `creating the same player errors`,
 		reqs: []testRequest{{
-			username:    `abc`,
-			displayName: `def`,
-			expCode:     http.StatusOK,
-			expErr:      ``,
+			reqData: network.CreatePlayerRequest{
+				Username:    `abc`,
+				DisplayName: `def`,
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
 		}, {
-			username:    `abc`,
-			displayName: `def`,
-			expCode:     http.StatusBadRequest,
-			expErr:      `Username already exists`,
+			reqData: network.CreatePlayerRequest{
+				Username:    `abc`,
+				DisplayName: `def`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username already exists`,
+		}},
+	}, {
+		msg: `empty username`,
+		reqs: []testRequest{{
+			reqData: network.CreatePlayerRequest{
+				Username:    ``,
+				DisplayName: `def`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username is required`,
+		}},
+	}, {
+		msg: `empty display name`,
+		reqs: []testRequest{{
+			reqData: network.CreatePlayerRequest{
+				Username:    `abc`,
+				DisplayName: ``,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Display name is required`,
+		}},
+	}, {
+		msg: `send wrong JSON data`,
+		reqs: []testRequest{{
+			reqData: struct {
+				Field1 string `json:"field1"`
+			}{
+				Field1: `abc`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username is required`,
 		}},
 	}}
 	for _, tc := range testCases {
@@ -88,28 +132,25 @@ func TestGinPostCreatePlayer(t *testing.T) {
 
 		// make the requests
 		for _, r := range tc.reqs {
-			body := prepareBody(t, network.CreatePlayerRequest{
-				Username:    model.PlayerID(r.username),
-				DisplayName: r.displayName,
-			})
+			body := prepareBody(t, r.reqData)
 			w, err := performRequest(router, `POST`, `/create/player`, body)
 			require.NoError(t, err)
 			// verify
 			require.Equal(t, r.expCode, w.Code)
-			if r.expCode == http.StatusOK {
-				expPlayer := model.Player{
-					ID:   model.PlayerID(r.username),
-					Name: r.displayName,
-				}
-				var player model.Player
-				readBody(t, w.Body, &player)
-				assert.NoError(t, err)
-				assert.Equal(t, expPlayer, player)
-			} else {
-				errMsgBytes, err := ioutil.ReadAll(w.Body)
-				require.NoError(t, err)
-				assert.Equal(t, r.expErr, string(errMsgBytes))
+			cpr, ok := r.reqData.(network.CreatePlayerRequest)
+			if !ok || r.expCode != http.StatusOK {
+				errMsg := readError(t, w)
+				assert.Equal(t, r.expErr, errMsg)
+				continue
 			}
+			expPlayer := model.Player{
+				ID:   model.PlayerID(cpr.Username),
+				Name: cpr.DisplayName,
+			}
+			var player model.Player
+			readBody(t, w.Body, &player)
+			assert.NoError(t, err)
+			assert.Equal(t, expPlayer, player)
 		}
 		memory.Clear()
 	}
