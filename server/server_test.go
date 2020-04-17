@@ -15,6 +15,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/network"
+	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 )
 
@@ -54,6 +55,17 @@ func newServerAndRouter() (*cribbageServer, http.Handler) {
 	cs := newCribbageServer(db)
 	router := cs.NewRouter()
 	return cs, router
+}
+
+func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
+	pIDs := make([]model.PlayerID, n)
+	for i := range pIDs {
+		idStr := fmt.Sprintf(`p%d`, i+1)
+		_, err := createPlayer(db, idStr, `name`)
+		require.NoError(t, err)
+		pIDs[i] = model.PlayerID(idStr)
+	}
+	return pIDs
 }
 
 func TestGinPostCreatePlayer(t *testing.T) {
@@ -352,11 +364,7 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		},
 	}}
 	cs, router := newServerAndRouter()
-	// seed the db with players
-	for i := 0; i < 5; i++ {
-		_, err := createPlayer(cs.dbService, fmt.Sprintf(`p%d`, i+1), `name`)
-		require.NoError(t, err)
-	}
+	seedPlayers(t, cs.dbService, 5)
 	for _, tc := range testCases {
 		// make the request
 		body := prepareBody(t, tc.req.reqData)
@@ -375,5 +383,65 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		msg := string(bs)
 		// verify the players are in the game
 		assert.Equal(t, `Updated player interaction`, msg)
+	}
+}
+func TestGinGetGame(t *testing.T) {
+	type testRequest struct {
+		reqData interface{}
+		expCode int
+		expErr  string
+	}
+
+	testCases := []struct {
+		msg    string
+		gameID string
+		req    testRequest
+	}{{
+		msg:    `bad game ID`,
+		gameID: `123zzz`,
+		req: testRequest{
+			expCode: http.StatusBadRequest,
+			expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
+		},
+	}, {
+		msg:    `normal request`,
+		gameID: ``,
+		req: testRequest{
+			expCode: http.StatusOK,
+			expErr:  ``,
+		},
+	}, {
+		msg:    `nonexistent game`,
+		gameID: `123`,
+		req: testRequest{
+			expCode: http.StatusNotFound,
+			expErr:  `Game not found`,
+		},
+	}}
+	cs, router := newServerAndRouter()
+	pIDs := seedPlayers(t, cs.dbService, 2)
+	for _, tc := range testCases {
+		// seed the db with a game
+		g, err := createGame(cs.dbService, pIDs)
+		require.NoError(t, err)
+		// make the request
+		var url string
+		if tc.gameID != `` {
+			url = `/game/` + tc.gameID
+		} else {
+			url = `/game/` + fmt.Sprintf(`%d`, g.ID)
+		}
+		w, err := performRequest(router, `GET`, url, nil)
+		require.NoError(t, err)
+		// verify
+		require.Equal(t, tc.req.expCode, w.Code)
+		if tc.req.expCode != http.StatusOK {
+			errMsg := readError(t, w)
+			assert.Equal(t, tc.req.expErr, errMsg)
+			continue
+		}
+		var game model.Game
+		readBody(t, w.Body, &game)
+		assert.Equal(t, g.ID, game.ID)
 	}
 }
