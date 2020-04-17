@@ -74,16 +74,3 @@ func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
 
 	return db.SaveInteraction(pm)
 }
-
-func createPlayer(ctx context.Context, p model.Player) error {
-	db, err := getDB(ctx)
-	if err != nil {
-		return err
-	}
-
-	if !model.IsValidPlayerID(p.ID) {
-		return errInvalidUsername
-	}
-
-	return db.CreatePlayer(p)
-}
