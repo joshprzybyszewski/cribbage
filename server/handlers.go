@@ -33,23 +33,6 @@ func createGameFromIDs(pIDs []model.PlayerID) (model.Game, error) {
 	return CreateGame(ctx, pIDs)
 }
 
-func createPlayerFromNames(username, name string) (model.Player, error) {
-	mp := model.Player{
-		ID:    model.PlayerID(username),
-		Name:  name,
-		Games: make(map[model.GameID]model.PlayerColor),
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-
-	err := createPlayer(ctx, mp)
-	if err != nil {
-		return model.Player{}, err
-	}
-	return mp, nil
-}
-
 func setInteraction(pID model.PlayerID, im interaction.Means) error {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
