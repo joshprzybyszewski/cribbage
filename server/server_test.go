@@ -220,10 +220,7 @@ func TestGinPostCreateGame(t *testing.T) {
 	}}
 	cs, router := newServerAndRouter()
 	// seed the db with players
-	for i := 0; i < 5; i++ {
-		_, err := createPlayer(cs.dbService, fmt.Sprintf(`p%d`, i+1), `name`)
-		require.NoError(t, err)
-	}
+	seedPlayers(t, cs.dbService, 5)
 	for _, tc := range testCases {
 		g := model.Game{}
 		g.Players = make([]model.Player, len(tc.pIDs))
