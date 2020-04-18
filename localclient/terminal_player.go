@@ -152,7 +152,7 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
 		cir := network.CreateInteractionRequest{
-			PlayerID: tc.me.ID,
+			PlayerID: string(tc.me.ID),
 			Mode:     `localhost`,
 			Info:     port,
 		}
@@ -316,7 +316,7 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	reqData := network.CreatePlayerRequest{Username: username, DisplayName: name}
+	reqData := model.Player{ID: model.PlayerID(username), Name: name}
 	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/player`, reqData)
 	if err != nil {
 		return err
@@ -394,8 +394,7 @@ func (tc *terminalClient) createGame() error {
 	opID := tc.getPlayerID(`What's your opponent's username?`)
 	gameReq := model.Game{
 		Players: []model.Player{
-			model.Player{ID: opID},
-			model.Player{ID: tc.me.ID},
+			{ID: opID}, {ID: tc.me.ID},
 		},
 	}
 
