@@ -392,11 +392,14 @@ func (tc *terminalClient) shouldCreateGame() bool {
 
 func (tc *terminalClient) createGame() error {
 	opID := tc.getPlayerID(`What's your opponent's username?`)
-	cgr := network.CreateGameRequest{
-		PlayerIDs: []model.PlayerID{opID, tc.me.ID},
+	gameReq := model.Game{
+		Players: []model.Player{
+			model.Player{ID: opID},
+			model.Player{ID: tc.me.ID},
+		},
 	}
 
-	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/game`, cgr)
+	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/game`, gameReq)
 	if err != nil {
 		return err
 	}

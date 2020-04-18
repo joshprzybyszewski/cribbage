@@ -5,10 +5,6 @@ type CreatePlayerRequest struct {
 	DisplayName string `json:"displayName"`
 }
 
-type CreateGameRequest struct {
-	PlayerIDs []string `json:"playerIDs"`
-}
-
 type CreateInteractionRequest struct {
 	PlayerID string      `json:"playerID"`
 	Mode     string      `json:"mode"`
