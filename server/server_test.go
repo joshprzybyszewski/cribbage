@@ -394,40 +394,117 @@ func TestGinGetPlayer(t *testing.T) {
 	}
 }
 
-// func TestGinPostAction(t *testing.T) {
-// 	testCases := []struct {
-// 		msg  string
-// 		reqs []testRequest
-// 	}{{
-// 		msg: `good requests`,
-// 		reqs: []testRequest{{
-// 			reqData: model.PlayerAction{
-// 				ID:        `p1`,
-// 				Overcomes: model.DealCards,
-// 				Action: model.DealAction{
-// 					NumShuffles: 1,
-// 				},
-// 			},
-// 			expCode: http.StatusOK,
-// 			expErr:  ``,
-// 		}},
-// 	}}
-// 	cs, router := newServerAndRouter()
-// 	seedPlayers(t, cs.dbService, 2)
-// 	for _, tc := range testCases {
-// 		// make the request
-// 		url := `/player/` + tc.playerID
-// 		w, err := performRequest(router, `GET`, url, nil)
-// 		require.NoError(t, err)
-// 		// verify
-// 		require.Equal(t, tc.req.expCode, w.Code)
-// 		if tc.req.expCode != http.StatusOK {
-// 			errMsg := readError(t, w)
-// 			assert.Equal(t, tc.req.expErr, errMsg)
-// 			continue
-// 		}
-// 		var player model.Player
-// 		readBody(t, w.Body, &player)
-// 		assert.Equal(t, model.PlayerID(tc.playerID), player.ID)
-// 	}
-// }
+func TestGinPostAction(t *testing.T) {
+	type request struct {
+		action  model.PlayerAction
+		expCode int
+		expErr  string
+	}
+	testCases := []struct {
+		msg  string
+		reqs []request
+	}{{
+		msg: `invalid action type`,
+		reqs: []request{{
+			action: model.PlayerAction{
+				ID:        `p1`,
+				Overcomes: 123,
+				Action:    ``,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Error: unknown action type`,
+		}},
+	}, {
+		msg: `try to do an action at an inappropriate time`,
+		reqs: []request{{
+			action: model.PlayerAction{
+				ID:        `p1`,
+				Overcomes: model.CountCrib,
+				Action: model.CountCribAction{
+					Pts: 2,
+				},
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Error: Should overcome 0, but overcomes 5`,
+		}},
+	}, {
+		msg: `play a few actions`,
+		reqs: []request{{
+			action: model.PlayerAction{
+				ID:        `p1`,
+				Overcomes: model.DealCards,
+				Action: model.DealAction{
+					NumShuffles: 1,
+				},
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
+		}, {
+			// note: these BuildCribActions are attempting to put cards into the crib that
+			// these players likely don't have, but we're just testing the router here
+			action: model.PlayerAction{
+				ID:        `p1`,
+				Overcomes: model.CribCard,
+				Action: model.BuildCribAction{
+					Cards: []model.Card{{
+						Suit:  model.Hearts,
+						Value: 1,
+					}, {
+						Suit:  model.Spades,
+						Value: 3,
+					}},
+				},
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
+		}, {
+			action: model.PlayerAction{
+				ID:        `p2`,
+				Overcomes: model.CribCard,
+				Action: model.BuildCribAction{
+					Cards: []model.Card{{
+						Suit:  model.Hearts,
+						Value: 1,
+					}, {
+						Suit:  model.Spades,
+						Value: 3,
+					}},
+				},
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
+		}},
+	}}
+	cs, router := newServerAndRouter()
+	pIDs := seedPlayers(t, cs.dbService, 2)
+	for _, tc := range testCases {
+		// create a game
+		game, err := createGame(cs.dbService, pIDs)
+		require.NoError(t, err)
+
+		actionsCompleted := 0
+		for _, r := range tc.reqs {
+			r.action.GameID = game.ID
+			// make the request
+			body := prepareBody(t, r.action)
+			w, err := performRequest(router, `POST`, `/action`, body)
+			require.NoError(t, err)
+			// verify
+			require.Equal(t, r.expCode, w.Code)
+			if r.expCode != http.StatusOK {
+				errMsg := readError(t, w)
+				assert.Equal(t, r.expErr, errMsg)
+				continue
+			}
+			actionsCompleted++
+			bs, err := ioutil.ReadAll(w.Body)
+			require.NoError(t, err)
+			msg := string(bs)
+			// verify the players are in the game
+			assert.Equal(t, `action handled`, msg)
+			g, err := cs.dbService.GetGame(game.ID)
+			require.NoError(t, err)
+			assert.Equal(t, actionsCompleted, len(g.Actions))
+		}
+	}
+}
