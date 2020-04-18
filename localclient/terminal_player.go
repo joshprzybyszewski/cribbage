@@ -152,7 +152,7 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
 		cir := network.CreateInteractionRequest{
-			PlayerID: string(tc.me.ID),
+			PlayerID: tc.me.ID,
 			Mode:     `localhost`,
 			Info:     port,
 		}
