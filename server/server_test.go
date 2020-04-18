@@ -61,7 +61,10 @@ func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
 	pIDs := make([]model.PlayerID, n)
 	for i := range pIDs {
 		idStr := fmt.Sprintf(`p%d`, i+1)
-		_, err := createPlayer(db, idStr, `name`)
+		err := db.CreatePlayer(model.Player{
+			ID:   model.PlayerID(idStr),
+			Name: `name`,
+		})
 		require.NoError(t, err)
 		pIDs[i] = model.PlayerID(idStr)
 	}
