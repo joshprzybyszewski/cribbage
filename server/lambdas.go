@@ -2,13 +2,8 @@ package server
 
 import (
 	"context"
-	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
-)
-
-var (
-	errInvalidUsername error = errors.New(`invalid username`)
 )
 
 func HandleAction(ctx context.Context, action model.PlayerAction) error {
