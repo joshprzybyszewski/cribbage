@@ -39,7 +39,7 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	router.GET(`/game/:gameID`, cs.ginGetGame)
 	router.GET(`/player/:username`, cs.ginGetPlayer)
 
-	router.POST(`/action/:gameID`, cs.ginPostAction)
+	router.POST(`/action`, cs.ginPostAction)
 
 	return router
 }
@@ -198,7 +198,12 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
-	action, err := unmarshalPlayerAction(c.Request)
+	reqBytes, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.String(http.StatusBadRequest, `Error: %s`, err)
+		return
+	}
+	action, err := jsonutils.UnmarshalPlayerAction(reqBytes)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
@@ -211,13 +216,4 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, `action handled`)
-}
-
-func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
-	reqBody, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return model.PlayerAction{}, err
-	}
-
-	return jsonutils.UnmarshalPlayerAction(reqBody)
 }
