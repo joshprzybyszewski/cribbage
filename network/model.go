@@ -1,7 +1,9 @@
 package network
 
+import "github.com/joshprzybyszewski/cribbage/model"
+
 type CreateInteractionRequest struct {
-	PlayerID string      `json:"playerID"`
-	Mode     string      `json:"mode"`
-	Info     interface{} `json:"info"`
+	PlayerID model.PlayerID `json:"playerID"`
+	Mode     string         `json:"mode"`
+	Info     interface{}    `json:"info"`
 }
