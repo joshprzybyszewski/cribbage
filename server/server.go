@@ -126,7 +126,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	pID := model.PlayerID(cir.PlayerID)
+	pID := cir.PlayerID
 	if pID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Needs playerId`)
 		return
