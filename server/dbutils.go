@@ -70,33 +70,3 @@ func createGame(db persistence.DB, pIDs []model.PlayerID) (model.Game, error) {
 
 	return mg, nil
 }
-
-// func (service *dbService) getPlayerAPIs(players []model.Player) (map[model.PlayerID]interaction.Player, error) {
-// 	pAPIs := make(map[model.PlayerID]interaction.Player, len(players))
-// 	for _, p := range players {
-// 		var pAPI interaction.Player
-// 		pm, err := service.db.GetInteraction(p.ID)
-
-// 		for i, m := range pm.Interactions {
-// 			if m.Mode == interaction.NPC {
-// 				m.Info = &npcActionHandler{}
-// 				pm.Interactions[i] = m
-// 			}
-// 		}
-
-// 		if err != nil {
-// 			if err != persistence.ErrInteractionNotFound {
-// 				return nil, err
-// 			}
-// 			pAPI = interaction.Empty(p.ID)
-// 		} else {
-// 			pAPI, err = interaction.FromPlayerMeans(pm)
-// 			if err != nil {
-// 				return nil, err
-// 			}
-// 		}
-
-// 		pAPIs[p.ID] = pAPI
-// 	}
-// 	return pAPIs, nil
-// }
