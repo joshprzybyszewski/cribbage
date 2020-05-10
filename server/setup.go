@@ -39,11 +39,11 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 	case `mysql`:
 		// TODO build mysql.Config from flags/envvars
 		cfg := mysql.Config{
-			DSNUser:     `josh`,
-			DSNPassword: `password`,
-			DSNHost:     `127.0.0.1`,
-			DSNPort:     3306,
-			DSNParams:   ``,
+			DSNUser: `root`,
+			// DSNPassword: `password`,
+			DSNHost:   `127.0.0.1`,
+			DSNPort:   3306,
+			DSNParams: ``,
 		}
 		return mysql.New(ctx, cfg)
 	case `memory`:

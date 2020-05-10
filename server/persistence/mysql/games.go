@@ -3,15 +3,30 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
 const (
+	// Games stores the state of a game at a given time.
+	//   Each Action will update a games state and we keep a full history of all actions.
+	// The columns act as follows:
+	// GameID is a UUID to identify a game
+	// NumActions is how many actions have occurred in the game before this one
+	// ScoreBlue, ScoreRed, and ScoreGreen are the scores for each color
+	// ScoreBlueLag, ScoreRedLag, and ScoreGreenLag are the previous scores for each color
+	// Phase is the model.Phase that the game is currently in
+	// CutCard is a number representation of the card that's been cut
+	// Crib is a number representation of the (up to 4) cards in the crib
+	// CurrentDealer is the PlayerID for the dealer
+	// BlockingPlayers is a json encoded map of who's blocking and why
+	// Hands is a json encoded map of slices for player hands
+	// PeggedCards is the json-encoded slice of previously pegged cards
+	// Action is the json encoded model.PlayerAction
 	createGameTable = `CREATE TABLE IF NOT EXISTS Games (
 		GameID INT(1) UNSIGNED,
+		NumActions INT(1) UNSIGNED,
 		ScoreBlue TINYINT(1) UNSIGNED,
 		ScoreRed TINYINT(1) UNSIGNED,
 		ScoreGreen TINYINT(1) UNSIGNED,
@@ -19,14 +34,13 @@ const (
 		ScoreRedLag TINYINT(1) UNSIGNED,
 		ScoreGreenLag TINYINT(1) UNSIGNED,
 		Phase TINYINT(1) UNSIGNED,
-		BlockingPlayers SMALLBLOB, -- json encoded map of who's blocking and why
+		CutCard TINYINT(1) UNSIGNED,
+		Crib TINYINT(4) UNSIGNED,
 		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Hands SMALLBLOB, -- json encoded map of slices for player hands
-		Crib TINYINT(4), -- number representation of the cards in the crib
-		CutCard TINYINT(1), -- number representation of the card that's been cut
-		PeggedCards SMALLBLOB, -- the json-encoded slice of previously pegged cards
-		NumActions INT(1) UNSIGNED, -- how many actions have occurred in the game before this one
-		Action SMALLBLOB, -- the json encoded PlayerAction
+		BlockingPlayers BLOB,
+		Hands BLOB,
+		PeggedCards BLOB,
+		Action BLOB,
 		PRIMARY KEY (GameID, NumActions)
 	) ENGINE = INNODB;`
 
@@ -91,11 +105,10 @@ func getGameService(
 ) (persistence.GameService, error) {
 
 	for _, createStmt := range gamesCreateStmts {
-		res, err := db.ExecContext(ctx, createStmt)
+		_, err := db.ExecContext(ctx, createStmt)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("res: %+v\n", res)
 	}
 
 	return &gameService{
@@ -177,11 +190,13 @@ func (g *gameService) populateGameFromRow(r *sql.Row) (model.Game, error) {
 }
 
 func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, color model.PlayerColor) error {
-	// TODO persist the updated player color
+	// There should be nothing to do here because the player service should take care
+	// of all of the persistence that needs to happen
 	return nil
 }
 
 func (g *gameService) Save(mg model.Game) error {
 	// TODO persist the game in the DB
+	// TODO call addPlayerToGame for each player in this game
 	return nil
 }

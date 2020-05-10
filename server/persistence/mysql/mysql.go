@@ -40,14 +40,14 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// is, err := getInteractionService(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	is, err := getInteractionService(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 
 	return persistence.New(
 		gs,
 		ps,
-		nil, // is,
+		is,
 	), nil
 }

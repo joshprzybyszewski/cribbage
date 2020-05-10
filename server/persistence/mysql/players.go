@@ -10,9 +10,12 @@ import (
 )
 
 const (
+	// TODO we need to decide constraints on Name size
+	// TODO make sure our collation accounts for all unicode
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Name VARCHAR(255) -- TODO we'll probably need to decide what restraints we want to store on names
+		Name VARCHAR(255),
+		PreferredInteractionMode INT(1),
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
 
@@ -76,11 +79,10 @@ func getPlayerService(
 ) (persistence.PlayerService, error) {
 
 	for _, createStmt := range playersCreateStmts {
-		res, err := db.ExecContext(ctx, createStmt)
+		_, err := db.ExecContext(ctx, createStmt)
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("res: %+v\n", res)
 	}
 
 	return &playerService{
