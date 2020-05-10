@@ -73,7 +73,7 @@ const (
 )
 
 var (
-	createStmts = []string{
+	gamesCreateStmts = []string{
 		createGameTable,
 		createGamePlayersTable,
 	}
@@ -90,7 +90,7 @@ func getGameService(
 	db *sql.DB,
 ) (persistence.GameService, error) {
 
-	for _, createStmt := range createStmts {
+	for _, createStmt := range gamesCreateStmts {
 		res, err := db.ExecContext(ctx, createStmt)
 		if err != nil {
 			return nil, err

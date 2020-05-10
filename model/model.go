@@ -39,6 +39,7 @@ const (
 	Green PlayerColor = iota
 	Blue
 	Red
+	Unset
 )
 
 func (c PlayerColor) String() string {
@@ -49,6 +50,8 @@ func (c PlayerColor) String() string {
 		return `red`
 	case Green:
 		return `green`
+	case Unset:
+		return `unset`
 	}
 	return `notacolor`
 }

@@ -36,10 +36,10 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// ps, err := getPlayerService(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	ps, err := getPlayerService(ctx, db)
+	if err != nil {
+		return nil, err
+	}
 	// is, err := getInteractionService(ctx)
 	// if err != nil {
 	// 	return nil, err
@@ -47,7 +47,7 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 
 	return persistence.New(
 		gs,
-		nil, // ps,
+		ps,
 		nil, // is,
 	), nil
 }
