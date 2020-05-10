@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -131,18 +132,14 @@ func (g *gameService) populateGameFromRow(
 	r *sql.Row,
 ) (model.Game, error) {
 
-	var p1ID, p2ID, p3ID, p4ID string
-	var scoreBlue, scoreRed, scoreGreen int
-	var lagScoreBlue, lagScoreRed, lagScoreGreen int
-	var phase uint8
-	var blockingPlayers []byte
-	var curDealerID string
-	var hands []byte
+	var p1ID, p2ID, p3ID, p4ID, curDealerID model.PlayerID
+	var scoreBlue, scoreRed, scoreGreen,
+		lagScoreBlue, lagScoreRed, lagScoreGreen int
+	var phase model.Phase
 	var cribCardInts []int8 = make([]int8, 4)
 	var cutCardInt int8
-	var peggedCards []byte
+	var blockingPlayers, hands, peggedCards, action []byte
 	var numActions uint32
-	var action []byte
 	err := r.Scan(
 		&p1ID, &p2ID, &p3ID, &p4ID,
 		&scoreBlue, &scoreRed, &scoreGreen,
@@ -164,7 +161,12 @@ func (g *gameService) populateGameFromRow(
 		lagScoreBlue, lagScoreRed, lagScoreGreen,
 	)
 
-	players, pc, err := g.getPlayerFields(gID, p1ID, p2ID, p3ID, p4ID)
+	players, err := g.getPlayersForGame(gID, p1ID, p2ID, p3ID, p4ID)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	pc, err := g.getPlayerColors(gID)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -192,12 +194,12 @@ func (g *gameService) populateGameFromRow(
 		LagScores:     lagScores,
 		Players:       players,
 		PlayerColors:  pc,
-		Phase:         model.Phase(phase),
-		CurrentDealer: model.PlayerID(curDealerID),
+		Phase:         phase,
+		CurrentDealer: curDealerID,
 		CutCard:       cutCard,
 		Crib:          cribCards,
-		//BlockingPlayers map[PlayerID]Blocker
-		//Hands map[PlayerID][]Card
+		// BlockingPlayers map[PlayerID]Blocker
+		// Hands map[PlayerID][]Card
 		// PeggedCards []PeggedCard
 		// Actions []PlayerAction
 	}
@@ -227,34 +229,66 @@ func populateScores(
 	return curScores, lagScores
 }
 
-func (g *gameService) getPlayerFields(
-	id model.GameID,
-	p1ID, p2ID, p3ID, p4ID string,
-) ([]model.Player, map[model.PlayerID]model.PlayerColor, error) {
+func (g *gameService) getPlayersForGame(
+	gID model.GameID,
+	p1ID, p2ID, p3ID, p4ID model.PlayerID,
+) ([]model.Player, error) {
 
-	pIDs := make([]model.PlayerID, 0, 4)
-	if len(p1ID) > 0 {
-		pIDs = append(pIDs, model.PlayerID(p1ID))
+	if len(p1ID) == 0 {
+		return nil, errors.New(`at least one player required`)
 	}
-	if len(p2ID) > 0 {
-		pIDs = append(pIDs, model.PlayerID(p2ID))
+	if len(p2ID) == 0 {
+		return nil, errors.New(`at least two players required`)
 	}
+
+	pIDs := []model.PlayerID{
+		p1ID, p2ID,
+	}
+
 	if len(p3ID) > 0 {
-		pIDs = append(pIDs, model.PlayerID(p3ID))
-	}
-	if len(p4ID) > 0 {
-		pIDs = append(pIDs, model.PlayerID(p4ID))
+		// The third and fourth players can only exist if the first two do
+		pIDs = append(pIDs, p3ID)
+		if len(p4ID) > 0 {
+			pIDs = append(pIDs, p4ID)
+		}
 	}
 
 	players := make([]model.Player, len(pIDs))
-	pc := make(map[model.PlayerID]model.PlayerColor, len(pIDs))
 	for i, pID := range pIDs {
-		// TODO get the entire "player", not just the ID
-		// TODO populate pc with the colors for each player
+		// TODO determine if it's worth getting the entire player here, not just the ID
 		players[i].ID = pID
 	}
+	return players, nil
 
-	return players, pc, nil
+}
+
+func (g *gameService) getPlayerColors(
+	gID model.GameID,
+) (map[model.PlayerID]model.PlayerColor, error) {
+
+	// populate pc with the colors for each player
+	pc := make(map[model.PlayerID]model.PlayerColor, 4)
+
+	rows, err := g.db.Query(getPlayerColorsForGame, gID)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var pID model.PlayerID
+		var color model.PlayerColor
+		err := rows.Scan(&pID, &color)
+		if err != nil {
+			return nil, err
+		}
+		if color != model.UnsetColor {
+			pc[pID] = color
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return pc, nil
 }
 
 func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, color model.PlayerColor) error {

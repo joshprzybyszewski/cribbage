@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Unset     Mode = 0
+	UnsetMode Mode = 0
 	Localhost Mode = 1
 	NPC       Mode = 2
 	Unknown   Mode = 3
@@ -23,7 +23,7 @@ type Means struct {
 
 func (m *Means) AddSerializedInfo(serInfo []byte) error {
 	switch m.Mode {
-	case Unset:
+	case UnsetMode:
 		return nil
 	case Localhost:
 		// the local host player expects a string as the info to tell us which port to connect to
@@ -43,7 +43,7 @@ func (m *Means) AddSerializedInfo(serInfo []byte) error {
 
 func (m *Means) GetSerializedInfo() ([]byte, error) {
 	switch m.Mode {
-	case Unset:
+	case UnsetMode:
 		return nil, nil
 	case Localhost:
 		str, ok := m.Info.(string)

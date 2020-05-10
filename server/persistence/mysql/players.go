@@ -11,7 +11,7 @@ import (
 
 const (
 	// Players stores info about Players that we need to keep.
-	// The default PreferredInteractionMode should be equal to int(interaction.Unset)
+	// The default PreferredInteractionMode should be equal to int(interaction.UnsetMode)
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Name VARCHAR(255),
@@ -19,23 +19,31 @@ const (
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
 
-	createPlayersGameColorsTable = `CREATE TABLE IF NOT EXISTS PlayersGameColors (
-		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
+	// GamePlayerColors keeps track of what color each player is in a given game
+	// The default Color should match int(model.UnsetColor) for player colors
+	createGamePlayerColorsTable = `CREATE TABLE IF NOT EXISTS GamePlayerColors (
 		GameID INT(1) UNSIGNED,
-		Color TINYINT(1) UNSIGNED,
-		PRIMARY KEY (PlayerID, GameID)
+		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
+		Color TINYINT(1) UNSIGNED DEFAULT 0,
+		PRIMARY KEY (GameID, PlayerID)
 	) ENGINE = INNODB;`
 
 	getPlayerName = `SELECT 
 		Name
 	FROM Players
-		WHERE PlayerID = ? 
+	WHERE PlayerID = ? 
 	;`
 
 	getPlayerGames = `SELECT 
 		GameID, Color
-	FROM PlayersGameColors
-		WHERE PlayerID = ? 
+	FROM GamePlayerColors
+	WHERE PlayerID = ? 
+	;`
+
+	getPlayerColorsForGame = `SELECT 
+		PlayerID, Color
+	FROM GamePlayerColors
+	WHERE GameID = ?
 	;`
 
 	createPlayer = `INSERT INTO Players
@@ -45,13 +53,13 @@ const (
 	;`
 
 	// TODO consider inserting a "not set" value for the color
-	addPlayerToGame = `INSERT INTO PlayersGameColors
+	addPlayerToGame = `INSERT INTO GamePlayerColors
 		(PlayerID, GameID)
 	VALUES
 		(?, ?)
 	;`
 
-	updatePlayerColor = `UPDATE PlayersGameColors
+	updatePlayerColor = `UPDATE GamePlayerColors
 	SET
 		Color = ?
 	WHERE
@@ -63,7 +71,7 @@ const (
 var (
 	playersCreateStmts = []string{
 		createPlayersTable,
-		createPlayersGameColorsTable,
+		createGamePlayerColorsTable,
 	}
 )
 
@@ -111,14 +119,14 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	games := map[model.GameID]model.PlayerColor{}
 
 	for rows.Next() {
-		var gameID uint32
-		var color uint8
+		var gameID model.GameID
+		var color model.PlayerColor
 		err = rows.Scan(&gameID, &color)
 		if err != nil {
 			return model.Player{}, err
 		}
 
-		games[model.GameID(gameID)] = model.PlayerColor(color)
+		games[gameID] = color
 	}
 
 	if err := rows.Err(); err != nil {
