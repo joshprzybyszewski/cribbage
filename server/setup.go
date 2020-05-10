@@ -66,24 +66,26 @@ func seedNPCs() error {
 			ID:   id,
 			Name: string(id),
 		}
-		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
-		_, err := db.GetInteraction(id)
+		_, err = db.GetPlayer(p.ID)
 		if err != nil {
-			if err != persistence.ErrInteractionNotFound {
-				return err
-			}
-			err = db.SaveInteraction(pm)
-			if err != nil {
+			if err == persistence.ErrPlayerNotFound {
+				err = db.CreatePlayer(p)
+				if err != nil {
+					return err
+				}
+			} else {
 				return err
 			}
 		}
-		_, err = db.GetPlayer(p.ID)
+		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
+		_, err = db.GetInteraction(id)
 		if err != nil {
-			if err != persistence.ErrPlayerNotFound {
-				return err
-			}
-			err = db.CreatePlayer(p)
-			if err != nil {
+			if err == persistence.ErrInteractionNotFound {
+				err = db.SaveInteraction(pm)
+				if err != nil {
+					return err
+				}
+			} else {
 				return err
 			}
 		}

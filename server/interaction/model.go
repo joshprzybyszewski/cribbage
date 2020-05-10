@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	Unset Mode = iota
-	Localhost
-	NPC
-	Unknown
+	Unset     Mode = 0
+	Localhost Mode = 1
+	NPC       Mode = 2
+	Unknown   Mode = 3
 )
 
 type Mode int

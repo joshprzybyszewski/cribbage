@@ -11,10 +11,11 @@ import (
 
 const (
 	// Players stores info about Players that we need to keep.
+	// The default PreferredInteractionMode should be equal to int(interaction.Unset)
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Name VARCHAR(255),
-		PreferredInteractionMode INT(1),
+		PreferredInteractionMode INT(1) DEFAULT 0,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
 
