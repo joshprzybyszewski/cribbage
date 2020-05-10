@@ -77,12 +77,18 @@ func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, er
 		&preference,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return interaction.PlayerMeans{}, persistence.ErrPlayerNotFound
+		}
 		return interaction.PlayerMeans{}, err
 	}
 	result.PreferredMode = interaction.Mode(preference)
 
 	rows, err := s.db.Query(getPlayerMeans, id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return interaction.PlayerMeans{}, persistence.ErrInteractionNotFound
+		}
 		return interaction.PlayerMeans{}, err
 	}
 	var serMeans []byte

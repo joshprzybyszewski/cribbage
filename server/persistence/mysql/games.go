@@ -150,6 +150,9 @@ func (g *gameService) populateGameFromRow(r *sql.Row) (model.Game, error) {
 		&numActions, &action,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return model.Game{}, persistence.ErrGameNotFound
+		}
 		return model.Game{}, err
 	}
 

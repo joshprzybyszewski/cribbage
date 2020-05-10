@@ -96,6 +96,9 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 		&name,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return model.Player{}, persistence.ErrPlayerNotFound
+		}
 		return model.Player{}, err
 	}
 
