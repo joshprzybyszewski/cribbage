@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -54,7 +55,6 @@ const (
 	) ENGINE = INNODB;`
 
 	queryLatestGame = `SELECT 
-		g.GameID,
 		gp.Player1ID, gp.Player2ID, gp.Player3ID, gp.Player4ID,
 		g.ScoreBlue, g.ScoreRed, g.ScoreGreen,
 		g.ScoreBlueLag, g.ScoreRedLag, g.ScoreGreenLag,
@@ -118,34 +118,37 @@ func getGameService(
 
 func (g *gameService) Get(id model.GameID) (model.Game, error) {
 	r := g.db.QueryRow(queryLatestGame, id)
-	return g.populateGameFromRow(r)
+	return g.populateGameFromRow(id, r)
 }
 
 func (g *gameService) GetAt(id model.GameID, numActions uint) (model.Game, error) {
 	r := g.db.QueryRow(queryGameAtNumActions, id, numActions)
-	return g.populateGameFromRow(r)
+	return g.populateGameFromRow(id, r)
 }
 
-func (g *gameService) populateGameFromRow(r *sql.Row) (model.Game, error) {
-	var gameID uint32
+func (g *gameService) populateGameFromRow(
+	gID model.GameID,
+	r *sql.Row,
+) (model.Game, error) {
+
 	var p1ID, p2ID, p3ID, p4ID string
-	var scoreBlue, scoreRed, scoreGreen, lagScoreBlue, lagScoreRed, lagScoreGreen int
+	var scoreBlue, scoreRed, scoreGreen int
+	var lagScoreBlue, lagScoreRed, lagScoreGreen int
 	var phase uint8
 	var blockingPlayers []byte
 	var curDealerID string
 	var hands []byte
-	var cribCards []int8 = make([]int8, 4)
-	var cutCard int8
+	var cribCardInts []int8 = make([]int8, 4)
+	var cutCardInt int8
 	var peggedCards []byte
 	var numActions uint32
 	var action []byte
 	err := r.Scan(
-		&gameID,
 		&p1ID, &p2ID, &p3ID, &p4ID,
 		&scoreBlue, &scoreRed, &scoreGreen,
 		&lagScoreBlue, &lagScoreRed, &lagScoreGreen,
 		&phase, &blockingPlayers, &curDealerID,
-		&hands, &cribCards, &cutCard,
+		&hands, &cribCardInts, &cutCardInt,
 		&peggedCards,
 		&numActions, &action,
 	)
@@ -156,8 +159,56 @@ func (g *gameService) populateGameFromRow(r *sql.Row) (model.Game, error) {
 		return model.Game{}, err
 	}
 
-	// TODO choose what colors based on the colors defined by the players table
+	curScores, lagScores := populateScores(
+		scoreBlue, scoreRed, scoreGreen,
+		lagScoreBlue, lagScoreRed, lagScoreGreen,
+	)
 
+	players, pc, err := g.getPlayerFields(gID, p1ID, p2ID, p3ID, p4ID)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	cutCard, err := model.NewCardFromTinyInt(cutCardInt)
+	if err != nil {
+		// If we've errored here, just ignore it and continue
+		fmt.Printf("errored card for cut: %+v\n", err)
+	}
+
+	var cribCards []model.Card
+	for _, cci := range cribCardInts {
+		c, err := model.NewCardFromTinyInt(cci)
+		if err != nil {
+			// If we've errored here, just ignore it and continue
+			fmt.Printf("errored card while building crib: %+v\n", err)
+			continue
+		}
+		cribCards = append(cribCards, c)
+	}
+
+	game := model.Game{
+		ID:            gID,
+		CurrentScores: curScores,
+		LagScores:     lagScores,
+		Players:       players,
+		PlayerColors:  pc,
+		Phase:         model.Phase(phase),
+		CurrentDealer: model.PlayerID(curDealerID),
+		CutCard:       cutCard,
+		Crib:          cribCards,
+		//BlockingPlayers map[PlayerID]Blocker
+		//Hands map[PlayerID][]Card
+		// PeggedCards []PeggedCard
+		// Actions []PlayerAction
+	}
+
+	return game, nil
+}
+
+func populateScores(
+	scoreBlue, scoreRed, scoreGreen,
+	lagScoreBlue, lagScoreRed, lagScoreGreen int,
+) (cur, lag map[model.PlayerColor]int) {
 	curScores := make(map[model.PlayerColor]int, 3)
 	lagScores := make(map[model.PlayerColor]int, 3)
 	if scoreBlue > 0 {
@@ -173,23 +224,37 @@ func (g *gameService) populateGameFromRow(r *sql.Row) (model.Game, error) {
 		lagScores[model.Green] = lagScoreGreen
 	}
 
-	game := model.Game{
-		ID:            model.GameID(gameID),
-		Players:       nil, // []model.Player
-		PlayerColors:  nil, //map[model.PlayerID]model.PlayerColor
-		CurrentScores: curScores,
-		LagScores:     lagScores,
-		Phase:         model.Phase(phase),
-		//BlockingPlayers map[PlayerID]Blocker
-		//CurrentDealer PlayerID
-		//Hands map[PlayerID][]Card
-		// Crib []Card
-		// CutCard Card
-		// PeggedCards []PeggedCard
-		// Actions []PlayerAction
+	return curScores, lagScores
+}
+
+func (g *gameService) getPlayerFields(
+	id model.GameID,
+	p1ID, p2ID, p3ID, p4ID string,
+) ([]model.Player, map[model.PlayerID]model.PlayerColor, error) {
+
+	pIDs := make([]model.PlayerID, 0, 4)
+	if len(p1ID) > 0 {
+		pIDs = append(pIDs, model.PlayerID(p1ID))
+	}
+	if len(p2ID) > 0 {
+		pIDs = append(pIDs, model.PlayerID(p2ID))
+	}
+	if len(p3ID) > 0 {
+		pIDs = append(pIDs, model.PlayerID(p3ID))
+	}
+	if len(p4ID) > 0 {
+		pIDs = append(pIDs, model.PlayerID(p4ID))
 	}
 
-	return game, nil
+	players := make([]model.Player, len(pIDs))
+	pc := make(map[model.PlayerID]model.PlayerColor, len(pIDs))
+	for i, pID := range pIDs {
+		// TODO get the entire "player", not just the ID
+		// TODO populate pc with the colors for each player
+		players[i].ID = pID
+	}
+
+	return players, pc, nil
 }
 
 func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, color model.PlayerColor) error {
