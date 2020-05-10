@@ -19,3 +19,5 @@ vendor/
 
 # local_client player logs
 playerlogs/
+
+.DS_Store
