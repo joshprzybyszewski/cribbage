@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	// TODO we need to decide constraints on Name size
-	// TODO make sure our collation accounts for all unicode
+	// Players stores info about Players that we need to keep.
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Name VARCHAR(255),

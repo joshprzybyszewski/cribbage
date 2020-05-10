@@ -10,12 +10,31 @@ import (
 )
 
 const (
+	// Interactions stores the json-serialized InteractionMeans for a given player/mode
 	createInteractionTable = `CREATE TABLE IF NOT EXISTS Interactions (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Mode INT(1),
 		Means BLOB,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
+
+	getPreferredPlayerMeans = `SELECT
+		PreferredInteractionMode
+	FROM Players
+		WHERE PlayerID = ?
+	;`
+
+	getPlayerMeans = `SELECT
+		Mode, Means
+	FROM Interactions
+		WHERE PlayerID = ?
+	;`
+
+	createPlayerMeans = `INSERT INTO Interactions
+		(PlayerID, Mode, Means)
+	VALUES
+		(?, ?, ?)
+	;`
 )
 
 var (
@@ -48,18 +67,71 @@ func getInteractionService(
 }
 
 func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {
-	result := interaction.PlayerMeans{}
-	// TODO get the means from the DB
+	result := interaction.PlayerMeans{
+		PlayerID: id,
+	}
+
+	r := s.db.QueryRow(getPreferredPlayerMeans, id)
+	var preference int
+	err := r.Scan(
+		&preference,
+	)
+	if err != nil {
+		return interaction.PlayerMeans{}, err
+	}
+	result.PreferredMode = interaction.Mode(preference)
+
+	rows, err := s.db.Query(getPlayerMeans, id)
+	if err != nil {
+		return interaction.PlayerMeans{}, err
+	}
+	var serMeans []byte
+	for rows.Next() {
+		meansResult := interaction.Means{}
+		err = rows.Scan(
+			&meansResult.Mode,
+			&serMeans,
+		)
+		if err != nil {
+			return interaction.PlayerMeans{}, err
+		}
+
+		err = meansResult.AddSerializedInfo(serMeans)
+		if err != nil {
+			return interaction.PlayerMeans{}, err
+		}
+		result.Interactions = append(result.Interactions, meansResult)
+	}
+
+	if err := rows.Err(); err != nil {
+		return interaction.PlayerMeans{}, err
+	}
 
 	return result, nil
 }
 
 func (s *interactionService) Create(pm interaction.PlayerMeans) error {
-	// TODO insert the means into the DB
+	var serMeans []byte
+	var err error
+	for _, means := range pm.Interactions {
+		serMeans, err = means.GetSerializedInfo()
+		if err != nil {
+			return err
+		}
+		_, err = s.db.Exec(
+			createPlayerMeans,
+			pm.PlayerID,
+			means.Mode,
+			serMeans,
+		)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
-	// TODO replace or add to the existing means
-	return nil
+	// TODO do this as an "update" instead of an insert
+	return s.Create(pm)
 }
