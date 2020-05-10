@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -161,7 +162,7 @@ func (g *gameService) populateGameFromRow(
 		lagScoreBlue, lagScoreRed, lagScoreGreen,
 	)
 
-	players, err := g.getPlayersForGame(gID, p1ID, p2ID, p3ID, p4ID)
+	players, err := g.getPlayersForGame(p1ID, p2ID, p3ID, p4ID)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -188,17 +189,22 @@ func (g *gameService) populateGameFromRow(
 		cribCards = append(cribCards, c)
 	}
 
+	bp, err := getBlockingPlayers(blockingPlayers)
+	if err != nil {
+		return model.Game{}, err
+	}
+
 	game := model.Game{
-		ID:            gID,
-		CurrentScores: curScores,
-		LagScores:     lagScores,
-		Players:       players,
-		PlayerColors:  pc,
-		Phase:         phase,
-		CurrentDealer: curDealerID,
-		CutCard:       cutCard,
-		Crib:          cribCards,
-		// BlockingPlayers map[PlayerID]Blocker
+		ID:              gID,
+		CurrentScores:   curScores,
+		LagScores:       lagScores,
+		Players:         players,
+		PlayerColors:    pc,
+		Phase:           phase,
+		CurrentDealer:   curDealerID,
+		CutCard:         cutCard,
+		Crib:            cribCards,
+		BlockingPlayers: bp,
 		// Hands map[PlayerID][]Card
 		// PeggedCards []PeggedCard
 		// Actions []PlayerAction
@@ -229,8 +235,18 @@ func populateScores(
 	return curScores, lagScores
 }
 
+func getBlockingPlayers(ser []byte) (map[model.PlayerID]model.Blocker, error) {
+	blockers := map[model.PlayerID]model.Blocker{}
+
+	err := json.Unmarshal(ser, &blockers)
+	if err != nil {
+		return nil, err
+	}
+
+	return blockers, nil
+}
+
 func (g *gameService) getPlayersForGame(
-	gID model.GameID,
 	p1ID, p2ID, p3ID, p4ID model.PlayerID,
 ) ([]model.Player, error) {
 
