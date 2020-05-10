@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 
@@ -11,10 +10,11 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
 )
 
 var (
-	database = flag.String(`db`, `mongo`, `Set to the type of database to access`)
+	database = flag.String(`db`, `mysql`, `Set to the type of database to access. Options: "mysql", "mongo", "memory"`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 )
 
@@ -36,11 +36,21 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 	switch *database {
 	case `mongo`:
 		return mongodb.New(ctx, *dbURI)
+	case `mysql`:
+		// TODO build mysql.Config from flags/envvars
+		cfg := mysql.Config{
+			DSNUser:     `josh`,
+			DSNPassword: `password`,
+			DSNHost:     `127.0.0.1`,
+			DSNPort:     3306,
+			DSNParams:   ``,
+		}
+		return mysql.New(ctx, cfg)
 	case `memory`:
 		return memory.New(), nil
 	}
 
-	return nil, errors.New(`database type not supported`)
+	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
 }
 
 func seedNPCs() error {

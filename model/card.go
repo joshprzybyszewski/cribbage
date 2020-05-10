@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"sort"
 	"strconv"
@@ -62,13 +63,24 @@ func getSuit(card string) (Suit, error) {
 	}
 }
 
+func NewCardFromTinyInt(val int8) (Card, error) {
+	return newCardFromNumber(int(val))
+}
+
 func NewCardFromNumber(val int) Card {
+	c, err := newCardFromNumber(val)
+	if err != nil {
+		fmt.Printf("NewCardFromNumber: %+v\n", err)
+	}
+	return c
+}
+
+func newCardFromNumber(val int) (Card, error) {
 	if val < 0 || val > 51 {
-		log.Printf(`NewCardFromNumber got bad value! %+v`, val)
-		return Card{}
+		return Card{}, fmt.Errorf(`invalid num: %d`, val)
 	}
 
-	return NewCard(Suit(val/13), (val%13)+1)
+	return NewCard(Suit(val/13), (val%13)+1), nil
 }
 
 func NewCard(suit Suit, value int) Card {
