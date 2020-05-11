@@ -12,6 +12,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
 	"github.com/joshprzybyszewski/cribbage/utils/testutils"
@@ -81,6 +82,19 @@ func TestDB(t *testing.T) {
 		require.NoError(t, err)
 
 		dbs[`mongodb`] = mongo
+
+		// We further assume you have mysql stood up locally when running without -short
+		cfg := mysql.Config{
+			DSNUser: `root`,
+			// DSNPassword: `password`,
+			DSNHost:   `127.0.0.1`,
+			DSNPort:   3306,
+			DSNParams: ``,
+		}
+		mysqlDB, err := mysql.New(context.Background(), cfg)
+		require.NoError(t, err)
+
+		dbs[`mysql`] = mysqlDB
 	}
 
 	for dbName, db := range dbs {
