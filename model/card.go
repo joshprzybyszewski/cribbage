@@ -90,6 +90,14 @@ func NewCard(suit Suit, value int) Card {
 	}
 }
 
+func (c Card) ToTinyInt() int8 {
+	empty := Card{}
+	if c == empty {
+		return -1
+	}
+	return int8((int(c.Suit) * 13) + (c.Value - 1))
+}
+
 func (c Card) String() string {
 	var val string
 	switch c.Value {

@@ -68,7 +68,8 @@ const (
 	INNER JOIN GamePlayers gp
 		ON g.GameID = gp.GameID
 		WHERE g.GameID = ? 
-	SORT DESC NumActions
+	ORDER BY
+		NumActions DESC
 	LIMIT 1;`
 
 	queryGameAtNumActions = `SELECT 
@@ -93,6 +94,26 @@ const (
 	WHERE GameID = ? AND
 		NumActions <= ?
 	;`
+
+	insertGameAt = `INSERT INTO Games
+		(
+			GameID, NumActions, 
+			ScoreBlue, ScoreRed, ScoreGreen,
+			ScoreBlueLag, ScoreRedLag, ScoreGreenLag,
+			Phase, CutCard, Crib,
+			CurrentDealer,
+			BlockingPlayers, Hands, PeggedCards, Action
+		)
+	VALUES
+		(
+			?, ?,
+			?, ?, ?,
+			?, ?, ?,
+			?, ?, ?,
+			?,
+			?, ?, ?, ?
+		)
+	`
 )
 
 var (
@@ -402,7 +423,6 @@ func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, col
 }
 
 func (g *gameService) Save(mg model.Game) error {
-	// TODO persist the game in the DB
 	if mg.NumActions() == 0 {
 		// add all of the players to be recognized in this game
 		// if it's the first time we've saved it
@@ -413,5 +433,28 @@ func (g *gameService) Save(mg model.Game) error {
 			}
 		}
 	}
+
+	// TODO ensure the player colors are accurate from mg.PlayerColors
+
+	cut := mg.CutCard.ToTinyInt()
+	crib := make([]int8, len(mg.Crib))
+	for i, cc := range mg.Crib {
+		crib[i] = cc.ToTinyInt()
+	}
+	var bp, h, pc, a []byte
+
+	ifs := []interface{}{
+		mg.ID, mg.NumActions(),
+		mg.CurrentScores[model.Blue], mg.CurrentScores[model.Red], mg.CurrentScores[model.Green],
+		mg.LagScores[model.Blue], mg.LagScores[model.Red], mg.LagScores[model.Green],
+		mg.Phase, cut, crib,
+		mg.CurrentDealer,
+		bp, h, pc, a,
+	}
+	_, err := g.db.Exec(insertGameAt, ifs...)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
-	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
@@ -77,11 +76,13 @@ func TestDB(t *testing.T) {
 	}
 
 	if !testing.Short() {
+		/* Skip mongodb tests for now
 		// We assume you have mongodb stood up locally when running without -short
 		mongo, err := mongodb.New(context.Background(), ``)
 		require.NoError(t, err)
 
 		dbs[`mongodb`] = mongo
+		*/
 
 		// We further assume you have mysql stood up locally when running without -short
 		cfg := mysql.Config{
