@@ -83,8 +83,15 @@ const (
 	FROM Games g
 	INNER JOIN GamePlayers gp
 		ON g.GameID = gp.GameID
-		WHERE g.GameID = ?
-		WHERE g.NumActions = ?
+	WHERE g.GameID = ? AND
+		g.NumActions = ?
+	;`
+
+	queryPlayerActionsBefore = `SELECT 
+		NumActions, Action
+	FROM Games
+	WHERE GameID = ? AND
+		NumActions <= ?
 	;`
 )
 
@@ -195,6 +202,11 @@ func (g *gameService) populateGameFromRow(
 		return model.Game{}, err
 	}
 
+	pas, err := g.getActions(gID, int(numActions))
+	if err != nil {
+		return model.Game{}, err
+	}
+
 	game := model.Game{
 		ID:              gID,
 		CurrentScores:   curScores,
@@ -208,7 +220,7 @@ func (g *gameService) populateGameFromRow(
 		BlockingPlayers: bp,
 		Hands:           h,
 		PeggedCards:     p,
-		// Actions []PlayerAction
+		Actions:         pas,
 	}
 
 	return game, nil
@@ -342,6 +354,45 @@ func (g *gameService) getPlayerColors(
 	}
 
 	return pc, nil
+}
+
+func (g *gameService) getActions(
+	gID model.GameID,
+	maxNumActions int,
+) ([]model.PlayerAction, error) {
+
+	rows, err := g.db.Query(queryPlayerActionsBefore, gID, maxNumActions)
+	if err != nil {
+		return nil, err
+	}
+	paMap := make(map[int][]byte, maxNumActions)
+	for rows.Next() {
+		var numActions int
+		var action []byte
+		err = rows.Scan(&numActions, &action)
+		if err != nil {
+			return nil, err
+		}
+		paMap[numActions] = action
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	pas := make([]model.PlayerAction, maxNumActions)
+	for i := range pas {
+		bytes, ok := paMap[i]
+		if !ok {
+			return nil, errors.New(`missing action`)
+		}
+		err = json.Unmarshal(bytes, &pas[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return pas, nil
 }
 
 func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, color model.PlayerColor) error {
