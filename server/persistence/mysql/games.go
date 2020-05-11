@@ -190,6 +190,11 @@ func (g *gameService) populateGameFromRow(
 		return model.Game{}, err
 	}
 
+	p, err := getPeggedCards(peggedCards)
+	if err != nil {
+		return model.Game{}, err
+	}
+
 	game := model.Game{
 		ID:              gID,
 		CurrentScores:   curScores,
@@ -202,7 +207,7 @@ func (g *gameService) populateGameFromRow(
 		Crib:            cribCards,
 		BlockingPlayers: bp,
 		Hands:           h,
-		// PeggedCards []PeggedCard
+		PeggedCards:     p,
 		// Actions []PlayerAction
 	}
 
@@ -265,6 +270,17 @@ func getHands(ser []byte) (map[model.PlayerID][]model.Card, error) {
 	}
 
 	return hands, nil
+}
+
+func getPeggedCards(ser []byte) ([]model.PeggedCard, error) {
+	peggedCards := []model.PeggedCard{}
+
+	err := json.Unmarshal(ser, &peggedCards)
+	if err != nil {
+		return nil, err
+	}
+
+	return peggedCards, nil
 }
 
 func (g *gameService) getPlayersForGame(
