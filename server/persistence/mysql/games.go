@@ -178,18 +178,14 @@ func (g *gameService) populateGameFromRow(
 		fmt.Printf("errored card for cut: %+v\n", err)
 	}
 
-	var cribCards []model.Card
-	for _, cci := range cribCardInts {
-		c, err := model.NewCardFromTinyInt(cci)
-		if err != nil {
-			// If we've errored here, just ignore it and continue
-			fmt.Printf("errored card while building crib: %+v\n", err)
-			continue
-		}
-		cribCards = append(cribCards, c)
-	}
+	cribCards := getCribCards(cribCardInts)
 
 	bp, err := getBlockingPlayers(blockingPlayers)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	h, err := getHands(hands)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -205,7 +201,7 @@ func (g *gameService) populateGameFromRow(
 		CutCard:         cutCard,
 		Crib:            cribCards,
 		BlockingPlayers: bp,
-		// Hands map[PlayerID][]Card
+		Hands:           h,
 		// PeggedCards []PeggedCard
 		// Actions []PlayerAction
 	}
@@ -235,6 +231,20 @@ func populateScores(
 	return curScores, lagScores
 }
 
+func getCribCards(cribCardInts []int8) []model.Card {
+	var cribCards []model.Card
+	for _, cci := range cribCardInts {
+		c, err := model.NewCardFromTinyInt(cci)
+		if err != nil {
+			// If we've errored here, just ignore it and continue
+			fmt.Printf("errored card while building crib: %+v\n", err)
+			continue
+		}
+		cribCards = append(cribCards, c)
+	}
+	return cribCards
+}
+
 func getBlockingPlayers(ser []byte) (map[model.PlayerID]model.Blocker, error) {
 	blockers := map[model.PlayerID]model.Blocker{}
 
@@ -244,6 +254,17 @@ func getBlockingPlayers(ser []byte) (map[model.PlayerID]model.Blocker, error) {
 	}
 
 	return blockers, nil
+}
+
+func getHands(ser []byte) (map[model.PlayerID][]model.Card, error) {
+	hands := map[model.PlayerID][]model.Card{}
+
+	err := json.Unmarshal(ser, &hands)
+	if err != nil {
+		return nil, err
+	}
+
+	return hands, nil
 }
 
 func (g *gameService) getPlayersForGame(
