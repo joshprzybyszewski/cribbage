@@ -85,11 +85,12 @@ func TestDB(t *testing.T) {
 
 		// We further assume you have mysql stood up locally when running without -short
 		cfg := mysql.Config{
-			DSNUser: `root`,
-			// DSNPassword: `password`,
-			DSNHost:   `127.0.0.1`,
-			DSNPort:   3306,
-			DSNParams: ``,
+			DSNUser:      `root`, // travis ci uses either the root or the travis user
+			DSNPassword:  ``,
+			DSNHost:      `127.0.0.1`,
+			DSNPort:      3306,
+			DatabaseName: `testing_cribbage`,
+			DSNParams:    ``,
 		}
 		mysqlDB, err := mysql.New(context.Background(), cfg)
 		require.NoError(t, err)

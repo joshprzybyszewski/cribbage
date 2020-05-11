@@ -15,15 +15,20 @@ type Config struct {
 	DSNHost     string
 	DSNPort     int
 	DSNParams   string
+
+	DatabaseName string
 }
 
 func New(ctx context.Context, config Config) (persistence.DB, error) {
-	dsn := fmt.Sprintf(`%s:%s@tcp(%s:%d)/cribbage`,
+	dsn := fmt.Sprintf(`%s:%s@tcp(%s:%d)`,
 		config.DSNUser,
 		config.DSNPassword,
 		config.DSNHost,
 		config.DSNPort,
 	)
+	if len(config.DatabaseName) > 0 {
+		dsn += `/` + config.DatabaseName
+	}
 	if len(config.DSNParams) > 0 {
 		dsn += `?` + config.DSNParams
 	}
