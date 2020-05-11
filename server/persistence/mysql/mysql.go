@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // nolint:golint
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 

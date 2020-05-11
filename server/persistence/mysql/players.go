@@ -3,7 +3,6 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -54,7 +53,7 @@ const (
 
 	// TODO consider inserting a "not set" value for the color
 	addPlayerToGame = `INSERT INTO GamePlayerColors
-		(PlayerID, GameID)
+		(GameID, PlayerID)
 	VALUES
 		(?, ?)
 	;`
@@ -141,21 +140,19 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 }
 
 func (ps *playerService) Create(p model.Player) error {
-	res, err := ps.db.Exec(createPlayer, p.ID, p.Name)
+	_, err := ps.db.Exec(createPlayer, p.ID, p.Name)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("playerService.Create res: %+v\n", res)
 
 	return nil
 }
 
 func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
-	res, err := ps.db.Exec(updatePlayerColor, color, pID, gID)
+	_, err := ps.db.Exec(updatePlayerColor, color, pID, gID)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("UpdateGameColor res: %+v\n", res)
 
 	return nil
 }

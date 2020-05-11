@@ -403,6 +403,15 @@ func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, col
 
 func (g *gameService) Save(mg model.Game) error {
 	// TODO persist the game in the DB
-	// TODO call addPlayerToGame for each player in this game
+	if mg.NumActions() == 0 {
+		// add all of the players to be recognized in this game
+		// if it's the first time we've saved it
+		for _, p := range mg.Players {
+			_, err := g.db.Exec(addPlayerToGame, mg.ID, p.ID)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
