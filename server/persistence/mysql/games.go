@@ -423,10 +423,23 @@ func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, col
 }
 
 func (g *gameService) Save(mg model.Game) error {
+	if mg.ID > maxGameID {
+		return persistence.ErrInvalidGameID
+	}
+
+	if len(mg.CurrentDealer) > maxPlayerUUIDLen {
+		return persistence.ErrInvalidPlayerID
+	}
+
 	if mg.NumActions() == 0 {
 		// add all of the players to be recognized in this game
-		// if it's the first time we've saved it
+		// if it's the first time we've saved it.
+		// This isn't my favorite -- I'd rather have the player service
+		// keep track of this
 		for _, p := range mg.Players {
+			if len(p.ID) > maxPlayerUUIDLen {
+				return persistence.ErrInvalidPlayerID
+			}
 			_, err := g.db.Exec(addPlayerToGame, mg.ID, p.ID)
 			if err != nil {
 				return err

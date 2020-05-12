@@ -13,7 +13,7 @@ const (
 	// The default PreferredInteractionMode should be equal to int(interaction.UnsetMode)
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Name VARCHAR(255),
+		Name VARCHAR(` + maxPlayerNameLenStr + `),
 		PreferredInteractionMode INT(1) DEFAULT 0,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
@@ -51,7 +51,6 @@ const (
 		(?, ?)
 	;`
 
-	// TODO consider inserting a "not set" value for the color
 	addPlayerToGame = `INSERT INTO GamePlayerColors
 		(GameID, PlayerID)
 	VALUES
@@ -140,6 +139,14 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 }
 
 func (ps *playerService) Create(p model.Player) error {
+	if len(p.ID) > maxPlayerUUIDLen {
+		return persistence.ErrInvalidPlayerID
+	}
+
+	if len(p.Name) > maxPlayerNameLen {
+		return persistence.ErrInvalidPlayerName
+	}
+
 	_, err := ps.db.Exec(createPlayer, p.ID, p.Name)
 	if err != nil {
 		return err
