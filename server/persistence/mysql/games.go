@@ -479,9 +479,12 @@ func (g *gameService) Save(mg model.Game) error {
 	if err != nil {
 		return err
 	}
-	a, err := serializePlayerAction(mg.Actions[mg.NumActions()-1])
-	if err != nil {
-		return err
+	var a []byte
+	if ai := mg.NumActions() - 1; ai >= 0 {
+		a, err = serializePlayerAction(mg.Actions[ai])
+		if err != nil {
+			return err
+		}
 	}
 
 	ifs := []interface{}{
