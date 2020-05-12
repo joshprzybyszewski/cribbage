@@ -51,7 +51,7 @@ const (
 		(?, ?)
 	;`
 
-	addPlayerToGame = `INSERT INTO GamePlayerColors
+	addPlayerToGamePlayerColors = `INSERT INTO GamePlayerColors
 		(GameID, PlayerID)
 	VALUES
 		(?, ?)
@@ -165,7 +165,7 @@ func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) err
 			return persistence.ErrInvalidPlayerID
 		}
 
-		_, err := ps.db.Exec(addPlayerToGame, gID, p.ID)
+		_, err := ps.db.Exec(addPlayerToGamePlayerColors, gID, p.ID)
 		if err != nil {
 			return err
 		}

@@ -69,7 +69,7 @@ func (d *db) CreateGame(g model.Game) error {
 		return err
 	}
 
-	return d.games.Save(g)
+	return d.games.Begin(g)
 }
 
 func (d *db) SaveGame(g model.Game) error {

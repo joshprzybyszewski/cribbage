@@ -95,6 +95,18 @@ const (
 		NumActions <= ?
 	;`
 
+	addPlayersToGamePlayers = `INSERT INTO GamePlayers
+		(
+			GameID, 
+			Player1ID, Player2ID, Player3ID, Player4ID
+		)
+	VALUES
+		(
+			?,
+			?, ?, ?, ?
+		)
+	;`
+
 	insertGameAt = `INSERT INTO Games
 		(
 			GameID, NumActions, 
@@ -113,7 +125,7 @@ const (
 			?,
 			?, ?, ?, ?
 		)
-	`
+	;`
 )
 
 var (
@@ -161,7 +173,9 @@ func (g *gameService) populateGameFromRow(
 	r *sql.Row,
 ) (model.Game, error) {
 
-	var p1ID, p2ID, p3ID, p4ID, curDealerID model.PlayerID
+	var p1ID, p2ID model.PlayerID
+	var p3ID, p4ID *model.PlayerID
+	var curDealerID model.PlayerID
 	var scoreBlue, scoreRed, scoreGreen,
 		lagScoreBlue, lagScoreRed, lagScoreGreen int
 	var phase model.Phase
@@ -342,7 +356,8 @@ func serializePeggedCards(input []model.PeggedCard) ([]byte, error) {
 }
 
 func (g *gameService) getPlayersForGame(
-	p1ID, p2ID, p3ID, p4ID model.PlayerID,
+	p1ID, p2ID model.PlayerID,
+	p3ID, p4ID *model.PlayerID,
 ) ([]model.Player, error) {
 
 	if len(p1ID) == 0 {
@@ -356,11 +371,11 @@ func (g *gameService) getPlayersForGame(
 		p1ID, p2ID,
 	}
 
-	if len(p3ID) > 0 {
+	if p3ID != nil && len(*p3ID) > 0 {
 		// The third and fourth players can only exist if the first two do
-		pIDs = append(pIDs, p3ID)
-		if len(p4ID) > 0 {
-			pIDs = append(pIDs, p4ID)
+		pIDs = append(pIDs, *p3ID)
+		if p4ID != nil && len(*p4ID) > 0 {
+			pIDs = append(pIDs, *p4ID)
 		}
 	}
 
@@ -461,6 +476,31 @@ func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, col
 	// There should be nothing to do here because the player service should take care
 	// of all of the persistence that needs to happen
 	return nil
+}
+
+func (g *gameService) Begin(mg model.Game) error {
+	ifs := []interface{}{
+		mg.ID,
+	}
+	for _, p := range mg.Players {
+		if len(p.ID) > maxPlayerUUIDLen {
+			return persistence.ErrInvalidPlayerID
+		}
+
+		ifs = append(ifs, p.ID)
+	}
+	for len(ifs) < 5 {
+		// the query expects 5 inputs. it'd be better to have variadic queries
+		// but I don't want to write that right now.
+		ifs = append(ifs, nil)
+	}
+
+	_, err := g.db.Exec(addPlayersToGamePlayers, ifs...)
+	if err != nil {
+		return err
+	}
+
+	return g.Save(mg)
 }
 
 func (g *gameService) Save(mg model.Game) error {

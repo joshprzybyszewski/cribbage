@@ -182,7 +182,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	require.NoError(t, db.SaveGame(g1))
 
 	actGame, err := db.GetGame(g1.ID)
-	require.NoError(t, err)
+	require.NoError(t, err, `expected to find game with id "%d"`, g1.ID)
 	assert.Equal(t, g1Copy, actGame)
 }
 
@@ -191,7 +191,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)
-		require.NoError(t, err)
+		require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
 		assert.Equal(t, expGame, actGame)
 	}
 
@@ -249,7 +249,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 		PreferredMode: interaction.Localhost,
 		Interactions: []interaction.Means{{
 			Mode: interaction.Localhost,
-			Info: int32(8383),
+			Info: string(`8383`),
 		}},
 	}
 	p1Copy := p1
@@ -257,7 +257,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 	assert.NoError(t, db.SaveInteraction(p1))
 
 	actPM, err := db.GetInteraction(p1.PlayerID)
-	require.NoError(t, err)
+	require.NoError(t, err, `expected to find player with id "%s"`, p1.PlayerID)
 	assert.Equal(t, p1Copy, actPM)
 
 	assert.NoError(t, db.SaveInteraction(p1))
@@ -319,7 +319,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 
 	checkPersistedGame := func(expGame model.Game) {
 		actGame, err := db.GetGame(expGame.ID)
-		require.NoError(t, err)
+		require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
 		assert.Equal(t, expGame, actGame)
 	}
 

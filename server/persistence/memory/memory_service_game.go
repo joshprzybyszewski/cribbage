@@ -70,6 +70,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	return nil
 }
 
+func (gs *gameService) Begin(g model.Game) error {
+	return gs.Save(g)
+}
+
 func (gs *gameService) Save(g model.Game) error {
 	gs.lock.Lock()
 	defer gs.lock.Unlock()

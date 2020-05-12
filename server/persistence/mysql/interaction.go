@@ -35,6 +35,14 @@ const (
 	VALUES
 		(?, ?, ?)
 	;`
+
+	updatePlayerMeans = `INSERT INTO Interactions
+		(PlayerID, Mode, Means)
+	VALUES
+		(?, ?, ?)
+	ON DUPLICATE KEY UPDATE
+		Means = ?
+	;`
 )
 
 var (
@@ -142,6 +150,24 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 }
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
-	// TODO do this as an "update" instead of an insert
-	return convertMysqlError(s.Create(pm))
+	var serMeans []byte
+	var err error
+	for _, means := range pm.Interactions {
+		serMeans, err = means.GetSerializedInfo()
+		if err != nil {
+			return err
+		}
+		_, err = s.db.Exec(
+			updatePlayerMeans,
+			pm.PlayerID,
+			means.Mode,
+			serMeans,
+			serMeans,
+		)
+		err = convertMysqlError(err)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
