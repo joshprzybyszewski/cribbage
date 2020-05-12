@@ -71,7 +71,22 @@ func (d *db) GetGame(id model.GameID) (model.Game, error) {
 }
 
 func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
-	return d.games.GetAt(id, numActions)
+	g, err := d.games.GetAt(id, numActions)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	for i, player := range g.Players {
+		// overwrite the player that the game service knows
+		// about with the player that the players service knows about
+		p, err := d.GetPlayer(player.ID)
+		if err != nil {
+			return model.Game{}, err
+		}
+		g.Players[i] = p
+	}
+
+	return g, nil
 }
 
 func (d *db) CreateGame(g model.Game) error {
