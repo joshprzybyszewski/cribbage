@@ -130,7 +130,11 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 			means.Mode,
 			serMeans,
 		)
+		err = convertMysqlError(err)
 		if err != nil {
+			if err == errDuplicateEntry {
+				return persistence.ErrPlayerAlreadyExists
+			}
 			return err
 		}
 	}
@@ -139,5 +143,5 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 	// TODO do this as an "update" instead of an insert
-	return s.Create(pm)
+	return convertMysqlError(s.Create(pm))
 }

@@ -129,25 +129,11 @@ func testCreatePlayer(t *testing.T, db persistence.DB) {
 	assert.EqualError(t, err, persistence.ErrPlayerAlreadyExists.Error())
 
 	p2 := model.Player{
-		ID:   model.PlayerID(rand.String(50)),
-		Name: `player 2`,
-		Games: map[model.GameID]model.PlayerColor{
-			model.GameID(1825): model.Blue,
-			model.GameID(26):   model.Red,
-			model.GameID(33):   model.Green,
-			model.GameID(108):  model.Red,
-		},
+		ID:    model.PlayerID(rand.String(50)),
+		Name:  `player 2`,
+		Games: map[model.GameID]model.PlayerColor{},
 	}
 	p2Copy := p2
-	// Don't keep the same memory space for the games copy
-	// Ok so I'm conflicted. A created player shouldn't already be in games,
-	// so this unit test isn't really accurate.
-	p2Copy.Games = map[model.GameID]model.PlayerColor{
-		model.GameID(1825): model.Blue,
-		model.GameID(26):   model.Red,
-		model.GameID(33):   model.Green,
-		model.GameID(108):  model.Red,
-	}
 
 	assert.NoError(t, db.CreatePlayer(p2))
 
@@ -305,7 +291,7 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 	playerColors := g.PlayerColors
 	g.PlayerColors = nil
 
-	require.NoError(t, db.SaveGame(g))
+	require.NoError(t, db.CreateGame(g))
 
 	for _, pID := range []model.PlayerID{alice.ID, bob.ID} {
 		require.NoError(t, db.AddPlayerColorToGame(pID, playerColors[pID], g.ID))
@@ -347,7 +333,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	var gCopy model.Game
 	persistenceGameCopy(&gCopy, g)
 
-	require.NoError(t, db.SaveGame(g))
+	require.NoError(t, db.CreateGame(g))
 
 	checkPersistedGame(gCopy)
 

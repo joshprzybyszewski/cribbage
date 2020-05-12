@@ -148,7 +148,11 @@ func (ps *playerService) Create(p model.Player) error {
 	}
 
 	_, err := ps.db.Exec(createPlayer, p.ID, p.Name)
+	err = convertMysqlError(err)
 	if err != nil {
+		if err == errDuplicateEntry {
+			return persistence.ErrPlayerAlreadyExists
+		}
 		return err
 	}
 
