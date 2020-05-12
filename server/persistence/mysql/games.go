@@ -472,8 +472,6 @@ func (g *gameService) Save(mg model.Game) error {
 		return persistence.ErrInvalidPlayerID
 	}
 
-	// TODO ensure the player colors are accurate from mg.PlayerColors
-
 	cut := mg.CutCard.ToTinyInt()
 	crib := serializeCribCards(mg.Crib)
 

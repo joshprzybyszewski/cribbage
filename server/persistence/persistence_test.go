@@ -140,6 +140,8 @@ func testCreatePlayer(t *testing.T, db persistence.DB) {
 	}
 	p2Copy := p2
 	// Don't keep the same memory space for the games copy
+	// Ok so I'm conflicted. A created player shouldn't already be in games,
+	// so this unit test isn't really accurate.
 	p2Copy.Games = map[model.GameID]model.PlayerColor{
 		model.GameID(1825): model.Blue,
 		model.GameID(26):   model.Red,
