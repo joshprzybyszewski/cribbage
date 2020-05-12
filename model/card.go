@@ -63,7 +63,7 @@ func getSuit(card string) (Suit, error) {
 	}
 }
 
-func NewCardFromTinyInt(val int8) (Card, error) {
+func NewCardFromTinyInt(val int16) (Card, error) {
 	return newCardFromNumber(int(val))
 }
 
@@ -90,12 +90,12 @@ func NewCard(suit Suit, value int) Card {
 	}
 }
 
-func (c Card) ToTinyInt() int8 {
+func (c Card) ToTinyInt() int16 {
 	empty := Card{}
 	if c == empty {
 		return -1
 	}
-	return int8((int(c.Suit) * 13) + (c.Value - 1))
+	return int16((int(c.Suit) * 13) + (c.Value - 1))
 }
 
 func (c Card) String() string {
