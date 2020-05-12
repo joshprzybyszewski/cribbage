@@ -52,7 +52,22 @@ func (d *db) AddPlayerColorToGame(pID model.PlayerID, color model.PlayerColor, g
 }
 
 func (d *db) GetGame(id model.GameID) (model.Game, error) {
-	return d.games.Get(id)
+	g, err := d.games.Get(id)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	for i, player := range g.Players {
+		// overwrite the player that the game service knows
+		// about with the player that the players service knows about
+		p, err := d.players.Get(player.ID)
+		if err != nil {
+			return model.Game{}, err
+		}
+		g.Players[i] = p
+	}
+
+	return g, nil
 }
 
 func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {

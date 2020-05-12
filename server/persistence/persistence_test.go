@@ -179,7 +179,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	}
 	g1Copy := g1
 
-	require.NoError(t, db.SaveGame(g1))
+	require.NoError(t, db.CreateGame(g1))
 
 	actGame, err := db.GetGame(g1.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, g1.ID)

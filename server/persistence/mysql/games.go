@@ -49,8 +49,8 @@ const (
 
 	createGamePlayersTable = `CREATE TABLE IF NOT EXISTS GamePlayers (
 		GameID INT UNSIGNED,
-		Player1ID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Player2ID VARCHAR(` + maxPlayerUUIDLenStr + `),
+		Player1ID VARCHAR(` + maxPlayerUUIDLenStr + `) NOT NULL,
+		Player2ID VARCHAR(` + maxPlayerUUIDLenStr + `) NOT NULL,
 		Player3ID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Player4ID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		PRIMARY KEY (GameID)
@@ -381,7 +381,6 @@ func (g *gameService) getPlayersForGame(
 
 	players := make([]model.Player, len(pIDs))
 	for i, pID := range pIDs {
-		// TODO determine if it's worth getting the entire player here, not just the ID
 		players[i].ID = pID
 	}
 	return players, nil

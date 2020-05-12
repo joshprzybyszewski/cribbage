@@ -85,10 +85,12 @@ func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, er
 		&preference,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return interaction.PlayerMeans{}, persistence.ErrPlayerNotFound
+		if err != sql.ErrNoRows {
+			return interaction.PlayerMeans{}, err
 		}
-		return interaction.PlayerMeans{}, err
+		// This means the user doesn't have a preferred mode yet
+		// let's just use a default
+		preference = int(interaction.Unknown)
 	}
 	result.PreferredMode = interaction.Mode(preference)
 
