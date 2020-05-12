@@ -155,6 +155,20 @@ func (ps *playerService) Create(p model.Player) error {
 	return nil
 }
 
+func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
+	for _, p := range players {
+		if len(p.ID) > maxPlayerUUIDLen {
+			return persistence.ErrInvalidPlayerID
+		}
+
+		_, err := ps.db.Exec(addPlayerToGame, gID, p.ID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
 	_, err := ps.db.Exec(updatePlayerColor, color, pID, gID)
 	if err != nil {

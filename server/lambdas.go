@@ -68,7 +68,7 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 		return model.Game{}, err
 	}
 
-	err = db.SaveGame(mg)
+	err = db.CreateGame(mg)
 	if err != nil {
 		return model.Game{}, err
 	}

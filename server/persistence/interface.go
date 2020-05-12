@@ -1,6 +1,8 @@
 package persistence
 
 import (
+	"errors"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
@@ -10,6 +12,7 @@ type DB interface {
 	GetPlayer(id model.PlayerID) (model.Player, error)
 	AddPlayerColorToGame(id model.PlayerID, color model.PlayerColor, gID model.GameID) error
 
+	CreateGame(g model.Game) error
 	GetGame(id model.GameID) (model.Game, error)
 	GetGameAction(id model.GameID, numActions uint) (model.Game, error)
 	SaveGame(g model.Game) error
@@ -54,6 +57,19 @@ func (d *db) GetGame(id model.GameID) (model.Game, error) {
 
 func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
 	return d.games.GetAt(id, numActions)
+}
+
+func (d *db) CreateGame(g model.Game) error {
+	if g.NumActions() != 0 {
+		return errors.New(`cannot create game with actions`)
+	}
+
+	err := d.players.BeginGame(g.ID, g.Players)
+	if err != nil {
+		return err
+	}
+
+	return d.games.Save(g)
 }
 
 func (d *db) SaveGame(g model.Game) error {

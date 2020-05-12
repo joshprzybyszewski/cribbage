@@ -294,6 +294,10 @@ func getBlockingPlayers(ser []byte) (map[model.PlayerID]model.Blocker, error) {
 	return blockers, nil
 }
 
+func serializeBlockingPlayers(input map[model.PlayerID]model.Blocker) ([]byte, error) {
+	return json.Marshal(input)
+}
+
 func getHands(ser []byte) (map[model.PlayerID][]model.Card, error) {
 	hands := map[model.PlayerID][]model.Card{}
 
@@ -305,6 +309,10 @@ func getHands(ser []byte) (map[model.PlayerID][]model.Card, error) {
 	return hands, nil
 }
 
+func serializeHands(input map[model.PlayerID][]model.Card) ([]byte, error) {
+	return json.Marshal(input)
+}
+
 func getPeggedCards(ser []byte) ([]model.PeggedCard, error) {
 	peggedCards := []model.PeggedCard{}
 
@@ -314,6 +322,10 @@ func getPeggedCards(ser []byte) ([]model.PeggedCard, error) {
 	}
 
 	return peggedCards, nil
+}
+
+func serializePeggedCards(input []model.PeggedCard) ([]byte, error) {
+	return json.Marshal(input)
 }
 
 func (g *gameService) getPlayersForGame(
@@ -407,13 +419,29 @@ func (g *gameService) getActions(
 		if !ok {
 			return nil, errors.New(`missing action`)
 		}
-		err = json.Unmarshal(bytes, &pas[i])
+		pa, err := getPlayerAction(bytes)
 		if err != nil {
 			return nil, err
 		}
+		pas[i] = pa
 	}
 
 	return pas, nil
+}
+
+func getPlayerAction(ser []byte) (model.PlayerAction, error) {
+	result := model.PlayerAction{}
+
+	err := json.Unmarshal(ser, &result)
+	if err != nil {
+		return model.PlayerAction{}, err
+	}
+
+	return result, nil
+}
+
+func serializePlayerAction(input model.PlayerAction) ([]byte, error) {
+	return json.Marshal(input)
 }
 
 func (g *gameService) UpdatePlayerColor(id model.GameID, pID model.PlayerID, color model.PlayerColor) error {
@@ -431,22 +459,6 @@ func (g *gameService) Save(mg model.Game) error {
 		return persistence.ErrInvalidPlayerID
 	}
 
-	if mg.NumActions() == 0 {
-		// add all of the players to be recognized in this game
-		// if it's the first time we've saved it.
-		// This isn't my favorite -- I'd rather have the player service
-		// keep track of this
-		for _, p := range mg.Players {
-			if len(p.ID) > maxPlayerUUIDLen {
-				return persistence.ErrInvalidPlayerID
-			}
-			_, err := g.db.Exec(addPlayerToGame, mg.ID, p.ID)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
 	// TODO ensure the player colors are accurate from mg.PlayerColors
 
 	cut := mg.CutCard.ToTinyInt()
@@ -454,7 +466,23 @@ func (g *gameService) Save(mg model.Game) error {
 	for i, cc := range mg.Crib {
 		crib[i] = cc.ToTinyInt()
 	}
-	var bp, h, pc, a []byte
+
+	bp, err := serializeBlockingPlayers(mg.BlockingPlayers)
+	if err != nil {
+		return err
+	}
+	h, err := serializeHands(mg.Hands)
+	if err != nil {
+		return err
+	}
+	pegged, err := serializePeggedCards(mg.PeggedCards)
+	if err != nil {
+		return err
+	}
+	a, err := serializePlayerAction(mg.Actions[mg.NumActions()-1])
+	if err != nil {
+		return err
+	}
 
 	ifs := []interface{}{
 		mg.ID, mg.NumActions(),
@@ -462,9 +490,9 @@ func (g *gameService) Save(mg model.Game) error {
 		mg.LagScores[model.Blue], mg.LagScores[model.Red], mg.LagScores[model.Green],
 		mg.Phase, cut, crib,
 		mg.CurrentDealer,
-		bp, h, pc, a,
+		bp, h, pegged, a,
 	}
-	_, err := g.db.Exec(insertGameAt, ifs...)
+	_, err = g.db.Exec(insertGameAt, ifs...)
 	if err != nil {
 		return err
 	}
