@@ -21,7 +21,7 @@ const (
 	// ScoreBlueLag, ScoreRedLag, and ScoreGreenLag are the previous scores for each color
 	// Phase is the model.Phase that the game is currently in
 	// CutCard is a number representation of the card that's been cut
-	// Crib is a number representation of the (up to 4) cards in the crib
+	// nolint:lll Crib is an 8-byte int of the (up to 4) cards in the crib where every two bytes is each crib card. Tricky, I know. Probably shouldn't do it this way, but yolo, this is a fun project and I can save space and mental pain
 	// CurrentDealer is the PlayerID for the dealer
 	// BlockingPlayers is a json encoded map of who's blocking and why
 	// Hands is a json encoded map of slices for player hands
@@ -38,7 +38,7 @@ const (
 		ScoreGreenLag TINYINT UNSIGNED,
 		Phase TINYINT UNSIGNED,
 		CutCard TINYINT UNSIGNED,
-		Crib TINYINT UNSIGNED,
+		Crib BIGINT UNSIGNED,
 		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `),
 		BlockingPlayers BLOB,
 		Hands BLOB,
@@ -165,7 +165,7 @@ func (g *gameService) populateGameFromRow(
 	var scoreBlue, scoreRed, scoreGreen,
 		lagScoreBlue, lagScoreRed, lagScoreGreen int
 	var phase model.Phase
-	var cribCardInts []int8 = make([]int8, 4)
+	var cribCardInts int64
 	var cutCardInt int8
 	var blockingPlayers, hands, peggedCards, action []byte
 	var numActions uint32
@@ -269,18 +269,31 @@ func populateScores(
 	return curScores, lagScores
 }
 
-func getCribCards(cribCardInts []int8) []model.Card {
+func getCribCards(cribCardInt int64) []model.Card {
 	var cribCards []model.Card
-	for _, cci := range cribCardInts {
+	var cci int8
+	for i := uint(0); i < 4; i++ {
+		cci = int8(cribCardInt >> (8 * i))
 		c, err := model.NewCardFromTinyInt(cci)
 		if err != nil {
-			// If we've errored here, just ignore it and continue
-			fmt.Printf("errored card while building crib: %+v\n", err)
+			// If we've errored here, we assume it just means the card isn't set
 			continue
 		}
 		cribCards = append(cribCards, c)
 	}
 	return cribCards
+}
+
+func serializeCribCards(crib []model.Card) int64 {
+	val := int64(0)
+	for i := uint(0); i < 4; i++ {
+		ti := int8(0x34)
+		if int(i) < len(crib) {
+			ti = crib[i].ToTinyInt()
+		}
+		val |= (int64(ti) << (8 * i))
+	}
+	return val
 }
 
 func getBlockingPlayers(ser []byte) (map[model.PlayerID]model.Blocker, error) {
@@ -462,10 +475,7 @@ func (g *gameService) Save(mg model.Game) error {
 	// TODO ensure the player colors are accurate from mg.PlayerColors
 
 	cut := mg.CutCard.ToTinyInt()
-	crib := make([]int8, len(mg.Crib))
-	for i, cc := range mg.Crib {
-		crib[i] = cc.ToTinyInt()
-	}
+	crib := serializeCribCards(mg.Crib)
 
 	bp, err := serializeBlockingPlayers(mg.BlockingPlayers)
 	if err != nil {
