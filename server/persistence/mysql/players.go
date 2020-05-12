@@ -14,16 +14,16 @@ const (
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Name VARCHAR(` + maxPlayerNameLenStr + `),
-		PreferredInteractionMode INT(1) DEFAULT 0,
+		PreferredInteractionMode INT DEFAULT 0,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
 
 	// GamePlayerColors keeps track of what color each player is in a given game
 	// The default Color should match int(model.UnsetColor) for player colors
 	createGamePlayerColorsTable = `CREATE TABLE IF NOT EXISTS GamePlayerColors (
-		GameID INT(1) UNSIGNED,
+		GameID INT UNSIGNED,
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Color TINYINT(1) UNSIGNED DEFAULT 0,
+		Color TINYINT UNSIGNED DEFAULT 0,
 		PRIMARY KEY (GameID, PlayerID)
 	) ENGINE = INNODB;`
 

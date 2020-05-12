@@ -28,17 +28,17 @@ const (
 	// PeggedCards is the json-encoded slice of previously pegged cards
 	// Action is the json encoded model.PlayerAction
 	createGameTable = `CREATE TABLE IF NOT EXISTS Games (
-		GameID INT(1) UNSIGNED,
-		NumActions INT(1) UNSIGNED,
-		ScoreBlue TINYINT(1) UNSIGNED,
-		ScoreRed TINYINT(1) UNSIGNED,
-		ScoreGreen TINYINT(1) UNSIGNED,
-		ScoreBlueLag TINYINT(1) UNSIGNED,
-		ScoreRedLag TINYINT(1) UNSIGNED,
-		ScoreGreenLag TINYINT(1) UNSIGNED,
-		Phase TINYINT(1) UNSIGNED,
-		CutCard TINYINT(1) UNSIGNED,
-		Crib TINYINT(4) UNSIGNED,
+		GameID INT UNSIGNED,
+		NumActions INT UNSIGNED,
+		ScoreBlue TINYINT UNSIGNED,
+		ScoreRed TINYINT UNSIGNED,
+		ScoreGreen TINYINT UNSIGNED,
+		ScoreBlueLag TINYINT UNSIGNED,
+		ScoreRedLag TINYINT UNSIGNED,
+		ScoreGreenLag TINYINT UNSIGNED,
+		Phase TINYINT UNSIGNED,
+		CutCard TINYINT UNSIGNED,
+		Crib TINYINT UNSIGNED,
 		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `),
 		BlockingPlayers BLOB,
 		Hands BLOB,
@@ -48,7 +48,7 @@ const (
 	) ENGINE = INNODB;`
 
 	createGamePlayersTable = `CREATE TABLE IF NOT EXISTS GamePlayers (
-		GameID INT(1) UNSIGNED,
+		GameID INT UNSIGNED,
 		Player1ID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Player2ID VARCHAR(` + maxPlayerUUIDLenStr + `),
 		Player3ID VARCHAR(` + maxPlayerUUIDLenStr + `),

@@ -13,7 +13,7 @@ const (
 	// Interactions stores the json-serialized InteractionMeans for a given player/mode
 	createInteractionTable = `CREATE TABLE IF NOT EXISTS Interactions (
 		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Mode INT(1),
+		Mode INT,
 		Means BLOB,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
