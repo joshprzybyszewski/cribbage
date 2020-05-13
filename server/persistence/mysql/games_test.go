@@ -11,17 +11,17 @@ import (
 
 func TestGetCribCards(t *testing.T) {
 	// 0x34 = decimal 52 which is more than the num cards we have
-	cards := getCribCards(int64(0x34343434))
+	cards := getCribCards(int32(0x34343434))
 	assert.Empty(t, cards)
 
-	cards = getCribCards(int64(0x01020304))
+	cards = getCribCards(int32(0x01020304))
 	require.Len(t, cards, 4)
 	assert.Equal(t, model.NewCardFromNumber(int(0x04)), cards[0])
 	assert.Equal(t, model.NewCardFromNumber(int(0x03)), cards[1])
 	assert.Equal(t, model.NewCardFromNumber(int(0x02)), cards[2])
 	assert.Equal(t, model.NewCardFromNumber(int(0x01)), cards[3])
 
-	cards = getCribCards(int64(0x01343404))
+	cards = getCribCards(int32(0x01343404))
 	require.Len(t, cards, 2)
 	assert.Equal(t, model.NewCardFromNumber(int(0x04)), cards[0])
 	assert.Equal(t, model.NewCardFromNumber(int(0x01)), cards[1])
@@ -29,7 +29,7 @@ func TestGetCribCards(t *testing.T) {
 
 func TestSerializeCribCards(t *testing.T) {
 	serVal := serializeCribCards(nil)
-	assert.Equal(t, int64(0x34343434), serVal)
+	assert.Equal(t, int32(0x34343434), serVal)
 
 	crib := []model.Card{
 		model.NewCardFromNumber(int(0x05)),
@@ -39,12 +39,12 @@ func TestSerializeCribCards(t *testing.T) {
 	}
 
 	serVal = serializeCribCards(crib)
-	assert.Equal(t, int64(0x12081505), serVal)
+	assert.Equal(t, int32(0x12081505), serVal)
 
 	crib = []model.Card{
 		model.NewCardFromNumber(int(0x08)),
 	}
 
 	serVal = serializeCribCards(crib)
-	assert.Equal(t, int64(0x34343408), serVal)
+	assert.Equal(t, int32(0x34343408), serVal)
 }

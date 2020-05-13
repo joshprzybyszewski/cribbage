@@ -38,7 +38,7 @@ const (
 		ScoreGreenLag TINYINT UNSIGNED,
 		Phase TINYINT UNSIGNED,
 		CutCard SMALLINT,
-		Crib BIGINT,
+		Crib INT,
 		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `),
 		BlockingPlayers BLOB,
 		Hands BLOB,
@@ -179,8 +179,8 @@ func (g *gameService) populateGameFromRow(
 	var scoreBlue, scoreRed, scoreGreen,
 		lagScoreBlue, lagScoreRed, lagScoreGreen int
 	var phase model.Phase
-	var cribCardInts int64
-	var cutCardInt int16
+	var cribCardInts int32
+	var cutCardInt int8
 	var blockingPlayers, hands, peggedCards, action []byte
 	var numActions uint32
 	err := r.Scan(
@@ -283,11 +283,11 @@ func populateScores(
 	return curScores, lagScores
 }
 
-func getCribCards(cribCardInt int64) []model.Card {
+func getCribCards(cribCardInt int32) []model.Card {
 	var cribCards []model.Card
-	var cci int16
+	var cci int8
 	for i := uint(0); i < 4; i++ {
-		cci = int16(cribCardInt >> (8 * i))
+		cci = int8(cribCardInt >> (8 * i))
 		c, err := model.NewCardFromTinyInt(cci)
 		if err != nil {
 			// If we've errored here, we assume it just means the card isn't set
@@ -298,14 +298,14 @@ func getCribCards(cribCardInt int64) []model.Card {
 	return cribCards
 }
 
-func serializeCribCards(crib []model.Card) int64 {
-	val := int64(0)
+func serializeCribCards(crib []model.Card) int32 {
+	val := int32(0)
 	for i := uint(0); i < 4; i++ {
-		ti := int16(0x34)
+		ti := int8(0x34)
 		if int(i) < len(crib) {
 			ti = crib[i].ToTinyInt()
 		}
-		val |= (int64(ti) << (8 * i))
+		val |= (int32(ti) << (8 * i))
 	}
 	return val
 }
