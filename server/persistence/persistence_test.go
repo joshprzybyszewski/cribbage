@@ -179,6 +179,9 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	}
 	g1Copy := g1
 
+	for _, p := range g1.Players {
+		require.NoError(t, db.CreatePlayer(p))
+	}
 	require.NoError(t, db.CreateGame(g1))
 
 	actGame, err := db.GetGame(g1.ID)
@@ -197,6 +200,10 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
+
+	for _, p := range g.Players {
+		require.NoError(t, db.CreatePlayer(p))
+	}
 
 	_, err = db.GetGame(g.ID)
 	require.Error(t, err)
@@ -284,6 +291,9 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
+	for _, p := range g.Players {
+		require.NoError(t, db.CreatePlayer(p))
+	}
 
 	// Right now, CreateGame assigns colors to players, but we may
 	// not always do that. Clear out that map but save it so that we
@@ -325,6 +335,9 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
+	for _, p := range g.Players {
+		require.NoError(t, db.CreatePlayer(p))
+	}
 
 	_, err = db.GetGame(g.ID)
 	require.Error(t, err)
