@@ -295,6 +295,11 @@ func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
 	}
 	p1Copy := p1
 
+	require.NoError(t, db.CreatePlayer(model.Player{
+		ID:   p1.PlayerID,
+		Name: `testSaveInteractionStubPlayer`,
+	}))
+
 	assert.NoError(t, db.SaveInteraction(p1))
 
 	actPM, err := db.GetInteraction(p1.PlayerID)
@@ -308,7 +313,7 @@ func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
 		PreferredMode: interaction.Localhost,
 		Interactions: []interaction.Means{{
 			Mode: interaction.Localhost,
-			Info: 8484,
+			Info: `8484`,
 		}},
 	}
 	assert.NoError(t, db.SaveInteraction(p1update))
