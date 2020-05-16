@@ -115,6 +115,10 @@ func (ps *playerService) Create(p model.Player) error {
 	})
 }
 
+func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
+	return nil
+}
+
 func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
 	p, err := ps.Get(pID)
 	if err != nil {

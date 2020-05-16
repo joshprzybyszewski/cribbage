@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 
@@ -14,7 +13,7 @@ import (
 )
 
 var (
-	database = flag.String(`db`, `mongo`, `Set to the type of database to access`)
+	database = flag.String(`db`, `mongo`, `Set to the type of database to access. Options: "mongo", "memory"`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 )
 
@@ -40,7 +39,7 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 		return memory.New(), nil
 	}
 
-	return nil, errors.New(`database type not supported`)
+	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", and "memory"`, *database)
 }
 
 func seedNPCs() error {
@@ -63,24 +62,26 @@ func seedNPCs() error {
 			ID:   id,
 			Name: string(id),
 		}
-		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
-		_, err := db.GetInteraction(id)
+		_, err = db.GetPlayer(p.ID)
 		if err != nil {
-			if err != persistence.ErrInteractionNotFound {
-				return err
-			}
-			err = db.SaveInteraction(pm)
-			if err != nil {
+			if err == persistence.ErrPlayerNotFound {
+				err = db.CreatePlayer(p)
+				if err != nil {
+					return err
+				}
+			} else {
 				return err
 			}
 		}
-		_, err = db.GetPlayer(p.ID)
+		pm := interaction.New(id, interaction.Means{Mode: interaction.NPC})
+		_, err = db.GetInteraction(id)
 		if err != nil {
-			if err != persistence.ErrPlayerNotFound {
-				return err
-			}
-			err = db.CreatePlayer(p)
-			if err != nil {
+			if err == persistence.ErrInteractionNotFound {
+				err = db.SaveInteraction(pm)
+				if err != nil {
+					return err
+				}
+			} else {
 				return err
 			}
 		}

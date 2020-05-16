@@ -200,6 +200,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	return gs.saveGameList(newGameList)
 }
 
+func (gs *gameService) Begin(g model.Game) error {
+	return gs.Save(g)
+}
+
 func (gs *gameService) Save(g model.Game) error {
 	saved := gameList{}
 	filter := bsonGameIDFilter(g.ID)
@@ -241,6 +245,11 @@ func (gs *gameService) Save(g model.Game) error {
 		return errors.New(`bad save somewhere`)
 	}
 	err = validateGameState(saved.Games, g)
+	if err != nil {
+		return err
+	}
+
+	err = persistence.ValidateLatestActionBelongs(g)
 	if err != nil {
 		return err
 	}

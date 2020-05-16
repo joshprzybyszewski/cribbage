@@ -36,9 +36,10 @@ const (
 type PlayerColor int8
 
 const (
-	Green PlayerColor = iota
-	Blue
-	Red
+	UnsetColor PlayerColor = 0
+	Green      PlayerColor = 1
+	Blue       PlayerColor = 2
+	Red        PlayerColor = 3
 )
 
 func (c PlayerColor) String() string {
@@ -49,6 +50,8 @@ func (c PlayerColor) String() string {
 		return `red`
 	case Green:
 		return `green`
+	case UnsetColor:
+		return `unset`
 	}
 	return `notacolor`
 }

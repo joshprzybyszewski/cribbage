@@ -2,8 +2,8 @@
 
 # Check that you have a version of go we know works
 GO_VERSION=$(go version)
-if [[ $GO_VERSION != *"go1.12.9"* ]]; then
-  echo "WARNING: We recommend using go version 1.12.9, but you have \"${GO_VERSION}\""
+if [[ $GO_VERSION != *"go1.14.2"* ]]; then
+  echo "WARNING: We recommend using go version 1.14.2, but you have \"${GO_VERSION}\""
 fi
 
 # Check that you have mongodb and that it's a version known to work

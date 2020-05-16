@@ -22,3 +22,5 @@ playerlogs/
 
 # mongodb replica stuff
 data/
+
+.DS_Store
