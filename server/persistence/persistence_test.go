@@ -156,13 +156,57 @@ func testCreatePlayer(t *testing.T, name dbName, db persistence.DB) {
 		Name:  `player 2`,
 		Games: map[model.GameID]model.PlayerColor{},
 	}
-	p2Copy := p2
+	expP2 := p2
+	// Don't keep the same memory space for the games copy
+	expP2.Games = map[model.GameID]model.PlayerColor{}
 
 	assert.NoError(t, db.CreatePlayer(p2))
 
 	actP2, err := db.GetPlayer(p2.ID)
 	require.NoError(t, err)
-	assert.Equal(t, p2Copy, actP2)
+	assert.Equal(t, expP2, actP2)
+
+	alice, _, _ := testutils.EmptyAliceAndBob()
+	assert.NoError(t, db.CreatePlayer(alice))
+
+	// this is just a stub to allow us to add colors for the game
+	g1 := model.Game{
+		ID:              model.GameID(rand.Intn(1000)),
+		Players:         []model.Player{alice, p2},
+		BlockingPlayers: map[model.PlayerID]model.Blocker{p2.ID: model.PegCard},
+		CurrentDealer:   alice.ID,
+		PlayerColors:    nil,
+		CurrentScores:   map[model.PlayerColor]int{},
+		LagScores:       map[model.PlayerColor]int{},
+		Phase:           model.Pegging,
+		Hands:           map[model.PlayerID][]model.Card{},
+		CutCard:         model.NewCardFromString(`KH`),
+		Crib:            []model.Card{},
+		PeggedCards:     make([]model.PeggedCard, 0, 8),
+		Actions:         []model.PlayerAction{},
+	}
+	require.NoError(t, db.CreateGame(g1))
+
+	require.NoError(t, db.AddPlayerColorToGame(p2.ID, model.Blue, g1.ID))
+
+	expP2.Games = map[model.GameID]model.PlayerColor{
+		g1.ID: model.Blue,
+	}
+	actP2, err = db.GetPlayer(p2.ID)
+	require.NoError(t, err)
+	assert.Equal(t, expP2, actP2)
+
+	g2 := g1
+	g2.PlayerColors = nil
+	g2.ID = model.GameID(rand.Intn(1000))
+	require.NoError(t, db.CreateGame(g2))
+
+	require.NoError(t, db.AddPlayerColorToGame(p2.ID, model.Red, g2.ID))
+
+	expP2.Games[g2.ID] = model.Red
+	actP2, err = db.GetPlayer(p2.ID)
+	require.NoError(t, err)
+	assert.Equal(t, expP2, actP2)
 }
 
 func testSaveGame(t *testing.T, name dbName, db persistence.DB) {
