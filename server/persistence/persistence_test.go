@@ -415,14 +415,40 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
-	// corrupt an action
-	badAction := g.Actions[1]
+	// corrupt the "current" action
+	i := len(g.Actions) - 1
+	prevAction := g.Actions[i]
+	badAction := prevAction
+	badAction.ID = model.PlayerID(`nefario`)
+	g.Actions[i] = badAction
+	require.Error(t, db.SaveGame(g), `saving a game with an action by a player outside of it is a :badtime:`)
+
+	badAction = prevAction
+	badAction.GameID = g.ID + 1
+	g.Actions[i] = badAction
+	require.Error(t, db.SaveGame(g), `saving a game with an action on a different game is a :badtime:`)
+	// set the latest action back to what it's supposed to be
+	g.Actions[i] = prevAction
+
+	// splice out an action
+	prevActionSlice := g.Actions
+	g.Actions = append(g.Actions[:1], g.Actions[2:]...)
+	require.Error(t, db.SaveGame(g), `saving a game with a missing action is a :badtime:`)
+	// set the action slice back to what it was
+	g.Actions = prevActionSlice
+
+	// corrupt a previous action
+	badAction = g.Actions[1]
 	badAction.Action = model.CountCribAction{Pts: 100}
 	badAction.Overcomes = model.CountCrib
 	g.Actions[1] = badAction
-	require.Error(t, db.SaveGame(g), `saving a game with a corrupted action is a :badtime:`)
-
-	// splice out an action
-	g.Actions = append(g.Actions[:1], g.Actions[2:]...)
-	require.Error(t, db.SaveGame(g), `saving a game with a missing action is a :badtime:`)
+	isMysql := true
+	if isMysql {
+		// mysql is just storing one action per save. the previous ones can be corrupt as all get out
+		// but as long as the latest one is fine, so are we
+		assert.NoError(t, db.SaveGame(g), `saving a game with a corrupted action is a :badtime:`)
+	} else {
+		// this is because the noSQL databases are persisting ALL of the actions _every_ time
+		assert.Error(t, db.SaveGame(g), `saving a game with a corrupted action is a :badtime:`)
+	}
 }

@@ -223,6 +223,11 @@ func (gs *gameService) Save(g model.Game) error {
 		return err
 	}
 
+	err = validateLatestActionBelongs(g)
+	if err != nil {
+		return err
+	}
+
 	saved.Games = append(saved.Games, g)
 
 	return gs.saveGameList(saved)
@@ -244,6 +249,29 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 			}
 		}
 	}
+	return nil
+}
+
+func validateLatestActionBelongs(mg model.Game) error {
+	if mg.NumActions() == 0 {
+		return nil
+	}
+
+	lastAction := mg.Actions[mg.NumActions()-1]
+	if lastAction.GameID != mg.ID {
+		return persistence.ErrGameActionWrongGame
+	}
+	found := false
+	for _, p := range mg.Players {
+		if p.ID == lastAction.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return persistence.ErrGameActionWrongPlayer
+	}
+
 	return nil
 }
 

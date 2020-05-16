@@ -518,6 +518,10 @@ func (g *gameService) Save(mg model.Game) error {
 		return persistence.ErrInvalidPlayerID
 	}
 
+	if err := validateLatestActionBelongs(mg); err != nil {
+		return err
+	}
+
 	cut := mg.CutCard.ToTinyInt()
 	crib := serializeCribCards(mg.Crib)
 
@@ -553,6 +557,29 @@ func (g *gameService) Save(mg model.Game) error {
 	_, err = g.db.Exec(insertGameAt, ifs...)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func validateLatestActionBelongs(mg model.Game) error {
+	if mg.NumActions() == 0 {
+		return nil
+	}
+
+	lastAction := mg.Actions[mg.NumActions()-1]
+	if lastAction.GameID != mg.ID {
+		return persistence.ErrGameActionWrongGame
+	}
+	found := false
+	for _, p := range mg.Players {
+		if p.ID == lastAction.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return persistence.ErrGameActionWrongPlayer
 	}
 
 	return nil
