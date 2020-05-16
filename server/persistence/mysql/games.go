@@ -436,14 +436,19 @@ func (g *gameService) getActions(
 		return nil, err
 	}
 	paMap := make(map[int][]byte, maxNumActions)
+	var lenActionSlice, actionIndex int
+	var serAction []byte
 	for rows.Next() {
-		var numActions int
-		var action []byte
-		err = rows.Scan(&numActions, &action)
+		err = rows.Scan(&lenActionSlice, &serAction)
 		if err != nil {
 			return nil, err
 		}
-		paMap[numActions] = action
+		// we subtract one because the last action is serialized and paired
+		// with the len of the action slice. Therefore, we need to say that
+		// this action's index (into the action slice) is one fewer than the
+		// number we persisted it at
+		actionIndex = lenActionSlice - 1
+		paMap[actionIndex] = serAction
 	}
 	err = rows.Err()
 	if err != nil {
@@ -468,6 +473,10 @@ func (g *gameService) getActions(
 
 func getPlayerAction(ser []byte) (model.PlayerAction, error) {
 	result := model.PlayerAction{}
+	if len(ser) == 0 {
+		// it's an byte slice, return an empty action
+		return result, nil
+	}
 
 	err := json.Unmarshal(ser, &result)
 	if err != nil {
@@ -538,6 +547,7 @@ func (g *gameService) Save(mg model.Game) error {
 	}
 	var a []byte
 	if ai := mg.NumActions() - 1; ai >= 0 {
+		// get the last action in the slice of actions. Serialize it for saving
 		a, err = serializePlayerAction(mg.Actions[ai])
 		if err != nil {
 			return err
