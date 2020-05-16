@@ -40,7 +40,7 @@ func TestMeansSerializedInfo(t *testing.T) {
 		ser, err := tc.input.GetSerializedInfo()
 		require.NoError(t, err, msg)
 
-		output := Means{
+		output := &Means{
 			Mode: tc.inputMode,
 		}
 		err = output.AddSerializedInfo(ser)
