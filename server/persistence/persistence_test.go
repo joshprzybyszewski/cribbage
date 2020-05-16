@@ -63,11 +63,20 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 		dst.Hands[k] = newHand
 	}
 
-	dst.Crib = make([]model.Card, len(src.Crib))
-	_ = copy(dst.Crib, src.Crib)
+	if src.Crib != nil {
+		dst.Crib = make([]model.Card, len(src.Crib))
+		_ = copy(dst.Crib, src.Crib)
+	}
 
-	dst.PeggedCards = make([]model.PeggedCard, len(src.PeggedCards))
-	_ = copy(dst.PeggedCards, src.PeggedCards)
+	if src.PeggedCards != nil {
+		dst.PeggedCards = make([]model.PeggedCard, len(src.PeggedCards))
+		_ = copy(dst.PeggedCards, src.PeggedCards)
+	}
+
+	if src.Actions != nil {
+		dst.Actions = make([]model.PlayerAction, len(src.Actions))
+		_ = copy(dst.Actions, src.Actions)
+	}
 }
 
 func TestDB(t *testing.T) {
@@ -150,9 +159,9 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 		Players:         []model.Player{alice, bob},
 		BlockingPlayers: map[model.PlayerID]model.Blocker{bob.ID: model.PegCard},
 		CurrentDealer:   alice.ID,
-		PlayerColors:    map[model.PlayerID]model.PlayerColor{alice.ID: model.Blue, bob.ID: model.Red},
-		CurrentScores:   map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
-		LagScores:       map[model.PlayerColor]int{model.Blue: 0, model.Red: 0},
+		PlayerColors:    map[model.PlayerID]model.PlayerColor{},
+		CurrentScores:   map[model.PlayerColor]int{},
+		LagScores:       map[model.PlayerColor]int{},
 		Phase:           model.Pegging,
 		Hands: map[model.PlayerID][]model.Card{
 			alice.ID: {
@@ -176,12 +185,23 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 			model.NewCardFromString(`ad`),
 		},
 		PeggedCards: make([]model.PeggedCard, 0, 8),
+		Actions:     []model.PlayerAction{},
 	}
 	g1Copy := g1
 
-	for _, p := range g1.Players {
+	for i, p := range g1.Players {
 		require.NoError(t, db.CreatePlayer(p))
+		if c, ok := g1.PlayerColors[p.ID]; ok {
+			g1.Players[i].Games = map[model.GameID]model.PlayerColor{
+				g1.ID: c,
+			}
+		} else {
+			g1.Players[i].Games = map[model.GameID]model.PlayerColor{
+				g1.ID: model.UnsetColor,
+			}
+		}
 	}
+
 	require.NoError(t, db.CreateGame(g1))
 
 	actGame, err := db.GetGame(g1.ID)
@@ -201,8 +221,13 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
 
-	for _, p := range g.Players {
+	for i, p := range g.Players {
 		require.NoError(t, db.CreatePlayer(p))
+		if c, ok := g.PlayerColors[p.ID]; ok {
+			g.Players[i].Games = map[model.GameID]model.PlayerColor{
+				g.ID: c,
+			}
+		}
 	}
 
 	_, err = db.GetGame(g.ID)
@@ -286,8 +311,6 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 
 func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
-	require.NoError(t, db.CreatePlayer(alice))
-	require.NoError(t, db.CreatePlayer(bob))
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
@@ -335,8 +358,13 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
-	for _, p := range g.Players {
+	for i, p := range g.Players {
 		require.NoError(t, db.CreatePlayer(p))
+		if c, ok := g.PlayerColors[p.ID]; ok {
+			g.Players[i].Games = map[model.GameID]model.PlayerColor{
+				g.ID: c,
+			}
+		}
 	}
 
 	_, err = db.GetGame(g.ID)

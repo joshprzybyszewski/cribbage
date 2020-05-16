@@ -55,7 +55,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	gs.lock.Lock()
 	defer gs.lock.Unlock()
 
-	gameList := gs.games[gID]
+	gameList, ok := gs.games[gID]
+	if !ok {
+		return nil
+	}
 	mostRecent := gameList[len(gameList)-1]
 	if c, ok := mostRecent.PlayerColors[pID]; !ok {
 		if mostRecent.PlayerColors == nil {

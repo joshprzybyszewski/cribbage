@@ -99,7 +99,27 @@ func (d *db) CreateGame(g model.Game) error {
 		return err
 	}
 
-	return d.games.Begin(g)
+	err = d.games.Begin(g)
+	if err != nil {
+		return err
+	}
+
+	for _, p := range g.Players {
+		pID := p.ID
+		c, ok := g.PlayerColors[pID]
+		if !ok {
+			// same games may come with the color defined.
+			// if they don't, we're just gonna let that get set later one
+			continue
+		}
+
+		err = d.AddPlayerColorToGame(pID, c, g.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (d *db) SaveGame(g model.Game) error {

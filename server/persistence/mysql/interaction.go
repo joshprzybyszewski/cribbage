@@ -148,7 +148,7 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 			return err
 		}
 	}
-	return nil
+	return s.updatePlayerPreferredMode(pm)
 }
 
 func (s *interactionService) Update(pm interaction.PlayerMeans) error {
@@ -165,6 +165,25 @@ func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 			means.Mode,
 			serMeans,
 			serMeans,
+		)
+		err = convertMysqlError(err)
+		if err != nil {
+			return err
+		}
+	}
+
+	return s.updatePlayerPreferredMode(pm)
+}
+
+func (s *interactionService) updatePlayerPreferredMode(pm interaction.PlayerMeans) error {
+	switch preferred := pm.PreferredMode; preferred {
+	case interaction.Unknown, interaction.UnsetMode:
+		// do nothing
+	default:
+		_, err := s.db.Exec(
+			updatePreferredInteractionMode,
+			preferred,
+			pm.PlayerID,
 		)
 		err = convertMysqlError(err)
 		if err != nil {

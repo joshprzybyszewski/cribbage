@@ -73,13 +73,6 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 		return model.Game{}, err
 	}
 
-	for _, pID := range pIDs {
-		err = db.AddPlayerColorToGame(pID, mg.PlayerColors[pID], mg.ID)
-		if err != nil {
-			return model.Game{}, err
-		}
-	}
-
 	return mg, nil
 }
 

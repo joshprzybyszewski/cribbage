@@ -64,6 +64,13 @@ const (
 		PlayerID = ? AND
 		GameID = ?
 	;`
+
+	updatePreferredInteractionMode = `UPDATE Players
+	SET
+		PreferredInteractionMode = ?
+	WHERE
+		PlayerID = ?
+	;`
 )
 
 var (
