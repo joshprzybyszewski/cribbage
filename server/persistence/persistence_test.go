@@ -11,6 +11,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
 	"github.com/joshprzybyszewski/cribbage/server/play"
 	"github.com/joshprzybyszewski/cribbage/utils/rand"
@@ -100,13 +101,11 @@ func TestDB(t *testing.T) {
 	}
 
 	if !testing.Short() {
-		/* Skip mongodb tests for now
 		// We assume you have mongodb stood up locally when running without -short
 		mongo, err := mongodb.New(context.Background(), ``)
 		require.NoError(t, err)
 
 		dbs[mongoDB] = mongo
-		*/
 
 		// We further assume you have mysql stood up locally when running without -short
 		cfg := mysql.Config{
@@ -210,7 +209,8 @@ func testSaveGame(t *testing.T, name dbName, db persistence.DB) {
 			g1.Players[i].Games = map[model.GameID]model.PlayerColor{
 				g1.ID: c,
 			}
-		} else {
+		} else if name != mongoDB {
+			// mongo doesn't give us this nicety, so we're gonna ignore it
 			g1.Players[i].Games = map[model.GameID]model.PlayerColor{
 				g1.ID: model.UnsetColor,
 			}
