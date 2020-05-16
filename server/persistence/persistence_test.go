@@ -17,7 +17,14 @@ import (
 	"github.com/joshprzybyszewski/cribbage/utils/testutils"
 )
 
-type dbTest func(*testing.T, persistence.DB)
+type dbName string
+type dbTest func(*testing.T, dbName, persistence.DB)
+
+const (
+	memoryDB dbName = `memoryDB`
+	mongoDB  dbName = `mongoDB`
+	mysqlDB  dbName = `mysqlDB`
+)
 
 var (
 	tests = map[string]dbTest{
@@ -88,8 +95,8 @@ func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
 }
 
 func TestDB(t *testing.T) {
-	dbs := map[string]persistence.DB{
-		`memory`: memory.New(),
+	dbs := map[dbName]persistence.DB{
+		memoryDB: memory.New(),
 	}
 
 	if !testing.Short() {
@@ -98,7 +105,7 @@ func TestDB(t *testing.T) {
 		mongo, err := mongodb.New(context.Background(), ``)
 		require.NoError(t, err)
 
-		dbs[`mongodb`] = mongo
+		dbs[mongoDB] = mongo
 		*/
 
 		// We further assume you have mysql stood up locally when running without -short
@@ -110,20 +117,20 @@ func TestDB(t *testing.T) {
 			DatabaseName: `testing_cribbage`,
 			DSNParams:    ``,
 		}
-		mysqlDB, err := mysql.New(context.Background(), cfg)
+		mySQLDB, err := mysql.New(context.Background(), cfg)
 		require.NoError(t, err)
 
-		dbs[`mysql`] = mysqlDB
+		dbs[mysqlDB] = mySQLDB
 	}
 
 	for dbName, db := range dbs {
 		for testName, testFn := range tests {
-			t.Run(dbName+`:`+testName, func(t1 *testing.T) { testFn(t1, db) })
+			t.Run(string(dbName)+`:`+testName, func(t1 *testing.T) { testFn(t1, dbName, db) })
 		}
 	}
 }
 
-func testCreatePlayer(t *testing.T, db persistence.DB) {
+func testCreatePlayer(t *testing.T, name dbName, db persistence.DB) {
 	p1 := model.Player{
 		ID:    model.PlayerID(rand.String(50)),
 		Name:  `player 1`,
@@ -159,7 +166,7 @@ func testCreatePlayer(t *testing.T, db persistence.DB) {
 	assert.Equal(t, p2Copy, actP2)
 }
 
-func testSaveGame(t *testing.T, db persistence.DB) {
+func testSaveGame(t *testing.T, name dbName, db persistence.DB) {
 	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g1 := model.Game{
@@ -217,7 +224,7 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 	assert.Equal(t, g1Copy, actGame)
 }
 
-func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
+func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
@@ -277,7 +284,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	checkPersistedGame(t, db, gCopy)
 }
 
-func testSaveInteraction(t *testing.T, db persistence.DB) {
+func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
 	p1 := interaction.PlayerMeans{
 		PlayerID:      model.PlayerID(rand.String(50)),
 		PreferredMode: interaction.Localhost,
@@ -311,7 +318,7 @@ func testSaveInteraction(t *testing.T, db persistence.DB) {
 	assert.NotEqual(t, p1Copy, actPM)
 }
 
-func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
+func testAddPlayerColorToGame(t *testing.T, name dbName, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
@@ -349,7 +356,7 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 	assert.Equal(t, g2.PlayerColors[bob.ID], b2.Games[g.ID])
 }
 
-func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
+func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
@@ -442,8 +449,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	badAction.Action = model.CountCribAction{Pts: 100}
 	badAction.Overcomes = model.CountCrib
 	g.Actions[1] = badAction
-	isMysql := true
-	if isMysql {
+	if name == mysqlDB {
 		// mysql is just storing one action per save. the previous ones can be corrupt as all get out
 		// but as long as the latest one is fine, so are we
 		assert.NoError(t, db.SaveGame(g), `saving a game with a corrupted action is a :badtime:`)
