@@ -63,20 +63,28 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 		dst.Hands[k] = newHand
 	}
 
-	if src.Crib != nil {
-		dst.Crib = make([]model.Card, len(src.Crib))
-		_ = copy(dst.Crib, src.Crib)
-	}
+	dst.Crib = make([]model.Card, len(src.Crib))
+	_ = copy(dst.Crib, src.Crib)
 
-	if src.PeggedCards != nil {
-		dst.PeggedCards = make([]model.PeggedCard, len(src.PeggedCards))
-		_ = copy(dst.PeggedCards, src.PeggedCards)
-	}
+	dst.PeggedCards = make([]model.PeggedCard, len(src.PeggedCards))
+	_ = copy(dst.PeggedCards, src.PeggedCards)
 
-	if src.Actions != nil {
-		dst.Actions = make([]model.PlayerAction, len(src.Actions))
-		_ = copy(dst.Actions, src.Actions)
+	dst.Actions = make([]model.PlayerAction, len(src.Actions))
+	_ = copy(dst.Actions, src.Actions)
+}
+
+func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
+	actGame, err := db.GetGame(expGame.ID)
+	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
+	if len(actGame.Crib) == 0 {
+		expGame.Crib = nil
+		actGame.Crib = nil
 	}
+	if len(actGame.Actions) == 0 {
+		expGame.Actions = nil
+		actGame.Actions = nil
+	}
+	assert.Equal(t, expGame, actGame)
 }
 
 func TestDB(t *testing.T) {
@@ -212,12 +220,6 @@ func testSaveGame(t *testing.T, db persistence.DB) {
 func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
-	checkPersistedGame := func(expGame model.Game) {
-		actGame, err := db.GetGame(expGame.ID)
-		require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
-		assert.Equal(t, expGame, actGame)
-	}
-
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
 
@@ -239,7 +241,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -250,7 +252,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -261,7 +263,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -272,7 +274,7 @@ func testSaveGameMultipleTimes(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 }
 
 func testSaveInteraction(t *testing.T, db persistence.DB) {
@@ -350,12 +352,6 @@ func testAddPlayerColorToGame(t *testing.T, db persistence.DB) {
 func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	alice, bob, abAPIs := testutils.EmptyAliceAndBob()
 
-	checkPersistedGame := func(expGame model.Game) {
-		actGame, err := db.GetGame(expGame.ID)
-		require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
-		assert.Equal(t, expGame, actGame)
-	}
-
 	g, err := play.CreateGame([]model.Player{alice, bob}, abAPIs)
 	require.NoError(t, err)
 	for i, p := range g.Players {
@@ -376,7 +372,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -387,7 +383,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -398,7 +394,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -409,7 +405,7 @@ func testSaveGameWithMissingAction(t *testing.T, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(gCopy)
+	checkPersistedGame(t, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,

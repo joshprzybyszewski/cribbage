@@ -213,6 +213,16 @@ func (g *gameService) populateGameFromRow(
 	if err != nil {
 		return model.Game{}, err
 	}
+	// if we know what color the players are, but we don't have point entries
+	// for those colors in the scores maps, add zeros
+	for _, color := range pc {
+		if _, ok := curScores[color]; !ok {
+			curScores[color] = 0
+		}
+		if _, ok := lagScores[color]; !ok {
+			lagScores[color] = 0
+		}
+	}
 
 	cutCard, err := model.NewCardFromTinyInt(cutCardInt)
 	if err != nil {
