@@ -109,9 +109,9 @@ func TestDB(t *testing.T) {
 
 		// We further assume you have mysql stood up locally when running without -short
 		cfg := mysql.Config{
-			DSNUser:      `root`, // travis ci uses either the root or the travis user
+			DSNUser:      `root`, // github actions use root user with a root password
 			DSNPassword:  ``,
-			DSNHost:      `127.0.0.1`,
+			DSNHost:      `mysql`,
 			DSNPort:      3306,
 			DatabaseName: `testing_cribbage`,
 			DSNParams:    ``,
