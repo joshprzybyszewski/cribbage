@@ -26,3 +26,19 @@ else
         echo "Did not find MongoDB running. Try 'mongo' to start it."
     fi
 fi
+
+# Check that you have mysql and that it's a version known to work
+if [[ ! $(which mysql) ]]; then
+    echo "You don't have mysql installed"
+    echo "Follow the instructions here: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/"
+else
+    # Check that you have a version of mongo we know works
+    MYSQL_VERSION=$(mysql --version)
+    if [[ $MYSQL_VERSION != *"Ver 8.0.19"* ]]; then
+        echo "WARNING: We recommend using mysql at version v8.0.19 (only because that's what I'm using), but you have \"${MYSQL_VERSION}\""
+    fi
+    # Check that mongodb is running.
+    if [[ ! $(pgrep mysql) ]]; then
+        echo "Did not find Mysql running. Try 'mysqld' to start it. Otherwise, check out these instructions: https://dev.mysql.com/doc/mysql-getting-started/en/"
+    fi
+fi
