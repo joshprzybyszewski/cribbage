@@ -65,7 +65,7 @@ func (d *services) AddPlayerColorToGame(pID model.PlayerID, color model.PlayerCo
 	return d.players.UpdateGameColor(pID, gID, color)
 }
 
-func (d *db) GetGame(id model.GameID) (model.Game, error) {
+func (d *services) GetGame(id model.GameID) (model.Game, error) {
 	g, err := d.games.Get(id)
 	if err != nil {
 		return model.Game{}, err
@@ -79,7 +79,7 @@ func (d *db) GetGame(id model.GameID) (model.Game, error) {
 	return g, nil
 }
 
-func (d *db) overwritePlayers(g model.Game) error {
+func (d *services) overwritePlayers(g model.Game) error {
 	for i, player := range g.Players {
 		// overwrite the player that the game service knows
 		// about with the player that the players service knows about
@@ -93,7 +93,7 @@ func (d *db) overwritePlayers(g model.Game) error {
 	return nil
 }
 
-func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
+func (d *services) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
 	g, err := d.games.GetAt(id, numActions)
 	if err != nil {
 		return model.Game{}, err
@@ -107,7 +107,7 @@ func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error)
 	return g, nil
 }
 
-func (d *db) CreateGame(g model.Game) error {
+func (d *services) CreateGame(g model.Game) error {
 	if g.NumActions() != 0 {
 		return errors.New(`cannot create game with actions`)
 	}
