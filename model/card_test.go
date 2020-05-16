@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestJackValue(t *testing.T) {
@@ -135,4 +136,27 @@ func TestPegValue(t *testing.T) {
 	for _, tc := range testCases {
 		assert.Equal(t, tc.expValue, NewCardFromString(tc.input).PegValue(), tc.desc)
 	}
+}
+
+func TestNewCardFromTinyInt(t *testing.T) {
+	for ti := int8(0); ti < 52; ti++ {
+		c, err := NewCardFromTinyInt(ti)
+		require.NoError(t, err, `should not error for value %d`, ti)
+		outputTI := c.ToTinyInt()
+		assert.Equal(t, ti, outputTI)
+	}
+
+	ti := int8(52)
+	c, err := NewCardFromTinyInt(ti)
+	assert.Error(t, err, `should error for value %d`, ti)
+	outputTI := c.ToTinyInt()
+	assert.NotEqual(t, ti, outputTI)
+	assert.Equal(t, int8(-1), outputTI)
+
+	ti = int8(-2)
+	c, err = NewCardFromTinyInt(ti)
+	assert.Error(t, err, `should error for value %d`, ti)
+	outputTI = c.ToTinyInt()
+	assert.NotEqual(t, ti, outputTI)
+	assert.Equal(t, int8(-1), outputTI)
 }
