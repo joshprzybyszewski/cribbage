@@ -213,16 +213,7 @@ func (g *gameService) populateGameFromRow(
 	if err != nil {
 		return model.Game{}, err
 	}
-	// if we know what color the players are, but we don't have point entries
-	// for those colors in the scores maps, add zeros
-	for _, color := range pc {
-		if _, ok := curScores[color]; !ok {
-			curScores[color] = 0
-		}
-		if _, ok := lagScores[color]; !ok {
-			lagScores[color] = 0
-		}
-	}
+	addInPopulatedColor(curScores, lagScores, pc)
 
 	// If we've errored here, just ignore it and continue
 	cutCard, _ := model.NewCardFromTinyInt(cutCardInt)
@@ -288,6 +279,22 @@ func populateScores(
 	}
 
 	return curScores, lagScores
+}
+
+func addInPopulatedColor(
+	curScores, lagScores map[model.PlayerColor]int,
+	pc map[model.PlayerID]model.PlayerColor,
+) {
+	// if we know what color the players are, but we don't have point entries
+	// for those colors in the scores maps, add zeros
+	for _, color := range pc {
+		if _, ok := curScores[color]; !ok {
+			curScores[color] = 0
+		}
+		if _, ok := lagScores[color]; !ok {
+			lagScores[color] = 0
+		}
+	}
 }
 
 func getCribCards(cribCardInt int32) []model.Card {
