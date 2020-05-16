@@ -112,8 +112,8 @@ func (d *db) CreateGame(g model.Game) error {
 		pID := p.ID
 		c, ok := g.PlayerColors[pID]
 		if !ok {
-			// same games may come with the color defined.
-			// if they don't, we're just gonna let that get set later one
+			// some games may come with the color defined.
+			// if they don't, we're just gonna let that get set later
 			continue
 		}
 
