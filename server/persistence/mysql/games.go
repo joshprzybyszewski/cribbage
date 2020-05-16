@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -225,11 +224,8 @@ func (g *gameService) populateGameFromRow(
 		}
 	}
 
-	cutCard, err := model.NewCardFromTinyInt(cutCardInt)
-	if err != nil {
-		// If we've errored here, just ignore it and continue
-		fmt.Printf("errored card for cut: %+v\n", err)
-	}
+	// If we've errored here, just ignore it and continue
+	cutCard, _ := model.NewCardFromTinyInt(cutCardInt)
 
 	cribCards := getCribCards(cribCardInts)
 
