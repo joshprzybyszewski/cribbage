@@ -57,17 +57,26 @@ func (d *db) GetGame(id model.GameID) (model.Game, error) {
 		return model.Game{}, err
 	}
 
+	err = d.overwritePlayers(g)
+	if err != nil {
+		return model.Game{}, err
+	}
+
+	return g, nil
+}
+
+func (d *db) overwritePlayers(g model.Game) error {
 	for i, player := range g.Players {
 		// overwrite the player that the game service knows
 		// about with the player that the players service knows about
-		p, err := d.players.Get(player.ID)
+		p, err := d.GetPlayer(player.ID)
 		if err != nil {
-			return model.Game{}, err
+			return err
 		}
 		g.Players[i] = p
 	}
 
-	return g, nil
+	return nil
 }
 
 func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error) {
@@ -76,14 +85,9 @@ func (d *db) GetGameAction(id model.GameID, numActions uint) (model.Game, error)
 		return model.Game{}, err
 	}
 
-	for i, player := range g.Players {
-		// overwrite the player that the game service knows
-		// about with the player that the players service knows about
-		p, err := d.GetPlayer(player.ID)
-		if err != nil {
-			return model.Game{}, err
-		}
-		g.Players[i] = p
+	err = d.overwritePlayers(g)
+	if err != nil {
+		return model.Game{}, err
 	}
 
 	return g, nil
