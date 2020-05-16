@@ -30,7 +30,7 @@ const (
 var (
 	tests = map[string]dbTest{
 		`createPlayer`:          testCreatePlayer,
-		`saveGame`:              testSaveGame,
+		`saveGame`:              testCreateGame,
 		`resaveGame`:            testSaveGameMultipleTimes,
 		`saveGameMissingAction`: testSaveGameWithMissingAction,
 		`saveInteraction`:       testSaveInteraction,
@@ -209,7 +209,7 @@ func testCreatePlayer(t *testing.T, name dbName, db persistence.DB) {
 	assert.Equal(t, expP2, actP2)
 }
 
-func testSaveGame(t *testing.T, name dbName, db persistence.DB) {
+func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g1 := model.Game{
