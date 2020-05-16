@@ -70,7 +70,8 @@ func NewCardFromTinyInt(val int8) (Card, error) {
 func NewCardFromNumber(val int) Card {
 	c, err := newCardFromNumber(val)
 	if err != nil {
-		fmt.Printf("NewCardFromNumber: %+v\n", err)
+		// set the card to the zero value (invalid card)
+		c = Card{}
 	}
 	return c
 }
