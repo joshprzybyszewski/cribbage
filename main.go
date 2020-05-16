@@ -30,10 +30,7 @@ func main() {
 }
 
 func playServer() error {
-	err := server.Setup()
-	if err != nil {
-		return err
-	}
+	server.Setup()
 
 	return nil
 }
