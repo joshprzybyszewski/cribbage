@@ -23,7 +23,8 @@ type Means struct {
 
 func (m *Means) AddSerializedInfo(serInfo []byte) error {
 	switch m.Mode {
-	case UnsetMode:
+	case UnsetMode, Unknown:
+		// nothing we know how to do for these
 		return nil
 	case Localhost:
 		// the local host player expects a string as the info to tell us which port to connect to
@@ -33,8 +34,6 @@ func (m *Means) AddSerializedInfo(serInfo []byte) error {
 		// serInfo should represent an action handler for the NPC.
 		// It should be overwrittten elsewhere to npcActionHandler
 		return nil
-	case Unknown:
-		return nil
 	default:
 		return fmt.Errorf(`unsupported Mode: %v`, m.Mode)
 
@@ -43,7 +42,8 @@ func (m *Means) AddSerializedInfo(serInfo []byte) error {
 
 func (m *Means) GetSerializedInfo() ([]byte, error) {
 	switch m.Mode {
-	case UnsetMode:
+	case UnsetMode, Unknown:
+		// nothing we know how to do here either
 		return nil, nil
 	case Localhost:
 		str, ok := m.Info.(string)
@@ -55,8 +55,6 @@ func (m *Means) GetSerializedInfo() ([]byte, error) {
 		// Info should represent an ActionHandler for the NPC.
 		// It should be a pointer to a struct that implements this interface
 		// so we can't serialize it.
-		return nil, nil
-	case Unknown:
 		return nil, nil
 	default:
 		return nil, fmt.Errorf(`unsupported Mode: %v`, m.Mode)
