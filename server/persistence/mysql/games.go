@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
@@ -472,21 +473,12 @@ func (g *gameService) getActions(
 }
 
 func getPlayerAction(ser []byte) (model.PlayerAction, error) {
-	result := model.PlayerAction{}
-	if len(ser) == 0 {
-		// it's an byte slice, return an empty action
-		return result, nil
-	}
-
-	err := json.Unmarshal(ser, &result)
-	if err != nil {
-		return model.PlayerAction{}, err
-	}
-
-	return result, nil
+	return jsonutils.UnmarshalPlayerAction(ser)
 }
 
 func serializePlayerAction(input model.PlayerAction) ([]byte, error) {
+	// Remember: this is complemented by jsonutils.UnmarshalPlayerAction
+	// because we have to unmarshal into an interface
 	return json.Marshal(input)
 }
 
