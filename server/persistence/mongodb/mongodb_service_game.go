@@ -111,7 +111,7 @@ func (gs *gameService) getSingleGame(id model.GameID, opts getGameOptions) (mode
 	return games[0], nil
 }
 
-func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) {
+func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) { // nolint:gocyclo
 	pgl := persistedGameList{}
 	filter := bsonGameIDFilter(id)
 
