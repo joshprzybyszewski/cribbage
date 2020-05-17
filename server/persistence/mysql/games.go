@@ -73,7 +73,6 @@ const (
 	LIMIT 1;`
 
 	queryGameAtNumActions = `SELECT 
-		g.GameID,
 		gp.Player1ID, gp.Player2ID, gp.Player3ID, gp.Player4ID,
 		g.ScoreBlue, g.ScoreRed, g.ScoreGreen,
 		g.ScoreBlueLag, g.ScoreRedLag, g.ScoreGreenLag,
@@ -177,7 +176,7 @@ func (g *gameService) populateGameFromRow(
 	var p3ID, p4ID *model.PlayerID
 	var curDealerID model.PlayerID
 	var scoreBlue, scoreRed, scoreGreen,
-		lagScoreBlue, lagScoreRed, lagScoreGreen int
+		lagScoreBlue, lagScoreRed, lagScoreGreen uint8
 	var phase model.Phase
 	var cribCardInts int32
 	var cutCardInt int8
@@ -261,21 +260,21 @@ func (g *gameService) populateGameFromRow(
 
 func populateScores(
 	scoreBlue, scoreRed, scoreGreen,
-	lagScoreBlue, lagScoreRed, lagScoreGreen int,
+	lagScoreBlue, lagScoreRed, lagScoreGreen uint8,
 ) (cur, lag map[model.PlayerColor]int) {
 	curScores := make(map[model.PlayerColor]int, 3)
 	lagScores := make(map[model.PlayerColor]int, 3)
 	if scoreBlue > 0 {
-		curScores[model.Blue] = scoreBlue
-		lagScores[model.Blue] = lagScoreBlue
+		curScores[model.Blue] = int(scoreBlue)
+		lagScores[model.Blue] = int(lagScoreBlue)
 	}
 	if scoreRed > 0 {
-		curScores[model.Red] = scoreRed
-		lagScores[model.Red] = lagScoreRed
+		curScores[model.Red] = int(scoreRed)
+		lagScores[model.Red] = int(lagScoreRed)
 	}
 	if scoreGreen > 0 {
-		curScores[model.Green] = scoreGreen
-		lagScores[model.Green] = lagScoreGreen
+		curScores[model.Green] = int(scoreGreen)
+		lagScores[model.Green] = int(lagScoreGreen)
 	}
 
 	return curScores, lagScores
@@ -555,8 +554,8 @@ func (g *gameService) Save(mg model.Game) error {
 
 	ifs := []interface{}{
 		mg.ID, mg.NumActions(),
-		mg.CurrentScores[model.Blue], mg.CurrentScores[model.Red], mg.CurrentScores[model.Green],
-		mg.LagScores[model.Blue], mg.LagScores[model.Red], mg.LagScores[model.Green],
+		uint8(mg.CurrentScores[model.Blue]), uint8(mg.CurrentScores[model.Red]), uint8(mg.CurrentScores[model.Green]),
+		uint8(mg.LagScores[model.Blue]), uint8(mg.LagScores[model.Red]), uint8(mg.LagScores[model.Green]),
 		mg.Phase, cut, crib,
 		mg.CurrentDealer,
 		bp, h, pegged, a,
