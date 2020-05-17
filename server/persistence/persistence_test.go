@@ -117,6 +117,18 @@ func TestDB(t *testing.T) {
 			DSNParams:    ``,
 		}
 		mySQLDB, err := mysql.New(context.Background(), cfg)
+		if err != nil {
+			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
+			cfg = mysql.Config{
+				DSNUser:      `root`, // locally, we just use "root" with no password
+				DSNPassword:  ``,
+				DSNHost:      `127.0.0.1`,
+				DSNPort:      3306,
+				DatabaseName: `testing_cribbage`,
+				DSNParams:    ``,
+			}
+			mySQLDB, err = mysql.New(context.Background(), cfg)
+		}
 		require.NoError(t, err)
 
 		dbs[mysqlDB] = mySQLDB
