@@ -1,6 +1,6 @@
 .PHONY: vendor
 vendor:
-	GO111MODULE=on go mod vendor
+	go mod vendor
 
 .PHONY: golint
 golint:

@@ -59,7 +59,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	gs.lock.Lock()
 	defer gs.lock.Unlock()
 
-	gameList := gs.games[gID]
+	gameList, ok := gs.games[gID]
+	if !ok {
+		return nil
+	}
 	mostRecent := gameList[len(gameList)-1]
 	if c, ok := mostRecent.PlayerColors[pID]; !ok {
 		if mostRecent.PlayerColors == nil {
@@ -74,6 +77,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	return nil
 }
 
+func (gs *gameService) Begin(g model.Game) error {
+	return gs.Save(g)
+}
+
 func (gs *gameService) Save(g model.Game) error {
 	gs.lock.Lock()
 	defer gs.lock.Unlock()
@@ -82,6 +89,11 @@ func (gs *gameService) Save(g model.Game) error {
 
 	savedGames := gs.games[id]
 	err := validateGameState(savedGames, g)
+	if err != nil {
+		return err
+	}
+
+	err = persistence.ValidateLatestActionBelongs(g)
 	if err != nil {
 		return err
 	}
