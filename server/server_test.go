@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -334,7 +335,7 @@ func TestGinGetGame(t *testing.T) {
 	pIDs := seedPlayers(t, cs.dbService, 2)
 	for _, tc := range testCases {
 		// seed the db with a game
-		g, err := createGame(cs.dbService, pIDs)
+		g, err := createGame(context.Background(), cs.dbService, pIDs)
 		require.NoError(t, err)
 		// make the request
 		var url string
@@ -479,7 +480,7 @@ func TestGinPostAction(t *testing.T) {
 	pIDs := seedPlayers(t, cs.dbService, 2)
 	for _, tc := range testCases {
 		// create a game
-		game, err := createGame(cs.dbService, pIDs)
+		game, err := createGame(context.Background(), cs.dbService, pIDs)
 		require.NoError(t, err)
 
 		actionsCompleted := 0

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -77,7 +78,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.Players))
 		return
 	}
-	g, err := createGame(cs.dbService, pIDs)
+	g, err := createGame(context.Background(), cs.dbService, pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
