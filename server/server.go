@@ -134,20 +134,18 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		return
 	}
 
-	var mode interaction.Mode
-	switch cir.Mode {
-	case `localhost`:
-		mode = interaction.Localhost
+	var pm interaction.PlayerMeans
+	switch {
+	case cir.LocalhostPort != network.EmptyInteraction:
+		pm = interaction.New(pID, interaction.Means{
+			Mode: interaction.Localhost,
+			Info: cir.LocalhostPort,
+		})
 	default:
 		c.String(http.StatusBadRequest, `unsupported interaction mode`)
 		return
 	}
 
-	info := cir.Info
-	pm := interaction.New(pID, interaction.Means{
-		Mode: mode,
-		Info: info,
-	})
 	err = cs.db.SaveInteraction(pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
