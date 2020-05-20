@@ -3,7 +3,7 @@ module github.com/joshprzybyszewski/cribbage
 go 1.14
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.7
+	github.com/AlecAivazis/survey/v2 v2.0.4
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-stack/stack v1.8.0 // indirect
