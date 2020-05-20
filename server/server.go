@@ -209,7 +209,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = handleAction(cs.db, action)
+	err = handleAction(context.Background(), cs.db, action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
