@@ -13,7 +13,7 @@ func New() persistence.DB {
 }
 
 func Clear() {
-	clearGameService()
-	clearPlayerService()
-	clearInteractionService()
+	gservice = nil
+	pservice = nil
+	iservice = nil
 }
