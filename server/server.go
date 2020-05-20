@@ -60,7 +60,8 @@ func (cs *cribbageServer) Serve() {
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	var gameReq model.Game
-	err := c.ShouldBindJSON(&gameReq)
+	// jsonutils.GameBinding is a custom binding interface to handle the game actions appropriately
+	err := c.BindWith(&gameReq, jsonutils.GameBinding)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
