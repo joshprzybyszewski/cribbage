@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -23,7 +23,7 @@ func commitOrRollback(db persistence.DB, err *error) {
 		err2 = db.Commit()
 	}
 	if err2 != nil {
-		fmt.Printf("Could not commit/rollback after %+v: %+v\n", err, err2)
+		log.Printf("Could not commit/rollback after %+v: %+v\n", err, err2)
 	}
 }
 
