@@ -102,7 +102,7 @@ func (s *interactionService) Create(pm interaction.PlayerMeans) error {
 			return err
 		}
 		if ior.InsertedID == nil {
-			// TODO not sure if this is the right thing to check
+			// :shrug: not sure if this is the right thing to check
 			return errors.New(`interaction not created`)
 		}
 
@@ -118,7 +118,7 @@ func (s *interactionService) Update(pm interaction.PlayerMeans) error {
 				return err
 			}
 			if ior.InsertedID == nil {
-				// TODO not sure if this is the right thing to check
+				// :shrug: not sure if this is the right thing to check
 				return errors.New(`interaction not updated`)
 			}
 
