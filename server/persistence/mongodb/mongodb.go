@@ -38,9 +38,9 @@ type mongoWrapper struct {
 
 func New(ctx context.Context, uri string) (persistence.DB, error) {
 	if uri == `` {
-		// If we don't know where to connect, use the default localhost URI without replicas
-		// uri = `mongodb://localhost:27017`
-		// Now we should be running with replicaset, so let's talk to all three
+		// The default URI without replicas used to be:
+		// `mongodb://localhost:27017`
+		// But now we should be running with replicaset, so let's talk to all three
 		// Followed instructions here: http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner
 		uri = `mongodb://localhost:27017,localhost:27018,localhost:27019/?replicaSet=rs`
 	}
