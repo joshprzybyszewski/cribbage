@@ -273,9 +273,8 @@ func (tc *terminalClient) makeJSONBodiedRequest(method, apiURL string, v interfa
 	if err != nil {
 		return nil, err
 	}
-	header := http.Header{
-		`Content-Type`: []string{`application/json`},
-	}
+	header := http.Header{}
+	header.Add(`Content-Type`, `application/json`)
 	return tc.makeRequest(method, apiURL, bytes.NewReader(b), header)
 }
 
