@@ -118,6 +118,7 @@ func TestDB(t *testing.T) {
 		}
 		mySQLDB, err := mysql.New(context.Background(), cfg)
 		if err != nil {
+			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
 			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
 			cfg = mysql.Config{
 				DSNUser:      `root`, // locally, we just use "root" with no password
