@@ -21,7 +21,7 @@ const (
 	// ScoreBlueLag, ScoreRedLag, and ScoreGreenLag are the previous scores for each color
 	// Phase is the model.Phase that the game is currently in
 	// CutCard is a number representation of the card that's been cut
-	// nolint:lll Crib is an 8-byte int of the (up to 4) cards in the crib where every two bytes is each crib card. Tricky, I know. Probably shouldn't do it this way, but yolo, this is a fun project and I can save space and mental pain
+	// nolint:lll Crib is a 4-byte int of the (up to 4) cards in the crib where every byte is each crib card. Tricky, I know. Probably shouldn't do it this way, but yolo, this is a fun project and I can save space and mental pain
 	// CurrentDealer is the PlayerID for the dealer
 	// BlockingPlayers is a json encoded map of who's blocking and why
 	// Hands is a json encoded map of slices for player hands
@@ -214,8 +214,12 @@ func (g *gameService) populateGameFromRow(
 	}
 	addInPopulatedColor(curScores, lagScores, pc)
 
-	// If we've errored here, just ignore it and continue
-	cutCard, _ := model.NewCardFromTinyInt(cutCardInt)
+	cutCard, err := model.NewCardFromTinyInt(cutCardInt)
+	if err != nil {
+		// We interpret an error here to mean that there is no cut
+		// card. Therefore, we set it to the empty card.
+		cutCard = model.Card{}
+	}
 
 	cribCards := getCribCards(cribCardInts)
 
@@ -314,7 +318,7 @@ func getCribCards(cribCardInt int32) []model.Card {
 func serializeCribCards(crib []model.Card) int32 {
 	val := int32(0)
 	for i := uint(0); i < 4; i++ {
-		ti := int8(0x34)
+		ti := int8(model.NumCardsPerDeck+1) // set it to an invalid num
 		if int(i) < len(crib) {
 			ti = crib[i].ToTinyInt()
 		}
@@ -373,10 +377,7 @@ func (g *gameService) getPlayersForGame(
 	p3ID, p4ID *model.PlayerID,
 ) ([]model.Player, error) {
 
-	if len(p1ID) == 0 {
-		return nil, errors.New(`at least one player required`)
-	}
-	if len(p2ID) == 0 {
+	if len(p1ID) == 0 || len(p2ID) == 0 {
 		return nil, errors.New(`at least two players required`)
 	}
 
