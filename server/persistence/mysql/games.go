@@ -319,7 +319,7 @@ func getCribCards(cribCardInt int32) []model.Card {
 func serializeCribCards(crib []model.Card) int32 {
 	val := int32(0)
 	for i := uint(0); i < 4; i++ {
-		ti := int8(model.NumCardsPerDeck+1) // set it to an invalid num
+		ti := int8(model.NumCardsPerDeck + 1) // set it to an invalid num
 		if int(i) < len(crib) {
 			ti = crib[i].ToTinyInt()
 		}
