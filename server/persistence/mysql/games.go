@@ -21,7 +21,8 @@ const (
 	// ScoreBlueLag, ScoreRedLag, and ScoreGreenLag are the previous scores for each color
 	// Phase is the model.Phase that the game is currently in
 	// CutCard is a number representation of the card that's been cut
-	// nolint:lll Crib is a 4-byte int of the (up to 4) cards in the crib where every byte is each crib card. Tricky, I know. Probably shouldn't do it this way, but yolo, this is a fun project and I can save space and mental pain
+	// Crib is a 4-byte int of the (up to 4) cards in the crib where every byte is each crib card.
+	//   If this weren't just a fun project, I wouldn't try to be this tricky.
 	// CurrentDealer is the PlayerID for the dealer
 	// BlockingPlayers is a json encoded map of who's blocking and why
 	// Hands is a json encoded map of slices for player hands
