@@ -8,7 +8,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/play"
 )
 
-func handleAction(db persistence.DB, action model.PlayerAction) error {
+func handleAction(_ context.Context, db persistence.DB, action model.PlayerAction) error {
 	g, err := db.GetGame(action.GameID)
 	if err != nil {
 		return err
