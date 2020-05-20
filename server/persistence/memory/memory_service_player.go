@@ -26,10 +26,6 @@ func getPlayerService() persistence.PlayerService {
 	return pservice
 }
 
-func clearPlayerService() {
-	pservice.players = map[model.PlayerID]model.Player{}
-}
-
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	ps.lock.Lock()
 	defer ps.lock.Unlock()
