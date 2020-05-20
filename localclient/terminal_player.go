@@ -152,9 +152,8 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
 		cir := network.CreateInteractionRequest{
-			PlayerID: tc.me.ID,
-			Mode:     `localhost`,
-			Info:     port,
+			PlayerID:      tc.me.ID,
+			LocalhostPort: strconv.Itoa(port),
 		}
 		_, err := tc.makeJSONBodiedRequest(`POST`, `create/interaction`, cir)
 		if err != nil {

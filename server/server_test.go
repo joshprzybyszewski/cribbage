@@ -258,9 +258,8 @@ func TestGinPostCreateInteraction(t *testing.T) {
 	}{{
 		msg: `missing player ID`,
 		reqData: network.CreateInteractionRequest{
-			PlayerID: ``,
-			Mode:     `localclient`,
-			Info:     ``,
+			PlayerID:      ``,
+			LocalhostPort: `1234`,
 		},
 		expCode: http.StatusBadRequest,
 		expErr:  `Needs playerId`,
@@ -272,9 +271,8 @@ func TestGinPostCreateInteraction(t *testing.T) {
 	}, {
 		msg: `good request`,
 		reqData: network.CreateInteractionRequest{
-			PlayerID: `p1`,
-			Mode:     `localhost`,
-			Info:     ``,
+			PlayerID:      `p1`,
+			LocalhostPort: `1234`,
 		},
 		expCode: http.StatusOK,
 		expErr:  ``,
@@ -282,8 +280,6 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		msg: `unsupported interaction mode`,
 		reqData: network.CreateInteractionRequest{
 			PlayerID: `p1`,
-			Mode:     `abc`,
-			Info:     ``,
 		},
 		expCode: http.StatusBadRequest,
 		expErr:  `unsupported interaction mode`,
