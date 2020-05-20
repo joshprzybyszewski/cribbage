@@ -28,6 +28,12 @@ func commitOrRollback(db persistence.DB, err *error) {
 }
 
 func handleAction(_ context.Context, db persistence.DB, action model.PlayerAction) error {
+	err := db.Start()
+	if err != nil {
+		return err
+	}
+	defer commitOrRollback(db, &err)
+
 	g, err := db.GetGame(action.GameID)
 	if err != nil {
 		return err
@@ -45,9 +51,16 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 }
 
 func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (model.Game, error) {
+	err := db.Start()
+	if err != nil {
+		return model.Game{}, err
+	}
+	defer commitOrRollback(db, &err)
+
 	players := make([]model.Player, len(pIDs))
 	for i, id := range pIDs {
-		p, err := db.GetPlayer(id)
+		p, err2 := db.GetPlayer(id)
+		err = err2
 		if err != nil {
 			return model.Game{}, err
 		}
@@ -72,15 +85,28 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 	return mg, nil
 }
 
-// TODO this is unused?
-func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
-	db, err := getDB(ctx)
+func getGame(_ context.Context, db persistence.DB, gID model.GameID) (model.Game, error) {
+	err := db.Start()
 	if err != nil {
-		return err
+		return model.Game{}, err
 	}
-	defer db.Close()
+	defer commitOrRollback(db, &err)
 
-	err = db.Start()
+	return db.GetGame(gID)
+}
+
+func getPlayer(_ context.Context, db persistence.DB, pID model.PlayerID) (model.Player, error) {
+	err := db.Start()
+	if err != nil {
+		return model.Player{}, err
+	}
+	defer commitOrRollback(db, &err)
+
+	return db.GetPlayer(pID)
+}
+
+func saveInteraction(_ context.Context, db persistence.DB, pm interaction.PlayerMeans) error {
+	err := db.Start()
 	if err != nil {
 		return err
 	}
@@ -89,19 +115,12 @@ func saveInteraction(ctx context.Context, pm interaction.PlayerMeans) error {
 	return db.SaveInteraction(pm)
 }
 
-// TODO this is unused?
-func createPlayer(ctx context.Context, p model.Player) error {
-	db, err := getDB(ctx)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
+func createPlayer(_ context.Context, db persistence.DB, p model.Player) error {
 	if !model.IsValidPlayerID(p.ID) {
 		return errInvalidUsername
 	}
 
-	err = db.Start()
+	err := db.Start()
 	if err != nil {
 		return err
 	}

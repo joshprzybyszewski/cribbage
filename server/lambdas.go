@@ -13,12 +13,6 @@ func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
 	}
 	defer db.Close()
 
-	err = db.Start()
-	if err != nil {
-		return err
-	}
-	defer commitOrRollback(db, &err)
-
 	return handleAction(ctx, db, action)
 }
 
@@ -28,12 +22,6 @@ func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) 
 		return model.Game{}, err
 	}
 	defer db.Close()
-
-	err = db.Start()
-	if err != nil {
-		return model.Game{}, err
-	}
-	defer commitOrRollback(db, &err)
 
 	return createGame(ctx, db, pIDs)
 }
@@ -45,13 +33,7 @@ func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
 	}
 	defer db.Close()
 
-	err = db.Start()
-	if err != nil {
-		return model.Game{}, err
-	}
-	defer commitOrRollback(db, &err)
-
-	return db.GetGame(gID)
+	return getGame(ctx, db, gID)
 }
 
 func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
@@ -61,11 +43,5 @@ func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
 	}
 	defer db.Close()
 
-	err = db.Start()
-	if err != nil {
-		return model.Player{}, err
-	}
-	defer commitOrRollback(db, &err)
-
-	return db.GetPlayer(pID)
+	return getPlayer(ctx, db, pID)
 }

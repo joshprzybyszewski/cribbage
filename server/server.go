@@ -108,7 +108,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
-	err = cs.db.CreatePlayer(player)
+	err = createPlayer(context.Background(), cs.db, player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -146,7 +146,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		return
 	}
 
-	err = cs.db.SaveInteraction(pm)
+	err = saveInteraction(context.Background(), cs.db, pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -160,7 +160,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := cs.db.GetGame(gID)
+	g, err := getGame(context.Background(), cs.db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusNotFound, `Game not found`)
@@ -184,7 +184,7 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
-	p, err := cs.db.GetPlayer(pID)
+	p, err := getPlayer(context.Background(), cs.db, pID)
 	if err != nil {
 		if err == persistence.ErrPlayerNotFound {
 			c.String(http.StatusNotFound, `Player not found`)
