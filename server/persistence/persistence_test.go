@@ -552,9 +552,6 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	assert.NotEqual(t, p1, savedP1Mod)
 
 	assert.NoError(t, db1.Commit())
-	// the second connection tried to save a different player one, so committing should error
-	assert.Error(t, db2.Commit())
-	assert.NoError(t, db2.Rollback())
 
 	postCommitP1, err := postCommitDB.GetPlayer(p1.ID)
 	require.NoError(t, err)
@@ -663,9 +660,6 @@ func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	assert.NotEqual(t, g1Copy, actGame)
 
 	assert.NoError(t, db1.Commit())
-	// the second connection tried to save a different game one, so committing should error
-	assert.Error(t, db2.Commit())
-	assert.NoError(t, db2.Rollback())
 
 	postCommitGame, err := postCommitDB.GetGame(g1.ID)
 	require.NoError(t, err)
