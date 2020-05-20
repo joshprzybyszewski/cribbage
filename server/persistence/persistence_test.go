@@ -610,13 +610,13 @@ func rollbackPlayerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 }
 
 func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+	alice, bob, _ := testutils.EmptyAliceAndBob()
+
 	assert.NoError(t, db1.CreatePlayer(alice))
 	assert.NoError(t, db1.CreatePlayer(bob))
 
 	require.NoError(t, db1.Start())
 	require.NoError(t, db2.Start())
-
-	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	g1 := model.Game{
 		ID:              model.NewGameID(),
