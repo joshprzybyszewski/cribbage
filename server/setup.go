@@ -48,6 +48,13 @@ func seedNPCs() error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
+
+	err = db.Start()
+	if err != nil {
+		return err
+	}
+	defer commitOrRollback(db, &err)
 
 	npcIDs := []model.PlayerID{interaction.Dumb, interaction.Simple, interaction.Calc}
 	for _, id := range npcIDs {

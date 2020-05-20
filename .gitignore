@@ -20,4 +20,7 @@ vendor/
 # local_client player logs
 playerlogs/
 
+# mongodb replica stuff
+data/
+
 .DS_Store
