@@ -300,12 +300,12 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 		// Keeping this here for debugging
 		fmt.Printf("full response: %+v\n%s\n%s\n", response, response.Body, string(resBytes))
 
-		contentType := response.Header.Get("Content-Type")
+		contentType := response.Header.Get(`Content-Type`)
 		if strings.Contains(contentType, `text/plain`) {
 			return nil, fmt.Errorf("bad response: \"%s\"", string(resBytes))
 		}
 
-		return nil, fmt.Errorf("bad response from server")
+		return nil, fmt.Errorf(`bad response from server`)
 	} else if err != nil {
 		return nil, err
 	}
