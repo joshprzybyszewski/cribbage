@@ -221,7 +221,7 @@ func TestGinPostCreateGame(t *testing.T) {
 	}}
 	cs, router := newServerAndRouter()
 	// seed the db with players
-	seedPlayers(t, cs.dbService, 5)
+	seedPlayers(t, cs.db, 5)
 	for _, tc := range testCases {
 		g := model.Game{}
 		g.Players = make([]model.Player, len(tc.pIDs))
@@ -289,7 +289,7 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		expErr:  `unsupported interaction mode`,
 	}}
 	cs, router := newServerAndRouter()
-	seedPlayers(t, cs.dbService, 5)
+	seedPlayers(t, cs.db, 5)
 	for _, tc := range testCases {
 		// make the request
 		body := prepareBody(t, tc.reqData)
@@ -332,10 +332,10 @@ func TestGinGetGame(t *testing.T) {
 		expErr:  `Game not found`,
 	}}
 	cs, router := newServerAndRouter()
-	pIDs := seedPlayers(t, cs.dbService, 2)
+	pIDs := seedPlayers(t, cs.db, 2)
 	for _, tc := range testCases {
 		// seed the db with a game
-		g, err := createGame(context.Background(), cs.dbService, pIDs)
+		g, err := createGame(context.Background(), cs.db, pIDs)
 		require.NoError(t, err)
 		// make the request
 		var url string
@@ -376,7 +376,7 @@ func TestGinGetPlayer(t *testing.T) {
 		expErr:   `Player not found`,
 	}}
 	cs, router := newServerAndRouter()
-	seedPlayers(t, cs.dbService, 2)
+	seedPlayers(t, cs.db, 2)
 	for _, tc := range testCases {
 		// make the request
 		url := `/player/` + tc.playerID
@@ -477,10 +477,10 @@ func TestGinPostAction(t *testing.T) {
 		}},
 	}}
 	cs, router := newServerAndRouter()
-	pIDs := seedPlayers(t, cs.dbService, 2)
+	pIDs := seedPlayers(t, cs.db, 2)
 	for _, tc := range testCases {
 		// create a game
-		game, err := createGame(context.Background(), cs.dbService, pIDs)
+		game, err := createGame(context.Background(), cs.db, pIDs)
 		require.NoError(t, err)
 
 		actionsCompleted := 0
@@ -503,7 +503,7 @@ func TestGinPostAction(t *testing.T) {
 			msg := string(bs)
 			// verify the players are in the game
 			assert.Equal(t, `action handled`, msg)
-			g, err := cs.dbService.GetGame(game.ID)
+			g, err := cs.db.GetGame(game.ID)
 			require.NoError(t, err)
 			assert.Equal(t, actionsCompleted, len(g.Actions))
 		}
