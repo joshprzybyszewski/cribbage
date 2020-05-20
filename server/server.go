@@ -17,12 +17,12 @@ import (
 )
 
 type cribbageServer struct {
-	dbService persistence.DB
+	db persistence.DB
 }
 
 func newCribbageServer(db persistence.DB) *cribbageServer {
 	return &cribbageServer{
-		dbService: db,
+		db: db,
 	}
 }
 
@@ -78,7 +78,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.Players))
 		return
 	}
-	g, err := createGame(context.Background(), cs.dbService, pIDs)
+	g, err := createGame(context.Background(), cs.db, pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
@@ -107,7 +107,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
-	err = cs.dbService.CreatePlayer(player)
+	err = cs.db.CreatePlayer(player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -147,7 +147,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		Mode: mode,
 		Info: info,
 	})
-	err = cs.dbService.SaveInteraction(pm)
+	err = cs.db.SaveInteraction(pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -161,7 +161,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := cs.dbService.GetGame(gID)
+	g, err := cs.db.GetGame(gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusNotFound, `Game not found`)
@@ -185,7 +185,7 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
-	p, err := cs.dbService.GetPlayer(pID)
+	p, err := cs.db.GetPlayer(pID)
 	if err != nil {
 		if err == persistence.ErrPlayerNotFound {
 			c.String(http.StatusNotFound, `Player not found`)
@@ -210,7 +210,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = handleAction(cs.dbService, action)
+	err = handleAction(cs.db, action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
