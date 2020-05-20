@@ -111,7 +111,7 @@ func TestDB(t *testing.T) {
 		cfg := mysql.Config{
 			DSNUser:      `root`,                 // github actions use root user with a root password
 			DSNPassword:  `githubactionpassword`, // defined as envvar in the go_tests.yaml
-			DSNHost:      `mysql`,
+			DSNHost:      `localhost`,
 			DSNPort:      3306,
 			DatabaseName: `testing_cribbage`,
 			DSNParams:    ``,
