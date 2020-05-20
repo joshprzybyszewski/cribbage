@@ -317,7 +317,10 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	reqData := model.Player{ID: model.PlayerID(username), Name: name}
+	reqData := model.Player{
+		ID:   model.PlayerID(username),
+		Name: name,
+	}
 	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/player`, reqData)
 	if err != nil {
 		return err
@@ -394,9 +397,11 @@ func (tc *terminalClient) shouldCreateGame() bool {
 func (tc *terminalClient) createGame() error {
 	opID := tc.getPlayerID(`What's your opponent's username?`)
 	gameReq := model.Game{
-		Players: []model.Player{
-			{ID: opID}, {ID: tc.me.ID},
-		},
+		Players: []model.Player{{
+			ID: opID,
+		}, {
+			ID: tc.me.ID,
+		}},
 	}
 
 	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/game`, gameReq)
