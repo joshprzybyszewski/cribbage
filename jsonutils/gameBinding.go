@@ -9,9 +9,16 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-var GameBinding binding.Binding = gameBinding{}
+var _ binding.Binding = gameBinding{}
+var _ binding.BindingBody = gameBinding{}
+var (
+	GameBinding = gameBinding{}
+)
 
-type gameBinding struct{}
+type gameBinding struct {
+	binding.Binding
+	binding.BindingBody
+}
 
 func (gb gameBinding) Name() string {
 	return `gameBinding`
