@@ -101,7 +101,7 @@ func TestDB(t *testing.T) {
 
 	if !testing.Short() {
 		// We assume you have mongodb stood up locally when running without -short
-		// we change the uri because travis sets up a different mongodb replica set than run-rs does
+		// we change the uri because github actions set up a different mongodb replica set than run-rs does
 		mongo, err := mongodb.New(context.Background(), `mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
 		require.NoError(t, err)
 
@@ -553,8 +553,8 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 
 	assert.NoError(t, db1.Commit())
 	// the second connection tried to save a different player one, so committing should error
-	// assert.Error(t, db2.Commit())
-	// assert.NoError(t, db2.Rollback())
+	assert.Error(t, db2.Commit())
+	assert.NoError(t, db2.Rollback())
 
 	postCommitP1, err := postCommitDB.GetPlayer(p1.ID)
 	require.NoError(t, err)
@@ -664,8 +664,8 @@ func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 
 	assert.NoError(t, db1.Commit())
 	// the second connection tried to save a different game one, so committing should error
-	// assert.Error(t, db2.Commit())
-	// assert.NoError(t, db2.Rollback())
+	assert.Error(t, db2.Commit())
+	assert.NoError(t, db2.Rollback())
 
 	postCommitGame, err := postCommitDB.GetGame(g1.ID)
 	require.NoError(t, err)
