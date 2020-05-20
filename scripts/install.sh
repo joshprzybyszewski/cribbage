@@ -27,6 +27,10 @@ else
     fi
 fi
 
-# TODO consider these commands
-# npm install run-rs -g
-# run-rs -v 4.2.1 --shell
+echo ""
+echo "Also for mongo, check out replica set install instructions here: http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner"
+echo "For mongo replicaset, it may simply be:"
+echo "  npm install run-rs -g"
+echo "  run-rs -v 4.2.1 --shell"
+echo "Or it may be more difficult. Good luck."
+echo ""
