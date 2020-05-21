@@ -2,17 +2,12 @@ package server
 
 import (
 	"context"
-	"errors"
 	"log"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/play"
-)
-
-var (
-	errInvalidUsername error = errors.New(`invalid username`)
 )
 
 func commitOrRollback(db persistence.DB, err *error) {
@@ -116,10 +111,6 @@ func saveInteraction(_ context.Context, db persistence.DB, pm interaction.Player
 }
 
 func createPlayer(_ context.Context, db persistence.DB, p model.Player) error {
-	if !model.IsValidPlayerID(p.ID) {
-		return errInvalidUsername
-	}
-
 	err := db.Start()
 	if err != nil {
 		return err
