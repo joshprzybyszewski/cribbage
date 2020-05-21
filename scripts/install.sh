@@ -27,12 +27,20 @@ else
     fi
 fi
 
+echo ""
+echo "Also for mongo, check out replica set install instructions here: http://thecodebarbarian.com/introducing-run-rs-zero-config-mongodb-runner"
+echo "For mongo replicaset, it may simply be:"
+echo "  npm install run-rs -g"
+echo "  run-rs -v 4.2.1 --shell"
+echo "Or it may be more difficult. Good luck."
+echo ""
+
 # Check that you have mysql and that it's a version known to work
 if [[ ! $(which mysql) ]]; then
     echo "You don't have mysql installed"
     echo "Follow the instructions here: https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/"
 else
-    # Check that you have a version of mongo we know works
+    # Check that you have a version of mysql we know works
     MYSQL_VERSION=$(mysql --version)
     if [[ $MYSQL_VERSION != *"Ver 8.0.19"* ]]; then
         echo "WARNING: We recommend using mysql at version v8.0.19 (only because that's what I'm using), but you have \"${MYSQL_VERSION}\""
