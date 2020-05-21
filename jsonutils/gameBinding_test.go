@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func addActionFor(g *model.Game, pID model.PlayerID, b model.Blocker, action interface{}) {
