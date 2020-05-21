@@ -223,13 +223,13 @@ func TestGinPostCreateGame(t *testing.T) {
 	// seed the db with players
 	seedPlayers(t, cs.db, 5)
 	for _, tc := range testCases {
-		g := model.Game{}
-		g.Players = make([]model.Player, len(tc.pIDs))
+		cgr := network.CreateGameRequest{}
+		cgr.PlayerIDs = make([]model.PlayerID, len(tc.pIDs))
 		for i, id := range tc.pIDs {
-			g.Players[i] = model.Player{ID: model.PlayerID(id)}
+			cgr.PlayerIDs[i] = model.PlayerID(id)
 		}
 		// make the request
-		body := prepareBody(t, g)
+		body := prepareBody(t, cgr)
 		w, err := performRequest(router, `POST`, `/create/game`, body)
 		require.NoError(t, err)
 		// verify
@@ -242,8 +242,8 @@ func TestGinPostCreateGame(t *testing.T) {
 		var game model.Game
 		readBody(t, w.Body, &game)
 		// verify the players are in the game
-		for _, p := range g.Players {
-			_, ok := game.PlayerColors[p.ID]
+		for _, pID := range cgr.PlayerIDs {
+			_, ok := game.PlayerColors[pID]
 			assert.True(t, ok)
 		}
 	}
