@@ -136,7 +136,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 
 	var pm interaction.PlayerMeans
 	switch {
-	case cir.LocalhostPort != network.EmptyInteraction:
+	case len(cir.LocalhostPort) > 0:
 		pm = interaction.New(pID, interaction.Means{
 			Mode: interaction.Localhost,
 			Info: cir.LocalhostPort,

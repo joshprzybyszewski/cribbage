@@ -59,8 +59,7 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 
 	players := make([]model.Player, len(pIDs))
 	for i, id := range pIDs {
-		p, err2 := db.GetPlayer(id)
-		err = err2
+		p, err := db.GetPlayer(id)
 		if err != nil {
 			return model.Game{}, err
 		}
