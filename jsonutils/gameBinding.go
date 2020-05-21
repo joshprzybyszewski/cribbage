@@ -6,19 +6,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin/binding"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-var _ binding.Binding = gameBinding{}
-var _ binding.BindingBody = gameBinding{}
+var _ binding.Binding = GameBinding
+var _ binding.BindingBody = GameBinding
 var (
 	GameBinding = gameBinding{}
 )
 
-type gameBinding struct {
-	binding.Binding
-	binding.BindingBody
-}
+type gameBinding struct{}
 
 func (gb gameBinding) Name() string {
 	return `gameBinding`
