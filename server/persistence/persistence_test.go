@@ -112,13 +112,14 @@ func TestDB(t *testing.T) {
 		cfg := mysql.Config{
 			DSNUser:      `root`,                 // github actions use root user with a root password
 			DSNPassword:  `githubactionpassword`, // defined as envvar in the go_tests.yaml
-			DSNHost:      `mysql`,
+			DSNHost:      `localhost`,
 			DSNPort:      3306,
 			DatabaseName: `testing_cribbage`,
 			DSNParams:    ``,
 		}
 		mySQLDB, err := mysql.New(context.Background(), cfg)
 		if err != nil {
+			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
 			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
 			cfg = mysql.Config{
 				DSNUser:      `root`, // locally, we just use "root" with no password
