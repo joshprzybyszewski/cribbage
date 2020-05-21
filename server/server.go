@@ -141,6 +141,17 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 			Mode: interaction.Localhost,
 			Info: cir.LocalhostPort,
 		})
+	case len(cir.NPCType) > 0:
+		switch cir.NPCType {
+		case interaction.Simple, interaction.Calc, interaction.Dumb:
+		default:
+			c.String(http.StatusBadRequest, `unsupported interaction mode`)
+			return
+		}
+		pm = interaction.New(pID, interaction.Means{
+			Mode: interaction.NPC,
+			Info: cir.NPCType,
+		})
 	default:
 		c.String(http.StatusBadRequest, `unsupported interaction mode`)
 		return
