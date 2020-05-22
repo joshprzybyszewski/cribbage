@@ -242,8 +242,12 @@ func TestGinPostCreateGame(t *testing.T) {
 		var game model.Game
 		readBody(t, w.Body, &game)
 		// verify the players are in the game
+		pIDs := make(map[model.PlayerID]struct{}, len(game.Players))
+		for _, p := range game.Players {
+			pIDs[p.ID] = struct{}{}
+		}
 		for _, pID := range cgr.PlayerIDs {
-			_, ok := game.PlayerColors[pID]
+			_, ok := pIDs[pID]
 			assert.True(t, ok)
 		}
 	}
