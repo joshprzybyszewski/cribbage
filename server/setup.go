@@ -10,11 +10,19 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
 )
 
 var (
-	database = flag.String(`db`, `mongo`, `Set to the type of database to access. Options: "mongo", "memory"`)
+	database = flag.String(`db`, `mysql`, `Set to the type of database to access. Options: "mysql", "mongo", "memory"`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
+
+	dsnUser     = flag.String(`dsn_user`, `root`, `The DSN user for the MySQL DB`)
+	dsnPassword = flag.String(`dsn_password`, ``, `The password for the user for the MySQL DB`)
+	dsnHost     = flag.String(`dsn_host`, `127.0.0.1`, `The host for the MySQL DB`)
+	dsnPort     = flag.Int(`dsn_port`, 3306, `The port for the MySQL DB`)
+	dsnParams   = flag.String(`dsn_params`, ``, `The params for the MySQL DB`)
+	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
 )
 
 // Setup connects to a database and starts serving requests
@@ -39,11 +47,21 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 	switch *database {
 	case `mongo`:
 		return mongodb.New(ctx, *dbURI)
+	case `mysql`:
+		cfg := mysql.Config{
+			DSNUser:      *dsnUser,
+			DSNPassword:  *dsnPassword,
+			DSNHost:      *dsnHost,
+			DSNPort:      *dsnPort,
+			DatabaseName: *mysqlDBName,
+			DSNParams:    *dsnParams,
+		}
+		return mysql.New(ctx, cfg)
 	case `memory`:
 		return memory.New(), nil
 	}
 
-	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", and "memory"`, *database)
+	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
 }
 
 func seedNPCs() error {
