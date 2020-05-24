@@ -696,26 +696,17 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
 	g1Copy := g1
-	g1Copy.Players[0].Games = map[model.GameID]model.PlayerColor{
-		g1.ID: model.Blue,
-	}
-	g1Copy.Players[1].Games = map[model.GameID]model.PlayerColor{
-		g1.ID: model.Red,
-	}
+	persistenceGameCopy(&g1Copy, g1)
 
 	require.NoError(t, db1.CreateGame(g1))
 
-	actGame, err := db1.GetGame(g1.ID)
-	require.NoError(t, err)
-	assert.Equal(t, g1Copy, actGame)
+	checkPersistedGame(t, db1, g1Copy)
 
-	actGame, err = db2.GetGame(g1.ID)
+	actGame, err := db2.GetGame(g1.ID)
 	assert.Error(t, err)
 	assert.NotEqual(t, g1Copy, actGame)
 
 	assert.NoError(t, db1.Commit())
 
-	postCommitGame, err := postCommitDB.GetGame(g1.ID)
-	require.NoError(t, err)
-	assert.Equal(t, g1Copy, postCommitGame)
+	checkPersistedGame(t, postCommitDB, g1Copy)
 }
