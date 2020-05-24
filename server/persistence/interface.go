@@ -50,6 +50,9 @@ func NewServicesWrapper(gs GameService, ps PlayerService, is InteractionService)
 }
 
 func (d *services) CreatePlayer(p model.Player) error {
+	if !model.IsValidPlayerID(p.ID) {
+		return ErrInvalidPlayerID
+	}
 	return d.players.Create(p)
 }
 

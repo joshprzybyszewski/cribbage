@@ -52,3 +52,9 @@ func (mdb *memDB) Rollback() error {
 
 	return nil
 }
+
+func Clear() {
+	gservice = nil
+	pservice = nil
+	iservice = nil
+}

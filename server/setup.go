@@ -29,8 +29,12 @@ var (
 func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
-	cs := cribbageServer{}
-	err := seedNPCs()
+	db, err := getDB(context.Background())
+	if err != nil {
+		return err
+	}
+	cs := newCribbageServer(db)
+	err = seedNPCs()
 	if err != nil {
 		return err
 	}
