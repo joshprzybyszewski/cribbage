@@ -3,7 +3,6 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // nolint:golint
@@ -48,19 +47,19 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		return nil, err
 	}
 
-	txWrapper := txWrapper{
+	dbWrapper := txWrapper{
 		db: db,
 	}
 
-	gs, err := getGameService(ctx, &txWrapper)
+	gs, err := getGameService(ctx, &dbWrapper)
 	if err != nil {
 		return nil, err
 	}
-	ps, err := getPlayerService(ctx, &txWrapper)
+	ps, err := getPlayerService(ctx, &dbWrapper)
 	if err != nil {
 		return nil, err
 	}
-	is, err := getInteractionService(ctx, &txWrapper)
+	is, err := getInteractionService(ctx, &dbWrapper)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +72,7 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 
 	mw := mysqlWrapper{
 		ServicesWrapper: sw,
-		txWrapper:       &txWrapper,
+		txWrapper:       &dbWrapper,
 		ctx:             ctx,
 	}
 
@@ -85,31 +84,15 @@ func (mw *mysqlWrapper) Close() error {
 }
 
 func (mw *mysqlWrapper) Start() error {
-	if mw.txWrapper.tx != nil {
-		return errors.New(`mysql transaction already started`)
-	}
-
-	tx, err := mw.txWrapper.db.BeginTx(mw.ctx, &sql.TxOptions{})
-	if err != nil {
-		return err
-	}
-
-	mw.txWrapper.tx = tx
-	return nil
+	return mw.txWrapper.start(mw.ctx)
 }
 
 func (mw *mysqlWrapper) Commit() error {
-	if mw.txWrapper.tx == nil {
-		return errors.New(`mysql transaction not started`)
-	}
-
-	return mw.txWrapper.tx.Commit()
+	// we don't expect this to be called if Start() was never called
+	return mw.txWrapper.commit()
 }
 
 func (mw *mysqlWrapper) Rollback() error {
-	if mw.txWrapper.tx == nil {
-		return errors.New(`mysql transaction not started`)
-	}
-
-	return mw.txWrapper.tx.Rollback()
+	// we don't expect this to be called if Start() was never called
+	return mw.txWrapper.rollback()
 }
