@@ -35,11 +35,14 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 	// serve up a list of games this user is in
 	username := c.Param("username")
 	pID := model.PlayerID(username)
-	db, err := cs.getDB()
+
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
+	defer db.Close()
+
 	p, err := getPlayer(ctx, db, pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
@@ -110,13 +113,15 @@ func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyc
 		return
 	}
 
-	db, err := cs.getDB()
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
+	defer db.Close()
 
-	g, err := getGame(context.Background(), db, gID)
+	g, err := getGame(ctx, db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusBadRequest, "Game (%v) does not exist", gID)
