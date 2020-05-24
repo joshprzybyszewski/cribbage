@@ -9,10 +9,18 @@ import (
 
 var _ persistence.DBFactory = memDBF{}
 
-type memDBF struct{}
+type memDBF struct {
+	db *memDB
+}
 
 func NewFactory() (persistence.DBFactory, error) {
 	return memDBF{}, nil
+}
+
+func (dbf memDBF) Close() error {
+	dbf.db = nil
+
+	return nil
 }
 
 var _ persistence.DB = (*memDB)(nil)
@@ -23,16 +31,21 @@ type memDB struct {
 	lock sync.Mutex
 }
 
-func (memDBF) New(context.Context) (persistence.DB, error) {
+func (dbf memDBF) New(context.Context) (persistence.DB, error) {
+	if dbf.db != nil {
+		return dbf.db, nil
+	}
+
 	sw := persistence.NewServicesWrapper(
 		getGameService(),
 		getPlayerService(),
 		getInteractionService(),
 	)
 
-	return &memDB{
+	dbf.db = &memDB{
 		ServicesWrapper: sw,
-	}, nil
+	}
+	return dbf.db, nil
 }
 
 func (mdb *memDB) Close() error {

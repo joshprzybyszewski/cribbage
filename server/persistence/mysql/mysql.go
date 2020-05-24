@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // nolint:golint
@@ -50,6 +51,10 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 	return &mysqlDBFactory{
 		db: db,
 	}, nil
+}
+
+func (dbf *mysqlDBFactory) Close() error {
+	return dbf.db.Close()
 }
 
 func (dbf *mysqlDBFactory) New(ctx context.Context) (persistence.DB, error) {
@@ -112,7 +117,10 @@ type mysqlWrapper struct {
 }
 
 func (mw *mysqlWrapper) Close() error {
-	return mw.txWrapper.db.Close()
+	if mw.txWrapper.tx != nil {
+		return errors.New(`Closed before tx committed or rolled back`)
+	}
+	return nil
 }
 
 func (mw *mysqlWrapper) Start() error {
