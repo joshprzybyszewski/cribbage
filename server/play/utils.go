@@ -54,6 +54,9 @@ func addPlayerToBlocker(
 	}
 	g.BlockingPlayers[pID] = reason
 	pAPI := pAPIs[pID]
+	if pAPI == nil {
+		return
+	}
 	_ = pAPI.NotifyBlocking(reason, *g, msg)
 }
 
