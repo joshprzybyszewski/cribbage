@@ -555,14 +555,14 @@ func TestTransactionality(t *testing.T) {
 			db3, err := dbf.New(context.Background())
 			require.NoError(t, err, string(databaseName)+`:`+testName)
 
-			t.Run(string(databaseName)+`:`+testName, func(t1 *testing.T) { txTest(t1, db1, db2, db3) })
+			t.Run(string(databaseName)+`:`+testName, func(t1 *testing.T) { txTest(t1, databaseName, db1, db2, db3) })
 		}
 	}
 }
 
-type txTest func(t *testing.T, db1, db2, postCommitDB persistence.DB)
+type txTest func(t *testing.T, databaseName dbName, db1, db2, postCommitDB persistence.DB)
 
-func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+func playerTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persistence.DB) {
 	require.NoError(t, db1.Start())
 	require.NoError(t, db2.Start())
 
@@ -575,9 +575,15 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	assert.NoError(t, db1.CreatePlayer(p1))
 	p1Mod := p1
 	p1Mod.Name = `different player 1 name`
-	assert.NoError(t, db2.CreatePlayer(p1Mod))
+	err := db2.CreatePlayer(p1Mod)
+	if databaseName == mysqlDB {
+		assert.Error(t, err)
+		assert.True(t, mysql.IsLockWaitTimeout(err))
+	} else {
+		assert.NoError(t, err)
+	}
 
-	err := db1.CreatePlayer(p1)
+	err = db1.CreatePlayer(p1)
 	assert.EqualError(t, err, persistence.ErrPlayerAlreadyExists.Error())
 
 	savedP1, err := db1.GetPlayer(p1.ID)
@@ -585,8 +591,13 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	assert.Equal(t, p1, savedP1)
 
 	savedP1Mod, err := db2.GetPlayer(p1.ID)
-	require.NoError(t, err)
-	assert.NotEqual(t, p1, savedP1Mod)
+	if databaseName == mysqlDB {
+		assert.Error(t, err)
+		assert.EqualError(t, err, persistence.ErrPlayerNotFound.Error())
+	} else {
+		require.NoError(t, err)
+		assert.NotEqual(t, p1, savedP1Mod)
+	}
 
 	assert.NoError(t, db1.Commit())
 
@@ -596,7 +607,7 @@ func playerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 	assert.NotEqual(t, p1Mod, postCommitP1)
 }
 
-func rollbackPlayerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+func rollbackPlayerTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persistence.DB) {
 	require.NoError(t, db1.Start())
 	require.NoError(t, db2.Start())
 
@@ -643,7 +654,7 @@ func rollbackPlayerTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
 
 }
 
-func gameTxTest(t *testing.T, db1, db2, postCommitDB persistence.DB) {
+func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persistence.DB) {
 	alice, bob, _ := testutils.EmptyAliceAndBob()
 
 	assert.NoError(t, db1.CreatePlayer(alice))
