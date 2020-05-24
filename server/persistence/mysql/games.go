@@ -146,13 +146,6 @@ func getGameService(
 	db *txWrapper,
 ) (*gameService, error) {
 
-	for _, createStmt := range gamesCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return &gameService{
 		db: db,
 	}, nil

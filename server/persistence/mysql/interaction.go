@@ -62,13 +62,6 @@ func getInteractionService(
 	db *txWrapper,
 ) (*interactionService, error) {
 
-	for _, createStmt := range interactionCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return &interactionService{
 		db: db,
 	}, nil

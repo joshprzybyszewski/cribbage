@@ -57,7 +57,7 @@ func getDBFactory(ctx context.Context) (persistence.DBFactory, error) {
 			DatabaseName: *mysqlDBName,
 			DSNParams:    *dsnParams,
 		}
-		return mysql.NewFactory(cfg)
+		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
 		return memory.NewFactory()
 	}

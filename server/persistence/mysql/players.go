@@ -91,13 +91,6 @@ func getPlayerService(
 	db *txWrapper,
 ) (*playerService, error) {
 
-	for _, createStmt := range playersCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return &playerService{
 		db: db,
 	}, nil
