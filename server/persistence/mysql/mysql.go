@@ -25,11 +25,32 @@ type txOrDB struct {
 	tx *sql.Tx
 }
 
-func (t *txOrDB) Exec(query string, ifs []interface{}) (sql.Result, error) {
+func (t *txOrDB) Exec(query string, ifs ...interface{}) (sql.Result, error) {
 	if t.tx != nil {
 		return t.tx.Exec(query, ifs...)
 	}
 	return t.db.Exec(query, ifs...)
+}
+
+func (t *txOrDB) ExecContext(ctx context.Context, query string, ifs ...interface{}) (sql.Result, error) {
+	if t.tx != nil {
+		return t.tx.ExecContext(ctx, query, ifs...)
+	}
+	return t.db.ExecContext(ctx, query, ifs...)
+}
+
+func (t *txOrDB) QueryRow(query string, ifs ...interface{}) *sql.Row {
+	if t.tx != nil {
+		return t.tx.QueryRow(query, ifs...)
+	}
+	return t.db.QueryRow(query, ifs...)
+}
+
+func (t *txOrDB) Query(query string, ifs ...interface{}) (*sql.Rows, error) {
+	if t.tx != nil {
+		return t.tx.Query(query, ifs...)
+	}
+	return t.db.Query(query, ifs...)
 }
 
 var _ persistence.DB = (*mysqlWrapper)(nil)
@@ -37,7 +58,7 @@ var _ persistence.DB = (*mysqlWrapper)(nil)
 type mysqlWrapper struct {
 	persistence.ServicesWrapper
 
-	dt txOrDB
+	txWrapper *txOrDB
 
 	ctx context.Context
 }
@@ -60,15 +81,19 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		return nil, err
 	}
 
-	gs, err := getGameService(ctx, db)
+	txWrapper := txOrDB{
+		db: db,
+	}
+
+	gs, err := getGameService(ctx, &txWrapper)
 	if err != nil {
 		return nil, err
 	}
-	ps, err := getPlayerService(ctx, db)
+	ps, err := getPlayerService(ctx, &txWrapper)
 	if err != nil {
 		return nil, err
 	}
-	is, err := getInteractionService(ctx, db)
+	is, err := getInteractionService(ctx, &txWrapper)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +106,7 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 
 	mw := mysqlWrapper{
 		ServicesWrapper: sw,
-		dt:              txOrDB{db: db},
+		txWrapper:       &txWrapper,
 		ctx:             ctx,
 	}
 
@@ -89,35 +114,35 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 }
 
 func (mw *mysqlWrapper) Close() error {
-	return mw.dt.db.Close()
+	return mw.txWrapper.db.Close()
 }
 
 func (mw *mysqlWrapper) Start() error {
-	if mw.dt.tx != nil {
+	if mw.txWrapper.tx != nil {
 		return errors.New(`mysql transaction already started`)
 	}
 
-	tx, err := mw.dt.db.BeginTx(mw.ctx, &sql.TxOptions{})
+	tx, err := mw.txWrapper.db.BeginTx(mw.ctx, &sql.TxOptions{})
 	if err != nil {
 		return err
 	}
 
-	mw.dt.tx = tx
+	mw.txWrapper.tx = tx
 	return nil
 }
 
 func (mw *mysqlWrapper) Commit() error {
-	if mw.dt.tx == nil {
+	if mw.txWrapper.tx == nil {
 		return errors.New(`mysql transaction not started`)
 	}
 
-	return mw.dt.tx.Commit()
+	return mw.txWrapper.tx.Commit()
 }
 
 func (mw *mysqlWrapper) Rollback() error {
-	if mw.dt.tx == nil {
+	if mw.txWrapper.tx == nil {
 		return errors.New(`mysql transaction not started`)
 	}
 
-	return mw.dt.tx.Rollback()
+	return mw.txWrapper.tx.Rollback()
 }
