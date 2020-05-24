@@ -37,7 +37,7 @@ func FromPlayerMeans(pm PlayerMeans) (Player, error) {
 		return NewNPCPlayer(pID, ah)
 	}
 
-	return nil, errors.New(`mode unsupported`)
+	return nil, nil // errors.New(`mode unsupported`)
 }
 
 type ActionHandler interface {
