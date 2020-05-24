@@ -53,7 +53,9 @@ func newServerAndRouter() (*cribbageServer, http.Handler) {
 	// first make sure the db is completely cleared
 	db := memory.New()
 	memory.Clear()
-	cs := newCribbageServer(db)
+	cs := newCribbageServer(func() {
+		return db, nil
+	})
 	router := cs.NewRouter()
 	return cs, router
 }

@@ -35,7 +35,12 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 	// serve up a list of games this user is in
 	username := c.Param("username")
 	pID := model.PlayerID(username)
-	p, err := getPlayer(ctx, cs.db, pID)
+	db, err := cs.getDB()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error: %s", err)
+		return
+	}
+	p, err := getPlayer(ctx, db, pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -50,7 +55,7 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 		GameID     model.GameID
 	}, 0, len(p.Games))
 	for gID, color := range p.Games {
-		g, err := getGame(ctx, cs.db, gID)
+		g, err := getGame(ctx, db, gID)
 		if err != nil {
 			if err == persistence.ErrGameNotFound {
 				// the player knows about a game that's been deleted
@@ -105,7 +110,13 @@ func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyc
 		return
 	}
 
-	g, err := getGame(context.Background(), cs.db, gID)
+	db, err := cs.getDB()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error: %s", err)
+		return
+	}
+
+	g, err := getGame(context.Background(), db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusBadRequest, "Game (%v) does not exist", gID)
