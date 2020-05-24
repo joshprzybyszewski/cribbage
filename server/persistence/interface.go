@@ -18,6 +18,9 @@ type DB interface {
 	// Rollback will rollback the transaction of changes on the database
 	Rollback() error
 
+	// Clone returns a threadsafe copy to access the DB.
+	Clone() DB
+
 	ServicesWrapper
 }
 

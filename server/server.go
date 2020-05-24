@@ -78,7 +78,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.PlayerIDs))
 		return
 	}
-	g, err := createGame(context.Background(), cs.db, pIDs)
+	g, err := createGame(context.Background(), cs.db.Clone(), pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
@@ -107,7 +107,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
-	err = createPlayer(context.Background(), cs.db, player)
+	err = createPlayer(context.Background(), cs.db.Clone(), player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -156,7 +156,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		return
 	}
 
-	err = saveInteraction(context.Background(), cs.db, pm)
+	err = saveInteraction(context.Background(), cs.db.Clone(), pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -170,7 +170,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := getGame(context.Background(), cs.db, gID)
+	g, err := getGame(context.Background(), cs.db.Clone(), gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusNotFound, `Game not found`)
@@ -194,7 +194,7 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
-	p, err := getPlayer(context.Background(), cs.db, pID)
+	p, err := getPlayer(context.Background(), cs.db.Clone(), pID)
 	if err != nil {
 		if err == persistence.ErrPlayerNotFound {
 			c.String(http.StatusNotFound, `Player not found`)
@@ -219,7 +219,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	err = handleAction(context.Background(), cs.db, action)
+	err = handleAction(context.Background(), cs.db.Clone(), action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return

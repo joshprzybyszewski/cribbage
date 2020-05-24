@@ -27,6 +27,10 @@ type mysqlWrapper struct {
 	txWrapper *txWrapper
 
 	ctx context.Context
+
+	is *interactionService
+	gs *gameService
+	ps *playerService
 }
 
 func New(ctx context.Context, config Config) (persistence.DB, error) {
@@ -74,6 +78,9 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		ServicesWrapper: sw,
 		txWrapper:       &dbWrapper,
 		ctx:             ctx,
+		gs:              gs,
+		ps:              ps,
+		is:              is,
 	}
 
 	return &mw, nil
@@ -95,4 +102,17 @@ func (mw *mysqlWrapper) Commit() error {
 func (mw *mysqlWrapper) Rollback() error {
 	// we don't expect this to be called if Start() was never called
 	return mw.txWrapper.rollback()
+}
+
+func (mw *mysqlWrapper) Clone() persistence.DB {
+	cpy := *mw
+
+	cpy.txWrapper = &txWrapper{
+		db: mw.txWrapper.db,
+	}
+	cpy.is.db = cpy.txWrapper
+	cpy.gs.db = cpy.txWrapper
+	cpy.ps.db = cpy.txWrapper
+
+	return &cpy
 }

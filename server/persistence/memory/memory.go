@@ -53,6 +53,10 @@ func (mdb *memDB) Rollback() error {
 	return nil
 }
 
+func (mdb *memDB) Clone() persistence.DB {
+	return mdb
+}
+
 func Clear() {
 	gservice = nil
 	pservice = nil

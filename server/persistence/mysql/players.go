@@ -89,7 +89,7 @@ type playerService struct {
 func getPlayerService(
 	ctx context.Context,
 	db *txWrapper,
-) (persistence.PlayerService, error) {
+) (*playerService, error) {
 
 	for _, createStmt := range playersCreateStmts {
 		_, err := db.ExecContext(ctx, createStmt)

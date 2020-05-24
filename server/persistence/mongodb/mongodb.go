@@ -118,6 +118,12 @@ func (mw *mongoWrapper) Rollback() error {
 	})
 }
 
+func (mw *mongoWrapper) Clone() persistence.DB {
+	// not implementing this now because we don't use the mongo db,
+	// but we'll have to give the new wrapper a new session at least.
+	return mw
+}
+
 func (mw *mongoWrapper) finishTx(finisher func(mongo.SessionContext) error) (err error) {
 	if mw.session == nil {
 		return errors.New(`missing session`)
