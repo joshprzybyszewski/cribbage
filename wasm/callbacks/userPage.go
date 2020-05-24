@@ -3,6 +3,8 @@
 package callbacks
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"honnef.co/go/js/dom/v2"
@@ -63,7 +65,7 @@ func getListenersForCreateGame(myID model.PlayerID) []Releaser {
 			PlayerIDs: []model.PlayerID{
 				model.PlayerID(username),
 				model.PlayerID(myUsername),
-			}
+			},
 		}
 
 		// we might need to wrap this in a go func
