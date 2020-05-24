@@ -696,8 +696,12 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
 	g1Copy := g1
-	g1Copy.Players[0].Games[g1.ID] = model.Blue
-	g1Copy.Players[1].Games[g1.ID] = model.Red
+	g1Copy.Players[0].Games = map[model.GameID]model.PlayerColor{
+		g1.ID: model.Blue,
+	}
+	g1Copy.Players[1].Games = map[model.GameID]model.PlayerColor{
+		g1.ID: model.Red,
+	}
 
 	require.NoError(t, db1.CreateGame(g1))
 
