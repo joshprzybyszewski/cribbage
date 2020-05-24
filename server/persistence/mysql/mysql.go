@@ -62,23 +62,10 @@ func (dbf *mysqlDBFactory) New(ctx context.Context) (persistence.DB, error) {
 		db: dbf.db,
 	}
 
-	gs, err := getGameService(ctx, &dbWrapper)
-	if err != nil {
-		return nil, err
-	}
-	ps, err := getPlayerService(ctx, &dbWrapper)
-	if err != nil {
-		return nil, err
-	}
-	is, err := getInteractionService(ctx, &dbWrapper)
-	if err != nil {
-		return nil, err
-	}
-
 	sw := persistence.NewServicesWrapper(
-		gs,
-		ps,
-		is,
+		getGameService(&dbWrapper),
+		getPlayerService(&dbWrapper),
+		getInteractionService(&dbWrapper),
 	)
 
 	mw := mysqlWrapper{
@@ -110,10 +97,6 @@ type mysqlWrapper struct {
 	txWrapper *txWrapper
 
 	ctx context.Context
-
-	is *interactionService
-	gs *gameService
-	ps *playerService
 }
 
 func (mw *mysqlWrapper) Close() error {

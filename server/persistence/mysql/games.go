@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -142,13 +141,12 @@ type gameService struct {
 }
 
 func getGameService(
-	ctx context.Context,
 	db *txWrapper,
-) (*gameService, error) {
+) persistence.GameService {
 
 	return &gameService{
 		db: db,
-	}, nil
+	}
 }
 
 func (g *gameService) Get(id model.GameID) (model.Game, error) {
