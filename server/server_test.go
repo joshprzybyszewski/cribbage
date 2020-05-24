@@ -51,9 +51,9 @@ func prepareBody(t *testing.T, v interface{}) io.Reader {
 
 func newServerAndRouter() (*cribbageServer, http.Handler) {
 	// first make sure the db is completely cleared
-	db := memory.New()
+	dbf := memory.NewFactory()
 	memory.Clear()
-	cs := newCribbageServer(db)
+	cs := newCribbageServer(dbf)
 	router := cs.NewRouter()
 	return cs, router
 }
