@@ -9,27 +9,13 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-type Config struct {
-	DSNUser     string
-	DSNPassword string
-	DSNHost     string
-	DSNPort     int
-	DSNParams   string
+var _ persistence.DBFactory = (*mysqlDBFactory)(nil)
 
-	DatabaseName string
+type mysqlDBFactory struct {
+	db *sql.DB
 }
 
-var _ persistence.DB = (*mysqlWrapper)(nil)
-
-type mysqlWrapper struct {
-	persistence.ServicesWrapper
-
-	txWrapper *txWrapper
-
-	ctx context.Context
-}
-
-func New(ctx context.Context, config Config) (persistence.DB, error) {
+func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, error) {
 	dsn := fmt.Sprintf(`%s:%s@tcp(%s:%d)`,
 		config.DSNUser,
 		config.DSNPassword,
@@ -47,8 +33,28 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		return nil, err
 	}
 
-	dbWrapper := txWrapper{
+	if config.RunCreateStmts {
+		allCreateStmts := make([]string, 0, len(gamesCreateStmts)+len(playersCreateStmts)+len(interactionCreateStmts))
+		allCreateStmts = append(allCreateStmts, gamesCreateStmts...)
+		allCreateStmts = append(allCreateStmts, playersCreateStmts...)
+		allCreateStmts = append(allCreateStmts, interactionCreateStmts...)
+
+		for _, createStmt := range allCreateStmts {
+			_, err := db.ExecContext(ctx, createStmt)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return &mysqlDBFactory{
 		db: db,
+	}, nil
+}
+
+func (dbf *mysqlDBFactory) New(ctx context.Context) (persistence.DB, error) {
+	dbWrapper := txWrapper{
+		db: dbf.db,
 	}
 
 	gs, err := getGameService(ctx, &dbWrapper)
@@ -77,6 +83,32 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 	}
 
 	return &mw, nil
+}
+
+type Config struct {
+	DSNUser     string
+	DSNPassword string
+	DSNHost     string
+	DSNPort     int
+	DSNParams   string
+
+	DatabaseName string
+
+	RunCreateStmts bool
+}
+
+var _ persistence.DB = (*mysqlWrapper)(nil)
+
+type mysqlWrapper struct {
+	persistence.ServicesWrapper
+
+	txWrapper *txWrapper
+
+	ctx context.Context
+
+	is *interactionService
+	gs *gameService
+	ps *playerService
 }
 
 func (mw *mysqlWrapper) Close() error {

@@ -23,16 +23,23 @@ var (
 	dsnPort     = flag.Int(`dsn_port`, 3306, `The port for the MySQL DB`)
 	dsnParams   = flag.String(`dsn_params`, ``, `The params for the MySQL DB`)
 	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
+
+	createTables = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
 )
 
 // Setup connects to a database and starts serving requests
 func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
-	cs := newCribbageServer(func() (persistence.DB, error) {
-		return getDB(context.Background())
+	ctx := context.Background()
+	dbFactory, err := getDBFactory(ctx, factoryConfig{
+		canRunCreateStmts: true,
 	})
-	err := seedNPCs()
+	if err != nil {
+		return err
+	}
+	cs := newCribbageServer(dbFactory)
+	err = seedNPCs(ctx, dbFactory)
 	if err != nil {
 		return err
 	}
@@ -41,30 +48,34 @@ func Setup() error {
 	return nil
 }
 
-func getDB(ctx context.Context) (persistence.DB, error) {
+type factoryConfig struct {
+	canRunCreateStmts bool
+}
+
+func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory, error) {
 	switch *database {
 	case `mongo`:
-		return mongodb.New(ctx, *dbURI)
+		return mongodb.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
-			DSNUser:      *dsnUser,
-			DSNPassword:  *dsnPassword,
-			DSNHost:      *dsnHost,
-			DSNPort:      *dsnPort,
-			DatabaseName: *mysqlDBName,
-			DSNParams:    *dsnParams,
+			DSNUser:        *dsnUser,
+			DSNPassword:    *dsnPassword,
+			DSNHost:        *dsnHost,
+			DSNPort:        *dsnPort,
+			DatabaseName:   *mysqlDBName,
+			DSNParams:      *dsnParams,
+			RunCreateStmts: cfg.canRunCreateStmts && *createTables,
 		}
-		return mysql.New(ctx, cfg)
+		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
-		return memory.New(), nil
+		return memory.NewFactory()
 	}
 
 	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
 }
 
-func seedNPCs() error {
-	ctx := context.Background()
-	db, err := getDB(ctx)
+func seedNPCs(ctx context.Context, dbFactory persistence.DBFactory) error {
+	db, err := dbFactory.New(ctx)
 	if err != nil {
 		return err
 	}

@@ -36,6 +36,10 @@ func (t *txWrapper) commit() error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 
+	defer func() {
+		t.tx = nil
+	}()
+
 	if t.tx == nil {
 		return errors.New(`mysql transaction not started`)
 	}
@@ -46,6 +50,10 @@ func (t *txWrapper) commit() error {
 func (t *txWrapper) rollback() error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
+
+	defer func() {
+		t.tx = nil
+	}()
 
 	if t.tx == nil {
 		return errors.New(`mysql transaction not started`)

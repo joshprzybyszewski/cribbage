@@ -19,12 +19,12 @@ import (
 type dbGetter func() (persistence.DB, error)
 
 type cribbageServer struct {
-	getDB dbGetter
+	dbFactory persistence.DBFactory
 }
 
-func newCribbageServer(getDB dbGetter) *cribbageServer {
+func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 	return &cribbageServer{
-		getDB: getDB,
+		dbFactory: dbFactory,
 	}
 }
 
@@ -99,12 +99,16 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.PlayerIDs))
 		return
 	}
-	db, err := cs.getDB()
+
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	g, err := createGame(context.Background(), db, pIDs)
+	defer db.Close()
+
+	g, err := createGame(ctx, db, pIDs)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
@@ -133,12 +137,16 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
-	db, err := cs.getDB()
+
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	err = createPlayer(context.Background(), db, player)
+	defer db.Close()
+
+	err = createPlayer(ctx, db, player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -187,12 +195,15 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 		return
 	}
 
-	db, err := cs.getDB()
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	err = saveInteraction(context.Background(), db, pm)
+	defer db.Close()
+
+	err = saveInteraction(ctx, db, pm)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
@@ -206,12 +217,16 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	db, err := cs.getDB()
+
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	g, err := getGame(context.Background(), db, gID)
+	defer db.Close()
+
+	g, err := getGame(ctx, db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusNotFound, `Game not found`)
@@ -235,12 +250,16 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
-	db, err := cs.getDB()
+
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	p, err := getPlayer(context.Background(), db, pID)
+	defer db.Close()
+
+	p, err := getPlayer(ctx, db, pID)
 	if err != nil {
 		if err == persistence.ErrPlayerNotFound {
 			c.String(http.StatusNotFound, `Player not found`)
@@ -265,12 +284,15 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 		return
 	}
 
-	db, err := cs.getDB()
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
 		return
 	}
-	err = handleAction(context.Background(), db, action)
+	defer db.Close()
+
+	err = handleAction(ctx, db, action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return

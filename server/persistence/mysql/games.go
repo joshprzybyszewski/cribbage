@@ -144,14 +144,7 @@ type gameService struct {
 func getGameService(
 	ctx context.Context,
 	db *txWrapper,
-) (persistence.GameService, error) {
-
-	for _, createStmt := range gamesCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
-		}
-	}
+) (*gameService, error) {
 
 	return &gameService{
 		db: db,
