@@ -9,6 +9,7 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
 	"github.com/joshprzybyszewski/cribbage/wasm/consts"
 )
@@ -58,9 +59,21 @@ func getListenersForCreateGame(myID model.PlayerID) []Releaser {
 		myUsername := string(myID)
 		e.PreventDefault()
 
+		createReq := network.CreateGameRequest{
+			PlayerIDs: []model.PlayerID{
+				model.PlayerID(username),
+				model.PlayerID(myUsername),
+			}
+		}
+
 		// we might need to wrap this in a go func
 		go func() {
-			bytes, err := actions.MakeRequest(`POST`, `/create/game/`+myUsername+`/`+username, nil)
+			inputBytes, err := json.Marshal(createReq)
+			if err != nil {
+				println("Got error on json.Marshal: " + err.Error())
+				return
+			}
+			bytes, err := actions.MakeRequest(`POST`, `/create/game`, bytes.NewBuffer(inputBytes))
 			if err != nil {
 				println("Got error on MakeRequest: " + err.Error())
 				return
