@@ -96,17 +96,17 @@ func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
 }
 
 func TestDB(t *testing.T) {
-	dbs := map[dbName]persistence.DB{
-		memoryDB: memory.New(),
+	dbfs := map[dbName]persistence.DBFactory{
+		memoryDB: memory.NewFactory(),
 	}
 
 	if !testing.Short() {
 		// We assume you have mongodb stood up locally when running without -short
 		// we change the uri because github actions set up a different mongodb replica set than run-rs does
-		mongo, err := mongodb.New(context.Background(), `mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
+		mongo, err := mongodb.NewFactory(`mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
 		require.NoError(t, err)
 
-		dbs[mongoDB] = mongo
+		dbfs[mongoDB] = mongo
 
 		// We further assume you have mysql stood up locally when running without -short
 		cfg := mysql.Config{
@@ -117,7 +117,7 @@ func TestDB(t *testing.T) {
 			DatabaseName: `testing_cribbage`,
 			DSNParams:    ``,
 		}
-		mySQLDB, err := mysql.New(context.Background(), cfg)
+		mySQLDB, err := mysql.NewFactory(context.Background(), cfg)
 		if err != nil {
 			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
 			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
@@ -129,15 +129,17 @@ func TestDB(t *testing.T) {
 				DatabaseName: `testing_cribbage`,
 				DSNParams:    ``,
 			}
-			mySQLDB, err = mysql.New(context.Background(), cfg)
+			mySQLDB, err = mysql.NewFactory(context.Background(), cfg)
 		}
 		require.NoError(t, err)
 
-		dbs[mysqlDB] = mySQLDB
+		dbfs[mysqlDB] = mySQLDB
 	}
 
-	for dbName, db := range dbs {
+	for dbName, dbf := range dbfs {
 		for testName, testFn := range tests {
+			db, err := dbf.New(context.Background())
+			require.NoError(t, err, string(dbName)+`:`+testName)
 			t.Run(string(dbName)+`:`+testName, func(t1 *testing.T) { testFn(t1, dbName, db) })
 		}
 	}
@@ -524,18 +526,44 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 
 func TestTransactionality(t *testing.T) {
 	// Right now (and probably ever) the memory persistence isn't transactional
-	dbs := map[string]func() persistence.DB{
+	dbfs := map[dbName]persistence.DBFactory{
 		// `memory`: func() persistence.DB { return inmem },
 	}
 
 	if !testing.Short() {
-		dbs[`mongodb`] = func() persistence.DB {
-			// We assume you have mongodb stood up locally when running without -short
-			// we change the uri because travis sets up a different mongodb replica set than run-rs does
-			mongo, err := mongodb.New(context.Background(), `mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
-			require.NoError(t, err)
-			return mongo
+		// We assume you have mongodb stood up locally when running without -short
+		// we change the uri because github actions set up a different mongodb replica set than run-rs does
+		mongo, err := mongodb.NewFactory(`mongodb://127.0.0.1:27017,127.0.0.1:27018/?replicaSet=testReplSet`)
+		require.NoError(t, err)
+
+		dbfs[mongoDB] = mongo
+
+		// We further assume you have mysql stood up locally when running without -short
+		cfg := mysql.Config{
+			DSNUser:      `root`,                 // github actions use root user with a root password
+			DSNPassword:  `githubactionpassword`, // defined as envvar in the go_tests.yaml
+			DSNHost:      `localhost`,
+			DSNPort:      3306,
+			DatabaseName: `testing_cribbage`,
+			DSNParams:    ``,
 		}
+		mySQLDB, err := mysql.NewFactory(context.Background(), cfg)
+		if err != nil {
+			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
+			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
+			cfg = mysql.Config{
+				DSNUser:      `root`, // locally, we just use "root" with no password
+				DSNPassword:  ``,
+				DSNHost:      `127.0.0.1`,
+				DSNPort:      3306,
+				DatabaseName: `testing_cribbage`,
+				DSNParams:    ``,
+			}
+			mySQLDB, err = mysql.NewFactory(context.Background(), cfg)
+		}
+		require.NoError(t, err)
+
+		dbfs[mysqlDB] = mySQLDB
 	}
 
 	txTests := map[string]txTest{
@@ -544,9 +572,18 @@ func TestTransactionality(t *testing.T) {
 		`rollback the player service`: rollbackPlayerTxTest,
 	}
 
-	for dbName, db := range dbs {
+	for databaseName, dbf := range dbfs {
 		for testName, txTest := range txTests {
-			t.Run(dbName+`:`+testName, func(t1 *testing.T) { txTest(t1, db(), db(), db()) })
+			db1, err := dbf.New(context.Background())
+			require.NoError(t, err, string(databaseName)+`:`+testName)
+
+			db2, err := dbf.New(context.Background())
+			require.NoError(t, err, string(databaseName)+`:`+testName)
+
+			db3, err := dbf.New(context.Background())
+			require.NoError(t, err, string(databaseName)+`:`+testName)
+
+			t.Run(string(databaseName)+`:`+testName, func(t1 *testing.T) { txTest(t1, db1, db2, db3) })
 		}
 	}
 }

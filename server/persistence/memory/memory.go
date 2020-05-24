@@ -13,8 +13,8 @@ type memDBF struct {
 	db *memDB
 }
 
-func NewFactory() (persistence.DBFactory, error) {
-	return memDBF{}, nil
+func NewFactory() persistence.DBFactory {
+	return memDBF{}
 }
 
 func (dbf memDBF) Close() error {
