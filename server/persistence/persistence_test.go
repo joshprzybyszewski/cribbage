@@ -697,7 +697,7 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 	}
 	g1Copy := g1
 
-	require.NoError(t, db1.SaveGame(g1))
+	require.NoError(t, db1.CreateGame(g1))
 
 	actGame, err := db1.GetGame(g1.ID)
 	require.NoError(t, err)
