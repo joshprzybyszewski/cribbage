@@ -205,3 +205,5 @@ honnef.co/go/js/dom v0.0.0-20190526011328-ebc4cf92d81f h1:b3Q9PqH+5NYHfIjNUEN+f8
 honnef.co/go/js/dom v0.0.0-20190526011328-ebc4cf92d81f/go.mod h1:sUMDUKNB2ZcVjt92UnLy3cdGs+wDAcrPdV3JP6sVgA4=
 honnef.co/go/js/dom/v2 v2.0.0-20190526011328-ebc4cf92d81f h1:rxpwPRn5voIeZmBGJvlhLwWo9fSZSciAAfHz6sAHGCY=
 honnef.co/go/js/dom/v2 v2.0.0-20190526011328-ebc4cf92d81f/go.mod h1:H5R0jAIe6IchQE778FS2QcrNVgS4vPFb0HPb72n/IJI=
+honnef.co/go/js/dom/v2 v2.0.0-20200509013220-d4405f7ab4d8 h1:wEmxE7Y1Kwm9Nrzl+0+yYt3uGXkaqbEYLuRzl/hSDgE=
+honnef.co/go/js/dom/v2 v2.0.0-20200509013220-d4405f7ab4d8/go.mod h1:H5R0jAIe6IchQE778FS2QcrNVgS4vPFb0HPb72n/IJI=
