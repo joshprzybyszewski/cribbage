@@ -54,12 +54,12 @@ var (
 var _ persistence.InteractionService = (*interactionService)(nil)
 
 type interactionService struct {
-	db *txOrDB
+	db *txWrapper
 }
 
 func getInteractionService(
 	ctx context.Context,
-	db *txOrDB,
+	db *txWrapper,
 ) (persistence.InteractionService, error) {
 
 	for _, createStmt := range interactionCreateStmts {

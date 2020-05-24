@@ -138,12 +138,12 @@ var (
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
-	db *txOrDB
+	db *txWrapper
 }
 
 func getGameService(
 	ctx context.Context,
-	db *txOrDB,
+	db *txWrapper,
 ) (persistence.GameService, error) {
 
 	for _, createStmt := range gamesCreateStmts {
