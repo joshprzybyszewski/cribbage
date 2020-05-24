@@ -90,6 +90,10 @@ func (mf mongoFactory) New(ctx context.Context) (persistence.DB, error) {
 	return &mw, nil
 }
 
+func (mf mongoFactory) Close() error {
+	return nil
+}
+
 var _ persistence.DB = (*mongoWrapper)(nil)
 
 type mongoWrapper struct {
