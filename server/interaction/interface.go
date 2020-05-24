@@ -35,9 +35,11 @@ func FromPlayerMeans(pm PlayerMeans) (Player, error) {
 			return nil, errors.New(`player means info should contain an action handler, but it doesn't`)
 		}
 		return NewNPCPlayer(pID, ah)
+	default:
+		return unimplemented{
+			myID: pID,
+		}, nil
 	}
-
-	return nil, nil // errors.New(`mode unsupported`)
 }
 
 type ActionHandler interface {
