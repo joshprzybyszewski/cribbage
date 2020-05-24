@@ -33,15 +33,17 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 		return nil, err
 	}
 
-	allCreateStmts := make([]string, 0, len(gamesCreateStmts)+len(playersCreateStmts)+len(interactionCreateStmts))
-	allCreateStmts = append(allCreateStmts, gamesCreateStmts...)
-	allCreateStmts = append(allCreateStmts, playersCreateStmts...)
-	allCreateStmts = append(allCreateStmts, interactionCreateStmts...)
+	if config.RunCreateStmts {
+		allCreateStmts := make([]string, 0, len(gamesCreateStmts)+len(playersCreateStmts)+len(interactionCreateStmts))
+		allCreateStmts = append(allCreateStmts, gamesCreateStmts...)
+		allCreateStmts = append(allCreateStmts, playersCreateStmts...)
+		allCreateStmts = append(allCreateStmts, interactionCreateStmts...)
 
-	for _, createStmt := range allCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
+		for _, createStmt := range allCreateStmts {
+			_, err := db.ExecContext(ctx, createStmt)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -91,6 +93,8 @@ type Config struct {
 	DSNParams   string
 
 	DatabaseName string
+
+	RunCreateStmts bool
 }
 
 var _ persistence.DB = (*mysqlWrapper)(nil)

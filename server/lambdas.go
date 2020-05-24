@@ -7,7 +7,7 @@ import (
 )
 
 func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
-	dbf, err := getDBFactory(ctx)
+	dbf, err := getDBFactory(ctx, factoryConfig{})
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
 }
 
 func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) {
-	dbf, err := getDBFactory(ctx)
+	dbf, err := getDBFactory(ctx, factoryConfig{})
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -35,7 +35,7 @@ func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) 
 }
 
 func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
-	dbf, err := getDBFactory(ctx)
+	dbf, err := getDBFactory(ctx, factoryConfig{})
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -49,7 +49,7 @@ func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
 }
 
 func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
-	dbf, err := getDBFactory(ctx)
+	dbf, err := getDBFactory(ctx, factoryConfig{})
 	if err != nil {
 		return model.Player{}, err
 	}

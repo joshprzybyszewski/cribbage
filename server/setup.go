@@ -23,6 +23,8 @@ var (
 	dsnPort     = flag.Int(`dsn_port`, 3306, `The port for the MySQL DB`)
 	dsnParams   = flag.String(`dsn_params`, ``, `The params for the MySQL DB`)
 	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
+
+	createTables = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
 )
 
 // Setup connects to a database and starts serving requests
@@ -30,7 +32,9 @@ func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
 	ctx := context.Background()
-	dbFactory, err := getDBFactory(ctx)
+	dbFactory, err := getDBFactory(ctx, factoryConfig{
+		canRunCreateStmts: true,
+	})
 	if err != nil {
 		return err
 	}
@@ -44,18 +48,23 @@ func Setup() error {
 	return nil
 }
 
-func getDBFactory(ctx context.Context) (persistence.DBFactory, error) {
+type factoryConfig struct {
+	canRunCreateStmts bool
+}
+
+func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory, error) {
 	switch *database {
 	case `mongo`:
 		return mongodb.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
-			DSNUser:      *dsnUser,
-			DSNPassword:  *dsnPassword,
-			DSNHost:      *dsnHost,
-			DSNPort:      *dsnPort,
-			DatabaseName: *mysqlDBName,
-			DSNParams:    *dsnParams,
+			DSNUser:        *dsnUser,
+			DSNPassword:    *dsnPassword,
+			DSNHost:        *dsnHost,
+			DSNPort:        *dsnPort,
+			DatabaseName:   *mysqlDBName,
+			DSNParams:      *dsnParams,
+			RunCreateStmts: cfg.canRunCreateStmts && *createTables,
 		}
 		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
