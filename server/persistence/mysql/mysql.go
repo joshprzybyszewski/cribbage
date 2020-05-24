@@ -25,7 +25,7 @@ type txOrDB struct {
 	tx *sql.Tx
 }
 
-func (t *txOrDB) Exec(query string, ifs []interface{}) error {
+func (t *txOrDB) Exec(query string, ifs []interface{}) (sql.Result, error) {
 	if t.tx != nil {
 		return t.tx.Exec(query, ifs...)
 	}
@@ -97,7 +97,7 @@ func (mw *mysqlWrapper) Start() error {
 		return errors.New(`mysql transaction already started`)
 	}
 
-	tx, err := mw.db.BeginTx(mw.ctx, &sql.TxOptions{})
+	tx, err := mw.dt.db.BeginTx(mw.ctx, &sql.TxOptions{})
 	if err != nil {
 		return err
 	}
