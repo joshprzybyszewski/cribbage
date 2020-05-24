@@ -44,8 +44,8 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	user := router.Group("/user")
 	{
 		user.GET("/", handleGetUser)
-		user.GET("/:username", handleGetUsername)
-		user.GET("/:username/game/:gameID", handleGetUsernameGame)
+		user.GET("/:username", cs.handleGetUsername)
+		user.GET("/:username/game/:gameID", cs.handleGetUsernameGame)
 	}
 
 	// Simple group: create

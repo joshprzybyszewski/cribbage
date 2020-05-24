@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -29,11 +30,12 @@ func handleGetUser(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/user/%s`, username))
 }
 
-func handleGetUsername(c *gin.Context) {
+func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
+	ctx := context.Background()
 	// serve up a list of games this user is in
 	username := c.Param("username")
 	pID := model.PlayerID(username)
-	p, err := getPlayer(pID)
+	p, err := getPlayer(ctx, cs.db, pID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Error: %s", err)
 		return
@@ -48,7 +50,7 @@ func handleGetUsername(c *gin.Context) {
 		GameID     model.GameID
 	}, 0, len(p.Games))
 	for gID, color := range p.Games {
-		g, err := getGame(gID)
+		g, err := getGame(ctx, cs.db, gID)
 		if err != nil {
 			if err == persistence.ErrGameNotFound {
 				// the player knows about a game that's been deleted
@@ -94,7 +96,7 @@ func handleGetUsername(c *gin.Context) {
 	)
 }
 
-func handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
+func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
 	// serve up this game for this user
 	pID := model.PlayerID(c.Param("username"))
 	gID, err := getGameIDFromContext(c)
@@ -103,7 +105,7 @@ func handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
 		return
 	}
 
-	g, err := getGame(gID)
+	g, err := getGame(context.Background(), cs.db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
 			c.String(http.StatusBadRequest, "Game (%v) does not exist", gID)
