@@ -151,8 +151,11 @@ func (tc *terminalClient) tellAboutInteraction(wg *sync.WaitGroup, port int) {
 	go func() {
 		defer wg.Done()
 		// Let the server know about where we're serving our listener
-		url := fmt.Sprintf("/create/interaction/%s/localhost/%d", tc.me.ID, port)
-		_, err := tc.makeRequest(`POST`, url, nil, nil)
+		cir := network.CreateInteractionRequest{
+			PlayerID:      tc.me.ID,
+			LocalhostPort: strconv.Itoa(port),
+		}
+		_, err := tc.makeJSONBodiedRequest(`POST`, `create/interaction`, cir)
 		if err != nil {
 			fmt.Printf("Error telling server about interaction: %+v\n", err)
 		}
@@ -264,6 +267,18 @@ func getGameIDAndBody(c *gin.Context, defBody string) (model.GameID, string, err
 	return model.GameID(n), msg, nil
 }
 
+func (tc *terminalClient) makeJSONBodiedRequest(method, apiURL string, v interface{}) ([]byte, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	header := http.Header{}
+	if len(b) > 0 {
+		header.Add(`Content-Type`, `application/json`)
+	}
+	return tc.makeRequest(method, apiURL, bytes.NewReader(b), header)
+}
+
 func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, header http.Header) ([]byte, error) {
 	urlStr := serverDomain + apiURL
 	req, err := http.NewRequest(method, urlStr, data)
@@ -286,12 +301,12 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 		// Keeping this here for debugging
 		fmt.Printf("full response: %+v\n%s\n%s\n", response, response.Body, string(resBytes))
 
-		contentType := response.Header.Get("Content-Type")
+		contentType := response.Header.Get(`Content-Type`)
 		if strings.Contains(contentType, `text/plain`) {
 			return nil, fmt.Errorf("bad response: \"%s\"", string(resBytes))
 		}
 
-		return nil, fmt.Errorf("bad response from server")
+		return nil, fmt.Errorf(`bad response from server`)
 	} else if err != nil {
 		return nil, err
 	}
@@ -301,15 +316,11 @@ func (tc *terminalClient) makeRequest(method, apiURL string, data io.Reader, hea
 
 func (tc *terminalClient) createPlayer() error {
 	username, name := tc.getName()
-	var reqData = network.CreatePlayerModel{Username: username, DisplayName: name}
-	b, err := json.Marshal(reqData)
-	if err != nil {
-		return err
+	reqData := model.Player{
+		ID:   model.PlayerID(username),
+		Name: name,
 	}
-	header := http.Header{
-		`Content-Type`: []string{`application/json`},
-	}
-	respBytes, err := tc.makeRequest(`POST`, `/create/player`, bytes.NewReader(b), header)
+	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/player`, reqData)
 	if err != nil {
 		return err
 	}
@@ -383,10 +394,15 @@ func (tc *terminalClient) shouldCreateGame() bool {
 }
 
 func (tc *terminalClient) createGame() error {
-	opID := tc.getPlayerID("What's your opponent's username?")
-	url := fmt.Sprintf("/create/game/%s/%s", opID, tc.me.ID)
+	opID := tc.getPlayerID(`What's your opponent's username?`)
+	gameReq := network.CreateGameRequest{
+		PlayerIDs: []model.PlayerID{
+			opID,
+			tc.me.ID,
+		},
+	}
 
-	respBytes, err := tc.makeRequest(`POST`, url, nil, nil)
+	respBytes, err := tc.makeJSONBodiedRequest(`POST`, `/create/game`, gameReq)
 	if err != nil {
 		return err
 	}

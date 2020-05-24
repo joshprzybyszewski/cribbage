@@ -32,7 +32,7 @@ func (m *Means) AddSerializedInfo(serInfo []byte) error {
 		return nil
 	case NPC:
 		// serInfo should represent an action handler for the NPC.
-		// It should be overwrittten elsewhere to npcActionHandler
+		// It should be overwritten elsewhere to npcActionHandler
 		return nil
 	default:
 		return fmt.Errorf(`unsupported Mode: %v`, m.Mode)
