@@ -109,26 +109,12 @@ func TestDB(t *testing.T) {
 		dbfs[mongoDB] = mongo
 
 		// We further assume you have mysql stood up locally when running without -short
-		cfg := mysql.Config{
-			DSNUser:      `root`,                 // github actions use root user with a root password
-			DSNPassword:  `githubactionpassword`, // defined as envvar in the go_tests.yaml
-			DSNHost:      `localhost`,
-			DSNPort:      3306,
-			DatabaseName: `testing_cribbage`,
-			DSNParams:    ``,
-		}
+		cfg := mysql.GetTestConfig()
 		mySQLDB, err := mysql.NewFactory(context.Background(), cfg)
 		if err != nil {
 			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
 			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
-			cfg = mysql.Config{
-				DSNUser:      `root`, // locally, we just use "root" with no password
-				DSNPassword:  ``,
-				DSNHost:      `127.0.0.1`,
-				DSNPort:      3306,
-				DatabaseName: `testing_cribbage`,
-				DSNParams:    ``,
-			}
+			cfg = mysql.GetTestConfigForLocal()
 			mySQLDB, err = mysql.NewFactory(context.Background(), cfg)
 		}
 		require.NoError(t, err)
@@ -539,26 +525,12 @@ func TestTransactionality(t *testing.T) {
 		dbfs[mongoDB] = mongo
 
 		// We further assume you have mysql stood up locally when running without -short
-		cfg := mysql.Config{
-			DSNUser:      `root`,                 // github actions use root user with a root password
-			DSNPassword:  `githubactionpassword`, // defined as envvar in the go_tests.yaml
-			DSNHost:      `localhost`,
-			DSNPort:      3306,
-			DatabaseName: `testing_cribbage`,
-			DSNParams:    ``,
-		}
+		cfg := mysql.GetTestConfig()
 		mySQLDB, err := mysql.NewFactory(context.Background(), cfg)
 		if err != nil {
 			t.Logf("Expected to connect, but got error: %q. This is expected when running locally.", err.Error())
 			// if we got an error trying to connect, let's fallback to trying to connect to localhost's mysql
-			cfg = mysql.Config{
-				DSNUser:      `root`, // locally, we just use "root" with no password
-				DSNPassword:  ``,
-				DSNHost:      `127.0.0.1`,
-				DSNPort:      3306,
-				DatabaseName: `testing_cribbage`,
-				DSNParams:    ``,
-			}
+			cfg = mysql.GetTestConfigForLocal()
 			mySQLDB, err = mysql.NewFactory(context.Background(), cfg)
 		}
 		require.NoError(t, err)
