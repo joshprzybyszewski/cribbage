@@ -1,3 +1,4 @@
+//nolint:dupl
 package mongodb
 
 import (
@@ -44,12 +45,14 @@ type getGameOptions struct {
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
-	ctx context.Context
-	col *mongo.Collection
+	ctx     context.Context
+	session mongo.Session
+	col     *mongo.Collection
 }
 
 func getGameService(
 	ctx context.Context,
+	session mongo.Session,
 	mdb *mongo.Database,
 	r *bsoncodec.Registry,
 ) (persistence.GameService, error) {
@@ -71,8 +74,9 @@ func getGameService(
 	}
 
 	return &gameService{
-		ctx: ctx,
-		col: col,
+		ctx:     ctx,
+		session: session,
+		col:     col,
 	}, nil
 }
 
@@ -107,15 +111,22 @@ func (gs *gameService) getSingleGame(id model.GameID, opts getGameOptions) (mode
 	return games[0], nil
 }
 
-func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) {
+func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) { // nolint:gocyclo
 	pgl := persistedGameList{}
 	filter := bsonGameIDFilter(id)
-	err := gs.col.FindOne(gs.ctx, filter).Decode(&pgl)
+
+	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		err := gs.col.FindOne(sc, filter).Decode(&pgl)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				return persistence.ErrGameNotFound
+			}
+			return err
+		}
+		return nil
+	})
 
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, persistence.ErrGameNotFound
-		}
 		return nil, err
 	}
 
@@ -189,10 +200,18 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	return gs.saveGameList(newGameList)
 }
 
+func (gs *gameService) Begin(g model.Game) error {
+	return gs.Save(g)
+}
+
 func (gs *gameService) Save(g model.Game) error {
 	saved := gameList{}
 	filter := bsonGameIDFilter(g.ID)
-	err := gs.col.FindOne(gs.ctx, filter).Decode(&saved)
+
+	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		return gs.col.FindOne(sc, filter).Decode(&saved)
+	})
+
 	if err != nil {
 		// if this is the first time saving the game, then we get ErrNoDocuments
 		if err != mongo.ErrNoDocuments {
@@ -206,15 +225,31 @@ func (gs *gameService) Save(g model.Game) error {
 
 		saved.GameID = g.ID
 		saved.Games = []model.Game{g}
-		// we have to InsertOne the first time (compared to ReplaceOne)
-		_, err = gs.col.InsertOne(gs.ctx, saved)
-		return err
+
+		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+			var ior *mongo.InsertOneResult
+			ior, err = gs.col.InsertOne(sc, saved)
+			if err != nil {
+				return err
+			}
+			if ior.InsertedID == nil {
+				// not sure if this is the right thing to check
+				return errors.New(`game not saved`)
+			}
+
+			return nil
+		})
 	}
 
 	if saved.GameID != g.ID {
 		return errors.New(`bad save somewhere`)
 	}
 	err = validateGameState(saved.Games, g)
+	if err != nil {
+		return err
+	}
+
+	err = persistence.ValidateLatestActionBelongs(g)
 	if err != nil {
 		return err
 	}
@@ -245,6 +280,21 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 
 func (gs *gameService) saveGameList(saved gameList) error {
 	filter := bsonGameIDFilter(saved.GameID)
-	_, err := gs.col.ReplaceOne(gs.ctx, filter, saved)
-	return err
+	return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+		ur, err := gs.col.ReplaceOne(sc, filter, saved)
+		if err != nil {
+			return err
+		}
+
+		switch {
+		case ur.ModifiedCount > 1:
+			return errors.New(`modified too many games`)
+		case ur.MatchedCount > 1:
+			return errors.New(`matched more than one game entry`)
+		case ur.UpsertedCount > 1:
+			return errors.New(`replaced more than one game`)
+		}
+
+		return nil
+	})
 }

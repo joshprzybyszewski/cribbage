@@ -40,7 +40,7 @@ func (tc *terminalClient) requestAndSendAction(gID model.GameID) error {
 	buf := bytes.NewBuffer(b)
 
 	url := fmt.Sprintf("/action/%d", g.ID)
-	_, err = tc.makeRequest(`POST`, url, buf)
+	_, err = tc.makeRequest(`POST`, url, buf, nil)
 	return err
 }
 

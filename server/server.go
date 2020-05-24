@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,14 +11,22 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
 type cribbageServer struct {
+	db persistence.DB
 }
 
-func (cs *cribbageServer) Serve() {
+func newCribbageServer(db persistence.DB) *cribbageServer {
+	return &cribbageServer{
+		db: db,
+	}
+}
+
+func (cs *cribbageServer) NewRouter() http.Handler {
 	router := gin.Default()
 
 	router.LoadHTMLGlob("templates/*")
@@ -40,61 +49,57 @@ func (cs *cribbageServer) Serve() {
 	}
 
 	// Simple group: create
-	create := router.Group("/create")
+	create := router.Group(`/create`)
 	{
-		create.POST("/game/:player1/:player2", cs.ginPostCreateGame)
-		create.POST("/game/:player1/:player2/:player3", cs.ginPostCreateGame)
-		create.POST("/game/:player1/:player2/:player3/:player4", cs.ginPostCreateGame)
-		create.POST("/player/:username/:name", cs.ginPostCreatePlayer)
-		create.POST("/interaction/:playerId/:mode/:info", cs.ginPostCreateInteraction)
+		create.POST(`/game`, cs.ginPostCreateGame)
+		create.POST(`/player`, cs.ginPostCreatePlayer)
+		create.POST(`/interaction`, cs.ginPostCreateInteraction)
 	}
 
-	router.GET("/game/:gameID", cs.ginGetGame)
-	router.GET("/player/:username", cs.ginGetPlayer)
+	router.GET(`/game/:gameID`, cs.ginGetGame)
+	router.GET(`/player/:username`, cs.ginGetPlayer)
 
-	router.POST("/action/:gameID", cs.ginPostAction)
+	router.POST(`/action`, cs.ginPostAction)
 
-	err := router.Run() // listen and serve on 0.0.0.0:8080
+	return router
+}
+
+func (cs *cribbageServer) Serve() {
+	router := cs.NewRouter()
+	eng, ok := router.(*gin.Engine)
+	if !ok {
+		log.Println(`router type assertion failed`)
+	}
+
+	err := eng.Run() // listen and serve on 0.0.0.0:8080
 	if err != nil {
 		log.Printf("router.Run errored: %+v\n", err)
 	}
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
-	var pIDs []model.PlayerID
-
-	pID := getPlayerID(c, `player1`)
-	if pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, "Needs player1")
+	var gameReq network.CreateGameRequest
+	err := c.ShouldBindJSON(&gameReq)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	pIDs = append(pIDs, pID)
-
-	pID = getPlayerID(c, `player2`)
-	if pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, "Needs player2")
-		return
-	}
-	pIDs = append(pIDs, pID)
-
-	pID = getPlayerID(c, `player3`)
-	if pID != model.InvalidPlayerID {
-		pIDs = append(pIDs, pID)
-	}
-
-	pID = getPlayerID(c, `player4`)
-	if pID != model.InvalidPlayerID {
-		pIDs = append(pIDs, pID)
+	pIDs := make([]model.PlayerID, len(gameReq.PlayerIDs))
+	for i, pID := range gameReq.PlayerIDs {
+		if pID == model.InvalidPlayerID {
+			c.String(http.StatusBadRequest, `Invalid player ID at index %d`, i)
+			return
+		}
+		pIDs[i] = pID
 	}
 
 	if len(pIDs) < model.MinPlayerGame || len(pIDs) > model.MaxPlayerGame {
-		c.String(http.StatusBadRequest, "Invalid num players: %d", len(pIDs))
+		c.String(http.StatusBadRequest, `Invalid num players: %d`, len(gameReq.PlayerIDs))
 		return
 	}
-
-	g, err := createGameFromIDs(pIDs)
+	g, err := createGame(context.Background(), cs.db, pIDs)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "createGame error: %s", err)
+		c.String(http.StatusInternalServerError, `createGame error: %s`, err)
 		return
 	}
 
@@ -102,27 +107,32 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	c.JSON(http.StatusOK, g)
 }
 
-func getPlayerID(c *gin.Context, playerParam string) model.PlayerID {
-	username, ok := c.Params.Get(playerParam)
-	if !ok {
-		return model.InvalidPlayerID
-	}
-
-	return model.PlayerID(username)
-}
-
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	username := c.Param("username")
-	name := c.Param("name")
-	player, err := createPlayerFromNames(username, name)
+	var player model.Player
+	err := c.ShouldBindJSON(&player)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	if player.ID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, `Username is required`)
+		return
+	}
+	if player.Name == `` {
+		c.String(http.StatusBadRequest, `Display name is required`)
+		return
+	}
+	if !model.IsValidPlayerID(player.ID) {
+		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
+		return
+	}
+	err = createPlayer(context.Background(), cs.db, player)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
-			c.String(http.StatusBadRequest, "Username already exists")
-		case errInvalidUsername:
-			c.String(http.StatusBadRequest, "Username must be alphanumeric")
+			c.String(http.StatusBadRequest, `Username already exists`)
 		default:
-			c.String(http.StatusInternalServerError, "Error: %s", err)
+			c.String(http.StatusInternalServerError, `Error: %s`, err)
 		}
 		return
 	}
@@ -130,42 +140,62 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
-	pID := getPlayerID(c, `playerId`)
-	if pID == model.InvalidPlayerID {
-		c.String(http.StatusBadRequest, "Needs playerId")
-		return
-	}
-
-	var mode interaction.Mode
-	switch c.Param(`mode`) {
-	case `localhost`:
-		mode = interaction.Localhost
-	default:
-		c.String(http.StatusBadRequest, "unsupported interaction mode")
-		return
-	}
-
-	info := c.Param(`info`)
-	err := setInteraction(pID, interaction.Means{
-		Mode: mode,
-		Info: info,
-	})
+	var cir network.CreateInteractionRequest
+	err := c.ShouldBindJSON(&cir)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.String(http.StatusOK, "Updated player interaction")
+	pID := cir.PlayerID
+	if pID == model.InvalidPlayerID {
+		c.String(http.StatusBadRequest, `Needs playerId`)
+		return
+	}
+
+	var pm interaction.PlayerMeans
+	switch {
+	case len(cir.LocalhostPort) > 0:
+		pm = interaction.New(pID, interaction.Means{
+			Mode: interaction.Localhost,
+			Info: cir.LocalhostPort,
+		})
+	case len(cir.NPCType) > 0:
+		switch cir.NPCType {
+		case interaction.Simple, interaction.Calc, interaction.Dumb:
+		default:
+			c.String(http.StatusBadRequest, `unsupported interaction mode`)
+			return
+		}
+		pm = interaction.New(pID, interaction.Means{
+			Mode: interaction.NPC,
+			Info: cir.NPCType,
+		})
+	default:
+		c.String(http.StatusBadRequest, `unsupported interaction mode`)
+		return
+	}
+
+	err = saveInteraction(context.Background(), cs.db, pm)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	c.String(http.StatusOK, `Updated player interaction`)
 }
 
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	gID, err := getGameIDFromContext(c)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid GameID: %v", err)
+		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
-	g, err := getGame(gID)
+	g, err := getGame(context.Background(), cs.db, gID)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		if err == persistence.ErrGameNotFound {
+			c.String(http.StatusNotFound, `Game not found`)
+			return
+		}
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
@@ -173,7 +203,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 }
 
 func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
-	gIDStr := c.Param("gameID")
+	gIDStr := c.Param(`gameID`)
 	n, err := strconv.Atoi(gIDStr)
 	if err != nil {
 		return model.InvalidGameID, err
@@ -182,10 +212,14 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 }
 
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
-	pID := model.PlayerID(c.Param("username"))
-	p, err := getPlayer(pID)
+	pID := model.PlayerID(c.Param(`username`))
+	p, err := getPlayer(context.Background(), cs.db, pID)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		if err == persistence.ErrPlayerNotFound {
+			c.String(http.StatusNotFound, `Player not found`)
+			return
+		}
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
@@ -193,26 +227,22 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
-	action, err := unmarshalPlayerAction(c.Request)
+	reqBytes, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Error: %s", err)
+		c.String(http.StatusBadRequest, `Error: %s`, err)
+		return
+	}
+	action, err := jsonutils.UnmarshalPlayerAction(reqBytes)
+	if err != nil {
+		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
 	}
 
-	err = handlePlayerAction(action)
+	err = handleAction(context.Background(), cs.db, action)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Error: %s", err)
+		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
 	}
 
-	c.String(http.StatusOK, "action handled")
-}
-
-func unmarshalPlayerAction(req *http.Request) (model.PlayerAction, error) {
-	reqBody, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return model.PlayerAction{}, err
-	}
-
-	return jsonutils.UnmarshalPlayerAction(reqBody)
+	c.String(http.StatusOK, `action handled`)
 }
