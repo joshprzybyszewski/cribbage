@@ -26,7 +26,7 @@ func Send(gID model.GameID, pa model.PlayerAction) error {
 	}
 	buf := bytes.NewBuffer(b)
 
-	url := fmt.Sprintf("/action/%d", gID)
+	url := fmt.Sprintf("/action")
 
 	_, err = MakeRequest(`POST`, url, buf)
 	return err
