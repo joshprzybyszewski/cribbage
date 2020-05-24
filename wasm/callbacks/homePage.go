@@ -3,6 +3,7 @@
 package callbacks
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"honnef.co/go/js/dom/v2"
@@ -61,9 +62,14 @@ func getListenersForCreateUser() []Releaser {
 		// TODO for some reason the username and displayname are the same
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
+		player := model.Player{
+			ID:   model.PlayerID(username),
+			Name: displayname,
+		}
 
 		go func() {
-			bytes, err := actions.MakeRequest(`POST`, `/create/player/`+username+`/`+displayname, nil)
+			inputBytes, err := json.Marshal(player)
+			bytes, err := actions.MakeRequest(`POST`, `/create/player`, bytes.NewBuffer(inputBytes))
 			if err != nil {
 				println("Got error on MakeRequest: " + err.Error())
 				return
