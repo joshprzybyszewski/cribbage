@@ -9,31 +9,13 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-type Config struct {
-	DSNUser     string
-	DSNPassword string
-	DSNHost     string
-	DSNPort     int
-	DSNParams   string
+var _ persistence.DBFactory = (*mysqlDBFactory)(nil)
 
-	DatabaseName string
+type mysqlDBFactory struct {
+	db *sql.DB
 }
 
-var _ persistence.DB = (*mysqlWrapper)(nil)
-
-type mysqlWrapper struct {
-	persistence.ServicesWrapper
-
-	txWrapper *txWrapper
-
-	ctx context.Context
-
-	is *interactionService
-	gs *gameService
-	ps *playerService
-}
-
-func New(ctx context.Context, config Config) (persistence.DB, error) {
+func NewFactory(config Config) (persistence.DBFactory, error) {
 	dsn := fmt.Sprintf(`%s:%s@tcp(%s:%d)`,
 		config.DSNUser,
 		config.DSNPassword,
@@ -51,8 +33,14 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		return nil, err
 	}
 
-	dbWrapper := txWrapper{
+	return &mysqlDBFactory{
 		db: db,
+	}, nil
+}
+
+func (dbf *mysqlDBFactory) New(ctx context.Context) (persistence.DB, error) {
+	dbWrapper := txWrapper{
+		db: dbf.db,
 	}
 
 	gs, err := getGameService(ctx, &dbWrapper)
@@ -78,12 +66,33 @@ func New(ctx context.Context, config Config) (persistence.DB, error) {
 		ServicesWrapper: sw,
 		txWrapper:       &dbWrapper,
 		ctx:             ctx,
-		gs:              gs,
-		ps:              ps,
-		is:              is,
 	}
 
 	return &mw, nil
+}
+
+type Config struct {
+	DSNUser     string
+	DSNPassword string
+	DSNHost     string
+	DSNPort     int
+	DSNParams   string
+
+	DatabaseName string
+}
+
+var _ persistence.DB = (*mysqlWrapper)(nil)
+
+type mysqlWrapper struct {
+	persistence.ServicesWrapper
+
+	txWrapper *txWrapper
+
+	ctx context.Context
+
+	is *interactionService
+	gs *gameService
+	ps *playerService
 }
 
 func (mw *mysqlWrapper) Close() error {
@@ -102,17 +111,4 @@ func (mw *mysqlWrapper) Commit() error {
 func (mw *mysqlWrapper) Rollback() error {
 	// we don't expect this to be called if Start() was never called
 	return mw.txWrapper.rollback()
-}
-
-func (mw *mysqlWrapper) Clone() persistence.DB {
-	cpy := *mw
-
-	cpy.txWrapper = &txWrapper{
-		db: mw.txWrapper.db,
-	}
-	cpy.is.db = cpy.txWrapper
-	cpy.gs.db = cpy.txWrapper
-	cpy.ps.db = cpy.txWrapper
-
-	return &cpy
 }

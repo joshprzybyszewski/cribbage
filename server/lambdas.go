@@ -7,7 +7,11 @@ import (
 )
 
 func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
-	db, err := getDB(ctx)
+	dbf, err := getDBFactory(ctx)
+	if err != nil {
+		return err
+	}
+	db, err := dbf.New(ctx)
 	if err != nil {
 		return err
 	}
@@ -17,7 +21,11 @@ func HandleAction(ctx context.Context, action model.PlayerAction) (err error) {
 }
 
 func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) {
-	db, err := getDB(ctx)
+	dbf, err := getDBFactory(ctx)
+	if err != nil {
+		return model.Game{}, err
+	}
+	db, err := dbf.New(ctx)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -27,7 +35,11 @@ func CreateGame(ctx context.Context, pIDs []model.PlayerID) (model.Game, error) 
 }
 
 func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
-	db, err := getDB(ctx)
+	dbf, err := getDBFactory(ctx)
+	if err != nil {
+		return model.Game{}, err
+	}
+	db, err := dbf.New(ctx)
 	if err != nil {
 		return model.Game{}, err
 	}
@@ -37,7 +49,11 @@ func GetGame(ctx context.Context, gID model.GameID) (model.Game, error) {
 }
 
 func GetPlayer(ctx context.Context, pID model.PlayerID) (model.Player, error) {
-	db, err := getDB(ctx)
+	dbf, err := getDBFactory(ctx)
+	if err != nil {
+		return model.Player{}, err
+	}
+	db, err := dbf.New(ctx)
 	if err != nil {
 		return model.Player{}, err
 	}

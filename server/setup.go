@@ -29,12 +29,13 @@ var (
 func Setup() error {
 	fmt.Printf("Using %s for persistence\n", *database)
 
-	db, err := getDB(context.Background())
+	ctx := context.Background()
+	dbFactory, err := getDBFactory(ctx)
 	if err != nil {
 		return err
 	}
-	cs := newCribbageServer(db)
-	err = seedNPCs()
+	cs := newCribbageServer(dbFactory)
+	err = seedNPCs(ctx, dbFactory)
 	if err != nil {
 		return err
 	}
@@ -43,10 +44,10 @@ func Setup() error {
 	return nil
 }
 
-func getDB(ctx context.Context) (persistence.DB, error) {
+func getDBFactory(ctx context.Context) (persistence.DBFactory, error) {
 	switch *database {
 	case `mongo`:
-		return mongodb.New(ctx, *dbURI)
+		return mongodb.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
 			DSNUser:      *dsnUser,
@@ -56,17 +57,16 @@ func getDB(ctx context.Context) (persistence.DB, error) {
 			DatabaseName: *mysqlDBName,
 			DSNParams:    *dsnParams,
 		}
-		return mysql.New(ctx, cfg)
+		return mysql.NewFactory(cfg)
 	case `memory`:
-		return memory.New(), nil
+		return memory.NewFactory()
 	}
 
 	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
 }
 
-func seedNPCs() error {
-	ctx := context.Background()
-	db, err := getDB(ctx)
+func seedNPCs(ctx context.Context, dbFactory persistence.DBFactory) error {
+	db, err := dbFactory.New(ctx)
 	if err != nil {
 		return err
 	}

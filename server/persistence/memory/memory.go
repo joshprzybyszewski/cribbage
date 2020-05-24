@@ -1,10 +1,19 @@
 package memory
 
 import (
+	"context"
 	"sync"
 
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
+
+var _ persistence.DBFactory = memDBF{}
+
+type memDBF struct{}
+
+func NewFactory() (persistence.DBFactory, error) {
+	return memDBF{}, nil
+}
 
 var _ persistence.DB = (*memDB)(nil)
 
@@ -14,7 +23,7 @@ type memDB struct {
 	lock sync.Mutex
 }
 
-func New() persistence.DB {
+func (memDBF) New(context.Context) (persistence.DB, error) {
 	sw := persistence.NewServicesWrapper(
 		getGameService(),
 		getPlayerService(),
@@ -23,7 +32,7 @@ func New() persistence.DB {
 
 	return &memDB{
 		ServicesWrapper: sw,
-	}
+	}, nil
 }
 
 func (mdb *memDB) Close() error {
@@ -51,10 +60,6 @@ func (mdb *memDB) Rollback() error {
 	defer mdb.lock.Unlock()
 
 	return nil
-}
-
-func (mdb *memDB) Clone() persistence.DB {
-	return mdb
 }
 
 func Clear() {
