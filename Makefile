@@ -32,6 +32,10 @@ client:
 dockerbuild:
 	docker build -t cribbage .
 
+.PHONY: dockerrunlocal
+dockerrunlocal:
+	docker run -e "REST_PORT=8081"  -e "DSN_HOST=host.docker.internal" -e "DSN_USER=root" -e "DSN_PASSWORD=" -t -i -p 8081:8081 cribbage
+
 .PHONY: wasm
 wasm:
 	GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm

@@ -15,13 +15,19 @@ COPY model model
 COPY logic logic
 COPY utils utils
 COPY jsonutils jsonutils
+COPY templates templates
+COPY assets assets
 COPY network network
 COPY server server
+COPY wasm wasm
 COPY main.go main.go
 
 EXPOSE 80
 
-CMD go run main.go \
+RUN GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+RUN go build -o cribbageServer main.go
+
+CMD ./cribbageServer \
     -restPort=$REST_PORT \
     -dsn_host=$DSN_HOST \
     -dsn_user=$DSN_USER \
