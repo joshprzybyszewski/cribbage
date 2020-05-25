@@ -27,3 +27,7 @@ install:
 .PHONY: client
 client:
 	go run localclient/main/main.go
+
+.PHONY: dockerbuild
+dockerbuild:
+	docker build -t cribbage .
