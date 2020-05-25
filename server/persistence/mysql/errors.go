@@ -23,3 +23,14 @@ func convertMysqlError(err error) error {
 	}
 	return err
 }
+
+func IsLockWaitTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	if merr, ok := err.(*mysql.MySQLError); ok {
+		// Error 1205: Lock wait timeout exceeded; try restarting transaction
+		return merr.Number == 1205
+	}
+	return false
+}

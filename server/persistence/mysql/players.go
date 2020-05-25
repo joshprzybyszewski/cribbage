@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -87,13 +86,12 @@ type playerService struct {
 }
 
 func getPlayerService(
-	ctx context.Context,
 	db *txWrapper,
-) (*playerService, error) {
+) persistence.PlayerService {
 
 	return &playerService{
 		db: db,
-	}, nil
+	}
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {

@@ -68,7 +68,7 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 		}
 		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
-		return memory.NewFactory()
+		return memory.NewFactory(), nil
 	}
 
 	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)

@@ -8,6 +8,12 @@ type unimplemented struct {
 	myID model.PlayerID
 }
 
+func newUnimplemented(id model.PlayerID) Player {
+	return unimplemented{
+		myID: id,
+	}
+}
+
 func (u unimplemented) ID() model.PlayerID {
 	return u.myID
 }
