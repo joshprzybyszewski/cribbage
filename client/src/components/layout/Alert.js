@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Alert } from 'antd';
+import { Alert as AntAlert } from 'antd';
 
 const Alert = ({ alerts }) => {
   return (
     <div>
       {alerts.map(a => (
-        <Alert key={a.id} message={a.msg} type={a.type} />
+        <AntAlert key={a.id} message={a.msg} type={a.type} />
       ))}
     </div>
   );
