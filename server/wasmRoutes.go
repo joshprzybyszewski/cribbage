@@ -25,7 +25,7 @@ func handleWasmGetUser(c *gin.Context) {
 	// and redirect to /user/:username
 	username := c.Query(`username`)
 
-	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/user/%s`, username))
+	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/wasm/user/%s`, username))
 }
 
 func (cs *cribbageServer) handleWasmGetUsername(c *gin.Context) {
