@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -14,7 +15,7 @@ import (
 func handleIndex(c *gin.Context) {
 	c.HTML(
 		http.StatusOK,
-		"index.html",
+		`index.html`,
 		gin.H{},
 	)
 }
@@ -23,9 +24,6 @@ func handleGetUser(c *gin.Context) {
 	// read the username/displayname from the query params
 	// and redirect to /user/:username
 	username := c.Query(`username`)
-	name := c.Query(`displayName`)
-
-	fmt.Printf("username: %s, displayname: %s\n", username, name)
 
 	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/user/%s`, username))
 }
@@ -33,7 +31,7 @@ func handleGetUser(c *gin.Context) {
 func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 	ctx := context.Background()
 	// serve up a list of games this user is in
-	username := c.Param("username")
+	username := c.Param(`username`)
 	pID := model.PlayerID(username)
 
 	db, err := cs.dbFactory.New(ctx)
@@ -45,7 +43,7 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 
 	p, err := getPlayer(ctx, db, pID)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Error: %s", err)
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
 
@@ -64,18 +62,23 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 				// the player knows about a game that's been deleted
 				continue
 			}
-			c.String(http.StatusInternalServerError, "Error getting game: %s", err)
+			c.String(http.StatusInternalServerError, `Error getting game: %s`, err)
 			return
 		}
-		gameDesc := `Against `
-		for _, p := range g.Players {
-			if p.ID == pID {
-				continue
+		var gameDesc strings.Builder
+		gameDesc.WriteString(`Game with`)
+		for i, p := range g.Players {
+			if i > 0 {
+				gameDesc.WriteString(`,`)
 			}
-			// TODO support three and four player games
-			gameDesc += p.Name
+			gameDesc.WriteString(` `)
+			if p.ID == pID {
+				gameDesc.WriteString(`you`)
+			} else {
+				gameDesc.WriteString(p.Name)
+			}
 		}
-		gameDesc += ` `
+		gameDesc.WriteString(` `)
 		gameNames = append(gameNames, struct {
 			Desc       string
 			MyColor    string
@@ -84,7 +87,7 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 			GreenScore int
 			GameID     model.GameID
 		}{
-			Desc:       gameDesc,
+			Desc:       gameDesc.String(),
 			GameID:     gID,
 			MyColor:    color.String(),
 			RedScore:   g.CurrentScores[model.Red],
@@ -95,21 +98,21 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 
 	c.HTML(
 		http.StatusOK,
-		"user.html",
+		`user.html`,
 		gin.H{
-			"displayName": username,
-			"myID":        string(pID),
-			"games":       gameNames,
+			`displayName`: username,
+			`myID`:        string(pID),
+			`games`:       gameNames,
 		},
 	)
 }
 
 func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
 	// serve up this game for this user
-	pID := model.PlayerID(c.Param("username"))
+	pID := model.PlayerID(c.Param(`username`))
 	gID, err := getGameIDFromContext(c)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid GameID: %v", err)
+		c.String(http.StatusBadRequest, `Invalid GameID: %v`, err)
 		return
 	}
 
@@ -124,9 +127,9 @@ func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyc
 	g, err := getGame(ctx, db, gID)
 	if err != nil {
 		if err == persistence.ErrGameNotFound {
-			c.String(http.StatusBadRequest, "Game (%v) does not exist", gID)
+			c.String(http.StatusBadRequest, `Game (%v) does not exist`, gID)
 		}
-		c.String(http.StatusInternalServerError, "Problem getting game: %s", err)
+		c.String(http.StatusInternalServerError, `Problem getting game: %s`, err)
 		return
 	}
 
@@ -138,7 +141,7 @@ func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyc
 	}
 
 	if _, ok := nameMap[pID]; !ok {
-		c.String(http.StatusBadRequest, "Player %v not in game %v", pID, gID)
+		c.String(http.StatusBadRequest, `Player %v not in game %v`, pID, gID)
 		return
 	}
 
@@ -264,22 +267,22 @@ func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyc
 
 	c.HTML(
 		http.StatusOK,
-		"game.html",
+		`game.html`,
 		gin.H{
-			"myID":          string(pID),
-			"myColor":       g.PlayerColors[pID].String(),
-			"scores":        scores,
-			"currentDealer": currentDealerName,
-			"myHand":        myHand,
-			"oppHands":      oppHands,
-			"peggedCards":   peggedCards,
-			"currentPeg":    g.CurrentPeg(),
-			"crib":          cribHand,
-			"myCrib":        g.CurrentDealer == pID,
-			"phase":         g.Phase.String(),
-			"cutCard":       cutCard,
-			"playerNames":   playerNames,
-			"game":          g,
+			`myID`:          string(pID),
+			`myColor`:       g.PlayerColors[pID].String(),
+			`scores`:        scores,
+			`currentDealer`: currentDealerName,
+			`myHand`:        myHand,
+			`oppHands`:      oppHands,
+			`peggedCards`:   peggedCards,
+			`currentPeg`:    g.CurrentPeg(),
+			`crib`:          cribHand,
+			`myCrib`:        g.CurrentDealer == pID,
+			`phase`:         g.Phase.String(),
+			`cutCard`:       cutCard,
+			`playerNames`:   playerNames,
+			`game`:          g,
 		},
 	)
 }
