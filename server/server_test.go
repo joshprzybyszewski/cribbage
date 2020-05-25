@@ -49,16 +49,19 @@ func prepareBody(t *testing.T, v interface{}) io.Reader {
 	return bytes.NewReader(reqBytes)
 }
 
-func newServerAndRouter() (*cribbageServer, http.Handler) {
+func newServerAndRouter(_ *testing.T) (*cribbageServer, http.Handler) {
 	// first make sure the db is completely cleared
-	db := memory.New()
+	dbf := memory.NewFactory()
 	memory.Clear()
-	cs := newCribbageServer(db)
+	cs := newCribbageServer(dbf)
 	router := cs.NewRouter()
 	return cs, router
 }
 
-func seedPlayers(t *testing.T, db persistence.DB, n int) []model.PlayerID {
+func seedPlayers(t *testing.T, dbf persistence.DBFactory, n int) []model.PlayerID {
+	db, err := dbf.New(context.Background())
+	require.NoError(t, err)
+	defer db.Close()
 	pIDs := make([]model.PlayerID, n)
 	for i := range pIDs {
 		idStr := fmt.Sprintf(`p%d`, i+1)
@@ -137,7 +140,7 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		}},
 	}}
 	for _, tc := range testCases {
-		_, router := newServerAndRouter()
+		_, router := newServerAndRouter(t)
 
 		// make the requests
 		for _, r := range tc.reqs {
@@ -219,9 +222,9 @@ func TestGinPostCreateGame(t *testing.T) {
 		expCode: http.StatusBadRequest,
 		expErr:  `Invalid num players: 0`,
 	}}
-	cs, router := newServerAndRouter()
+	cs, router := newServerAndRouter(t)
 	// seed the db with players
-	seedPlayers(t, cs.db, 5)
+	seedPlayers(t, cs.dbFactory, 5)
 	for _, tc := range testCases {
 		cgr := network.CreateGameRequest{}
 		cgr.PlayerIDs = make([]model.PlayerID, len(tc.pIDs))
@@ -288,8 +291,8 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		expCode: http.StatusBadRequest,
 		expErr:  `unsupported interaction mode`,
 	}}
-	cs, router := newServerAndRouter()
-	seedPlayers(t, cs.db, 5)
+	cs, router := newServerAndRouter(t)
+	seedPlayers(t, cs.dbFactory, 5)
 	for _, tc := range testCases {
 		// make the request
 		body := prepareBody(t, tc.reqData)
@@ -309,45 +312,52 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		assert.Equal(t, `Updated player interaction`, msg)
 	}
 }
+
+func createTestGame(t *testing.T, cs *cribbageServer, pIDs []model.PlayerID) model.Game {
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
+	require.NoError(t, err)
+	defer db.Close()
+	g, err := createGame(ctx, db, pIDs)
+	require.NoError(t, err)
+	return g
+}
 func TestGinGetGame(t *testing.T) {
 	testCases := []struct {
 		msg     string
-		setup   func(persistence.DB, []model.PlayerID) (model.Game, string)
+		setup   func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string)
 		gameID  string
 		expCode int
 		expErr  string
 	}{{
 		msg: `bad game ID`,
-		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
-			g, err := createGame(context.Background(), db, pIDs)
-			require.NoError(t, err)
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
 			return g, `/game/123zzz`
 		},
 		expCode: http.StatusBadRequest,
 		expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
 	}, {
 		msg: `normal request`,
-		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
-			g, err := createGame(context.Background(), db, pIDs)
-			require.NoError(t, err)
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
 			return g, fmt.Sprintf(`/game/%d`, g.ID)
 		},
 		expCode: http.StatusOK,
 		expErr:  ``,
 	}, {
 		msg: `nonexistent game`,
-		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
-			g, err := createGame(context.Background(), db, pIDs)
-			require.NoError(t, err)
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
 			return g, `/game/123`
 		},
 		expCode: http.StatusNotFound,
 		expErr:  `Game not found`,
 	}}
-	cs, router := newServerAndRouter()
-	pIDs := seedPlayers(t, cs.db, 2)
+	cs, router := newServerAndRouter(t)
+	pIDs := seedPlayers(t, cs.dbFactory, 2)
 	for _, tc := range testCases {
-		g, url := tc.setup(cs.db, pIDs)
+		g, url := tc.setup(cs, pIDs)
 		w, err := performRequest(router, `GET`, url, nil)
 		require.NoError(t, err)
 		// verify
@@ -379,8 +389,8 @@ func TestGinGetPlayer(t *testing.T) {
 		expCode:  http.StatusNotFound,
 		expErr:   `Player not found`,
 	}}
-	cs, router := newServerAndRouter()
-	seedPlayers(t, cs.db, 2)
+	cs, router := newServerAndRouter(t)
+	seedPlayers(t, cs.dbFactory, 2)
 	for _, tc := range testCases {
 		// make the request
 		url := `/player/` + tc.playerID
@@ -480,11 +490,16 @@ func TestGinPostAction(t *testing.T) {
 			expErr:  ``,
 		}},
 	}}
-	cs, router := newServerAndRouter()
-	pIDs := seedPlayers(t, cs.db, 2)
+	cs, router := newServerAndRouter(t)
+	pIDs := seedPlayers(t, cs.dbFactory, 2)
 	for _, tc := range testCases {
 		// create a game
-		game, err := createGame(context.Background(), cs.db, pIDs)
+		ctx := context.Background()
+		db, err := cs.dbFactory.New(ctx)
+		require.NoError(t, err)
+		defer db.Close()
+
+		game, err := createGame(ctx, db, pIDs)
 		require.NoError(t, err)
 
 		actionsCompleted := 0
@@ -507,7 +522,7 @@ func TestGinPostAction(t *testing.T) {
 			msg := string(bs)
 			// verify the players are in the game
 			assert.Equal(t, `action handled`, msg)
-			g, err := cs.db.GetGame(game.ID)
+			g, err := db.GetGame(game.ID)
 			require.NoError(t, err)
 			assert.Equal(t, actionsCompleted, len(g.Actions))
 		}
