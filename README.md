@@ -35,7 +35,7 @@ go run main.go
   - If you're a sucker for pain, you can use our older "terminal interaction" (which may be broken:#). In a couple terminals, start a couple clients:
 
 ```bash
-go run main.go -client
+make client
 ```
 
     - From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).

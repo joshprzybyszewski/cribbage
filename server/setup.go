@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -14,6 +15,8 @@ import (
 )
 
 var (
+	restPort = flag.Int(`restPort`, 8080, `The port where we start up our REST server`)
+
 	database = flag.String(`db`, `mysql`, `Set to the type of database to access. Options: "mysql", "mongo", "memory"`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 
@@ -29,7 +32,7 @@ var (
 
 // Setup connects to a database and starts serving requests
 func Setup() error {
-	fmt.Printf("Using %s for persistence\n", *database)
+	log.Printf("Using %s for persistence\n", *database)
 
 	ctx := context.Background()
 	dbFactory, err := getDBFactory(ctx, factoryConfig{
@@ -55,6 +58,7 @@ type factoryConfig struct {
 func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory, error) {
 	switch *database {
 	case `mongo`:
+		log.Println("Creating mongodb factory")
 		return mongodb.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
@@ -66,8 +70,16 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 			DSNParams:      *dsnParams,
 			RunCreateStmts: cfg.canRunCreateStmts && *createTables,
 		}
+		log.Println("Creating mysql factory")
+		log.Printf("  len(User): %d\n", len(cfg.DSNUser))
+		log.Printf("  empty Password: %v\n", cfg.DSNPassword == ``)
+		log.Printf("  len(Host): %d\n", len(cfg.DSNHost))
+		log.Printf("  Port: %d\n", cfg.DSNPort)
+		log.Printf("  DatabaseName: %s\n", cfg.DatabaseName)
+		log.Printf("  DSNParams: %s\n", cfg.DSNParams)
 		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
+		log.Println("Creating in-memory factory")
 		return memory.NewFactory(), nil
 	}
 

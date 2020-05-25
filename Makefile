@@ -24,6 +24,14 @@ install:
 	./scripts/install.sh
 	$(MAKE) vendor
 
+.PHONY: client
+client:
+	go run localclient/main/main.go
+
+.PHONY: dockerbuild
+dockerbuild:
+	docker build -t cribbage .
+
 .PHONY: wasm
 wasm:
 	GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
