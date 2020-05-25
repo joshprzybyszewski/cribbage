@@ -1,8 +1,8 @@
 FROM golang:1.14.3-alpine3.11
 
-# These happen to coincide with a local myql server with a root user and no password
 ENV REST_PORT=8081
-ENV DSN_HOST=mysql
+# These happen to coincide with a local myql server on macOS with a root user and no password
+ENV DSN_HOST=host.docker.internal
 ENV DSN_USER=root
 ENV DSN_PASSWORD=
 
