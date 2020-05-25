@@ -1,7 +1,8 @@
-import { delay, put, takeLatest } from 'redux-saga/effects';
+import { put, takeLatest } from 'redux-saga/effects';
 import {
   LOGIN,
   LOGIN_ASYNC,
+  LOGIN_FAILED,
   REGISTER,
   REGISTER_ASYNC,
   REGISTER_FAILED,
@@ -9,9 +10,26 @@ import {
 import axios from 'axios';
 import { addAlertAction } from './alert';
 
+export const loginAction = id => ({
+  type: LOGIN_ASYNC,
+  payload: id,
+});
+
 export function* loginAsync({ payload }) {
-  yield delay(1000);
-  yield put({ type: LOGIN, payload });
+  try {
+    const res = yield axios.get(`/player/${payload}`);
+    yield put({
+      type: LOGIN,
+      payload: { id: res.data.id, name: res.data.name },
+    });
+    yield put(addAlertAction('Login successful!', 'success'));
+  } catch (err) {
+    yield put({
+      type: LOGIN_FAILED,
+      payload: err.response.data,
+    });
+    yield put(addAlertAction(err.response.data, 'error'));
+  }
 }
 
 export const registerAction = (id, name) => ({
@@ -26,7 +44,7 @@ export function* registerAsync({ payload: { id, name } }) {
       type: REGISTER,
       payload: { id: res.data.id, name: res.data.name },
     });
-    yield put(addAlertAction('Login successful!', 'success'));
+    yield put(addAlertAction('Registration successful!', 'success'));
   } catch (err) {
     yield put({
       type: REGISTER_FAILED,
