@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card } from 'antd';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import Alert from './Alert';
 
 const Landing = props => {
   const tabList = [
@@ -21,6 +22,7 @@ const Landing = props => {
             activeTabKey={tabKey}
             onTabChange={k => setTabKey(k)}
           >
+            <Alert />
             {tabKey === 'login' ? <LoginForm /> : <RegisterForm />}
           </Card>
         </div>
