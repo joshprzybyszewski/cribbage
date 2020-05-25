@@ -245,13 +245,9 @@ func TestGinPostCreateGame(t *testing.T) {
 		var game model.Game
 		readBody(t, w.Body, &game)
 		// verify the players are in the game
-		pIDs := make(map[model.PlayerID]struct{}, len(game.Players))
+		require.Len(t, game.Players, len(cgr.PlayerIDs))
 		for _, p := range game.Players {
-			pIDs[p.ID] = struct{}{}
-		}
-		for _, pID := range cgr.PlayerIDs {
-			_, ok := pIDs[pID]
-			assert.True(t, ok)
+			assert.Contains(t, cgr.PlayerIDs, p.ID)
 		}
 	}
 }
@@ -312,17 +308,17 @@ func TestGinPostCreateInteraction(t *testing.T) {
 		assert.Equal(t, `Updated player interaction`, msg)
 	}
 }
-
-func createTestGame(t *testing.T, cs *cribbageServer, pIDs []model.PlayerID) model.Game {
-	ctx := context.Background()
-	db, err := cs.dbFactory.New(ctx)
-	require.NoError(t, err)
-	defer db.Close()
-	g, err := createGame(ctx, db, pIDs)
-	require.NoError(t, err)
-	return g
-}
 func TestGinGetGame(t *testing.T) {
+	createTestGame := func(t *testing.T, cs *cribbageServer, pIDs []model.PlayerID) model.Game {
+		ctx := context.Background()
+		db, err := cs.dbFactory.New(ctx)
+		require.NoError(t, err)
+		defer db.Close()
+		g, err := createGame(ctx, db, pIDs)
+		require.NoError(t, err)
+		return g
+	}
+
 	testCases := []struct {
 		msg     string
 		setup   func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string)
