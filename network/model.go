@@ -11,3 +11,8 @@ type CreateInteractionRequest struct {
 type CreateGameRequest struct {
 	PlayerIDs []model.PlayerID `json:"playerIDs"`
 }
+
+type CreatePlayerRequest struct {
+	ID   model.PlayerID `json:"id"`
+	Name string         `json:"name"`
+}

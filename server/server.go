@@ -98,21 +98,21 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 }
 
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
-	var player model.Player
-	err := c.ShouldBindJSON(&player)
+	var cpr network.CreatePlayerRequest
+	err := c.ShouldBindJSON(&cpr)
 	if err != nil {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if player.ID == model.InvalidPlayerID {
+	if cpr.ID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Username is required`)
 		return
 	}
-	if player.Name == `` {
+	if cpr.Name == `` {
 		c.String(http.StatusBadRequest, `Display name is required`)
 		return
 	}
-	if !model.IsValidPlayerID(player.ID) {
+	if !model.IsValidPlayerID(cpr.ID) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
@@ -125,7 +125,10 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	}
 	defer db.Close()
 
-	err = createPlayer(ctx, db, player)
+	err = createPlayer(ctx, db, model.Player{
+		ID:   cpr.ID,
+		Name: cpr.Name,
+	})
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -135,7 +138,8 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, player)
+	// TODO do we really need to return the player?
+	c.JSON(http.StatusOK, cpr)
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
