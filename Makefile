@@ -23,3 +23,7 @@ mongo:
 install:
 	./scripts/install.sh
 	$(MAKE) vendor
+
+.PHONY: client
+client:
+	go run localclient/main.go

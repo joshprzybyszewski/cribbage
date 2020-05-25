@@ -52,7 +52,7 @@ func (cs *cribbageServer) Serve() {
 		log.Println(`router type assertion failed`)
 	}
 
-	err := eng.Run() // listen and serve on 0.0.0.0:8080
+	err := eng.Run(`:`+strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
 	if err != nil {
 		log.Printf("router.Run errored: %+v\n", err)
 	}

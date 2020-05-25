@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	restPort = flag.Int(`restPort`, 8080, `The port where we start up our REST server`)
+
 	database = flag.String(`db`, `mysql`, `Set to the type of database to access. Options: "mysql", "mongo", "memory"`)
 	dbURI    = flag.String(`dbURI`, ``, `The uri to the database. default empty string uses whatever localhost is`)
 
