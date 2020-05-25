@@ -68,7 +68,6 @@ func getListenersForCreateGame(myID model.PlayerID) []Releaser {
 			},
 		}
 
-		// we might need to wrap this in a go func
 		go func() {
 			inputBytes, err := json.Marshal(createReq)
 			if err != nil {

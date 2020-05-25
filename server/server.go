@@ -16,8 +16,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-type dbGetter func() (persistence.DB, error)
-
 type cribbageServer struct {
 	dbFactory persistence.DBFactory
 }
@@ -33,12 +31,6 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/assets", "./assets")
-
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 
 	router.GET("/", handleIndex)
 
