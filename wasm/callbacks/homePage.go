@@ -33,13 +33,11 @@ func addHomePageCallbacks() []Releaser {
 func getListenersForCreateUser() []Releaser {
 	var r []Releaser
 
-	elem := dom.GetWindow().Document().GetElementByID(consts.CreateUserButtonID)
-	submitButton := elem.(*dom.HTMLButtonElement)
+	doc := dom.GetWindow().Document()
 
-	elem = dom.GetWindow().Document().GetElementByID(consts.CreateUsernameInputID)
-	usernameInput := elem.(*dom.HTMLInputElement)
-	elem = dom.GetWindow().Document().GetElementByID(consts.CreateDisplaynameInputID)
-	displayNameInput := elem.(*dom.HTMLInputElement)
+	submitButton := doc.GetElementByID(consts.CreateUserButtonID).(*dom.HTMLButtonElement)
+	usernameInput := doc.GetElementByID(consts.CreateUsernameInputID).(*dom.HTMLInputElement)
+	displayNameInput := doc.GetElementByID(consts.CreateDisplaynameInputID).(*dom.HTMLInputElement)
 
 	recalcEnabled := func() {
 		oldDisabled := submitButton.Disabled()
@@ -59,7 +57,6 @@ func getListenersForCreateUser() []Releaser {
 
 	listener := getClickHandlerForID(consts.CreateUserButtonID, func(e dom.Event) {
 		e.PreventDefault()
-		// TODO for some reason the username and displayname are the same
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
 		player := model.Player{
