@@ -232,6 +232,7 @@ func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
 	return model.GameID(n), nil
 }
 
+// GET /player/:username
 func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	pID := model.PlayerID(c.Param(`username`))
 
@@ -253,7 +254,11 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.JSON(http.StatusOK, p)
+	// TODO rename the network model so it makes sense here
+	c.JSON(http.StatusOK, network.CreatePlayerRequest{
+		ID:   p.ID,
+		Name: p.Name,
+	})
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
