@@ -26,4 +26,4 @@ install:
 
 .PHONY: client
 client:
-	go run localclient/main.go
+	go run localclient/main/main.go
