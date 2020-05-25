@@ -29,22 +29,6 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 func (cs *cribbageServer) NewRouter() http.Handler {
 	router := gin.Default()
 
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/assets", "./assets")
-
-	wasm := router.Group(`/wasm`)
-	{
-		wasm.GET("/", handleWasmIndex)
-
-		// Simple group: user. Used for serving pages affiliated with a given user
-		user := wasm.Group("/user")
-		{
-			user.GET("/", handleWasmGetUser)
-			user.GET("/:username", cs.handleWasmGetUsername)
-			user.GET("/:username/game/:gameID", cs.handleWasmGetUsernameGame)
-		}
-	}
-
 	// Simple group: create
 	create := router.Group(`/create`)
 	{
@@ -61,12 +45,31 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	return router
 }
 
+func (cs *cribbageServer) addWasmHandlers(router *gin.Engine) {
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/assets", "./assets")
+
+	wasm := router.Group(`/wasm`)
+	{
+		wasm.GET("/", handleWasmIndex)
+
+		// Simple group: user. Used for serving pages affiliated with a given user
+		user := wasm.Group("/user")
+		{
+			user.GET("/", handleWasmGetUser)
+			user.GET("/:username", cs.handleWasmGetUsername)
+			user.GET("/:username/game/:gameID", cs.handleWasmGetUsernameGame)
+		}
+	}
+}
+
 func (cs *cribbageServer) Serve() {
 	router := cs.NewRouter()
 	eng, ok := router.(*gin.Engine)
 	if !ok {
 		log.Println(`router type assertion failed`)
 	}
+	cs.addWasmHandlers(eng)
 
 	err := eng.Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
 	if err != nil {
