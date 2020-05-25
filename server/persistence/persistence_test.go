@@ -696,6 +696,14 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
 	g1Copy := g1
+	for i, p := range g1Copy.Players {
+		if c, ok := g1.PlayerColors[p.ID]; ok {
+			g1Copy.Players[i].Games = map[model.GameID]model.PlayerColor{
+				g1.ID: c,
+			}
+		}
+	}
+
 	persistenceGameCopy(&g1Copy, g1)
 
 	require.NoError(t, db1.CreateGame(g1))
