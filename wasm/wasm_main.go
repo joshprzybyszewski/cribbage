@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"honnef.co/go/js/dom/v2"
 
@@ -57,7 +58,7 @@ func main() {
 }
 
 func getCurrentURLPath() string {
-	return dom.GetWindow().Location().Pathname()
+	return strings.TrimPrefix(dom.GetWindow().Location().Pathname(), `/wasm`)
 }
 
 var gamePagePathRegex = regexp.MustCompile(`/user/([a-zA-Z0-9_]+)/game/([0-9]+)$`)

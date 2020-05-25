@@ -12,11 +12,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/joshprzybyszewski/cribbage/model"
-)
+	"honnef.co/go/js/dom/v2"
 
-const (
-	serverDomain = `http://localhost:8080`
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func Send(gID model.GameID, pa model.PlayerAction) error {
@@ -32,8 +30,13 @@ func Send(gID model.GameID, pa model.PlayerAction) error {
 	return err
 }
 
+func getServerDomain() string {
+	loc := dom.GetWindow().Location()
+	return loc.Protocol() + `//` + loc.Host()
+}
+
 func MakeRequest(method, apiURL string, data io.Reader) ([]byte, error) {
-	urlStr := serverDomain + apiURL
+	urlStr := getServerDomain() + apiURL
 	req, err := http.NewRequest(method, urlStr, data)
 	if err != nil {
 		return nil, err
