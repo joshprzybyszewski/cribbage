@@ -1,5 +1,5 @@
-import { delay, put, takeLatest } from 'redux-saga/effects';
-import { ADD_ALERT_TRIGGER, ADD_ALERT } from './types';
+import { delay, put, takeEvery } from 'redux-saga/effects';
+import { ADD_ALERT_TRIGGER, ADD_ALERT, REMOVE_ALERT } from './types';
 import { uuid } from 'uuidv4';
 
 export const addAlertAction = (msg, type) => ({
@@ -24,5 +24,5 @@ export function* handleAddAlert({ payload }) {
   });
 }
 export function* watchAddAlert() {
-  yield takeLatest(ADD_ALERT_TRIGGER, handleAddAlert);
+  yield takeEvery(ADD_ALERT_TRIGGER, handleAddAlert);
 }
