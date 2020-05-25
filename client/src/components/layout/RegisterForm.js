@@ -9,14 +9,14 @@ const RegisterForm = ({ registerAsync }) => {
   return (
     <Form onFinish={formData => registerAsync(formData)}>
       <Form.Item
-        name='username'
+        name='id'
         label='Username'
         rules={[{ required: true, message: 'Please input your username!' }]}
       >
         <Input placeholder='Username' prefix={<UserOutlined />} />
       </Form.Item>
       <Form.Item
-        name='displayName'
+        name='name'
         label='Display Name'
         rules={[{ required: true, message: 'Please input your display name!' }]}
       >

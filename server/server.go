@@ -97,6 +97,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	c.JSON(http.StatusOK, g)
 }
 
+// POST /create/player
 func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	var cpr network.CreatePlayerRequest
 	err := c.ShouldBindJSON(&cpr)
