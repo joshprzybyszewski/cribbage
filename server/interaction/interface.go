@@ -36,9 +36,7 @@ func FromPlayerMeans(pm PlayerMeans) (Player, error) {
 		}
 		return NewNPCPlayer(pID, ah)
 	default:
-		return unimplemented{
-			myID: pID,
-		}, nil
+		return newUnimplemented(pID), nil
 	}
 }
 
