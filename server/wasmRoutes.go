@@ -12,7 +12,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-func handleIndex(c *gin.Context) {
+func handleWasmIndex(c *gin.Context) {
 	c.HTML(
 		http.StatusOK,
 		`index.html`,
@@ -20,7 +20,7 @@ func handleIndex(c *gin.Context) {
 	)
 }
 
-func handleGetUser(c *gin.Context) {
+func handleWasmGetUser(c *gin.Context) {
 	// read the username/displayname from the query params
 	// and redirect to /user/:username
 	username := c.Query(`username`)
@@ -28,7 +28,7 @@ func handleGetUser(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf(`/user/%s`, username))
 }
 
-func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
+func (cs *cribbageServer) handleWasmGetUsername(c *gin.Context) {
 	ctx := context.Background()
 	// serve up a list of games this user is in
 	username := c.Param(`username`)
@@ -107,7 +107,7 @@ func (cs *cribbageServer) handleGetUsername(c *gin.Context) {
 	)
 }
 
-func (cs *cribbageServer) handleGetUsernameGame(c *gin.Context) { //nolint:gocyclo
+func (cs *cribbageServer) handleWasmGetUsernameGame(c *gin.Context) { //nolint:gocyclo
 	// serve up this game for this user
 	pID := model.PlayerID(c.Param(`username`))
 	gID, err := getGameIDFromContext(c)

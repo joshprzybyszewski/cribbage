@@ -32,14 +32,17 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/assets", "./assets")
 
-	router.GET("/", handleIndex)
-
-	// Simple group: user. Used for serving pages affiliated with a given user
-	user := router.Group("/user")
+	wasm := router.Group(`/wasm`)
 	{
-		user.GET("/", handleGetUser)
-		user.GET("/:username", cs.handleGetUsername)
-		user.GET("/:username/game/:gameID", cs.handleGetUsernameGame)
+		wasm.GET("/", handleWasmIndex)
+
+		// Simple group: user. Used for serving pages affiliated with a given user
+		user := wasm.Group("/user")
+		{
+			user.GET("/", handleWasmGetUser)
+			user.GET("/:username", cs.handleWasmGetUsername)
+			user.GET("/:username/game/:gameID", cs.handleWasmGetUsernameGame)
+		}
 	}
 
 	// Simple group: create
