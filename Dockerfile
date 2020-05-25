@@ -15,12 +15,13 @@ COPY main.go main.go
 
 EXPOSE 80
 
-ARG dsn_host
-ARG dsn_user
-ARG dsn_password
+# These happen to coincide with a local myql server with a root user and no password
+ENV DSN_HOST=mysql
+ENV DSN_USER=root
+ENV DSN_PASSWORD=
 
 CMD go run main.go \
     -restPort=8081 \
-    -dsn_host=redacted \
-    -dsn_user=redacted \
-    -dsn_password=redacted
+    -dsn_host=$DSN_HOST \
+    -dsn_user=$DSN_USER \
+    -dsn_password=$DSN_PASSWORD
