@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -58,20 +57,12 @@ type interactionService struct {
 }
 
 func getInteractionService(
-	ctx context.Context,
 	db *txWrapper,
-) (persistence.InteractionService, error) {
-
-	for _, createStmt := range interactionCreateStmts {
-		_, err := db.ExecContext(ctx, createStmt)
-		if err != nil {
-			return nil, err
-		}
-	}
+) persistence.InteractionService {
 
 	return &interactionService{
 		db: db,
-	}, nil
+	}
 }
 
 func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {

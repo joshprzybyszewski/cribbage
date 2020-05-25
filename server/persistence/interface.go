@@ -1,14 +1,23 @@
 package persistence
 
 import (
+	"context"
 	"errors"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 )
 
-type DB interface {
+type DBFactory interface {
+	// New returns a new db
+	New(context.Context) (DB, error)
+
 	// Close should be called to close any connections needed on the database
+	Close() error
+}
+
+type DB interface {
+	// Close should be called to end this thread's access to the DB
 	Close() error
 
 	// Start will start a transaction on the database

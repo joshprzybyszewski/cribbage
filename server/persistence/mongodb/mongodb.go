@@ -26,17 +26,20 @@ const (
 	maxCommitTime time.Duration = 10 * time.Second // something very large for now -- this should be reduced
 )
 
-var _ persistence.DB = (*mongoWrapper)(nil)
+var _ persistence.DBFactory = mongoFactory{}
 
-type mongoWrapper struct {
-	persistence.ServicesWrapper
-
-	ctx     context.Context
-	client  *mongo.Client
-	session mongo.Session
+type mongoFactory struct {
+	uri string
 }
 
-func New(ctx context.Context, uri string) (persistence.DB, error) {
+func NewFactory(uri string) (persistence.DBFactory, error) {
+	return mongoFactory{
+		uri: uri,
+	}, nil
+}
+
+func (mf mongoFactory) New(ctx context.Context) (persistence.DB, error) {
+	uri := mf.uri
 	if uri == `` {
 		// The default URI without replicas used to be:
 		// `mongodb://localhost:27017`
@@ -85,6 +88,20 @@ func New(ctx context.Context, uri string) (persistence.DB, error) {
 	}
 
 	return &mw, nil
+}
+
+func (mf mongoFactory) Close() error {
+	return nil
+}
+
+var _ persistence.DB = (*mongoWrapper)(nil)
+
+type mongoWrapper struct {
+	persistence.ServicesWrapper
+
+	ctx     context.Context
+	client  *mongo.Client
+	session mongo.Session
 }
 
 func (mw *mongoWrapper) Close() error {
