@@ -13,6 +13,11 @@ export function* loginAsync({ payload }) {
   yield put({ type: LOGIN, payload });
 }
 
+export const registerAction = (id, name) => ({
+  type: REGISTER_ASYNC,
+  payload: { id, name },
+});
+
 export function* registerAsync({ payload: { id, name } }) {
   try {
     const res = yield axios.post('/create/player', { id, name });

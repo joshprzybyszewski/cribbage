@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { REGISTER_ASYNC } from '../../sagas/types';
+import { registerAction } from '../../sagas/auth';
 
 const RegisterForm = ({ registerAsync }) => {
   return (
@@ -38,7 +38,7 @@ RegisterForm.propTypes = {
 const mapDispatchToProps = dispatch => {
   return {
     registerAsync: formData =>
-      dispatch({ type: REGISTER_ASYNC, payload: formData }),
+      dispatch(registerAction(formData.id, formData.name)),
   };
 };
 
