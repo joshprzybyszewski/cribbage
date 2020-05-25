@@ -245,9 +245,9 @@ func TestGinPostCreateGame(t *testing.T) {
 		var game model.Game
 		readBody(t, w.Body, &game)
 		// verify the players are in the game
-		for _, pID := range cgr.PlayerIDs {
-			_, ok := game.PlayerColors[pID]
-			assert.True(t, ok)
+		require.Len(t, game.Players, len(cgr.PlayerIDs))
+		for _, p := range game.Players {
+			assert.Contains(t, cgr.PlayerIDs, p.ID)
 		}
 	}
 }
@@ -309,44 +309,51 @@ func TestGinPostCreateInteraction(t *testing.T) {
 	}
 }
 func TestGinGetGame(t *testing.T) {
-	testCases := []struct {
-		msg     string
-		gameID  string
-		expCode int
-		expErr  string
-	}{{
-		msg:     `bad game ID`,
-		gameID:  `123zzz`,
-		expCode: http.StatusBadRequest,
-		expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
-	}, {
-		msg:     `normal request`,
-		gameID:  ``,
-		expCode: http.StatusOK,
-		expErr:  ``,
-	}, {
-		msg:     `nonexistent game`,
-		gameID:  `123`,
-		expCode: http.StatusNotFound,
-		expErr:  `Game not found`,
-	}}
-	cs, router := newServerAndRouter(t)
-	pIDs := seedPlayers(t, cs.dbFactory, 2)
-	for _, tc := range testCases {
-		// seed the db with a game
+	createTestGame := func(t *testing.T, cs *cribbageServer, pIDs []model.PlayerID) model.Game {
 		ctx := context.Background()
 		db, err := cs.dbFactory.New(ctx)
 		require.NoError(t, err)
 		defer db.Close()
 		g, err := createGame(ctx, db, pIDs)
 		require.NoError(t, err)
-		// make the request
-		var url string
-		if tc.gameID != `` {
-			url = `/game/` + tc.gameID
-		} else {
-			url = `/game/` + fmt.Sprintf(`%d`, g.ID)
-		}
+		return g
+	}
+
+	testCases := []struct {
+		msg     string
+		setup   func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string)
+		gameID  string
+		expCode int
+		expErr  string
+	}{{
+		msg: `bad game ID`,
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
+			return g, `/game/123zzz`
+		},
+		expCode: http.StatusBadRequest,
+		expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
+	}, {
+		msg: `normal request`,
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
+			return g, fmt.Sprintf(`/game/%d`, g.ID)
+		},
+		expCode: http.StatusOK,
+		expErr:  ``,
+	}, {
+		msg: `nonexistent game`,
+		setup: func(cs *cribbageServer, pIDs []model.PlayerID) (model.Game, string) {
+			g := createTestGame(t, cs, pIDs)
+			return g, `/game/123`
+		},
+		expCode: http.StatusNotFound,
+		expErr:  `Game not found`,
+	}}
+	cs, router := newServerAndRouter(t)
+	pIDs := seedPlayers(t, cs.dbFactory, 2)
+	for _, tc := range testCases {
+		g, url := tc.setup(cs, pIDs)
 		w, err := performRequest(router, `GET`, url, nil)
 		require.NoError(t, err)
 		// verify
