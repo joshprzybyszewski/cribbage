@@ -12,7 +12,7 @@ import (
 
 func GetDealAction(gID model.GameID, pID model.PlayerID) model.PlayerAction {
 	da := model.DealAction{
-		NumShuffles: rand.Intn(10),
+		NumShuffles: rand.Intn(10) + 1,
 	}
 
 	return model.PlayerAction{
