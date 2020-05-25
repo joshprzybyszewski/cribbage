@@ -312,38 +312,42 @@ func TestGinPostCreateInteraction(t *testing.T) {
 func TestGinGetGame(t *testing.T) {
 	testCases := []struct {
 		msg     string
+		setup   func(persistence.DB, []model.PlayerID) (model.Game, string)
 		gameID  string
 		expCode int
 		expErr  string
 	}{{
-		msg:     `bad game ID`,
-		gameID:  `123zzz`,
+		msg: `bad game ID`,
+		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
+			g, err := createGame(context.Background(), db, pIDs)
+			require.NoError(t, err)
+			return g, `/game/123zzz`
+		},
 		expCode: http.StatusBadRequest,
 		expErr:  `Invalid GameID: strconv.Atoi: parsing "123zzz": invalid syntax`,
 	}, {
-		msg:     `normal request`,
-		gameID:  ``,
+		msg: `normal request`,
+		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
+			g, err := createGame(context.Background(), db, pIDs)
+			require.NoError(t, err)
+			return g, fmt.Sprintf(`/game/%d`, g.ID)
+		},
 		expCode: http.StatusOK,
 		expErr:  ``,
 	}, {
-		msg:     `nonexistent game`,
-		gameID:  `123`,
+		msg: `nonexistent game`,
+		setup: func(db persistence.DB, pIDs []model.PlayerID) (model.Game, string) {
+			g, err := createGame(context.Background(), db, pIDs)
+			require.NoError(t, err)
+			return g, `/game/123`
+		},
 		expCode: http.StatusNotFound,
 		expErr:  `Game not found`,
 	}}
 	cs, router := newServerAndRouter()
 	pIDs := seedPlayers(t, cs.db, 2)
 	for _, tc := range testCases {
-		// seed the db with a game
-		g, err := createGame(context.Background(), cs.db, pIDs)
-		require.NoError(t, err)
-		// make the request
-		var url string
-		if tc.gameID != `` {
-			url = `/game/` + tc.gameID
-		} else {
-			url = `/game/` + fmt.Sprintf(`%d`, g.ID)
-		}
+		g, url := tc.setup(cs.db, pIDs)
 		w, err := performRequest(router, `GET`, url, nil)
 		require.NoError(t, err)
 		// verify
