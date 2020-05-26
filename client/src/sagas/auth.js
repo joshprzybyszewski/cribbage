@@ -1,7 +1,8 @@
 import { push } from 'connected-react-router';
 import { put, takeLatest } from 'redux-saga/effects';
-import { auth } from './types';
 import axios from 'axios';
+
+import { auth } from './types';
 import { alertActions } from './actions';
 
 // logout

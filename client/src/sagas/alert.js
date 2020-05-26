@@ -1,6 +1,7 @@
 import { delay, put, takeEvery } from 'redux-saga/effects';
-import { alert } from './types';
 import { uuid } from 'uuidv4';
+
+import { alert } from './types';
 
 export function* handleAddAlert({ payload }) {
   const id = uuid();

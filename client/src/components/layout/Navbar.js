@@ -2,8 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { authActions } from '../../sagas/actions';
 import { Button } from 'antd';
+
+import { authActions } from '../../sagas/actions';
 
 const Navbar = ({ currentUser, logout }) => {
   return (

@@ -1,4 +1,5 @@
 import { all } from 'redux-saga/effects';
+
 import { watchLoginAsync, watchLogout, watchRegisterAsync } from './auth';
 import { watchAddAlert } from './alert';
 
