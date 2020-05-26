@@ -1,10 +1,4 @@
-FROM golang:1.14.3-alpine3.11
-
-ENV REST_PORT=8081
-# These happen to coincide with a local myql server on macOS with a root user and no password
-ENV DSN_HOST=host.docker.internal
-ENV DSN_USER=root
-ENV DSN_PASSWORD=
+FROM golang:1.14.3-alpine3.11 as build
 
 ENV GOPATH=/go
 RUN mkdir -p $GOPATH/src/github.com/joshprzybyszewski/cribbage
@@ -15,20 +9,21 @@ COPY model model
 COPY logic logic
 COPY utils utils
 COPY jsonutils jsonutils
-COPY templates templates
-COPY assets assets
 COPY network network
 COPY server server
 COPY wasm wasm
 COPY main.go main.go
 
-EXPOSE 80
+RUN CGO_ENABLED=0 GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/cribbageServer main.go
 
-RUN GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
-RUN go build -o cribbageServer main.go
+FROM scratch
 
-CMD ./cribbageServer \
-    -restPort=$REST_PORT \
-    -dsn_host=$DSN_HOST \
-    -dsn_user=$DSN_USER \
-    -dsn_password=$DSN_PASSWORD
+WORKDIR /prod
+COPY templates templates
+COPY assets assets
+COPY --from=build /go/src/github.com/joshprzybyszewski/cribbage/assets/wasm/wa_output.wasm assets/wasm/wa_output.wasm
+COPY --from=build /bin/cribbageServer .
+ENTRYPOINT ["/prod/cribbageServer"]
+# We're gonna need to read these from an INI or something instead of trying to pass them in as flags
+CMD ["-restPort=8081", "-dsn_host=host.docker.internal", "-dsn_user=root", "-dsn_password="]

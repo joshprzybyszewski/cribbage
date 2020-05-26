@@ -34,7 +34,7 @@ dockerbuild:
 
 .PHONY: dockerrunlocal
 dockerrunlocal:
-	docker run -e "REST_PORT=8081"  -e "DSN_HOST=host.docker.internal" -e "DSN_USER=root" -e "DSN_PASSWORD=" -t -i -p 8081:8081 cribbage
+	docker run -t -i -p 8081:8081 cribbage
 
 .PHONY: wasm
 wasm:
