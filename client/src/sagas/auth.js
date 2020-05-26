@@ -24,7 +24,6 @@ export const loginAction = id => ({
 
 export function* logout() {
   yield put({ type: LOGOUT });
-  yield put(push('/'));
 }
 
 export function* loginAsync({ payload }) {
