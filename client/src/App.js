@@ -1,23 +1,26 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import store from './store';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import configureStore, { history } from './store';
+import { ConnectedRouter } from 'connected-react-router';
+import { Switch, Route } from 'react-router-dom';
 import Home from './components/Home';
 import Landing from './components/landing/Landing';
 import Layout from './components/layout/Layout';
 import './App.css';
 
+const store = configureStore({});
+
 function App() {
   return (
     <Provider store={store}>
-      <Router>
+      <ConnectedRouter history={history}>
         <Layout>
           <Switch>
-            <Route path='/' component={Landing} />
-            <Route path='/home' component={Home} />
+            <Route exact path='/' component={Landing} />
+            <Route exact path='/home' component={Home} />
           </Switch>
         </Layout>
-      </Router>
+      </ConnectedRouter>
     </Provider>
   );
 }

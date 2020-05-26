@@ -1,3 +1,4 @@
+import { push } from 'connected-react-router';
 import { put, takeLatest } from 'redux-saga/effects';
 import {
   LOGIN,
@@ -23,6 +24,7 @@ export function* loginAsync({ payload }) {
       payload: { id: res.data.id, name: res.data.name },
     });
     yield put(addAlertAction('Login successful!', 'success'));
+    yield put(push('/home'));
   } catch (err) {
     yield put({
       type: LOGIN_FAILED,
@@ -45,6 +47,7 @@ export function* registerAsync({ payload: { id, name } }) {
       payload: { id: res.data.id, name: res.data.name },
     });
     yield put(addAlertAction('Registration successful!', 'success'));
+    yield put(push('/home'));
   } catch (err) {
     yield put({
       type: REGISTER_FAILED,
