@@ -2,6 +2,8 @@
 export const LOGIN = 'LOGIN';
 export const LOGIN_ASYNC = 'LOGIN_ASYNC';
 export const LOGIN_FAILED = 'LOGIN_FAILED';
+export const LOGOUT = 'LOGOUT';
+export const LOGOUT_TRIGGER = 'LOGOUT_TRIGGER';
 export const REGISTER = 'REGISTER';
 export const REGISTER_ASYNC = 'REGISTER_ASYNC';
 export const REGISTER_FAILED = 'REGISTER_FAILED';

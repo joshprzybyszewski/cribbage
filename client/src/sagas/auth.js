@@ -4,6 +4,8 @@ import {
   LOGIN,
   LOGIN_ASYNC,
   LOGIN_FAILED,
+  LOGOUT,
+  LOGOUT_TRIGGER,
   REGISTER,
   REGISTER_ASYNC,
   REGISTER_FAILED,
@@ -11,10 +13,19 @@ import {
 import axios from 'axios';
 import { addAlertAction } from './alert';
 
+export const logoutAction = () => ({
+  type: LOGOUT_TRIGGER,
+});
+
 export const loginAction = id => ({
   type: LOGIN_ASYNC,
   payload: id,
 });
+
+export function* logout() {
+  yield put({ type: LOGOUT });
+  yield put(push('/'));
+}
 
 export function* loginAsync({ payload }) {
   try {
@@ -59,6 +70,9 @@ export function* registerAsync({ payload: { id, name } }) {
 
 export function* watchLoginAsync() {
   yield takeLatest(LOGIN_ASYNC, loginAsync);
+}
+export function* watchLogout() {
+  yield takeLatest(LOGOUT_TRIGGER, logout);
 }
 
 export function* watchRegisterAsync() {
