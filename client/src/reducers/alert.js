@@ -1,12 +1,14 @@
-import { ADD_ALERT, REMOVE_ALERT } from '../sagas/types';
+import { alert } from '../sagas/types';
+
+const actions = alert.reducer;
 
 const initialState = [];
 
 export default (state = initialState, { type, payload }) => {
   switch (type) {
-    case ADD_ALERT:
+    case actions.ADD_ALERT:
       return [payload, ...state];
-    case REMOVE_ALERT:
+    case actions.REMOVE_ALERT:
       return state.filter(a => a.id !== payload);
     default:
       return state;

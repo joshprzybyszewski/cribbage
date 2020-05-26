@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { logoutAction } from '../../sagas/auth';
+import { authActions } from '../../sagas/actions';
 import { Button } from 'antd';
 
 const Navbar = ({ currentUser, logout }) => {
@@ -24,7 +24,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    logout: () => dispatch(logoutAction()),
+    logout: () => dispatch(authActions.logout()),
   };
 };
 

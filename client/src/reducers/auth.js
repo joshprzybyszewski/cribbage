@@ -1,10 +1,6 @@
-import {
-  LOGIN,
-  LOGOUT,
-  REGISTER,
-  REGISTER_FAILED,
-  LOGIN_FAILED,
-} from '../sagas/types';
+import { auth } from '../sagas/types';
+
+const actions = auth.reducer;
 
 const initialState = {
   id: '',
@@ -13,13 +9,12 @@ const initialState = {
 
 export default (state = initialState, { type, payload }) => {
   switch (type) {
-    case LOGIN:
+    case actions.LOGIN:
+    case actions.REGISTER:
       return { ...state, ...payload };
-    case REGISTER:
-      return { ...state, ...payload };
-    case REGISTER_FAILED:
-    case LOGIN_FAILED:
-    case LOGOUT:
+    case actions.REGISTER_FAILED:
+    case actions.LOGIN_FAILED:
+    case actions.LOGOUT:
       return { id: '', name: '' };
     default:
       return state;

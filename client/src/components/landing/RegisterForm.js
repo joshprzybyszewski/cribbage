@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, Input, Form } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { registerAction } from '../../sagas/auth';
+import { authActions } from '../../sagas/actions';
 
-const RegisterForm = ({ registerAsync }) => {
+const RegisterForm = ({ register }) => {
   return (
-    <Form onFinish={formData => registerAsync(formData)}>
+    <Form onFinish={formData => register(formData)}>
       <Form.Item
         name='id'
         label='Username'
@@ -32,13 +32,13 @@ const RegisterForm = ({ registerAsync }) => {
 };
 
 RegisterForm.propTypes = {
-  registerAsync: PropTypes.func.isRequired,
+  register: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    registerAsync: formData =>
-      dispatch(registerAction(formData.id, formData.name)),
+    register: formData =>
+      dispatch(authActions.register(formData.id, formData.name)),
   };
 };
 

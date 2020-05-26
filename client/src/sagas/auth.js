@@ -1,79 +1,57 @@
 import { push } from 'connected-react-router';
 import { put, takeLatest } from 'redux-saga/effects';
-import {
-  LOGIN,
-  LOGIN_ASYNC,
-  LOGIN_FAILED,
-  LOGOUT,
-  LOGOUT_TRIGGER,
-  REGISTER,
-  REGISTER_ASYNC,
-  REGISTER_FAILED,
-} from './types';
+import { auth } from './types';
 import axios from 'axios';
-import { addAlertAction } from './alert';
+import { alertActions } from './actions';
 
-export const logoutAction = () => ({
-  type: LOGOUT_TRIGGER,
-});
-
-export const loginAction = id => ({
-  type: LOGIN_ASYNC,
-  payload: id,
-});
-
+// logout
+export function* watchLogout() {
+  yield takeLatest(auth.LOGOUT, logout);
+}
 export function* logout() {
-  yield put({ type: LOGOUT });
+  yield put({ type: auth.reducer.LOGOUT });
 }
 
+// login
+export function* watchLoginAsync() {
+  yield takeLatest(auth.LOGIN, loginAsync);
+}
 export function* loginAsync({ payload }) {
   try {
     const res = yield axios.get(`/player/${payload}`);
     yield put({
-      type: LOGIN,
+      type: auth.reducer.LOGIN,
       payload: { id: res.data.id, name: res.data.name },
     });
-    yield put(addAlertAction('Login successful!', 'success'));
+    yield put(alertActions.addAlert('Login successful!', 'success'));
     yield put(push('/home'));
   } catch (err) {
     yield put({
-      type: LOGIN_FAILED,
+      type: auth.reducer.LOGIN_FAILED,
       payload: err.response.data,
     });
-    yield put(addAlertAction(err.response.data, 'error'));
+    yield put(alertActions.addAlert(err.response.data, 'error'));
   }
 }
 
-export const registerAction = (id, name) => ({
-  type: REGISTER_ASYNC,
-  payload: { id, name },
-});
-
+// register
+export function* watchRegisterAsync() {
+  yield takeLatest(auth.REGISTER, registerAsync);
+}
 export function* registerAsync({ payload: { id, name } }) {
   try {
     const res = yield axios.post('/create/player', { id, name });
     yield put({
-      type: REGISTER,
+      type: auth.reducer.REGISTER,
       payload: { id: res.data.id, name: res.data.name },
     });
-    yield put(addAlertAction('Registration successful!', 'success'));
+    yield put(alertActions.addAlert('Registration successful!', 'success'));
     yield put(push('/home'));
   } catch (err) {
     yield put({
-      type: REGISTER_FAILED,
+      type: auth.reducer.REGISTER_FAILED,
       payload: err.response.data,
     });
-    yield put(addAlertAction(err.response.data, 'error'));
+    yield put(alertActions.addAlert(err.response.data, 'error'));
   }
-}
-
-export function* watchLoginAsync() {
-  yield takeLatest(LOGIN_ASYNC, loginAsync);
-}
-export function* watchLogout() {
-  yield takeLatest(LOGOUT_TRIGGER, logout);
-}
-
-export function* watchRegisterAsync() {
-  yield takeLatest(REGISTER_ASYNC, registerAsync);
 }
