@@ -7,7 +7,7 @@ const Alert = ({ alerts }) => {
   return (
     <div>
       {alerts.map(a => (
-        <AntAlert key={a.id} message={a.msg} type={a.type} />
+        <AntAlert key={a.id} message={a.msg} type={a.type} banner />
       ))}
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from 'antd';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import Alert from './Alert';
+import './Landing.css';
 
 const Landing = props => {
   const tabList = [
@@ -12,22 +12,19 @@ const Landing = props => {
 
   const [tabKey, setTabKey] = useState('login');
   return (
-    <section className='landing'>
-      <div className='dark-overlay'>
-        <div className='landing-inner'>
-          <h1>Welcome to Cribbage!</h1>
-          <Card
-            title='Login or register to play cribbage against your friends online'
-            tabList={tabList}
-            activeTabKey={tabKey}
-            onTabChange={k => setTabKey(k)}
-          >
-            <Alert />
-            {tabKey === 'login' ? <LoginForm /> : <RegisterForm />}
-          </Card>
-        </div>
+    <div className='landing'>
+      <div className='landing-content'>
+        <h1>Welcome to Cribbage!</h1>
+        <Card
+          title='Login or register to play cribbage against your friends online'
+          tabList={tabList}
+          activeTabKey={tabKey}
+          onTabChange={k => setTabKey(k)}
+        >
+          {tabKey === 'login' ? <LoginForm /> : <RegisterForm />}
+        </Card>
       </div>
-    </section>
+    </div>
   );
 };
 
