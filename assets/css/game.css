@@ -1,0 +1,49 @@
+.card {
+    display: inline-block;
+    height: 5rem;
+    width: 4rem;
+    text-align: center;
+    border: 2px solid black;
+}
+
+.card.unknown {
+    /* TODO make this be the cool bicycle photo */
+    background: black;
+}
+
+.card.cut {
+    background: gray;
+}
+
+.card.pegged {
+    opacity: 0.6;
+}
+
+.card.opponent:not(.unknown) {
+    /* known opponent cards should be gray */
+    background: gray;
+}
+
+.card.disabled {
+    background: lightgray;
+}
+
+.card.activated {
+    border: 2px solid red;
+}
+
+#container {
+    margin: auto;
+}
+
+#summary {
+    width: fit-content;
+    float: left;
+}
+
+#interaction {
+    width: fit-content;
+    float: left;
+    border: 2px solid black;
+    text-align: right;
+}
