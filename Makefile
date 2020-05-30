@@ -31,3 +31,11 @@ client:
 .PHONY: dockerbuild
 dockerbuild:
 	docker build -t cribbage .
+
+.PHONY: dockerrunlocal
+dockerrunlocal:
+	docker run -t -i -p 8081:8081 cribbage
+
+.PHONY: wasm
+wasm:
+	GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm

@@ -1,0 +1,33 @@
+<!--index.html-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Cribbage Home Page</title>
+</head>
+
+<body>
+  <h1>Cribbage</h1>
+
+  <h2>Create user</h2>
+  <form>
+    <fieldset>
+      Username: <input type="text" name="username" id="createUN"><br>
+      Display name: <input type="text" id="createDN"><br>
+      <button disabled id="createUserButton">Create</button>
+    </fieldset>
+  </form>
+
+  <h2>Sign in</h2>
+  <form action="/wasm/user/" method="get">
+    <fieldset>
+      Username: <input type="text" name="username"><br>
+      <input type="submit" value="Submit">
+    </fieldset>
+  </form>
+
+  <script src="/assets/js/wasm_exec.js"></script>
+  <script src="/assets/js/wasm_loader.js"></script> 
+</body>
+
+</html>

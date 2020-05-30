@@ -24,3 +24,6 @@ playerlogs/
 data/
 
 .DS_Store
+
+# wasm output
+assets/wasm/wa_output.wasm

@@ -1,28 +1,51 @@
-FROM golang:1.14.3-alpine3.11
-
-ENV REST_PORT=8081
-# These happen to coincide with a local myql server on macOS with a root user and no password
-ENV DSN_HOST=host.docker.internal
-ENV DSN_USER=root
-ENV DSN_PASSWORD=
+# Start a base build with just go mod dependencies
+FROM golang:1.14.3-alpine3.11 as base
 
 ENV GOPATH=/go
-RUN mkdir -p $GOPATH/src/github.com/joshprzybyszewski/cribbage
 WORKDIR $GOPATH/src/github.com/joshprzybyszewski/cribbage
 
-COPY vendor vendor
-COPY model model
-COPY logic logic
+# vendor'ed dependencies are unlikely to change, so download them first
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Create a separate image for the wasm files
+FROM base as wasm
+
+# Copy the specific directories/files we need to build the wasm binary
 COPY utils utils
+COPY model model
+COPY network network
 COPY jsonutils jsonutils
+COPY wasm wasm
+
+# Build the wasm output
+RUN CGO_ENABLED=0 GOOS=js GOARCH=wasm go build -o /bin/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+
+# Create a separate image for the server binary
+FROM base as server
+
+# Copy the specific directories/files we need to build the server binary
+COPY logic logic
+COPY jsonutils jsonutils
+COPY utils utils
+COPY model model
 COPY network network
 COPY server server
 COPY main.go main.go
 
-EXPOSE 80
+# Build the server's binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/cribbageServer main.go
 
-CMD go run main.go \
-    -restPort=$REST_PORT \
-    -dsn_host=$DSN_HOST \
-    -dsn_user=$DSN_USER \
-    -dsn_password=$DSN_PASSWORD
+# Start a new image that only holds the bare minimum files so that our image isn't too large
+FROM scratch
+
+WORKDIR /prod
+COPY templates templates
+COPY assets assets
+COPY --from=wasm /bin/wa_output.wasm assets/wasm/wa_output.wasm
+COPY --from=server /bin/cribbageServer .
+
+# Define the gin server binary as the entry point
+ENTRYPOINT ["/prod/cribbageServer"]
+# We're gonna need to read these from an INI or something instead of trying to pass them in as flags
+CMD ["-restPort=8081", "-dsn_host=host.docker.internal", "-dsn_user=root", "-dsn_password="]
