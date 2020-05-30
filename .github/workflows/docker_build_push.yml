@@ -1,15 +1,10 @@
-name: docker-build
+name: docker-build-push
 on:
   push:
     tags:
       - v*
     branches:
       - master
-    paths-ignore:
-      - '.github/**'
-      - '*.md'
-      - '.gitignore'
-      - '.dockerignore'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 jobs:
