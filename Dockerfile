@@ -36,12 +36,24 @@ COPY main.go main.go
 # Build the server's binary
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/cribbageServer main.go
 
+# build environment
+FROM node:14.3.0-alpine as react
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+COPY client/package.json ./
+COPY client/package-lock.json ./
+RUN npm ci --silent
+RUN npm install react-scripts@3.4.1 -g --silent
+COPY . ./
+RUN npm run build
+
 # Start a new image that only holds the bare minimum files so that our image isn't too large
 FROM scratch
 
 WORKDIR /prod
 COPY templates templates
 COPY assets assets
+COPY --from=build /app/build client/
 COPY --from=wasm /bin/wa_output.wasm assets/wasm/wa_output.wasm
 COPY --from=server /bin/cribbageServer .
 

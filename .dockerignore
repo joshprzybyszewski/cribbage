@@ -3,3 +3,5 @@
 vendor/
 playerlogs/
 assets/wasm/wa_output.wasm
+client/build
+client/node_modules
