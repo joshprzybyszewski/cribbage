@@ -1,0 +1,5 @@
+.git
+*.md
+vendor/
+playerlogs/
+assets/wasm/wa_output.wasm
