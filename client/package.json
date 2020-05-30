@@ -16,6 +16,7 @@
     "thunk": "0.0.1"
   },
   "scripts": {
+    "build": "react-scripts build",
     "client": "react-scripts start",
     "server": "go run ../main.go -db=memory",
     "dev": "concurrently \"npm run server\" \"npm run client\""
