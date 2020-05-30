@@ -53,7 +53,7 @@ FROM scratch
 WORKDIR /prod
 COPY templates templates
 COPY assets assets
-COPY --from=react /app/build client/
+COPY --from=react /app/build client/build/
 COPY --from=wasm /bin/wa_output.wasm assets/wasm/wa_output.wasm
 COPY --from=server /bin/cribbageServer .
 
