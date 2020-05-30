@@ -1,0 +1,32 @@
+name: docker-build
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+    paths-ignore:
+      - '.github/**'
+      - '*.md'
+      - '.gitignore'
+      - '.dockerignore'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+jobs:
+  dockerimage:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - uses: docker/build-push-action@v1
+        name: Build and Push Docker image
+        with:
+          repository: joshprzybyszewski/cribbage
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tag_with_ref: true
+          add_git_labels: true
+          tag_with_sha: false
+          cache_froms: joshprzybyszewski/cribbage:latest
