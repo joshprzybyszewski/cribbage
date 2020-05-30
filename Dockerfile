@@ -44,7 +44,7 @@ COPY client/package.json ./
 COPY client/package-lock.json ./
 RUN npm ci --silent
 RUN npm install react-scripts@3.4.1 -g --silent
-COPY . ./
+COPY client/ ./
 RUN npm run build
 
 # Start a new image that only holds the bare minimum files so that our image isn't too large
@@ -53,7 +53,7 @@ FROM scratch
 WORKDIR /prod
 COPY templates templates
 COPY assets assets
-COPY --from=build /app/build client/
+COPY --from=react /app/build client/
 COPY --from=wasm /bin/wa_output.wasm assets/wasm/wa_output.wasm
 COPY --from=server /bin/cribbageServer .
 
