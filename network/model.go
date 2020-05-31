@@ -14,6 +14,7 @@ type CreateGameRequest struct {
 
 // TODO figure out the minimum info the client will need
 type GameResponse struct {
+	ID              model.GameID                         `json:"id"`
 	Players         []model.Player                       `json:"players"`
 	PlayerColors    map[model.PlayerID]model.PlayerColor `json:"player_colors,omitempty"`
 	CurrentScores   map[model.PlayerColor]int            `json:"current_scores"`
@@ -30,6 +31,7 @@ type GameResponse struct {
 
 func NewGameResponse(g model.Game) GameResponse {
 	return GameResponse{
+		ID:              g.ID,
 		Players:         g.Players,
 		PlayerColors:    g.PlayerColors,
 		CurrentScores:   g.CurrentScores,

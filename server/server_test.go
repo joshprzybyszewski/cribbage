@@ -54,7 +54,7 @@ func newServerAndRouter(_ *testing.T) (*cribbageServer, http.Handler) {
 	dbf := memory.NewFactory()
 	memory.Clear()
 	cs := newCribbageServer(dbf)
-	router := cs.NewRouter()
+	router := cs.NewRouter(false)
 	return cs, router
 }
 
@@ -77,10 +77,9 @@ func seedPlayers(t *testing.T, dbf persistence.DBFactory, n int) []model.PlayerI
 
 func TestGinPostCreatePlayer(t *testing.T) {
 	type testRequest struct {
-		PlayerID string `json:"id"`
-		DispName string `json:"n"`
-		expCode  int
-		expErr   string
+		req     network.CreatePlayerRequest
+		expCode int
+		expErr  string
 	}
 	testCases := []struct {
 		msg  string
@@ -88,55 +87,69 @@ func TestGinPostCreatePlayer(t *testing.T) {
 	}{{
 		msg: `normal stuff`,
 		reqs: []testRequest{{
-			PlayerID: `abc`,
-			DispName: `def`,
-			expCode:  http.StatusOK,
-			expErr:   ``,
+			req: network.CreatePlayerRequest{
+				ID:   `abc`,
+				Name: `def`,
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
 		}},
 	}, {
 		msg: `username with weird characters shouldn't return 404`,
 		reqs: []testRequest{{
-			PlayerID: `#`,
-			DispName: `#`,
-			expCode:  http.StatusBadRequest,
-			expErr:   `Username must be alphanumeric`,
+			req: network.CreatePlayerRequest{
+				ID:   `#`,
+				Name: `#`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username must be alphanumeric`,
 		}},
 	}, {
 		msg: `creating the same player errors`,
 		reqs: []testRequest{{
-			PlayerID: `abc`,
-			DispName: `def`,
-			expCode:  http.StatusOK,
-			expErr:   ``,
+			req: network.CreatePlayerRequest{
+				ID:   `abc`,
+				Name: `def`,
+			},
+			expCode: http.StatusOK,
+			expErr:  ``,
 		}, {
-			PlayerID: `abc`,
-			DispName: `def`,
-			expCode:  http.StatusBadRequest,
-			expErr:   `Username already exists`,
+			req: network.CreatePlayerRequest{
+				ID:   `abc`,
+				Name: `def`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username already exists`,
 		}},
 	}, {
 		msg: `empty username`,
 		reqs: []testRequest{{
-			PlayerID: ``,
-			DispName: `def`,
-			expCode:  http.StatusBadRequest,
-			expErr:   `Username is required`,
+			req: network.CreatePlayerRequest{
+				ID:   ``,
+				Name: `def`,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username is required`,
 		}},
 	}, {
 		msg: `empty display name`,
 		reqs: []testRequest{{
-			PlayerID: `abc`,
-			DispName: ``,
-			expCode:  http.StatusBadRequest,
-			expErr:   `Display name is required`,
+			req: network.CreatePlayerRequest{
+				ID:   `abc`,
+				Name: ``,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Display name is required`,
 		}},
 	}, {
 		msg: `send wrong JSON data - this is equivalent to PlayerID and DispName being empty`,
 		reqs: []testRequest{{
-			PlayerID: ``,
-			DispName: ``,
-			expCode:  http.StatusBadRequest,
-			expErr:   `Username is required`,
+			req: network.CreatePlayerRequest{
+				ID:   ``,
+				Name: ``,
+			},
+			expCode: http.StatusBadRequest,
+			expErr:  `Username is required`,
 		}},
 	}}
 	for _, tc := range testCases {
@@ -144,7 +157,7 @@ func TestGinPostCreatePlayer(t *testing.T) {
 
 		// make the requests
 		for _, r := range tc.reqs {
-			body := prepareBody(t, r)
+			body := prepareBody(t, r.req)
 			w, err := performRequest(router, `POST`, `/create/player`, body)
 			require.NoError(t, err)
 			// verify
@@ -155,13 +168,14 @@ func TestGinPostCreatePlayer(t *testing.T) {
 				continue
 			}
 			expPlayer := model.Player{
-				ID:   model.PlayerID(r.PlayerID),
-				Name: r.DispName,
+				ID:   r.req.ID,
+				Name: r.req.Name,
 			}
-			var player model.Player
-			readBody(t, w.Body, &player)
+			var playerResp network.PlayerResponse
+			readBody(t, w.Body, &playerResp)
+			player := model.Player(playerResp)
 			assert.NoError(t, err)
-			assert.Equal(t, expPlayer, player)
+			assert.Equal(t, expPlayer, player, tc.msg)
 		}
 	}
 }
@@ -242,11 +256,11 @@ func TestGinPostCreateGame(t *testing.T) {
 			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
-		var game model.Game
-		readBody(t, w.Body, &game)
+		var gameResp network.GameResponse
+		readBody(t, w.Body, &gameResp)
 		// verify the players are in the game
-		require.Len(t, game.Players, len(cgr.PlayerIDs))
-		for _, p := range game.Players {
+		require.Len(t, gameResp.Players, len(cgr.PlayerIDs))
+		for _, p := range gameResp.Players {
 			assert.Contains(t, cgr.PlayerIDs, p.ID)
 		}
 	}
@@ -363,9 +377,9 @@ func TestGinGetGame(t *testing.T) {
 			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
-		var game model.Game
-		readBody(t, w.Body, &game)
-		assert.Equal(t, g.ID, game.ID)
+		var gameResp network.GameResponse
+		readBody(t, w.Body, &gameResp)
+		assert.Equal(t, g.ID, gameResp.ID)
 	}
 }
 func TestGinGetPlayer(t *testing.T) {
