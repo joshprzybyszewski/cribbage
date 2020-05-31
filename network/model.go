@@ -8,10 +8,6 @@ type CreateInteractionRequest struct {
 	NPCType       model.PlayerID `json:"npc_type,omitempty"`
 }
 
-type CreateGameRequest struct {
-	PlayerIDs []model.PlayerID `json:"playerIDs"`
-}
-
 // TODO figure out the minimum info the client will need
 type GetGameResponse struct {
 	ID              model.GameID                         `json:"id"`
@@ -43,6 +39,10 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 		CutCard:         g.CutCard,
 		PeggedCards:     g.PeggedCards,
 	}
+}
+
+type CreateGameRequest struct {
+	PlayerIDs []model.PlayerID `json:"playerIDs"`
 }
 
 // TODO figure out the minimum info the client will need
