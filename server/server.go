@@ -119,7 +119,6 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		return
 	}
 
-	// TODO investigate what it'll take to protobuf-ify our models
 	c.JSON(http.StatusOK, network.NewGameResponse(g))
 }
 
@@ -245,7 +244,6 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO investigate what it'll take to protobuf-ify our models
 	c.JSON(http.StatusOK, network.NewGameResponse(g))
 }
 
@@ -279,7 +277,6 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO investigate what it'll take to protobuf-ify our models
 	// TODO rename the network model so it makes sense here
 	c.JSON(http.StatusOK, network.PlayerResponse(p))
 }
