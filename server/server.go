@@ -47,26 +47,26 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 }
 
 func (cs *cribbageServer) addWasmHandlers(router *gin.Engine) {
-	router.LoadHTMLGlob("templates/*")
-	router.Static("/assets", "./assets")
+	router.LoadHTMLGlob(`templates/*`)
+	router.Static(`/assets`, `./assets`)
 
 	wasm := router.Group(`/wasm`)
 	{
-		wasm.GET("/", handleWasmIndex)
+		wasm.GET(`/`, handleWasmIndex)
 
 		// Simple group: user. Used for serving pages affiliated with a given user
-		user := wasm.Group("/user")
+		user := wasm.Group(`/user`)
 		{
-			user.GET("/", handleWasmGetUser)
-			user.GET("/:username", cs.handleWasmGetUsername)
-			user.GET("/:username/game/:gameID", cs.handleWasmGetUsernameGame)
+			user.GET(`/`, handleWasmGetUser)
+			user.GET(`/:username`, cs.handleWasmGetUsername)
+			user.GET(`/:username/game/:gameID`, cs.handleWasmGetUsernameGame)
 		}
 	}
 }
 
 func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 	// Serve frontend React static files
-	router.Use(static.Serve("/", static.LocalFile("./client/build", true)))
+	router.Use(static.Serve(`/`, static.LocalFile(`./client/build`, true)))
 }
 
 func (cs *cribbageServer) Serve() {
