@@ -27,13 +27,8 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 	}
 }
 
-func (cs *cribbageServer) NewRouter(useDefaultMiddleware bool) http.Handler {
-	var router *gin.Engine
-	if useDefaultMiddleware {
-		router = gin.Default()
-	} else {
-		router = gin.New()
-	}
+func (cs *cribbageServer) NewRouter() http.Handler {
+	router := gin.Default()
 
 	// Simple group: create
 	create := router.Group(`/create`)
@@ -75,7 +70,7 @@ func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 }
 
 func (cs *cribbageServer) Serve() {
-	router := cs.NewRouter(true)
+	router := cs.NewRouter()
 	eng, ok := router.(*gin.Engine)
 	if !ok {
 		log.Println(`router type assertion failed`)

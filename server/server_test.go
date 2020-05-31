@@ -54,7 +54,7 @@ func newServerAndRouter(_ *testing.T) (*cribbageServer, http.Handler) {
 	dbf := memory.NewFactory()
 	memory.Clear()
 	cs := newCribbageServer(dbf)
-	router := cs.NewRouter(false)
+	router := cs.NewRouter()
 	return cs, router
 }
 
