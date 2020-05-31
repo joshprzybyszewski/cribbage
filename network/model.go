@@ -55,10 +55,6 @@ type CreateGameResponse struct {
 	Phase           model.Phase                          `json:"phase"`
 	BlockingPlayers map[model.PlayerID]model.Blocker     `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID                       `json:"current_dealer"`
-	Hands           map[model.PlayerID][]model.Card      `json:"hands,omitempty"`
-	Crib            []model.Card                         `json:"crib,omitempty"`
-	CutCard         model.Card                           `json:"cut_card"`
-	PeggedCards     []model.PeggedCard                   `json:"pegged_cards,omitempty"`
 }
 
 func NewCreateGameResponse(g model.Game) CreateGameResponse {
@@ -71,10 +67,6 @@ func NewCreateGameResponse(g model.Game) CreateGameResponse {
 		Phase:           g.Phase,
 		BlockingPlayers: g.BlockingPlayers,
 		CurrentDealer:   g.CurrentDealer,
-		Hands:           g.Hands,
-		Crib:            g.Crib,
-		CutCard:         g.CutCard,
-		PeggedCards:     g.PeggedCards,
 	}
 }
 
