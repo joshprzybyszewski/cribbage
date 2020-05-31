@@ -31,7 +31,7 @@ jobs:
         mongodb-version: 4.2
         mongodb-replica-set: testReplSet
     - name: Run Golang Tests
-      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list github.com/joshprzybyszewski/cribbage) ./...  # Run all the tests with the race detector enabled
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic -coverpkg $(go list github.com/joshprzybyszewski/cribbage) github.com/joshprzybyszewski/cribbage/...  # Run all the tests with the race detector enabled
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
