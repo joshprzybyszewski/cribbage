@@ -15,7 +15,7 @@ type CreateGameRequest struct {
 // TODO figure out the minimum info the client will need
 type GetGameResponse struct {
 	ID              model.GameID                         `json:"id"`
-	Players         []model.Player                       `json:"players"`
+	Players         []Player                             `json:"players"`
 	PlayerColors    map[model.PlayerID]model.PlayerColor `json:"player_colors,omitempty"`
 	CurrentScores   map[model.PlayerColor]int            `json:"current_scores"`
 	LagScores       map[model.PlayerColor]int            `json:"lag_scores"`
@@ -31,7 +31,7 @@ type GetGameResponse struct {
 func NewGetGameResponse(g model.Game) GetGameResponse {
 	return GetGameResponse{
 		ID:              g.ID,
-		Players:         g.Players,
+		Players:         newPlayersFromPlayerModels(g.Players),
 		PlayerColors:    g.PlayerColors,
 		CurrentScores:   g.CurrentScores,
 		LagScores:       g.LagScores,
@@ -48,7 +48,7 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 // TODO figure out the minimum info the client will need
 type CreateGameResponse struct {
 	ID              model.GameID                         `json:"id"`
-	Players         []model.Player                       `json:"players"`
+	Players         []Player                             `json:"players"`
 	PlayerColors    map[model.PlayerID]model.PlayerColor `json:"player_colors,omitempty"`
 	CurrentScores   map[model.PlayerColor]int            `json:"current_scores"`
 	LagScores       map[model.PlayerColor]int            `json:"lag_scores"`
@@ -64,7 +64,7 @@ type CreateGameResponse struct {
 func NewCreateGameResponse(g model.Game) CreateGameResponse {
 	return CreateGameResponse{
 		ID:              g.ID,
-		Players:         g.Players,
+		Players:         newPlayersFromPlayerModels(g.Players),
 		PlayerColors:    g.PlayerColors,
 		CurrentScores:   g.CurrentScores,
 		LagScores:       g.LagScores,
@@ -78,19 +78,54 @@ func NewCreateGameResponse(g model.Game) CreateGameResponse {
 	}
 }
 
-type CreatePlayerRequest struct {
+type Player struct {
 	ID   model.PlayerID `json:"id"`
 	Name string         `json:"name"`
 }
 
+func NewPlayerFromPlayerModel(p model.Player) Player {
+	return Player{
+		ID:   p.ID,
+		Name: p.Name,
+	}
+}
+
+func newPlayersFromPlayerModels(pms []model.Player) []Player {
+	ps := make([]Player, len(pms))
+	for i, pm := range pms {
+		ps[i] = NewPlayerFromPlayerModel(pm)
+	}
+	return ps
+}
+
+type CreatePlayerRequest struct {
+	Player Player
+}
+
 type GetPlayerResponse struct {
-	ID    model.PlayerID                     `json:"id"`
-	Name  string                             `json:"name"`
-	Games map[model.GameID]model.PlayerColor `json:"games"`
+	Player Player
+	Games  map[model.GameID]model.PlayerColor `json:"games"`
+}
+
+func NewGetPlayerResponseFromModel(pm model.Player) GetPlayerResponse {
+	return GetPlayerResponse{
+		Player: Player{
+			ID:   pm.ID,
+			Name: pm.Name,
+		},
+		Games: pm.Games,
+	}
 }
 
 type CreatePlayerResponse struct {
-	ID    model.PlayerID                     `json:"id"`
-	Name  string                             `json:"name"`
-	Games map[model.GameID]model.PlayerColor `json:"games"`
+	Player Player
+}
+
+func NewCreatePlayerResponseFromModel(pm model.Player) CreatePlayerResponse {
+	return CreatePlayerResponse{
+		Player: Player{
+			ID:   pm.ID,
+			Name: pm.Name,
+		},
+	}
 }

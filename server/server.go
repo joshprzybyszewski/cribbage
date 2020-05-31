@@ -130,15 +130,15 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if cpr.ID == model.InvalidPlayerID {
+	if cpr.Player.ID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Username is required`)
 		return
 	}
-	if cpr.Name == `` {
+	if cpr.Player.Name == `` {
 		c.String(http.StatusBadRequest, `Display name is required`)
 		return
 	}
-	if !model.IsValidPlayerID(cpr.ID) {
+	if !model.IsValidPlayerID(cpr.Player.ID) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
@@ -152,8 +152,8 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	defer db.Close()
 
 	p := model.Player{
-		ID:   cpr.ID,
-		Name: cpr.Name,
+		ID:   cpr.Player.ID,
+		Name: cpr.Player.Name,
 	}
 	err = createPlayer(ctx, db, p)
 	if err != nil {
@@ -165,7 +165,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, network.CreatePlayerResponse(p))
+	c.JSON(http.StatusOK, network.NewCreatePlayerResponseFromModel(p))
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
@@ -278,7 +278,7 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		return
 	}
 	// TODO rename the network model so it makes sense here
-	c.JSON(http.StatusOK, network.GetPlayerResponse(p))
+	c.JSON(http.StatusOK, network.NewGetPlayerResponseFromModel(p))
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
