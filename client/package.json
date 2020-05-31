@@ -17,9 +17,7 @@
   },
   "scripts": {
     "build": "react-scripts build",
-    "client": "react-scripts start",
-    "server": "go run ../main.go -db=memory",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "client": "react-scripts start"
   },
   "eslintConfig": {
     "extends": "react-app"

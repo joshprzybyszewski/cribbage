@@ -32,10 +32,6 @@ install: ## Runs the install script and vendors golang dependencies
 goclient: ## Runs the old golang survey client to play cribbage
 	go run localclient/main/main.go
 
-.PHONY: reactdev
-reactdev: ## Sets up the react client in dev mode
-	cd client/ && npm run dev
-
 .PHONY: client
 client: ## Sets up the react client
 	cd client/ && npm run client
