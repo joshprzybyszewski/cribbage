@@ -34,8 +34,6 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "concurrently": "^5.1.0"
-  },
+  "devDependencies": {},
   "proxy": "http://localhost:8080"
 }
