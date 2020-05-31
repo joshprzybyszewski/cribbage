@@ -31,7 +31,7 @@ type GetGameResponse struct {
 func NewGetGameResponse(g model.Game) GetGameResponse {
 	return GetGameResponse{
 		ID:              g.ID,
-		Players:         newPlayersFromPlayerModels(g.Players),
+		Players:         newPlayersFromModels(g.Players),
 		PlayerColors:    g.PlayerColors,
 		CurrentScores:   g.CurrentScores,
 		LagScores:       g.LagScores,
@@ -64,7 +64,7 @@ type CreateGameResponse struct {
 func NewCreateGameResponse(g model.Game) CreateGameResponse {
 	return CreateGameResponse{
 		ID:              g.ID,
-		Players:         newPlayersFromPlayerModels(g.Players),
+		Players:         newPlayersFromModels(g.Players),
 		PlayerColors:    g.PlayerColors,
 		CurrentScores:   g.CurrentScores,
 		LagScores:       g.LagScores,
@@ -83,17 +83,17 @@ type Player struct {
 	Name string         `json:"name"`
 }
 
-func NewPlayerFromPlayerModel(p model.Player) Player {
+func NewPlayerFromModel(p model.Player) Player {
 	return Player{
 		ID:   p.ID,
 		Name: p.Name,
 	}
 }
 
-func newPlayersFromPlayerModels(pms []model.Player) []Player {
+func newPlayersFromModels(pms []model.Player) []Player {
 	ps := make([]Player, len(pms))
 	for i, pm := range pms {
-		ps[i] = NewPlayerFromPlayerModel(pm)
+		ps[i] = NewPlayerFromModel(pm)
 	}
 	return ps
 }
