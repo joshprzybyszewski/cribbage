@@ -1,5 +1,19 @@
+# Ignore all of the git folder
 .git
+
+# Ignore certain file types that we're not gonna care about in docker
 *.md
+*.pnp
+*.pnp.js
+*.log
+
+# Ignore the go vendor
 vendor/
+# Ignore any logs output into this folder
 playerlogs/
+# Ignore the wasm binary -- the docker image will build it
 assets/wasm/wa_output.wasm
+# Ignore the React client build directory -- the docker image will build it
+client/build
+# Ignore the node_modules -- the docker container will get them
+client/node_modules
