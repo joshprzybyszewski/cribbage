@@ -119,7 +119,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, network.NewGameResponse(g))
+	c.JSON(http.StatusOK, network.NewCreateGameResponse(g))
 }
 
 // POST /create/player
@@ -165,7 +165,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, network.PlayerResponse(p))
+	c.JSON(http.StatusOK, network.CreatePlayerResponse(p))
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
@@ -244,7 +244,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.JSON(http.StatusOK, network.NewGameResponse(g))
+	c.JSON(http.StatusOK, network.NewGetGameResponse(g))
 }
 
 func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
@@ -278,7 +278,7 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		return
 	}
 	// TODO rename the network model so it makes sense here
-	c.JSON(http.StatusOK, network.PlayerResponse(p))
+	c.JSON(http.StatusOK, network.GetPlayerResponse(p))
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
