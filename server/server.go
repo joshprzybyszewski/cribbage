@@ -277,7 +277,6 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO rename the network model so it makes sense here
 	c.JSON(http.StatusOK, network.NewGetPlayerResponseFromModel(p))
 }
 
