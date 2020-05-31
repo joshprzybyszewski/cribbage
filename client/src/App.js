@@ -5,6 +5,7 @@ import { Switch, Route } from 'react-router-dom';
 
 import configureStore, { history } from './store';
 import Home from './components/Home';
+import Game from './components/GamePage';
 import Landing from './components/landing/Landing';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/layout/PrivateRoute';
@@ -20,6 +21,7 @@ function App() {
           <Switch>
             <Route exact path='/' component={Landing} />
             <PrivateRoute exact path='/home' component={Home} />
+            <PrivateRoute path='/game' component={Game} />
           </Switch>
         </Layout>
       </ConnectedRouter>

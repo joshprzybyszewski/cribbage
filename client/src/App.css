@@ -1,7 +1,7 @@
 @import '~antd/dist/antd.css';
 
 .header {
-  height: 4vh;
+  height: 8vh;
 }
 .content {
   height: 92vh;
