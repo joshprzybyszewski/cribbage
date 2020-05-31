@@ -165,8 +165,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	// TODO do we really need to return the player?
-	c.JSON(http.StatusOK, cpr)
+	c.JSON(http.StatusOK, network.CreatePlayerResponse(cpr))
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
