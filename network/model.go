@@ -26,7 +26,6 @@ type GetGameResponse struct {
 	Crib            []model.Card                         `json:"crib,omitempty"`
 	CutCard         model.Card                           `json:"cut_card"`
 	PeggedCards     []model.PeggedCard                   `json:"pegged_cards,omitempty"`
-	Actions         []model.PlayerAction                 `json:"actions"`
 }
 
 func NewGetGameResponse(g model.Game) GetGameResponse {
@@ -43,7 +42,6 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 		Crib:            g.Crib,
 		CutCard:         g.CutCard,
 		PeggedCards:     g.PeggedCards,
-		Actions:         g.Actions,
 	}
 }
 
@@ -61,7 +59,6 @@ type CreateGameResponse struct {
 	Crib            []model.Card                         `json:"crib,omitempty"`
 	CutCard         model.Card                           `json:"cut_card"`
 	PeggedCards     []model.PeggedCard                   `json:"pegged_cards,omitempty"`
-	Actions         []model.PlayerAction                 `json:"actions"`
 }
 
 func NewCreateGameResponse(g model.Game) CreateGameResponse {
@@ -78,7 +75,6 @@ func NewCreateGameResponse(g model.Game) CreateGameResponse {
 		Crib:            g.Crib,
 		CutCard:         g.CutCard,
 		PeggedCards:     g.PeggedCards,
-		Actions:         g.Actions,
 	}
 }
 
