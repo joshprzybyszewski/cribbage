@@ -120,7 +120,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 	}
 
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.JSON(http.StatusOK, g)
+	c.JSON(http.StatusOK, network.NewGameResponse(g))
 }
 
 // POST /create/player
@@ -152,10 +152,11 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	}
 	defer db.Close()
 
-	err = createPlayer(ctx, db, model.Player{
+	p := model.Player{
 		ID:   cpr.ID,
 		Name: cpr.Name,
-	})
+	}
+	err = createPlayer(ctx, db, p)
 	if err != nil {
 		switch err {
 		case persistence.ErrPlayerAlreadyExists:
@@ -165,7 +166,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, network.CreatePlayerResponse(cpr))
+	c.JSON(http.StatusOK, network.PlayerResponse(p))
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
@@ -245,7 +246,7 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		return
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
-	c.JSON(http.StatusOK, g)
+	c.JSON(http.StatusOK, network.NewGameResponse(g))
 }
 
 func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
@@ -280,10 +281,7 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	}
 	// TODO investigate what it'll take to protobuf-ify our models
 	// TODO rename the network model so it makes sense here
-	c.JSON(http.StatusOK, network.CreatePlayerRequest{
-		ID:   p.ID,
-		Name: p.Name,
-	})
+	c.JSON(http.StatusOK, network.PlayerResponse(p))
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
