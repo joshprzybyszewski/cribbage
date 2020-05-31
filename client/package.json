@@ -20,9 +20,8 @@
     "uuidv4": "^6.0.9"
   },
   "scripts": {
-    "client": "react-scripts start",
-    "server": "go run ../main.go -db=memory",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "build": "react-scripts build",
+    "client": "react-scripts start"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -39,8 +38,6 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "concurrently": "^5.1.0"
-  },
+  "devDependencies": {},
   "proxy": "http://localhost:8080"
 }

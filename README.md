@@ -22,20 +22,19 @@ make install
 3. In one terminal, start the server
 
 ```bash
-go run main.go
+make serve
 ```
 
-  - to start with an in-memory database, use `-db=memory`
   - Currently, it will default to a mysql DB. You need to have a mysql server stood up locally and have a database called `cribbage` existing on it.
 
 4. Start playing cribbage.
-  - Soon :tm:, you will be able to interact with a React frontend.
-  - Even sooner :tm:, you will be able to interact with a barebones HTML client that the gin server has stood up at [localhost:8080](localhost:8080).
+  - Soon :tm:, you will be able to interact with a React frontend. You'll be able to access this by running the dev client `make client` and navigating to [localhost:3000](localhost:3000).
+  - You are able to interact with a barebones HTML client that the gin server has stood up at [localhost:8080/wasm](localhost:8080/wasm) which uses WebAssembly compiled from golang.
     - Using this option, you can create a user, "sign in" as that user, create a game with another user, and play through a game (although the UI is terrible:#). Please note, you need to refresh every time you make an action.
   - If you're a sucker for pain, you can use our older "terminal interaction" (which may be broken:#). In a couple terminals, start a couple clients:
 
 ```bash
-make client
+make goclient
 ```
 
     - From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).

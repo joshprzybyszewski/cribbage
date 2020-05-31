@@ -1,0 +1,99 @@
+<!--game.html-->
+
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Game with {{ range .playerNames }} {{ . }} {{ end }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link 
+        href="/assets/css/game.css"
+        rel="stylesheet" 
+    />
+
+</head>
+
+<body>
+    <div id="container">
+        <div id="summary">
+            <h1>Game</h1>
+            <h4>Players: <br>{{ range .playerNames }} - {{ . }}<br> {{ end }}</h4>
+            <div>Current dealer: {{ .currentDealer }} </div>
+            <div>Current phase: {{ .phase }} </div>
+            <h2>Scores</h2>
+            <div>
+                <div>You are: {{ .myColor }} </div><br>
+                {{ range .scores }}
+                <a> {{ .Color }} : {{ .Score }}</a><br>
+                {{ end }}
+            </div>
+
+            {{ if .cutCard }}
+            <h2>Cut card</h2>
+            <div>
+                <div class="card cut">{{ .cutCard }}</div>
+            </div>
+            {{ end }}
+
+            {{ if .peggedCards }}
+            <h2>Pegged Cards</h2>
+            <h3>Current Peg: {{ .currentPeg }}</h3>
+            <div>
+                {{ range .peggedCards }}
+                <div class="card pegged">
+                    {{ . }}
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+
+            {{ if .myHand }}
+            <h2>Your hand</h2>
+            <div>
+                {{ range .myHand }}
+                <div class="card mine {{ if .IsPegged }}disabled{{ end }}" id="{{ .Card }}">
+                    {{ .Card }}
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+
+            {{ if .oppHands }}{{ range .oppHands }}
+            <h2>{{ .Name }}'s hand</h2>
+            <div>
+                {{ range .Hand }}
+                <div class="card {{ if not .IsKnown}}unknown{{ end }} opponent">
+                    {{ .Card }}
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}{{ end }}
+
+            {{ if .crib }}
+            <h2>Crib</h2>
+            <div>
+                {{ range .crib}}
+                <div class="card {{ if not .IsKnown}}unknown{{ else if not $.myCrib }}opponent{{ end }}">
+                    {{ .Card }}
+                </div>
+                {{ end }}
+            </div>
+            {{ end }}
+        </div>
+        <div id="interaction">
+            <button id="refreshGame">Refresh</button><br>
+            <button disabled id="dealButton">Deal</button><br>
+            <button disabled id="buildCribButton">Build crib</button><br>
+            Cut Percent: <input disabled type="number" name="cut percent" id="cutInput"><br>
+            <button disabled id="pegButton">Peg</button><br>
+            Hand Points: <input disabled type="number" name="hand points" id="handPtsInput"><br>
+            Crib Points: <input disabled type="number" name="crib points" id="cribPtsInput"><br>
+        </div>
+    </div>
+
+    <script src="/assets/js/wasm_exec.js"></script>
+    <script src="/assets/js/wasm_loader.js"></script> 
+</body>
+
+</html>

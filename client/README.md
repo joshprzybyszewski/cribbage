@@ -1,7 +1,7 @@
 # Cribbage Frontend
-This is the React frontend for the cribbage application. To run:
+This is the React frontend for the cribbage application. To run it, navigate to the root directory and run:
 ```
-npm install
-npm run dev
+make client
 ```
-The `dev` script will spin up the Go server (so make sure you can run that first) with an in-memory db (for now) as well as the React app, which will open in a browser.
+
+To run against the local server, be sure you are also running `make serve`

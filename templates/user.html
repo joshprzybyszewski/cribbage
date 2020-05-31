@@ -1,0 +1,52 @@
+<!--user.html-->
+
+<html>
+
+<head>
+    <title>Your games</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+</head>
+
+<body class="container">
+    <h1>Hello {{ .displayName }}</h1>
+    <h2>Games</h2>
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>My Color</th>
+            <th>Blue Score</th>
+            <th>Red Score</th>
+            <th>Green Score</th>
+            <th>Go to game</th>
+        </tr>
+        {{ range .games }}
+        <tr>
+            <td>{{ .Desc }}</td>
+            <td>{{ .MyColor }}</td>
+            <td>{{ .BlueScore }}</td>
+            <td>{{ .RedScore }}</td>
+            <td>{{ .GreenScore }}</td>
+            <td>
+                <button onclick="window.location.href = '/wasm/user/{{ $.myID }}/game/{{ .GameID }}';">
+                    Go to game
+                </button>
+            </td>
+        </tr>
+        {{ end }}
+    </table>
+
+    <h2>Create Game</h2>
+    <form>
+        <fieldset>
+            Opponent's username: <input type="text" name="oppUN" id="oppUsername"><br>
+            <button disabled id="createGameButton">Create</button>
+        </fieldset>
+    </form>
+
+    <script src="/assets/js/wasm_exec.js"></script>
+    <script src="/assets/js/wasm_loader.js"></script> 
+</body>
+
+</html>
