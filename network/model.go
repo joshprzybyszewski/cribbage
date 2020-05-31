@@ -83,7 +83,7 @@ type Player struct {
 	Name string         `json:"name"`
 }
 
-func NewPlayerFromModel(p model.Player) Player {
+func newPlayerFromModel(p model.Player) Player {
 	return Player{
 		ID:   p.ID,
 		Name: p.Name,
@@ -93,7 +93,7 @@ func NewPlayerFromModel(p model.Player) Player {
 func newPlayersFromModels(pms []model.Player) []Player {
 	ps := make([]Player, len(pms))
 	for i, pm := range pms {
-		ps[i] = NewPlayerFromModel(pm)
+		ps[i] = newPlayerFromModel(pm)
 	}
 	return ps
 }
