@@ -41,7 +41,7 @@ export function* watchRegisterAsync() {
 }
 export function* registerAsync({ payload: { id, name } }) {
   try {
-    const res = yield axios.post('/create/player', { id, name });
+    const res = yield axios.post('/create/player', { player: { id, name } });
     yield put({
       type: auth.reducer.REGISTER,
       payload: { id: res.data.id, name: res.data.name },
