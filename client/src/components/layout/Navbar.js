@@ -2,15 +2,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Button } from 'antd';
 
 import { authActions } from '../../sagas/actions';
 
 const Navbar = ({ currentUser, logout }) => {
   return (
-    <div>
-      <Link to='/home'>Home</Link>
-      {currentUser.id && <Button onClick={logout}>Logout</Button>}
+    <div className='h-12 px-4 bg-blue-900 flex justify-between items-center text-gray-400'>
+      <Link
+        to='/'
+        className='uppercase text-xl tracking-wider hover:text-white'
+      >
+        Cribbage
+      </Link>
+      <div className='flex'>
+        <Link to='/login' className='px-2 hover:text-white'>
+          Login
+        </Link>
+        <Link to='/register' className='px-2 hover:text-white'>
+          Register
+        </Link>
+      </div>
     </div>
   );
 };
