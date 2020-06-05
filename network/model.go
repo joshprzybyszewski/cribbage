@@ -91,7 +91,7 @@ func newPlayersFromModels(pms []model.Player) []Player {
 }
 
 type CreatePlayerRequest struct {
-	Player Player
+	Player Player `json:"player"`
 }
 
 type GetPlayerResponse struct {
