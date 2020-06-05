@@ -18,7 +18,7 @@ const Navbar = ({ currentUser, logout }) => {
         <Link to='/login' className='px-2 hover:text-white'>
           Login
         </Link>
-        <Link to='/register' className='px-2 hover:text-white'>
+        <Link to='/' className='px-2 hover:text-white'>
           Register
         </Link>
       </div>

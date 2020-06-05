@@ -1,27 +1,34 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { Button, Input, Form } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
 
 import { authActions } from '../../sagas/actions';
 
 const LoginForm = ({ login }) => {
   return (
-    <Form onFinish={formData => login(formData)}>
-      <Form.Item
-        name='id'
-        label='Username'
-        rules={[{ required: true, message: 'Please input your username!' }]}
-      >
-        <Input placeholder='Username' prefix={<UserOutlined />} />
-      </Form.Item>
-      <Form.Item>
-        <Button type='primary' htmlType='submit'>
-          Login
-        </Button>
-      </Form.Item>
-    </Form>
+    <div className='max-w-sm m-auto mt-4'>
+      <h1 className='text-4xl'>Login to Cribbage</h1>
+      <form>
+        <input
+          placeholder='Username'
+          className='pl-2 h-8 shadow-sm rounded-lg block w-full focus:outline-none focus:shadow-md'
+        ></input>
+        <p className='mt-1 text-xs text-gray-600'>
+          Don't have an account?{' '}
+          <span>
+            <Link to='/' className='hover:text-gray-500 hover:underline'>
+              Register here.
+            </Link>
+          </span>
+        </p>
+        <input
+          type='submit'
+          value='login'
+          className='mt-1 px-4 py-1 rounded-lg text-lg text-gray-300 uppercase bg-blue-800 hover:bg-blue-700 hover:text-white'
+        ></input>
+      </form>
+    </div>
   );
 };
 
