@@ -8,9 +8,8 @@ import Home from './components/Home';
 import Landing from './components/landing/Landing';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/layout/PrivateRoute';
-import './App.css';
 import LoginForm from './components/landing/LoginForm';
-import RegisterForm from './components/landing/RegisterForm';
+import './App.css';
 
 const store = configureStore({});
 
@@ -22,7 +21,6 @@ function App() {
           <Switch>
             <Route exact path='/' component={Landing} />
             <Route exact path='/login' component={LoginForm} />
-            <Route exact path='/register' component={RegisterForm} />
             <PrivateRoute exact path='/home' component={Home} />
           </Switch>
         </Layout>
