@@ -7,7 +7,7 @@ import { authActions } from '../../sagas/actions';
 
 const Navbar = ({ currentUser, logout }) => {
   return (
-    <div className='h-12 px-4 bg-blue-900 flex justify-between items-center text-gray-400'>
+    <nav className='h-12 px-4 bg-blue-900 flex justify-between items-center text-gray-400'>
       <Link
         to='/'
         className='uppercase text-xl tracking-wider hover:text-white'
@@ -22,7 +22,7 @@ const Navbar = ({ currentUser, logout }) => {
           Register
         </Link>
       </div>
-    </div>
+    </nav>
   );
 };
 
