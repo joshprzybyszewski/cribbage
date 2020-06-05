@@ -1,4 +1,5 @@
 @import '~antd/dist/antd.css';
+@import './styles.css';
 
 .header {
   height: 4vh;

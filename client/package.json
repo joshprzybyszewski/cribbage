@@ -22,7 +22,7 @@
     "uuidv4": "^6.0.9"
   },
   "scripts": {
-    "build": "react-scripts build",
+    "build": "npx tailwindcss build src/tailwind.css -o src/styles.css && react-scripts build",
     "client": "react-scripts start"
   },
   "eslintConfig": {
