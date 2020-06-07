@@ -8,7 +8,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func TestNewGetPlayerResponseFromModel(t *testing.T) {
+func TestConvertToGetPlayerResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
 		player  model.Player
@@ -37,11 +37,11 @@ func TestNewGetPlayerResponseFromModel(t *testing.T) {
 		},
 	}}
 	for _, tc := range tests {
-		resp := NewGetPlayerResponseFromModel(tc.player)
+		resp := ConvertToGetPlayerResponse(tc.player)
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
-func TestNewCreatePlayerResponseFromModel(t *testing.T) {
+func TestConvertToCreatePlayerResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
 		player  model.Player
@@ -65,7 +65,7 @@ func TestNewCreatePlayerResponseFromModel(t *testing.T) {
 		},
 	}}
 	for _, tc := range tests {
-		resp := NewCreatePlayerResponseFromModel(tc.player)
+		resp := ConvertToCreatePlayerResponse(tc.player)
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }

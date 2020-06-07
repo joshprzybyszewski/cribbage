@@ -24,7 +24,7 @@ func cardsFromStrings(cs ...string) []Card {
 	return hand
 }
 
-func TestNewCreateGameResponse(t *testing.T) {
+func TestConvertToCreateGameResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
 		game    model.Game
@@ -82,12 +82,12 @@ func TestNewCreateGameResponse(t *testing.T) {
 		},
 	}}
 	for _, tc := range tests {
-		resp := NewCreateGameResponse(tc.game)
+		resp := ConvertToCreateGameResponse(tc.game)
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
 
-func TestNewGetGameResponse(t *testing.T) {
+func TestConvertToGetGameResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
 		game    model.Game
@@ -197,11 +197,11 @@ func TestNewGetGameResponse(t *testing.T) {
 		},
 	}}
 	for _, tc := range tests {
-		resp := NewGetGameResponse(tc.game)
+		resp := ConvertToGetGameResponse(tc.game)
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
-func TestNewGetGameResponseForPlayer(t *testing.T) {
+func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 	tests := []struct {
 		desc    string
 		player  model.PlayerID
@@ -630,7 +630,7 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 		expResp: GetGameResponse{},
 	}}
 	for _, tc := range tests {
-		resp, err := NewGetGameResponseForPlayer(tc.game, tc.player)
+		resp, err := ConvertToGetGameResponseForPlayer(tc.game, tc.player)
 
 		if tc.expErr {
 			assert.Error(t, err)

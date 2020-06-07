@@ -17,13 +17,13 @@ func newPlayersFromModels(pms []model.Player) []Player {
 	return ps
 }
 
-func NewGetPlayerResponseFromModel(pm model.Player) GetPlayerResponse {
+func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
 	return GetPlayerResponse{
 		Player: Player{
-			ID:   pm.ID,
-			Name: pm.Name,
+			ID:   p.ID,
+			Name: p.Name,
 		},
-		Games: convertGames(pm.Games),
+		Games: convertGames(p.Games),
 	}
 }
 
@@ -35,7 +35,7 @@ func convertGames(modelGames map[model.GameID]model.PlayerColor) map[model.GameI
 	return games
 }
 
-func NewCreatePlayerResponseFromModel(pm model.Player) CreatePlayerResponse {
+func ConvertToCreatePlayerResponse(pm model.Player) CreatePlayerResponse {
 	return CreatePlayerResponse{
 		Player: Player{
 			ID:   pm.ID,

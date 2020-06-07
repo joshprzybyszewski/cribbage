@@ -6,7 +6,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func NewGetGameResponse(g model.Game) GetGameResponse {
+func ConvertToGetGameResponse(g model.Game) GetGameResponse {
 	currentScores, lagScores := convertScores(g.CurrentScores, g.LagScores)
 	return GetGameResponse{
 		ID:              g.ID,
@@ -22,7 +22,7 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 	}
 }
 
-func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
+func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
 	pIsInGame := false
 	for _, p := range g.Players {
 		if p.ID == pID {
@@ -33,7 +33,7 @@ func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameRespo
 	if !pIsInGame {
 		return GetGameResponse{}, errors.New(`player does not exist in game`)
 	}
-	resp := NewGetGameResponse(g)
+	resp := ConvertToGetGameResponse(g)
 	resp.Hands = convertHands(g.Hands)
 	if g.Phase < model.Counting {
 		resp.Hands = map[model.PlayerID][]Card{
@@ -46,7 +46,7 @@ func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameRespo
 	return resp, nil
 }
 
-func NewCreateGameResponse(g model.Game) CreateGameResponse {
+func ConvertToCreateGameResponse(g model.Game) CreateGameResponse {
 	return CreateGameResponse{
 		ID:              g.ID,
 		Players:         newPlayersFromModels(g.Players),
