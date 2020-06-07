@@ -9,6 +9,20 @@ const (
 	Hearts
 )
 
+func (s Suit) String() string {
+	switch s {
+	case Spades:
+		return `Spades`
+	case Clubs:
+		return `Clubs`
+	case Diamonds:
+		return `Diamonds`
+	case Hearts:
+		return `Hearts`
+	}
+	return `InvalidSuit`
+}
+
 type Card struct {
 	Suit Suit `protobuf:"varint,1,req,name=suit,proto3" json:"s" bson:"s"` //nolint:lll
 	// Ace is 1, King is 13
@@ -72,6 +86,24 @@ const (
 	CountHand
 	CountCrib
 )
+
+func (b Blocker) String() string {
+	switch b {
+	case DealCards:
+		return `DealCards`
+	case CribCard:
+		return `CribCard`
+	case CutCard:
+		return `CutCard`
+	case PegCard:
+		return `PegCard`
+	case CountHand:
+		return `CountHand`
+	case CountCrib:
+		return `CountCrib`
+	}
+	return `InvalidBLocker`
+}
 
 type CribBlocker struct {
 	Desired      int                      `protobuf:"varint,1,req,name=desired,proto3" json:"d" bson:"d"`                                        //nolint:lll//nolint:lll

@@ -10,35 +10,22 @@ type CreateInteractionRequest struct {
 
 // TODO figure out the minimum info the client will need
 type GetGameResponse struct {
-	ID              model.GameID                         `json:"id"`
-	Players         []Player                             `json:"players"`
-	PlayerColors    map[model.PlayerID]model.PlayerColor `json:"player_colors,omitempty"`
-	CurrentScores   map[model.PlayerColor]int            `json:"current_scores"`
-	LagScores       map[model.PlayerColor]int            `json:"lag_scores"`
-	Phase           model.Phase                          `json:"phase"`
-	BlockingPlayers map[model.PlayerID]model.Blocker     `json:"blocking_players,omitempty"`
-	CurrentDealer   model.PlayerID                       `json:"current_dealer"`
-	Hands           map[model.PlayerID][]model.Card      `json:"hands,omitempty"`
-	Crib            []model.Card                         `json:"crib,omitempty"`
-	CutCard         model.Card                           `json:"cut_card"`
-	PeggedCards     []model.PeggedCard                   `json:"pegged_cards,omitempty"`
-}
+	ID              model.GameID              `json:"id"`
+	Players         []Player                  `json:"players"`
+	PlayerColors    map[model.PlayerID]string `json:"player_colors,omitempty"`
+	CurrentScores   map[string]int            `json:"current_scores"`
+	LagScores       map[string]int            `json:"lag_scores"`
+	Phase           string                    `json:"phase"`
+	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
+	CurrentDealer   model.PlayerID            `json:"current_dealer"`
 
-func NewGetGameResponse(g model.Game) GetGameResponse {
-	return GetGameResponse{
-		ID:              g.ID,
-		Players:         newPlayersFromModels(g.Players),
-		PlayerColors:    g.PlayerColors,
-		CurrentScores:   g.CurrentScores,
-		LagScores:       g.LagScores,
-		Phase:           g.Phase,
-		BlockingPlayers: g.BlockingPlayers,
-		CurrentDealer:   g.CurrentDealer,
-		Hands:           g.Hands,
-		Crib:            g.Crib,
-		CutCard:         g.CutCard,
-		PeggedCards:     g.PeggedCards,
-	}
+	// Scrub out the other players' hands when returning this
+	Hands map[model.PlayerID][]Card `json:"hands,omitempty"`
+	// Scrub out the crib until the phase is correct
+	Crib []Card `json:"crib,omitempty"`
+
+	CutCard     Card   `json:"cut_card"`
+	PeggedCards []Card `json:"pegged_cards,omitempty"`
 }
 
 type CreateGameRequest struct {
@@ -55,19 +42,6 @@ type CreateGameResponse struct {
 	Phase           model.Phase                          `json:"phase"`
 	BlockingPlayers map[model.PlayerID]model.Blocker     `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID                       `json:"current_dealer"`
-}
-
-func NewCreateGameResponse(g model.Game) CreateGameResponse {
-	return CreateGameResponse{
-		ID:              g.ID,
-		Players:         newPlayersFromModels(g.Players),
-		PlayerColors:    g.PlayerColors,
-		CurrentScores:   g.CurrentScores,
-		LagScores:       g.LagScores,
-		Phase:           g.Phase,
-		BlockingPlayers: g.BlockingPlayers,
-		CurrentDealer:   g.CurrentDealer,
-	}
 }
 
 type Player struct {
@@ -119,5 +93,19 @@ func NewCreatePlayerResponseFromModel(pm model.Player) CreatePlayerResponse {
 			ID:   pm.ID,
 			Name: pm.Name,
 		},
+	}
+}
+
+type Card struct {
+	Suit  string
+	Value int
+	Name  string
+}
+
+func newCardFromModel(c model.Card) Card {
+	return Card{
+		Suit:  c.Suit.String(),
+		Value: c.Value,
+		Name:  c.String(),
 	}
 }
