@@ -467,7 +467,7 @@ func TestGinPostAction(t *testing.T) {
 				},
 			},
 			expCode: http.StatusBadRequest,
-			expErr:  `Error: Should overcome 0, but overcomes 5`,
+			expErr:  `Error: Should overcome DealCards, but overcomes CountCrib`,
 		}},
 	}, {
 		msg: `play a few actions`,
