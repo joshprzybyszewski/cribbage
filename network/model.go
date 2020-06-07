@@ -49,7 +49,7 @@ type CreatePlayerRequest struct {
 }
 
 type GetPlayerResponse struct {
-	Player Player
+	Player Player                             `json:"player"`
 	Games  map[model.GameID]model.PlayerColor `json:"games"`
 }
 

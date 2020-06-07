@@ -290,7 +290,8 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.JSON(http.StatusOK, network.NewGetPlayerResponseFromModel(p))
+	resp := network.NewGetPlayerResponseFromModel(p)
+	c.JSON(http.StatusOK, resp)
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {
