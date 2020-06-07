@@ -8,7 +8,6 @@ type CreateInteractionRequest struct {
 	NPCType       model.PlayerID `json:"npc_type,omitempty"`
 }
 
-// TODO figure out the minimum info the client will need
 type GetGameResponse struct {
 	ID              model.GameID              `json:"id"`
 	Players         []Player                  `json:"players"`
@@ -45,21 +44,6 @@ type Player struct {
 	Name string         `json:"name"`
 }
 
-func newPlayerFromModel(p model.Player) Player {
-	return Player{
-		ID:   p.ID,
-		Name: p.Name,
-	}
-}
-
-func newPlayersFromModels(pms []model.Player) []Player {
-	ps := make([]Player, len(pms))
-	for i, pm := range pms {
-		ps[i] = newPlayerFromModel(pm)
-	}
-	return ps
-}
-
 type CreatePlayerRequest struct {
 	Player Player `json:"player"`
 }
@@ -69,39 +53,12 @@ type GetPlayerResponse struct {
 	Games  map[model.GameID]model.PlayerColor `json:"games"`
 }
 
-func NewGetPlayerResponseFromModel(pm model.Player) GetPlayerResponse {
-	return GetPlayerResponse{
-		Player: Player{
-			ID:   pm.ID,
-			Name: pm.Name,
-		},
-		Games: pm.Games,
-	}
-}
-
 type CreatePlayerResponse struct {
 	Player Player
-}
-
-func NewCreatePlayerResponseFromModel(pm model.Player) CreatePlayerResponse {
-	return CreatePlayerResponse{
-		Player: Player{
-			ID:   pm.ID,
-			Name: pm.Name,
-		},
-	}
 }
 
 type Card struct {
 	Suit  string
 	Value int
 	Name  string
-}
-
-func newCardFromModel(c model.Card) Card {
-	return Card{
-		Suit:  c.Suit.String(),
-		Value: c.Value,
-		Name:  c.String(),
-	}
 }
