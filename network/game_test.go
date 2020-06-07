@@ -209,7 +209,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		game    model.Game
 		expResp GetGameResponse
 	}{{
-		desc:   `shouldn't return the other player's hand or the crib in early phase`,
+		desc:   `should only return the cards which have been revealed to player a`,
 		player: `a`,
 		expErr: false,
 		game: model.Game{
@@ -282,6 +282,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			CurrentDealer: `b`,
 			Hands: map[model.PlayerID][]Card{
 				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
+				`b`: cardsFromStrings(`AS`),
 			},
 			Crib: nil,
 			CutCard: Card{
@@ -292,7 +293,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			PeggedCards: cardsFromStrings(`AH`, `AS`),
 		},
 	}, {
-		desc:   `shouldn't return the other player's hand or the crib in early phase`,
+		desc:   `should only return the cards which have been revealed to player b`,
 		player: `b`,
 		expErr: false,
 		game: model.Game{
@@ -364,6 +365,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: `b`,
 			Hands: map[model.PlayerID][]Card{
+				`a`: cardsFromStrings(`AH`),
 				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
 			Crib: nil,

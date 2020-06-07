@@ -34,16 +34,27 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 		return GetGameResponse{}, errors.New(`player does not exist in game`)
 	}
 	resp := ConvertToGetGameResponse(g)
-	resp.Hands = convertHands(g.Hands)
-	if g.Phase < model.Counting {
-		resp.Hands = map[model.PlayerID][]Card{
-			pID: resp.Hands[pID],
-		}
-	}
+	resp.Hands = getRevealedCards(g, pID)
 	if g.Phase >= model.CribCounting {
 		resp.Crib = convertCards(g.Crib)
 	}
 	return resp, nil
+}
+
+func getRevealedCards(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {
+	rev := make(map[model.PlayerID][]Card, len(g.Players))
+	for pID := range rev {
+		// we don't know how many cards will be revealed, but we know it's a max of 4
+		rev[pID] = make([]Card, 0, 4)
+	}
+	for _, c := range g.PeggedCards {
+		if c.PlayerID == me {
+			continue
+		}
+		rev[c.PlayerID] = append(rev[c.PlayerID], newCardFromModel(c.Card))
+	}
+	rev[me] = convertCards(g.Hands[me])
+	return rev
 }
 
 func ConvertToCreateGameResponse(g model.Game) CreateGameResponse {
