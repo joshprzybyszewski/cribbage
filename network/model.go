@@ -54,7 +54,12 @@ type GetPlayerResponse struct {
 }
 
 type Card struct {
-	Suit  string
-	Value int
-	Name  string
+	Suit  string `json:"suit"`
+	Value int    `json:"value"`
+	Name  string `json:"name"`
+}
+
+type PeggedCard struct {
+	Card   Card           `json:"card"`
+	Player model.PlayerID `json:"player"`
 }
