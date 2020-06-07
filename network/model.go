@@ -53,8 +53,8 @@ type CreatePlayerResponse struct {
 }
 
 type GetPlayerResponse struct {
-	Player Player                             `json:"player"`
-	Games  map[model.GameID]model.PlayerColor `json:"games"`
+	Player Player                  `json:"player"`
+	Games  map[model.GameID]string `json:"games"`
 }
 
 type Card struct {

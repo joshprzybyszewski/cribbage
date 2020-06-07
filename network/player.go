@@ -23,8 +23,16 @@ func NewGetPlayerResponseFromModel(pm model.Player) GetPlayerResponse {
 			ID:   pm.ID,
 			Name: pm.Name,
 		},
-		Games: pm.Games,
+		Games: convertGames(pm.Games),
 	}
+}
+
+func convertGames(modelGames map[model.GameID]model.PlayerColor) map[model.GameID]string {
+	games := make(map[model.GameID]string, len(modelGames))
+	for g, c := range modelGames {
+		games[g] = c.String()
+	}
+	return games
 }
 
 func NewCreatePlayerResponseFromModel(pm model.Player) CreatePlayerResponse {
