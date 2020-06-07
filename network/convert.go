@@ -30,14 +30,6 @@ func convertBlockingPlayers(bs map[model.PlayerID]model.Blocker) map[model.Playe
 	return blockers
 }
 
-func convertHands(mHands map[model.PlayerID][]model.Card) map[model.PlayerID][]Card {
-	hands := make(map[model.PlayerID][]Card, len(mHands))
-	for p, h := range mHands {
-		hands[p] = convertCards(h)
-	}
-	return hands
-}
-
 func convertCards(mCards []model.Card) []Card {
 	cards := make([]Card, len(mCards))
 	for i, c := range mCards {
