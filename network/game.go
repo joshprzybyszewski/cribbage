@@ -13,8 +13,6 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 		Phase:           g.Phase.String(),
 		BlockingPlayers: convertBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
-		Hands:           convertHands(g.Hands),
-		Crib:            convertCards(g.Crib),
 		CutCard:         newCardFromModel(g.CutCard),
 		PeggedCards:     convertPeggedCards(g.PeggedCards),
 	}
@@ -22,13 +20,14 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 
 func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) GetGameResponse {
 	resp := NewGetGameResponse(g)
+	resp.Hands = convertHands(g.Hands)
 	if g.Phase < model.Counting {
 		resp.Hands = map[model.PlayerID][]Card{
 			pID: resp.Hands[pID],
 		}
 	}
-	if g.Phase < model.CribCounting {
-		resp.Crib = nil
+	if g.Phase >= model.CribCounting {
+		resp.Crib = convertCards(g.Crib)
 	}
 	return resp
 }
