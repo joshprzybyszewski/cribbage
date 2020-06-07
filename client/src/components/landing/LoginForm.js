@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -6,12 +6,19 @@ import { connect } from 'react-redux';
 import { authActions } from '../../sagas/actions';
 
 const LoginForm = ({ login }) => {
+  const [playerID, setPlayerID] = useState('');
   return (
     <div className='max-w-sm m-auto mt-4'>
       <h1 className='text-4xl'>Login to Cribbage</h1>
-      <form>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          login(playerID);
+        }}
+      >
         <input
           placeholder='Username'
+          onChange={e => setPlayerID(e.target.value)}
           className='pl-2 h-8 shadow-sm rounded-lg block w-full focus:outline-none focus:shadow-md'
         ></input>
         <p className='mt-1 text-xs text-gray-600'>
@@ -38,7 +45,7 @@ LoginForm.propTypes = {
 
 const mapDispatchToProps = dispatch => {
   return {
-    login: formData => dispatch(authActions.login(formData.id)),
+    login: id => dispatch(authActions.login(id)),
   };
 };
 

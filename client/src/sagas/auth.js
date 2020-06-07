@@ -12,6 +12,7 @@ export function* watchLogout() {
 
 export function* logout() {
   yield put({ type: auth.reducer.LOGOUT });
+  yield put(push('/'));
 }
 
 // login
@@ -45,7 +46,6 @@ export function* watchRegisterAsync() {
 export function* registerAsync({ payload: { id, name } }) {
   try {
     const res = yield axios.post('/create/player', { player: { id, name } });
-    console.log(res);
     yield put({
       type: auth.reducer.REGISTER,
       payload: { id: res.data.player.id, name: res.data.player.name },

@@ -14,14 +14,23 @@ const Navbar = ({ currentUser, logout }) => {
       >
         Cribbage
       </Link>
-      <div className='flex'>
-        <Link to='/login' className='px-2 hover:text-white'>
-          Login
-        </Link>
-        <Link to='/' className='px-2 hover:text-white'>
-          Register
-        </Link>
-      </div>
+      {currentUser.id === '' ? (
+        <div className='flex'>
+          <Link to='/login' className='px-2 hover:text-white'>
+            Login
+          </Link>
+          <Link to='/' className='px-2 hover:text-white'>
+            Register
+          </Link>
+        </div>
+      ) : (
+        <button
+          onClick={() => logout()}
+          className='focus:outline-none hover:text-white'
+        >
+          LOGOUT
+        </button>
+      )}
     </nav>
   );
 };
