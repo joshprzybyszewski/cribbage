@@ -54,7 +54,7 @@ type GetPlayerResponse struct {
 }
 
 type CreatePlayerResponse struct {
-	Player Player
+	Player Player `json:"player"`
 }
 
 type Card struct {
