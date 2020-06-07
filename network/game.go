@@ -1,6 +1,10 @@
 package network
 
-import "github.com/joshprzybyszewski/cribbage/model"
+import (
+	"errors"
+
+	"github.com/joshprzybyszewski/cribbage/model"
+)
 
 func NewGetGameResponse(g model.Game) GetGameResponse {
 	currentScores, lagScores := convertScores(g.CurrentScores, g.LagScores)
@@ -18,7 +22,17 @@ func NewGetGameResponse(g model.Game) GetGameResponse {
 	}
 }
 
-func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) GetGameResponse {
+func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
+	pIsInGame := false
+	for _, p := range g.Players {
+		if p.ID == pID {
+			pIsInGame = true
+			break
+		}
+	}
+	if !pIsInGame {
+		return GetGameResponse{}, errors.New(`player does not exist in game`)
+	}
 	resp := NewGetGameResponse(g)
 	resp.Hands = convertHands(g.Hands)
 	if g.Phase < model.Counting {
@@ -29,7 +43,7 @@ func NewGetGameResponseForPlayer(g model.Game, pID model.PlayerID) GetGameRespon
 	if g.Phase >= model.CribCounting {
 		resp.Crib = convertCards(g.Crib)
 	}
-	return resp
+	return resp, nil
 }
 
 func NewCreateGameResponse(g model.Game) CreateGameResponse {

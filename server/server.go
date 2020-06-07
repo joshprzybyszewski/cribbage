@@ -220,6 +220,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	c.String(http.StatusOK, `Updated player interaction`)
 }
 
+// GET /game/:gameID?player=<playerID>
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	gID, err := getGameIDFromContext(c)
 	if err != nil {
@@ -244,7 +245,19 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	c.JSON(http.StatusOK, network.NewGetGameResponse(g))
+
+	pID := c.Query(`player`)
+	if pID == `` {
+		resp := network.NewGetGameResponse(g)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp, err := network.NewGetGameResponseForPlayer(g, model.PlayerID(pID))
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 func getGameIDFromContext(c *gin.Context) (model.GameID, error) {

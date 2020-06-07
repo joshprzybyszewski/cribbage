@@ -141,11 +141,13 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 	tests := []struct {
 		desc    string
 		player  model.PlayerID
+		expErr  bool
 		game    model.Game
 		expResp GetGameResponse
 	}{{
 		desc:   `shouldn't return the other player's hand or the crib in early phase`,
 		player: `a`,
+		expErr: false,
 		game: model.Game{
 			ID: model.GameID(123456),
 			Players: []model.Player{{
@@ -228,6 +230,7 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 	}, {
 		desc:   `shouldn't return the other player's hand or the crib in early phase`,
 		player: `b`,
+		expErr: false,
 		game: model.Game{
 			ID: model.GameID(123456),
 			Players: []model.Player{{
@@ -310,6 +313,7 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 	}, {
 		desc:   `should return both hands but no crib after counting`,
 		player: `b`,
+		expErr: false,
 		game: model.Game{
 			ID: model.GameID(123456),
 			Players: []model.Player{{
@@ -417,6 +421,7 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 	}, {
 		desc:   `should return both hands and crib after counting crib`,
 		player: `b`,
+		expErr: false,
 		game: model.Game{
 			ID: model.GameID(123456),
 			Players: []model.Player{{
@@ -521,9 +526,53 @@ func TestNewGetGameResponseForPlayer(t *testing.T) {
 			},
 			PeggedCards: cardsFromStrings(`AH`, `AS`, `2H`, `2S`, `3H`, `3S`, `4H`, `4S`),
 		},
+	}, {
+		desc:   `player not in game`,
+		player: `c`,
+		expErr: true,
+		game: model.Game{
+			ID: model.GameID(123456),
+			Players: []model.Player{{
+				ID:   `a`,
+				Name: `a`,
+			}, {
+				ID:   `b`,
+				Name: `b`,
+			}},
+			PlayerColors: map[model.PlayerID]model.PlayerColor{
+				`a`: model.Blue,
+				`b`: model.Red,
+			},
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue: 11,
+				model.Red:  22,
+			},
+			LagScores: map[model.PlayerColor]int{
+				model.Blue: 10,
+				model.Red:  20,
+			},
+			Phase: model.Pegging,
+			BlockingPlayers: map[model.PlayerID]model.Blocker{
+				`a`: model.PegCard,
+			},
+			CurrentDealer: `b`,
+			Hands: map[model.PlayerID][]model.Card{
+				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+			},
+			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			CutCard: model.NewCardFromString(`5c`),
+		},
+		expResp: GetGameResponse{},
 	}}
 	for _, tc := range tests {
-		resp := NewGetGameResponseForPlayer(tc.game, tc.player)
+		resp, err := NewGetGameResponseForPlayer(tc.game, tc.player)
+
+		if tc.expErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
