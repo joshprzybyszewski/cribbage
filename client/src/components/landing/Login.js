@@ -32,7 +32,7 @@ const LoginForm = ({ login }) => {
         <input
           type='submit'
           value='login'
-          className='mt-1 px-4 py-1 rounded-lg text-lg text-gray-300 uppercase bg-blue-800 focus:outline-none hover:bg-blue-700 hover:text-white cursor-pointer'
+          className='mt-1 btn btn-primary'
         ></input>
       </form>
     </div>

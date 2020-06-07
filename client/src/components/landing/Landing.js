@@ -43,7 +43,7 @@ const Landing = ({ register }) => {
         <input
           type='submit'
           value='register'
-          className='mt-1 px-4 py-1 rounded-lg text-lg text-gray-300 uppercase bg-blue-800 hover:bg-blue-700 focus:outline-none hover:text-white cursor-pointer'
+          className='mt-1 btn btn-primary'
         ></input>
       </form>
     </div>

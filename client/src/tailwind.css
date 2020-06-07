@@ -2,4 +2,20 @@
 
 @tailwind components;
 
+.btn {
+  @apply rounded-lg text-lg px-4 py-1 uppercase cursor-pointer;
+}
+
+.btn:focus {
+  @apply outline-none;
+}
+
+.btn-primary {
+  @apply text-gray-300 bg-blue-800;
+}
+
+.btn-primary:hover {
+  @apply bg-blue-700 text-white;
+}
+
 @tailwind utilities;
