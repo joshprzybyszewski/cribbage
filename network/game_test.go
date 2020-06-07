@@ -23,6 +23,69 @@ func cardsFromStrings(cs ...string) []Card {
 	return hand
 }
 
+func TestNewCreateGameResponse(t *testing.T) {
+	tests := []struct {
+		desc    string
+		game    model.Game
+		expResp CreateGameResponse
+	}{{
+		desc: ``,
+		game: model.Game{
+			ID: model.GameID(123456),
+			Players: []model.Player{{
+				ID:   `a`,
+				Name: `a`,
+			}, {
+				ID:   `b`,
+				Name: `b`,
+			}},
+			PlayerColors: map[model.PlayerID]model.PlayerColor{
+				`a`: model.Blue,
+				`b`: model.Red,
+			},
+			CurrentScores: map[model.PlayerColor]int{
+				model.Blue: 0,
+				model.Red:  0,
+			},
+			LagScores: map[model.PlayerColor]int{
+				model.Red:  0,
+				model.Blue: 0,
+			},
+			Phase: model.Deal,
+			BlockingPlayers: map[model.PlayerID]model.Blocker{
+				`b`: model.DealCards,
+			},
+			CurrentDealer: `b`,
+			Hands:         map[model.PlayerID][]model.Card{},
+			Crib:          []model.Card{},
+			CutCard:       model.Card{},
+			PeggedCards:   []model.PeggedCard{},
+		},
+		expResp: CreateGameResponse{
+			ID: model.GameID(123456),
+			Players: []Player{{
+				ID:   `a`,
+				Name: `a`,
+			}, {
+				ID:   `b`,
+				Name: `b`,
+			}},
+			PlayerColors: map[model.PlayerID]string{
+				`a`: `blue`,
+				`b`: `red`,
+			},
+			BlockingPlayers: map[model.PlayerID]string{
+				`b`: `DealCards`,
+			},
+			CurrentDealer: `b`,
+		},
+	}}
+	for _, tc := range tests {
+		resp := NewCreateGameResponse(tc.game)
+		assert.Equal(t, tc.expResp, resp, tc.desc)
+	}
+}
+
 func TestNewGetGameResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
