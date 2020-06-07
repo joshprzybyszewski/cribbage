@@ -1,4 +1,4 @@
-import { auth, alert } from './types';
+import { auth, alert, game } from './types';
 
 const addAlert = (msg, type) => ({
   type: alert.ADD_ALERT,
@@ -28,3 +28,12 @@ export const authActions = {
   login,
   register,
 };
+
+const viewGame = id => ({
+  type: game.VIEW_GAME,
+  payload: id,
+});
+
+export const gameActions = {
+  viewGame,
+}

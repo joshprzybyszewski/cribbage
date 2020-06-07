@@ -19,3 +19,13 @@ export const alert = {
   },
   ADD_ALERT: 'ADD_ALERT',
 };
+
+export const game = {
+  reducer: {
+    VIEW_GAME: 'VIEW_GAME_REDUCER',
+    VIEW_GAME_FAILED: 'VIEW_GAME_FAILED_REDUCER',
+    EXIT_GAME: 'EXIT_GAME_REDUCER',
+  },
+  VIEW_GAME: 'VIEW_GAME',
+  EXIT_GAME: 'EXIT_GAME',
+};
