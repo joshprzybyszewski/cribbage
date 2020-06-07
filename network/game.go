@@ -57,7 +57,7 @@ func convertScores(modelCurrentScores, modelLagScores map[model.PlayerColor]int)
 	}
 	lag := make(map[string]int, len(modelLagScores))
 	for c, s := range modelLagScores {
-		current[c.String()] = s
+		lag[c.String()] = s
 	}
 	return current, lag
 }
