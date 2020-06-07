@@ -28,7 +28,7 @@ const Navbar = ({ currentUser, logout }) => {
           onClick={() => logout()}
           className='focus:outline-none hover:text-white'
         >
-          LOGOUT
+          Logout
         </button>
       )}
     </nav>
