@@ -37,11 +37,8 @@ func NewCreateGameResponse(g model.Game) CreateGameResponse {
 	return CreateGameResponse{
 		ID:              g.ID,
 		Players:         newPlayersFromModels(g.Players),
-		PlayerColors:    g.PlayerColors,
-		CurrentScores:   g.CurrentScores,
-		LagScores:       g.LagScores,
-		Phase:           g.Phase,
-		BlockingPlayers: g.BlockingPlayers,
+		PlayerColors:    convertColors(g.PlayerColors),
+		BlockingPlayers: convertBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
 	}
 }

@@ -32,16 +32,12 @@ type CreateGameRequest struct {
 	PlayerIDs []model.PlayerID `json:"playerIDs"`
 }
 
-// TODO figure out the minimum info the client will need
 type CreateGameResponse struct {
-	ID              model.GameID                         `json:"id"`
-	Players         []Player                             `json:"players"`
-	PlayerColors    map[model.PlayerID]model.PlayerColor `json:"player_colors,omitempty"`
-	CurrentScores   map[model.PlayerColor]int            `json:"current_scores"`
-	LagScores       map[model.PlayerColor]int            `json:"lag_scores"`
-	Phase           model.Phase                          `json:"phase"`
-	BlockingPlayers map[model.PlayerID]model.Blocker     `json:"blocking_players,omitempty"`
-	CurrentDealer   model.PlayerID                       `json:"current_dealer"`
+	ID              model.GameID              `json:"id"`
+	Players         []Player                  `json:"players"`
+	PlayerColors    map[model.PlayerID]string `json:"player_colors,omitempty"`
+	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
+	CurrentDealer   model.PlayerID            `json:"current_dealer"`
 }
 
 type Player struct {
