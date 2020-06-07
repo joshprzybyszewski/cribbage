@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Alert as AntAlert } from 'antd';
 
+// TODO replace the ant component here with tailwind styled stuff
+
 const Alert = ({ alerts }) => {
   return (
     <div>
