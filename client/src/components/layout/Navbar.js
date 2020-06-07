@@ -9,12 +9,12 @@ const Navbar = ({ currentUser, logout }) => {
   return (
     <nav className='h-12 px-4 bg-blue-900 flex justify-between items-center text-gray-400'>
       <Link
-        to='/'
+        to={currentUser.loggedIn ? '/home' : '/'}
         className='uppercase text-xl tracking-wider hover:text-white'
       >
         Cribbage
       </Link>
-      {currentUser.id === '' ? (
+      {!currentUser.loggedIn ? (
         <div className='flex'>
           <Link to='/login' className='px-2 hover:text-white'>
             Login
