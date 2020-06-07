@@ -92,7 +92,7 @@ func (b Blocker) String() string {
 	case DealCards:
 		return `DealCards`
 	case CribCard:
-		return `CribCard`
+		return `AddToCrib`
 	case CutCard:
 		return `CutCard`
 	case PegCard:
@@ -102,7 +102,7 @@ func (b Blocker) String() string {
 	case CountCrib:
 		return `CountCrib`
 	}
-	return `InvalidBLocker`
+	return `InvalidBlocker`
 }
 
 type CribBlocker struct {

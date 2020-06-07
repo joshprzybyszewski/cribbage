@@ -3,8 +3,9 @@ package network
 import (
 	"testing"
 
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func modelCardsFromStrings(cs ...string) []model.Card {

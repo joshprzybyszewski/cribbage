@@ -17,14 +17,10 @@ type GetGameResponse struct {
 	Phase           string                    `json:"phase"`
 	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID            `json:"current_dealer"`
-
-	// Scrub out the other players' hands when returning this
-	Hands map[model.PlayerID][]Card `json:"hands,omitempty"`
-	// Scrub out the crib until the phase is correct
-	Crib []Card `json:"crib,omitempty"`
-
-	CutCard     Card   `json:"cut_card"`
-	PeggedCards []Card `json:"pegged_cards,omitempty"`
+	Hands           map[model.PlayerID][]Card `json:"hands,omitempty"`
+	Crib            []Card                    `json:"crib,omitempty"`
+	CutCard         Card                      `json:"cut_card"`
+	PeggedCards     []Card                    `json:"pegged_cards,omitempty"`
 }
 
 type CreateGameRequest struct {
