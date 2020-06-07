@@ -2,18 +2,23 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-const Game = ({ me, gameID }) => {
-  return <div>Welcome, {me.name} to game {gameID}! Your ID is {me.id}</div>;
+const Game = ({ me, game }) => {
+  return <div>
+    Welcome, {me.name} to game {game.gameID}!
+    Your ID is {me.id}.
+    Players are {game.players.toString()}.
+    Phase is {game.phase}.
+    </div>;
 };
 
 Game.propTypes = {
   me: PropTypes.object.isRequired,
-  gameID: PropTypes.object.isRequired,
+  game: PropTypes.object.isRequired,
 };
 
 const mapStateToProps = state => ({
   me: state.auth,
-  gameID: state.gameID,
+  game: state.game,
 });
 
 export default connect(mapStateToProps, null)(Game);

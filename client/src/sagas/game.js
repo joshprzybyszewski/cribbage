@@ -20,15 +20,16 @@ export function* watchGameView() {
 export function* viewGame({ payload }) {
   try {
     const res = yield axios.get(`/game/${payload}`);
-    const gameID = res.data.GameID;
+    const gameID = res.data.id;
     yield put({
       type: game.reducer.VIEW_GAME,
-      payload: { 
-          gameID: gameID,
-          gameJSON: res.data,
-        },
+      payload: {
+        gameID: res.data.id,
+        phase: res.data.phase,
+        players: res.data.players,
+      },
     });
-    yield put(alertActions.addAlert('Viewing Game!', 'success'));
+    yield put(alertActions.addAlert(`Viewing Game ${gameID}!`, 'success'));
     yield put(push(`/game/${gameID}`));
   } catch (err) {
     yield put({

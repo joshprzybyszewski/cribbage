@@ -29,9 +29,9 @@ export const authActions = {
   register,
 };
 
-const viewGame = id => ({
+const viewGame = g => ({
   type: game.VIEW_GAME,
-  payload: id,
+  payload: g,
 });
 
 export const gameActions = {

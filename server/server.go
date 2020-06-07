@@ -226,6 +226,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	c.String(http.StatusOK, `Updated player interaction`)
 }
 
+// GET /game/gameID
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	gID, err := getGameIDFromContext(c)
 	if err != nil {
