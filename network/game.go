@@ -51,11 +51,11 @@ func ConvertToGetGameResponse(g model.Game) GetGameResponse {
 		PlayerColors:    convertToColors(g.PlayerColors),
 		CurrentScores:   currentScores,
 		LagScores:       lagScores,
-		Phase:           g.Phase.String(),
+		Phase:           convertToPhase(g.Phase),
 		BlockingPlayers: convertToBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
 		CutCard:         convertToCard(g.CutCard),
-		PeggedCards:     convertPeggedCards(g.PeggedCards),
+		PeggedCards:     convertToPeggedCards(g.PeggedCards),
 	}
 }
 
@@ -76,6 +76,22 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 		resp.Crib = convertToCards(g.Crib)
 	}
 	return resp, nil
+}
+
+func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
+	currentScores, lagScores := convertFromScores(g.CurrentScores, g.LagScores)
+	return model.Game{
+		ID:              g.ID,
+		Players:         convertFromPlayers(g.Players),
+		PlayerColors:    convertFromColors(g.PlayerColors),
+		CurrentScores:   currentScores,
+		LagScores:       lagScores,
+		Phase:           convertFromPhase(g.Phase),
+		BlockingPlayers: convertFromBlockingPlayers(g.BlockingPlayers),
+		CurrentDealer:   g.CurrentDealer,
+		CutCard:         convertFromCard(g.CutCard),
+		PeggedCards:     convertFromPeggedCards(g.PeggedCards),
+	}
 }
 
 func getRevealedCards(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {

@@ -16,6 +16,14 @@ func convertToCards(mCards []model.Card) []Card {
 	return cards
 }
 
+func convertFromCards(cs []Card) []model.Card {
+	mcs := make([]model.Card, len(cs))
+	for i, c := range cs {
+		mcs[i] = convertFromCard(c)
+	}
+	return mcs
+}
+
 func convertToCard(c model.Card) Card {
 	return Card{
 		Suit:  c.Suit.String(),
@@ -24,16 +32,30 @@ func convertToCard(c model.Card) Card {
 	}
 }
 
+func convertFromCard(c Card) model.Card {
+	return model.NewCardFromString(c.Name)
+}
+
 type PeggedCard struct {
 	Card   Card           `json:"card"`
 	Player model.PlayerID `json:"player"`
 }
 
-func convertPeggedCards(mPeggedCards []model.PeggedCard) []PeggedCard {
+func convertToPeggedCards(mPeggedCards []model.PeggedCard) []PeggedCard {
 	cards := make([]PeggedCard, len(mPeggedCards))
 	for i, pc := range mPeggedCards {
 		cards[i].Card = convertToCard(pc.Card)
 		cards[i].Player = pc.PlayerID
 	}
 	return cards
+}
+
+func convertFromPeggedCards(pcs []PeggedCard) []model.PeggedCard {
+	mpcs := make([]model.PeggedCard, len(pcs))
+	for i, pc := range pcs {
+		mpcs[i].Card = convertFromCard(pc.Card)
+		mpcs[i].Action = i
+		mpcs[i].PlayerID = pc.Player
+	}
+	return mpcs
 }
