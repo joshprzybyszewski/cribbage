@@ -9,7 +9,6 @@ import (
 
 	"honnef.co/go/js/dom/v2"
 
-	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
@@ -74,17 +73,18 @@ func getListenersForCreateGame(myID model.PlayerID) []Releaser {
 				println("Got error on json.Marshal: " + err.Error())
 				return
 			}
-			bytes, err := actions.MakeRequest(`POST`, `/create/game`, bytes.NewBuffer(inputBytes))
+			respBytes, err := actions.MakeRequest(`POST`, `/create/game`, bytes.NewBuffer(inputBytes))
 			if err != nil {
 				println("Got error on MakeRequest: " + err.Error())
 				return
 			}
-			g, err := jsonutils.UnmarshalGame(bytes)
+			cgr := network.CreateGameResponse{}
+			err = json.Unmarshal(respBytes, &cgr)
 			if err != nil {
-				println("Got error on UnmarshalGame: " + err.Error())
+				println("Got error on json.Unmarshal CreateGameResponse: " + err.Error())
 				return
 			}
-			gIDStr := fmt.Sprintf("%v", g.ID)
+			gIDStr := fmt.Sprintf("%v", cgr.ID)
 			goToPath(`/user/` + myUsername + `/game/` + gIDStr)
 		}()
 	})
