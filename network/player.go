@@ -2,37 +2,17 @@ package network
 
 import "github.com/joshprzybyszewski/cribbage/model"
 
-func newPlayerFromModel(p model.Player) Player {
-	return Player{
-		ID:   p.ID,
-		Name: p.Name,
-	}
+type Player struct {
+	ID   model.PlayerID `json:"id"`
+	Name string         `json:"name"`
 }
 
-func newPlayersFromModels(pms []model.Player) []Player {
-	ps := make([]Player, len(pms))
-	for i, pm := range pms {
-		ps[i] = newPlayerFromModel(pm)
-	}
-	return ps
+type CreatePlayerRequest struct {
+	Player Player `json:"player"`
 }
 
-func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
-	return GetPlayerResponse{
-		Player: Player{
-			ID:   p.ID,
-			Name: p.Name,
-		},
-		Games: convertGames(p.Games),
-	}
-}
-
-func convertGames(modelGames map[model.GameID]model.PlayerColor) map[model.GameID]string {
-	games := make(map[model.GameID]string, len(modelGames))
-	for g, c := range modelGames {
-		games[g] = c.String()
-	}
-	return games
+type CreatePlayerResponse struct {
+	Player Player `json:"player"`
 }
 
 func ConvertToCreatePlayerResponse(pm model.Player) CreatePlayerResponse {
@@ -41,5 +21,43 @@ func ConvertToCreatePlayerResponse(pm model.Player) CreatePlayerResponse {
 			ID:   pm.ID,
 			Name: pm.Name,
 		},
+	}
+}
+
+type GetPlayerResponse struct {
+	Player Player                  `json:"player"`
+	Games  map[model.GameID]string `json:"games"`
+}
+
+func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
+	return GetPlayerResponse{
+		Player: Player{
+			ID:   p.ID,
+			Name: p.Name,
+		},
+		Games: convertToParticipatingGames(p.Games),
+	}
+}
+
+func convertToParticipatingGames(modelGames map[model.GameID]model.PlayerColor) map[model.GameID]string {
+	games := make(map[model.GameID]string, len(modelGames))
+	for g, c := range modelGames {
+		games[g] = c.String()
+	}
+	return games
+}
+
+func convertToPlayers(pms []model.Player) []Player {
+	ps := make([]Player, len(pms))
+	for i, pm := range pms {
+		ps[i] = convertToPlayer(pm)
+	}
+	return ps
+}
+
+func convertToPlayer(p model.Player) Player {
+	return Player{
+		ID:   p.ID,
+		Name: p.Name,
 	}
 }

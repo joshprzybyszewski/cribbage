@@ -19,14 +19,14 @@ func modelCardsFromStrings(cs ...string) []model.Card {
 func cardsFromStrings(cs ...string) []Card {
 	hand := make([]Card, len(cs))
 	for i, c := range cs {
-		hand[i] = newCardFromModel(model.NewCardFromString(c))
+		hand[i] = convertToCard(model.NewCardFromString(c))
 	}
 	return hand
 }
 
 func newPeggedCard(c string, pID model.PlayerID) PeggedCard {
 	return PeggedCard{
-		Card:   newCardFromModel(model.NewCardFromString(c)),
+		Card:   convertToCard(model.NewCardFromString(c)),
 		Player: pID,
 	}
 }
