@@ -38,10 +38,11 @@ func convertCards(mCards []model.Card) []Card {
 	return cards
 }
 
-func convertPeggedCards(mPeggedCards []model.PeggedCard) []Card {
-	cards := make([]Card, len(mPeggedCards))
+func convertPeggedCards(mPeggedCards []model.PeggedCard) []PeggedCard {
+	cards := make([]PeggedCard, len(mPeggedCards))
 	for i, pc := range mPeggedCards {
-		cards[i] = newCardFromModel(pc.Card)
+		cards[i].Card = newCardFromModel(pc.Card)
+		cards[i].Player = pc.PlayerID
 	}
 	return cards
 }

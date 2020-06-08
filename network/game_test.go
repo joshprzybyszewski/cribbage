@@ -24,6 +24,13 @@ func cardsFromStrings(cs ...string) []Card {
 	return hand
 }
 
+func newPeggedCard(c string, pID model.PlayerID) PeggedCard {
+	return PeggedCard{
+		Card:   newCardFromModel(model.NewCardFromString(c)),
+		Player: pID,
+	}
+}
+
 func TestConvertToCreateGameResponse(t *testing.T) {
 	tests := []struct {
 		desc    string
@@ -193,7 +200,16 @@ func TestConvertToGetGameResponse(t *testing.T) {
 				Value: 5,
 				Name:  `5C`,
 			},
-			PeggedCards: cardsFromStrings(`AH`, `AS`, `2H`, `2S`, `3H`, `3S`, `4H`, `4S`),
+			PeggedCards: []PeggedCard{
+				newPeggedCard(`AH`, `a`),
+				newPeggedCard(`AS`, `b`),
+				newPeggedCard(`2H`, `a`),
+				newPeggedCard(`2S`, `b`),
+				newPeggedCard(`3H`, `a`),
+				newPeggedCard(`3S`, `b`),
+				newPeggedCard(`4H`, `a`),
+				newPeggedCard(`4S`, `b`),
+			},
 		},
 	}}
 	for _, tc := range tests {
@@ -290,7 +306,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				Value: 5,
 				Name:  `5C`,
 			},
-			PeggedCards: cardsFromStrings(`AH`, `AS`),
+			PeggedCards: []PeggedCard{
+				newPeggedCard(`AH`, `a`),
+				newPeggedCard(`AS`, `b`),
+			},
 		},
 	}, {
 		desc:   `should only return the cards which have been revealed to player b`,
@@ -374,7 +393,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				Value: 5,
 				Name:  `5C`,
 			},
-			PeggedCards: cardsFromStrings(`AH`, `AS`),
+			PeggedCards: []PeggedCard{
+				newPeggedCard(`AH`, `a`),
+				newPeggedCard(`AS`, `b`),
+			},
 		},
 	}, {
 		desc:   `should return both hands but no crib after counting`,
@@ -482,7 +504,16 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				Value: 5,
 				Name:  `5C`,
 			},
-			PeggedCards: cardsFromStrings(`AH`, `AS`, `2H`, `2S`, `3H`, `3S`, `4H`, `4S`),
+			PeggedCards: []PeggedCard{
+				newPeggedCard(`AH`, `a`),
+				newPeggedCard(`AS`, `b`),
+				newPeggedCard(`2H`, `a`),
+				newPeggedCard(`2S`, `b`),
+				newPeggedCard(`3H`, `a`),
+				newPeggedCard(`3S`, `b`),
+				newPeggedCard(`4H`, `a`),
+				newPeggedCard(`4S`, `b`),
+			},
 		},
 	}, {
 		desc:   `should return both hands and crib after counting crib`,
@@ -590,7 +621,16 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				Value: 5,
 				Name:  `5C`,
 			},
-			PeggedCards: cardsFromStrings(`AH`, `AS`, `2H`, `2S`, `3H`, `3S`, `4H`, `4S`),
+			PeggedCards: []PeggedCard{
+				newPeggedCard(`AH`, `a`),
+				newPeggedCard(`AS`, `b`),
+				newPeggedCard(`2H`, `a`),
+				newPeggedCard(`2S`, `b`),
+				newPeggedCard(`3H`, `a`),
+				newPeggedCard(`3S`, `b`),
+				newPeggedCard(`4H`, `a`),
+				newPeggedCard(`4S`, `b`),
+			},
 		},
 	}, {
 		desc:   `player not in game`,

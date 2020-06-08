@@ -20,7 +20,7 @@ type GetGameResponse struct {
 	Hands           map[model.PlayerID][]Card `json:"hands,omitempty"`
 	Crib            []Card                    `json:"crib,omitempty"`
 	CutCard         Card                      `json:"cut_card"`
-	PeggedCards     []Card                    `json:"pegged_cards,omitempty"`
+	PeggedCards     []PeggedCard              `json:"pegged_cards,omitempty"`
 }
 
 type CreateGameRequest struct {
