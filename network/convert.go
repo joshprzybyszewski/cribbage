@@ -7,8 +7,7 @@ func convertToColor(c model.PlayerColor) string {
 }
 
 func convertFromColor(c string) model.PlayerColor {
-	// TODO
-	return model.Blue
+	return model.NewPlayerColorFromString(c)
 }
 
 func convertToPhase(p model.Phase) string {
@@ -16,8 +15,7 @@ func convertToPhase(p model.Phase) string {
 }
 
 func convertFromPhase(p string) model.Phase {
-	// TODO
-	return model.Pegging
+	return model.NewPhaseFromString(p)
 }
 
 func convertToBlocker(b model.Blocker) string {
@@ -25,8 +23,7 @@ func convertToBlocker(b model.Blocker) string {
 }
 
 func convertFromBlocker(b string) model.Blocker {
-	// TODO
-	return model.PegCard
+	return model.NewBlockerFromString(b)
 }
 
 func convertToColors(cs map[model.PlayerID]model.PlayerColor) map[model.PlayerID]string {
