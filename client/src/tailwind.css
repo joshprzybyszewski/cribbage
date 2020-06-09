@@ -18,4 +18,12 @@
   @apply bg-blue-700 text-white;
 }
 
+.form-input {
+  @apply pl-2 h-8 shadow-sm rounded-lg block w-full;
+}
+
+.form-input:focus {
+  @apply outline-none shadow-md;
+}
+
 @tailwind utilities;

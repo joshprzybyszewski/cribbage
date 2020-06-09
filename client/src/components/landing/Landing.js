@@ -23,14 +23,14 @@ const Landing = ({ register }) => {
           value={formData.id}
           placeholder='Username'
           required
-          className='mt-2 pl-2 h-8 shadow-sm rounded-lg block w-full focus:outline-none focus:shadow-md'
+          className='mt-2 form-input'
         ></input>
         <input
           onChange={e => setFormData({ ...formData, name: e.target.value })}
           value={formData.name}
           placeholder='Display name'
           required
-          className='mt-2 pl-2 h-8 shadow-sm rounded-lg block w-full focus:outline-none focus:shadow-md'
+          className='mt-2 form-input'
         ></input>
         <p className='mt-1 text-xs text-gray-600'>
           Already have an account?{' '}

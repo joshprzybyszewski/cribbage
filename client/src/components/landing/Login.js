@@ -19,7 +19,7 @@ const LoginForm = ({ login }) => {
         <input
           placeholder='Username'
           onChange={e => setPlayerID(e.target.value)}
-          className='pl-2 h-8 shadow-sm rounded-lg block w-full focus:outline-none focus:shadow-md'
+          className='form-input'
         ></input>
         <p className='mt-1 text-xs text-gray-600'>
           Don't have an account?{' '}
