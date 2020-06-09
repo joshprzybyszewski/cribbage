@@ -9,7 +9,7 @@ const Landing = ({ register }) => {
   const [formData, setFormData] = useState({ id: '', name: '' });
 
   return (
-    <div className='max-w-sm m-auto mt-4'>
+    <div className='max-w-sm m-auto mt-12'>
       <h1 className='text-4xl'>Welcome to Cribbage!</h1>
       <p>Play cribbage against your friends online. Get started now!</p>
       <form

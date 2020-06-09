@@ -8,7 +8,7 @@ import { authActions } from '../../sagas/actions';
 const LoginForm = ({ login }) => {
   const [playerID, setPlayerID] = useState('');
   return (
-    <div className='max-w-sm m-auto mt-4'>
+    <div className='max-w-sm m-auto mt-12'>
       <h1 className='text-4xl'>Login to Cribbage</h1>
       <form
         onSubmit={e => {
