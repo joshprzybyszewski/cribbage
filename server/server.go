@@ -27,13 +27,8 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 	}
 }
 
-func (cs *cribbageServer) NewRouter(useDefaultMiddleware bool) http.Handler {
-	var router *gin.Engine
-	if useDefaultMiddleware {
-		router = gin.Default()
-	} else {
-		router = gin.New()
-	}
+func (cs *cribbageServer) NewRouter() http.Handler {
+	router := gin.Default()
 
 	// Simple group: create
 	create := router.Group(`/create`)
@@ -75,7 +70,7 @@ func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 }
 
 func (cs *cribbageServer) Serve() {
-	router := cs.NewRouter(true)
+	router := cs.NewRouter()
 	eng, ok := router.(*gin.Engine)
 	if !ok {
 		log.Println(`router type assertion failed`)
@@ -124,8 +119,7 @@ func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
 		return
 	}
 
-	// TODO investigate what it'll take to protobuf-ify our models
-	c.JSON(http.StatusOK, network.NewGameResponse(g))
+	c.JSON(http.StatusOK, network.ConvertToCreateGameResponse(g))
 }
 
 // POST /create/player
@@ -136,15 +130,15 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	if cpr.ID == model.InvalidPlayerID {
+	if cpr.Player.ID == model.InvalidPlayerID {
 		c.String(http.StatusBadRequest, `Username is required`)
 		return
 	}
-	if cpr.Name == `` {
+	if cpr.Player.Name == `` {
 		c.String(http.StatusBadRequest, `Display name is required`)
 		return
 	}
-	if !model.IsValidPlayerID(cpr.ID) {
+	if !model.IsValidPlayerID(cpr.Player.ID) {
 		c.String(http.StatusBadRequest, `Username must be alphanumeric`)
 		return
 	}
@@ -158,8 +152,8 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 	defer db.Close()
 
 	p := model.Player{
-		ID:   cpr.ID,
-		Name: cpr.Name,
+		ID:   cpr.Player.ID,
+		Name: cpr.Player.Name,
 	}
 	err = createPlayer(ctx, db, p)
 	if err != nil {
@@ -171,7 +165,7 @@ func (cs *cribbageServer) ginPostCreatePlayer(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, network.PlayerResponse(p))
+	c.JSON(http.StatusOK, network.ConvertToCreatePlayerResponse(p))
 }
 
 func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
@@ -226,7 +220,7 @@ func (cs *cribbageServer) ginPostCreateInteraction(c *gin.Context) {
 	c.String(http.StatusOK, `Updated player interaction`)
 }
 
-// GET /game/gameID
+// GET /game/:gameID?player=<playerID>
 func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 	gID, err := getGameIDFromContext(c)
 	if err != nil {
@@ -251,8 +245,19 @@ func (cs *cribbageServer) ginGetGame(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO investigate what it'll take to protobuf-ify our models
-	c.JSON(http.StatusOK, network.NewGameResponse(g))
+
+	pID := c.Query(`player`)
+	if pID == `` {
+		resp := network.ConvertToGetGameResponse(g)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp, err := network.ConvertToGetGameResponseForPlayer(g, model.PlayerID(pID))
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 func getGameIDFromContext(c *gin.Context) (model.GameID, error) {
@@ -285,9 +290,8 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		c.String(http.StatusInternalServerError, `Error: %s`, err)
 		return
 	}
-	// TODO investigate what it'll take to protobuf-ify our models
-	// TODO rename the network model so it makes sense here
-	c.JSON(http.StatusOK, network.PlayerResponse(p))
+	resp := network.ConvertToGetPlayerResponse(p)
+	c.JSON(http.StatusOK, resp)
 }
 
 func (cs *cribbageServer) ginPostAction(c *gin.Context) {

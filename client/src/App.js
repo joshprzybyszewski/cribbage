@@ -9,6 +9,7 @@ import Game from './components/GamePage';
 import Landing from './components/landing/Landing';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/layout/PrivateRoute';
+import Login from './components/landing/Login';
 import './App.css';
 
 const store = configureStore({});
@@ -20,6 +21,7 @@ function App() {
         <Layout>
           <Switch>
             <Route exact path='/' component={Landing} />
+            <Route exact path='/login' component={Login} />
             <PrivateRoute exact path='/home' component={Home} />
             <PrivateRoute path='/game' component={Game} />
           </Switch>

@@ -54,7 +54,7 @@ func newServerAndRouter(_ *testing.T) (*cribbageServer, http.Handler) {
 	dbf := memory.NewFactory()
 	memory.Clear()
 	cs := newCribbageServer(dbf)
-	router := cs.NewRouter(false)
+	router := cs.NewRouter()
 	return cs, router
 }
 
@@ -88,8 +88,10 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `normal stuff`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   `abc`,
-				Name: `def`,
+				Player: network.Player{
+					ID:   `abc`,
+					Name: `def`,
+				},
 			},
 			expCode: http.StatusOK,
 			expErr:  ``,
@@ -98,8 +100,10 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `username with weird characters shouldn't return 404`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   `#`,
-				Name: `#`,
+				Player: network.Player{
+					ID:   `#`,
+					Name: `#`,
+				},
 			},
 			expCode: http.StatusBadRequest,
 			expErr:  `Username must be alphanumeric`,
@@ -108,15 +112,19 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `creating the same player errors`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   `abc`,
-				Name: `def`,
+				Player: network.Player{
+					ID:   `abc`,
+					Name: `def`,
+				},
 			},
 			expCode: http.StatusOK,
 			expErr:  ``,
 		}, {
 			req: network.CreatePlayerRequest{
-				ID:   `abc`,
-				Name: `def`,
+				Player: network.Player{
+					ID:   `abc`,
+					Name: `def`,
+				},
 			},
 			expCode: http.StatusBadRequest,
 			expErr:  `Username already exists`,
@@ -125,8 +133,10 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `empty username`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   ``,
-				Name: `def`,
+				Player: network.Player{
+					ID:   ``,
+					Name: `def`,
+				},
 			},
 			expCode: http.StatusBadRequest,
 			expErr:  `Username is required`,
@@ -135,8 +145,10 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `empty display name`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   `abc`,
-				Name: ``,
+				Player: network.Player{
+					ID:   `abc`,
+					Name: ``,
+				},
 			},
 			expCode: http.StatusBadRequest,
 			expErr:  `Display name is required`,
@@ -145,8 +157,10 @@ func TestGinPostCreatePlayer(t *testing.T) {
 		msg: `send wrong JSON data - this is equivalent to PlayerID and DispName being empty`,
 		reqs: []testRequest{{
 			req: network.CreatePlayerRequest{
-				ID:   ``,
-				Name: ``,
+				Player: network.Player{
+					ID:   ``,
+					Name: ``,
+				},
 			},
 			expCode: http.StatusBadRequest,
 			expErr:  `Username is required`,
@@ -168,12 +182,15 @@ func TestGinPostCreatePlayer(t *testing.T) {
 				continue
 			}
 			expPlayer := model.Player{
-				ID:   r.req.ID,
-				Name: r.req.Name,
+				ID:   r.req.Player.ID,
+				Name: r.req.Player.Name,
 			}
-			var playerResp network.PlayerResponse
+			var playerResp network.CreatePlayerResponse
 			readBody(t, w.Body, &playerResp)
-			player := model.Player(playerResp)
+			player := model.Player{
+				ID:   playerResp.Player.ID,
+				Name: playerResp.Player.Name,
+			}
 			assert.NoError(t, err)
 			assert.Equal(t, expPlayer, player, tc.msg)
 		}
@@ -256,7 +273,7 @@ func TestGinPostCreateGame(t *testing.T) {
 			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
-		var gameResp network.GameResponse
+		var gameResp network.CreateGameResponse
 		readBody(t, w.Body, &gameResp)
 		// verify the players are in the game
 		require.Len(t, gameResp.Players, len(cgr.PlayerIDs))
@@ -377,7 +394,7 @@ func TestGinGetGame(t *testing.T) {
 			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
-		var gameResp network.GameResponse
+		var gameResp network.GetGameResponse
 		readBody(t, w.Body, &gameResp)
 		assert.Equal(t, g.ID, gameResp.ID)
 	}
@@ -413,9 +430,9 @@ func TestGinGetPlayer(t *testing.T) {
 			assert.Equal(t, tc.expErr, errMsg)
 			continue
 		}
-		var player model.Player
+		var player network.GetPlayerResponse
 		readBody(t, w.Body, &player)
-		assert.Equal(t, model.PlayerID(tc.playerID), player.ID)
+		assert.Equal(t, model.PlayerID(tc.playerID), player.Player.ID)
 	}
 }
 
@@ -450,7 +467,7 @@ func TestGinPostAction(t *testing.T) {
 				},
 			},
 			expCode: http.StatusBadRequest,
-			expErr:  `Error: Should overcome 0, but overcomes 5`,
+			expErr:  `Error: Should overcome DealCards, but overcomes CountCrib`,
 		}},
 	}, {
 		msg: `play a few actions`,

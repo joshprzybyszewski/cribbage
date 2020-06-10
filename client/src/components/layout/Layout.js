@@ -1,21 +1,15 @@
 import React from 'react';
-import { Layout as AntLayout } from 'antd';
 
 import Alert from './Alert';
 import Navbar from './Navbar';
 
-const { Content, Footer, Header } = AntLayout;
-
 const Layout = props => {
   return (
-    <AntLayout>
-      <Header className='header'>
-        <Navbar />
-      </Header>
+    <div className='relative bg-gray-200 h-screen'>
+      <Navbar />
       <Alert />
-      <Content className='content'>{props.children}</Content>
-      <Footer className='footer'>Footer</Footer>
-    </AntLayout>
+      {props.children}
+    </div>
   );
 };
 

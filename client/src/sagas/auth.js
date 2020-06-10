@@ -9,20 +9,23 @@ import { alertActions } from './actions';
 export function* watchLogout() {
   yield takeLatest(auth.LOGOUT, logout);
 }
+
 export function* logout() {
   yield put({ type: auth.reducer.LOGOUT });
+  yield put(push('/'));
 }
 
 // login
 export function* watchLoginAsync() {
   yield takeLatest(auth.LOGIN, loginAsync);
 }
+
 export function* loginAsync({ payload }) {
   try {
     const res = yield axios.get(`/player/${payload}`);
     yield put({
       type: auth.reducer.LOGIN,
-      payload: { id: res.data.id, name: res.data.name },
+      payload: { id: res.data.player.id, name: res.data.player.name },
     });
     yield put(alertActions.addAlert('Login successful!', 'success'));
     yield put(push('/home'));
@@ -39,12 +42,13 @@ export function* loginAsync({ payload }) {
 export function* watchRegisterAsync() {
   yield takeLatest(auth.REGISTER, registerAsync);
 }
+
 export function* registerAsync({ payload: { id, name } }) {
   try {
-    const res = yield axios.post('/create/player', { id, name });
+    const res = yield axios.post('/create/player', { player: { id, name } });
     yield put({
       type: auth.reducer.REGISTER,
-      payload: { id: res.data.id, name: res.data.name },
+      payload: { id: res.data.player.id, name: res.data.player.name },
     });
     yield put(alertActions.addAlert('Registration successful!', 'success'));
     yield put(push('/home'));

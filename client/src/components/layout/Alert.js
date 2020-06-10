@@ -1,13 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Alert as AntAlert } from 'antd';
 
 const Alert = ({ alerts }) => {
+  const alertTypeToStyle = t => {
+    switch (t) {
+      case 'success':
+        return 'alert-success';
+      case 'error':
+        return 'alert-error';
+      case 'warning':
+        return 'alert-warning';
+      default:
+        return 'alert-info';
+    }
+  };
   return (
-    <div>
+    <div className='fixed w-screen px-3 py-2'>
       {alerts.map(a => (
-        <AntAlert key={a.id} message={a.msg} type={a.type} banner />
+        // Issue#61 think about only displaying the last alert
+        <div key={a.id} className={`alert ${alertTypeToStyle(a.type)} mb-2`}>
+          {a.msg}
+        </div>
       ))}
     </div>
   );
