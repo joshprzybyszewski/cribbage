@@ -9,6 +9,9 @@ type Card struct {
 }
 
 func convertToCards(mCards []model.Card) []Card {
+	if mCards == nil {
+		return nil
+	}
 	cards := make([]Card, len(mCards))
 	for i, c := range mCards {
 		cards[i] = convertToCard(c)
@@ -17,6 +20,9 @@ func convertToCards(mCards []model.Card) []Card {
 }
 
 func convertFromCards(cs []Card) []model.Card {
+	if cs == nil {
+		return nil
+	}
 	mcs := make([]model.Card, len(cs))
 	for i, c := range cs {
 		mcs[i] = convertFromCard(c)
@@ -42,6 +48,9 @@ type PeggedCard struct {
 }
 
 func convertToPeggedCards(mPeggedCards []model.PeggedCard) []PeggedCard {
+	if mPeggedCards == nil {
+		return nil
+	}
 	cards := make([]PeggedCard, len(mPeggedCards))
 	for i, pc := range mPeggedCards {
 		cards[i].Card = convertToCard(pc.Card)
@@ -51,6 +60,9 @@ func convertToPeggedCards(mPeggedCards []model.PeggedCard) []PeggedCard {
 }
 
 func convertFromPeggedCards(pcs []PeggedCard) []model.PeggedCard {
+	if pcs == nil {
+		return nil
+	}
 	mpcs := make([]model.PeggedCard, len(pcs))
 	for i, pc := range pcs {
 		mpcs[i].Card = convertFromCard(pc.Card)

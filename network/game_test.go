@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -680,5 +681,41 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			assert.NoError(t, err)
 		}
 		assert.Equal(t, tc.expResp, resp, tc.desc)
+		if tc.expErr {
+			continue
+		}
+
+		mg2 := ConvertFromGetGameResponse(resp)
+		if mg2.Phase >= model.CribCounting {
+			// by the time the crib comes around, the network and the model
+			// games should be identical
+			assert.Equal(t, mg2, tc.game, tc.desc)
+			continue
+		}
+		assert.NotEqual(t, mg2, tc.game, tc.desc)
+
+		assert.Empty(t, mg2.Crib, tc.desc)
+		for pID, hand := range mg2.Hands {
+			if pID == tc.player {
+				assert.Equal(t, tc.game.Hands[pID], hand)
+			} else {
+				for _, c := range hand {
+					wasPegged := false
+					for _, pc := range tc.game.PeggedCards {
+						if pc.Card == c {
+							wasPegged = true
+							break
+						}
+					}
+					require.True(t, wasPegged, tc.desc)
+				}
+			}
+		}
+
+		// Make the hands field nil on both of the games. _Now_ they should be equal
+		mg2.Hands = nil
+		tc.game.Hands = nil
+		tc.game.Crib = nil
+		assert.Equal(t, tc.game, mg2, tc.desc)
 	}
 }

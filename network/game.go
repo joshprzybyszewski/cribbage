@@ -90,6 +90,7 @@ func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
 		BlockingPlayers: convertFromBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
 		CutCard:         convertFromCard(g.CutCard),
+		Crib:            convertFromCards(g.Crib),
 		Hands:           convertFomRevealedHands(g.Hands),
 		PeggedCards:     convertFromPeggedCards(g.PeggedCards),
 	}
