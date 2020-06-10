@@ -9,6 +9,7 @@ import (
 	"honnef.co/go/js/dom/v2"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
 	"github.com/joshprzybyszewski/cribbage/wasm/consts"
 )
@@ -59,21 +60,27 @@ func getListenersForCreateUser() []Releaser {
 		e.PreventDefault()
 		username := usernameInput.Value()
 		displayname := displayNameInput.Value()
-		player := model.Player{
-			ID:   model.PlayerID(username),
-			Name: displayname,
+		cpr := network.CreatePlayerRequest{
+			Player: network.Player{
+				ID:   model.PlayerID(username),
+				Name: displayname,
+			},
 		}
 
 		go func() {
-			inputBytes, err := json.Marshal(player)
-			bytes, err := actions.MakeRequest(`POST`, `/create/player`, bytes.NewBuffer(inputBytes))
+			inputBytes, err := json.Marshal(cpr)
+			respBytes, err := actions.MakeRequest(`POST`, `/create/player`, bytes.NewBuffer(inputBytes))
 			if err != nil {
 				println("Got error on MakeRequest: " + err.Error())
 				return
 			}
-			me := model.Player{}
-			json.Unmarshal(bytes, &me)
-			myUsername := string(me.ID)
+			me := network.CreatePlayerResponse{}
+			err = json.Unmarshal(respBytes, &me)
+			if err != nil {
+				println("Got error on json.Unmarshal CreatePlayerResponse: " + err.Error())
+				return
+			}
+			myUsername := string(me.Player.ID)
 			goToPath(`/user/` + myUsername)
 		}()
 	})

@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -10,8 +11,8 @@ import (
 
 	"honnef.co/go/js/dom/v2"
 
-	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/wasm/actions"
 	"github.com/joshprzybyszewski/cribbage/wasm/callbacks"
 )
@@ -98,7 +99,7 @@ func parseOutUserPageIDs(path string) model.PlayerID {
 func startGamePage(gID model.GameID, myID model.PlayerID) ([]callbacks.Releaser, error) {
 	println(`startGamePage`)
 
-	g, err := requestGame(gID)
+	g, err := requestGame(gID, myID)
 	if err != nil {
 		println("got error requesting game: " + err.Error())
 		return nil, err
@@ -109,17 +110,20 @@ func startGamePage(gID model.GameID, myID model.PlayerID) ([]callbacks.Releaser,
 	return rels, nil
 }
 
-func requestGame(gID model.GameID) (model.Game, error) {
-	url := fmt.Sprintf("/game/%v", gID)
+func requestGame(gID model.GameID, myID model.PlayerID) (model.Game, error) {
+	url := fmt.Sprintf("/game/%v?player=%s", gID, myID)
 	respBytes, err := actions.MakeRequest(`GET`, url, nil)
 	if err != nil {
 		return model.Game{}, err
 	}
 
-	g, err := jsonutils.UnmarshalGame(respBytes)
+	ggr := network.GetGameResponse{}
+	err = json.Unmarshal(respBytes, &ggr)
 	if err != nil {
 		return model.Game{}, err
 	}
 
-	return g, nil
+	mg := network.ConvertFromGetGameResponse(ggr)
+
+	return mg, nil
 }

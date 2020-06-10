@@ -50,10 +50,11 @@ const (
 type PlayerColor int8
 
 const (
-	UnsetColor PlayerColor = 0
-	Green      PlayerColor = 1
-	Blue       PlayerColor = 2
-	Red        PlayerColor = 3
+	UnsetColor         PlayerColor = 0
+	Green              PlayerColor = 1
+	Blue               PlayerColor = 2
+	Red                PlayerColor = 3
+	unknownPlayerColor PlayerColor = -1
 )
 
 func (c PlayerColor) String() string {
@@ -70,6 +71,20 @@ func (c PlayerColor) String() string {
 	return `notacolor`
 }
 
+func NewPlayerColorFromString(c string) PlayerColor {
+	switch c {
+	case `blue`:
+		return Blue
+	case `red`:
+		return Red
+	case `green`:
+		return Green
+	case `unset`:
+		return UnsetColor
+	}
+	return unknownPlayerColor
+}
+
 type Player struct {
 	ID    PlayerID               `protobuf:"varint,1,req,name=id,proto3" json:"id" bson:"id"`                           //nolint:lll
 	Name  string                 `protobuf:"string,2,req,name=name,proto3" json:"n" bson:"n"`                           //nolint:lll
@@ -79,12 +94,13 @@ type Player struct {
 type Blocker int
 
 const (
-	DealCards Blocker = iota
-	CribCard
-	CutCard
-	PegCard
-	CountHand
-	CountCrib
+	DealCards      Blocker = 0
+	CribCard       Blocker = 1
+	CutCard        Blocker = 2
+	PegCard        Blocker = 3
+	CountHand      Blocker = 4
+	CountCrib      Blocker = 5
+	unknownBlocker Blocker = -1
 )
 
 func (b Blocker) String() string {
@@ -103,6 +119,24 @@ func (b Blocker) String() string {
 		return `CountCrib`
 	}
 	return `InvalidBlocker`
+}
+
+func NewBlockerFromString(b string) Blocker {
+	switch b {
+	case `DealCards`:
+		return DealCards
+	case `AddToCrib`:
+		return CribCard
+	case `CutCard`:
+		return CutCard
+	case `PegCard`:
+		return PegCard
+	case `CountHand`:
+		return CountHand
+	case `CountCrib`:
+		return CountCrib
+	}
+	return unknownBlocker
 }
 
 type CribBlocker struct {
@@ -146,18 +180,19 @@ type CountCribAction struct {
 type Phase int
 
 const (
-	Deal Phase = iota
-	BuildCribReady
-	BuildCrib
-	CutReady
-	Cut
-	PeggingReady
-	Pegging
-	CountingReady
-	Counting
-	CribCountingReady
-	CribCounting
-	DealingReady
+	Deal              Phase = 0
+	BuildCribReady    Phase = 1
+	BuildCrib         Phase = 2
+	CutReady          Phase = 3
+	Cut               Phase = 4
+	PeggingReady      Phase = 5
+	Pegging           Phase = 6
+	CountingReady     Phase = 7
+	Counting          Phase = 8
+	CribCountingReady Phase = 9
+	CribCounting      Phase = 10
+	DealingReady      Phase = 11
+	unknownPhase      Phase = -1
 )
 
 func (p Phase) String() string { //nolint:gocyclo
@@ -188,6 +223,36 @@ func (p Phase) String() string { //nolint:gocyclo
 		return `DealingReady`
 	}
 	return `unknown`
+}
+
+func NewPhaseFromString(p string) Phase { //nolint:gocyclo
+	switch p {
+	case `Deal`:
+		return Deal
+	case `BuildCribReady`:
+		return BuildCribReady
+	case `BuildCrib`:
+		return BuildCrib
+	case `CutReady`:
+		return CutReady
+	case `Cut`:
+		return Cut
+	case `PeggingReady`:
+		return PeggingReady
+	case `Pegging`:
+		return Pegging
+	case `CountingReady`:
+		return CountingReady
+	case `Counting`:
+		return Counting
+	case `CribCountingReady`:
+		return CribCountingReady
+	case `CribCounting`:
+		return CribCounting
+	case `DealingReady`:
+		return DealingReady
+	}
+	return unknownPhase
 }
 
 const (
