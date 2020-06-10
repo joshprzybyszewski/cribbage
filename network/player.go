@@ -39,9 +39,9 @@ func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
 	}
 }
 
-func convertToParticipatingGames(modelGames map[model.GameID]model.PlayerColor) map[model.GameID]string {
-	games := make(map[model.GameID]string, len(modelGames))
-	for g, c := range modelGames {
+func convertToParticipatingGames(mgs map[model.GameID]model.PlayerColor) map[model.GameID]string {
+	games := make(map[model.GameID]string, len(mgs))
+	for g, c := range mgs {
 		games[g] = c.String()
 	}
 	return games
