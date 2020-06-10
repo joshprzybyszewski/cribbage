@@ -60,18 +60,18 @@ func ConvertToGetGameResponse(g model.Game) GetGameResponse {
 }
 
 func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
-	playing := false
+	isPlaying := false
 	for _, p := range g.Players {
 		if p.ID == pID {
-			playing = true
+			isPlaying = true
 			break
 		}
 	}
-	if !playing {
+	if !isPlaying {
 		return GetGameResponse{}, errors.New(`player does not exist in game`)
 	}
 	resp := ConvertToGetGameResponse(g)
-	resp.Hands = getRevealedCards(g, pID)
+	resp.Hands = convertToRevealedHands(g, pID)
 	if g.Phase >= model.CribCounting {
 		resp.Crib = convertToCards(g.Crib)
 	}
@@ -90,13 +90,14 @@ func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
 		BlockingPlayers: convertFromBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
 		CutCard:         convertFromCard(g.CutCard),
+		Hands:           convertFomRevealedHands(g.Hands),
 		PeggedCards:     convertFromPeggedCards(g.PeggedCards),
 	}
 }
 
-func getRevealedCards(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {
+func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {
 	rev := make(map[model.PlayerID][]Card, len(g.Players))
-	for pID := range rev {
+	for pID := range g.Hands {
 		// we don't know how many cards will be revealed, but we know it's a max of 4
 		rev[pID] = make([]Card, 0, 4)
 	}
@@ -107,5 +108,13 @@ func getRevealedCards(g model.Game, me model.PlayerID) map[model.PlayerID][]Card
 		rev[c.PlayerID] = append(rev[c.PlayerID], convertToCard(c.Card))
 	}
 	rev[me] = convertToCards(g.Hands[me])
+	return rev
+}
+
+func convertFomRevealedHands(revHands map[model.PlayerID][]Card) map[model.PlayerID][]model.Card {
+	rev := make(map[model.PlayerID][]model.Card, len(revHands))
+	for pID, revHand := range revHands {
+		rev[pID] = convertFromCards(revHand)
+	}
 	return rev
 }
