@@ -1,0 +1,25 @@
+name: build_docker_image
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+  pull_request:
+jobs:
+  dockerimage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - uses: docker/build-push-action@v1
+        name: Build and Push Docker image
+        with:
+          repository: joshprzybyszewski/cribbage
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tag_with_ref: true
+          add_git_labels: true
+          tag_with_sha: false
+          cache_froms: joshprzybyszewski/cribbage:latest
