@@ -1,4 +1,14 @@
 import { combineReducers } from 'redux';
-import auth from './auth';
+import { connectRouter } from 'connected-react-router';
 
-export default combineReducers({ auth });
+import auth from './auth';
+import alert from './alert';
+
+const createRootReducer = history =>
+  combineReducers({
+    router: connectRouter(history),
+    auth,
+    alert,
+  });
+
+export default createRootReducer;
