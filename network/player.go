@@ -25,8 +25,7 @@ func ConvertToCreatePlayerResponse(pm model.Player) CreatePlayerResponse {
 }
 
 type GetPlayerResponse struct {
-	Player Player                  `json:"player"`
-	Games  map[model.GameID]string `json:"games"`
+	Player Player `json:"player"`
 }
 
 func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
@@ -35,16 +34,43 @@ func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
 			ID:   p.ID,
 			Name: p.Name,
 		},
-		Games: convertToParticipatingGames(p.Games),
 	}
 }
 
-func convertToParticipatingGames(mgs map[model.GameID]model.PlayerColor) map[model.GameID]string {
-	games := make(map[model.GameID]string, len(mgs))
-	for g, c := range mgs {
-		games[g] = c.String()
+type GetAllGamesForPlayerResponse struct {
+	Player   Player                  `json:"player"`
+	AllGames map[model.GameID]string `json:"allgames"`
+}
+
+func ConvertToGetAllGamesForPlayerResponse(p model.Player, games map[model.GameID]model.Game) GetAllGamesForPlayerResponse {
+	return GetAllGamesForPlayerResponse{
+		Player: Player{
+			ID:   p.ID,
+			Name: p.Name,
+		},
+		AllGames: convertToParticipatingGames(p, games),
 	}
-	return games
+}
+
+func convertToParticipatingGames(p model.Player, games map[model.GameID]model.Game) map[model.GameID]string {
+	res := make(map[model.GameID]string, len(p.Games))
+	for gID := range p.Games {
+		if mg, ok := games[gID]; ok {
+			res[gID] = getPlayerNames(mg)
+		}
+	}
+	return res
+}
+
+func getPlayerNames(mg model.Game) string {
+	res := ``
+	for i, p := range mg.Players {
+		if i > 0 {
+			res += `, `
+		}
+		res += p.Name
+	}
+	return res
 }
 
 func convertToPlayers(pms []model.Player) []Player {

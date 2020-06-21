@@ -39,7 +39,13 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	}
 
 	router.GET(`/game/:gameID`, cs.ginGetGame)
-	router.GET(`/player/:username`, cs.ginGetPlayer)
+
+	// Simple group: player
+	player := router.Group(`/player`)
+	{
+		player.GET(`/:username`, cs.ginGetPlayer)
+		player.GET(`/:username/allgames`, cs.ginGetAllGamesForPlayer)
+	}
 
 	router.POST(`/action`, cs.ginPostAction)
 
@@ -291,6 +297,40 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 		return
 	}
 	resp := network.ConvertToGetPlayerResponse(p)
+	c.JSON(http.StatusOK, resp)
+}
+
+// GET /player/:username/allgames
+func (cs *cribbageServer) ginGetAllGamesForPlayer(c *gin.Context) {
+	pID := model.PlayerID(c.Param(`username`))
+
+	ctx := context.Background()
+	db, err := cs.dbFactory.New(ctx)
+	if err != nil {
+		c.String(http.StatusInternalServerError, `dbFactory.New() error: %s`, err)
+		return
+	}
+	defer db.Close()
+
+	p, err := getPlayer(ctx, db, pID)
+	if err != nil {
+		if err == persistence.ErrPlayerNotFound {
+			c.String(http.StatusNotFound, `Player not found`)
+			return
+		}
+		c.String(http.StatusInternalServerError, `Error: %s`, err)
+		return
+	}
+	games := make(map[model.GameID]model.Game, len(p.Games))
+	for gID := range p.Games {
+		mg, err := getGame(ctx, db, gID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, `Error: %s`, err)
+			return
+		}
+		games[gID] = mg
+	}
+	resp := network.ConvertToGetAllGamesForPlayerResponse(p, games)
 	c.JSON(http.StatusOK, resp)
 }
 

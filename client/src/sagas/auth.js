@@ -22,12 +22,22 @@ export function* watchLoginAsync() {
 
 export function* loginAsync({ payload }) {
   try {
-    const res = yield axios.get(`/player/${payload}`);
+    let pID = payload;
+    // const res = yield axios.get(`/player/${pID}`);
+    yield put(alertActions.addAlert('Login successful!', 'success'));
+    const allgamesRes = yield axios.get(`/player/${pID}/allgames`);
+    // console.log(allgamesRes);
     yield put({
       type: auth.reducer.LOGIN,
-      payload: { id: res.data.player.id, name: res.data.player.name },
+      payload: {
+        // id: res.data.player.id,
+        // name: res.data.player.name,
+        id: allgamesRes.data.player.id,
+        name: allgamesRes.data.player.name,
+        allgames: allgamesRes.data.allgames,
+      },
     });
-    yield put(alertActions.addAlert('Login successful!', 'success'));
+    yield put(alertActions.addAlert('Allgames gotten successfully!', 'success'));
     yield put(push('/home'));
   } catch (err) {
     yield put({

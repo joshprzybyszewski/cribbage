@@ -5,6 +5,7 @@ const actions = auth.reducer;
 const initialState = {
   id: '',
   name: '',
+  allgames: {},
   loggedIn: false,
 };
 
@@ -16,7 +17,7 @@ export default (state = initialState, { type, payload }) => {
     case actions.REGISTER_FAILED:
     case actions.LOGIN_FAILED:
     case actions.LOGOUT:
-      return { id: '', name: '', loggedIn: false };
+      return { id: '', name: '', allgames: {}, loggedIn: false };
     default:
       return state;
   }
