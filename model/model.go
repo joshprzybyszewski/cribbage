@@ -100,6 +100,7 @@ const (
 	PegCard        Blocker = 3
 	CountHand      Blocker = 4
 	CountCrib      Blocker = 5
+	CountAnything  Blocker = 6
 	unknownBlocker Blocker = -1
 )
 
@@ -117,6 +118,8 @@ func (b Blocker) String() string {
 		return `CountHand`
 	case CountCrib:
 		return `CountCrib`
+	case CountAnything:
+		return `CountAnything`
 	}
 	return `InvalidBlocker`
 }
@@ -135,6 +138,8 @@ func NewBlockerFromString(b string) Blocker {
 		return CountHand
 	case `CountCrib`:
 		return CountCrib
+	case `Count`:
+		return CountAnything
 	}
 	return unknownBlocker
 }
@@ -174,6 +179,10 @@ type CountHandAction struct {
 }
 
 type CountCribAction struct {
+	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
+}
+
+type ClaimPointsAction struct {
 	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
 }
 
