@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
-
-import { authActions } from '../../sagas/actions';
 import { actions } from '../../../auth/slice';
 
-const LoginForm = ({ login }) => {
+const LoginForm = () => {
   const dispatch = useDispatch();
   const onLoginFormSubmit = event => {
     event.preventDefault();
@@ -45,14 +41,4 @@ const LoginForm = ({ login }) => {
   );
 };
 
-LoginForm.propTypes = {
-  login: PropTypes.func.isRequired,
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    login: id => dispatch(authActions.login(id)),
-  };
-};
-
-export default connect(null, mapDispatchToProps)(LoginForm);
+export default LoginForm;
