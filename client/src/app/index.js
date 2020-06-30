@@ -13,13 +13,15 @@ import './App.css';
 function App() {
   return (
     <ConnectedRouter history={history}>
-      <Layout>
+      <div className='relative bg-gray-200 h-screen'>
+        <Navbar />
+        <Alert />
         <Switch>
           <Route exact path='/' component={Landing} />
           <Route exact path='/login' component={Login} />
           <PrivateRoute exact path='/home' component={Home} />
         </Switch>
-      </Layout>
+      </div>
     </ConnectedRouter>
   );
 }
