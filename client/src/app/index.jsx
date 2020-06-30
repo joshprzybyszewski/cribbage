@@ -2,10 +2,10 @@ import React from 'react';
 import { ConnectedRouter } from 'connected-react-router';
 import { Switch, Route } from 'react-router-dom';
 import { history } from '../store/reducers';
-import Home from '../components/Home';
-import Landing from '../components/landing/Landing';
-import PrivateRoute from '../components/layout/PrivateRoute';
-import Login from '../components/landing/Login';
+import Home from './containers/Home';
+import Register from './containers/Register';
+import PrivateRoute from './containers/PrivateRoute';
+import Login from './containers/Login';
 
 export const App = () => {
   return (
@@ -14,7 +14,7 @@ export const App = () => {
         <Navbar />
         <Alert />
         <Switch>
-          <Route exact path='/' component={Landing} />
+          <Route exact path='/' component={Register} />
           <Route exact path='/login' component={Login} />
           <PrivateRoute exact path='/home' component={Home} />
         </Switch>
