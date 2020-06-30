@@ -1,6 +1,31 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 
-import App from './App';
+import { App } from './app';
+import { configureAppStore } from './store/configureStore';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const store = configureAppStore();
+const MOUNT_NODE = document.getElementById('root');
+
+const ConnectedApp = ({ Component }) => (
+  <Provider store={store}>
+    <React.StrictMode>
+      <Component />
+    </React.StrictMode>
+  </Provider>
+);
+
+const render = Component => {
+  ReactDOM.render(<ConnectedApp Component={Component} />, MOUNT_NODE);
+};
+
+if (module.hot) {
+  module.hot.accept(['./app'], () => {
+    ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+    const App = require('./app').App;
+    render(App);
+  });
+}
+
+render(App);
