@@ -12,7 +12,7 @@ const LoginForm = () => {
   useInjectSaga({ key: sliceKey, saga: authSaga });
 
   const dispatch = useDispatch();
-  const onLoginFormSubmit = event => {
+  const onSubmitLoginForm = event => {
     event.preventDefault();
     dispatch(actions.login(playerID));
   };
@@ -24,7 +24,7 @@ const LoginForm = () => {
   return (
     <div className='max-w-sm m-auto mt-12'>
       <h1 className='text-4xl'>Login to Cribbage</h1>
-      <form onSubmit={onLoginFormSubmit}>
+      <form onSubmit={onSubmitLoginForm}>
         <input
           placeholder='Username'
           onChange={onUserIDInputChange}
