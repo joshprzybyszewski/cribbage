@@ -21,4 +21,4 @@ const alertSlice = createSlice({
   },
 });
 
-export const { actions, reducer, name } = alertSlice;
+export const { actions, reducer, name: sliceKey } = alertSlice;

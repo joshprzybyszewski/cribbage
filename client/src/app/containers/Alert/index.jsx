@@ -1,10 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-import { connect } from 'react-redux';
+import { sliceKey, reducer } from './slice';
+import { alertSaga } from './saga';
+import { selectAlerts } from './selectors';
 
-const Alert = ({ alerts }) => {
+const Alert = () => {
+  useInjectReducer({ key: sliceKey, reducer });
+  useInjectSaga({ key: sliceKey, saga: alertSaga });
+
+  const alerts = useSelector(selectAlerts);
+
   const alertTypeToStyle = t => {
     switch (t) {
       case 'success':
@@ -18,7 +24,7 @@ const Alert = ({ alerts }) => {
     }
   };
   return (
-    <div className='fixed w-screen px-3 py-2'>
+    <div className="fixed w-screen px-3 py-2">
       {alerts.map(a => (
         // Issue#61 think about only displaying the last alert
         <div key={a.id} className={`alert ${alertTypeToStyle(a.type)} mb-2`}>
@@ -29,12 +35,4 @@ const Alert = ({ alerts }) => {
   );
 };
 
-Alert.propTypes = {
-  alerts: PropTypes.array.isRequired,
-};
-
-const mapStateToProps = state => ({
-  alerts: state.alert,
-});
-
-export default connect(mapStateToProps, null)(Alert);
+export default Alert;
