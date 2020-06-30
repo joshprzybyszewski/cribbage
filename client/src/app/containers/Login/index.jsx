@@ -16,7 +16,7 @@ const LoginForm = () => {
     event.preventDefault();
     dispatch(actions.login(playerID));
   };
-  const onUserIDInputChange = event => {
+  const onInputChange = event => {
     setPlayerID(event.target.value);
   };
 
@@ -27,7 +27,7 @@ const LoginForm = () => {
       <form onSubmit={onSubmitLoginForm}>
         <input
           placeholder='Username'
-          onChange={onUserIDInputChange}
+          onChange={onInputChange}
           className='form-input'
         ></input>
         <p className='mt-1 text-xs text-gray-600'>
