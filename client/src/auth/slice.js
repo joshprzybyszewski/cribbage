@@ -25,7 +25,7 @@ const authSlice = createSlice({
       state = initialState;
       state.loading = false;
     },
-    register(state) {
+    register(state, action) {
       state = initialState;
       state.currentUser.id = action.payload.id;
       state.currentUser.name = action.payload.name;
