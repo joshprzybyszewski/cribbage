@@ -1,7 +1,8 @@
 import { push } from 'connected-react-router';
-import { all, put, takeLatest } from 'redux-saga/effects';
 import axios from 'axios';
+import { all, put, select, takeLatest } from 'redux-saga/effects';
 
+import { selectCurrentUser } from './selectors';
 import { actions as authActions } from './slice';
 import { actions as alertActions } from '../app/containers/Alert/slice';
 
@@ -9,15 +10,13 @@ export function* handleLogout() {
   yield put(push('/'));
 }
 
-export function* handleLogin({ payload }) {
+export function* handleLogin() {
+  // select the id being used to login from the state
+  const currentUser = yield select(selectCurrentUser);
   try {
-    const res = yield axios.get(`/player/${payload}`);
-    yield put(
-      authActions.loginSuccess({
-        id: res.data.player.id,
-        name: res.data.player.name,
-      }),
-    );
+    const res = yield axios.get(`/player/${currentUser.id}`);
+    const { id, name } = res.data.player;
+    yield put(authActions.loginSuccess({ id, name }));
     yield put(
       alertActions.addAlert({ msg: 'Login successful!', type: 'success' }),
     );
@@ -28,15 +27,13 @@ export function* handleLogin({ payload }) {
   }
 }
 
-export function* handleRegister({ payload: { id, name } }) {
+export function* handleRegister() {
+  // select the id and name being used to register from the state
+  const currentUser = yield select(selectCurrentUser);
   try {
-    const res = yield axios.post('/create/player', { player: { id, name } });
-    yield put(
-      authActions.registerSuccess({
-        id: res.data.player.id,
-        name: res.data.player.name,
-      }),
-    );
+    const res = yield axios.post('/create/player', { player: currentUser });
+    const { id, name } = res.data.player;
+    yield put(authActions.registerSuccess({ id, name }));
     yield put(
       alertActions.addAlert({
         msg: 'Registration successful!',

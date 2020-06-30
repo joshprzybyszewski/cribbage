@@ -12,8 +12,9 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    login(state) {
+    login(state, action) {
       state = initialState;
+      state.currentUser.id = action.payload;
     },
     loginSuccess(state, action) {
       state.loading = false;
@@ -26,6 +27,8 @@ const authSlice = createSlice({
     },
     register(state) {
       state = initialState;
+      state.currentUser.id = action.payload.id;
+      state.currentUser.name = action.payload.name;
     },
     registerSuccess(state, action) {
       state.loading = false;
