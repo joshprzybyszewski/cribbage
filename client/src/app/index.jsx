@@ -5,7 +5,6 @@ import { Switch, Route } from 'react-router-dom';
 import { history } from '../store/reducers';
 import Home from './components/Home';
 import Landing from './components/landing/Landing';
-import Layout from './components/layout/Layout';
 import PrivateRoute from './components/layout/PrivateRoute';
 import Login from './components/landing/Login';
 import './App.css';
