@@ -6,11 +6,14 @@ import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const LoginForm = () => {
+  // hooks
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: authSaga });
-
   const history = useHistory();
   const dispatch = useDispatch();
+  const [playerID, setPlayerID] = useState('');
+
+  // event handlers
   const onSubmitLoginForm = event => {
     event.preventDefault();
     dispatch(actions.login(playerID, history));
@@ -19,7 +22,6 @@ const LoginForm = () => {
     setPlayerID(event.target.value);
   };
 
-  const [playerID, setPlayerID] = useState('');
   return (
     <div className='max-w-sm m-auto mt-12'>
       <h1 className='text-4xl'>Login to Cribbage</h1>

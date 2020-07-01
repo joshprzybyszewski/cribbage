@@ -6,11 +6,14 @@ import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const Landing = () => {
+  // hooks
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: authSaga });
   const history = useHistory();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({ id: '', name: '' });
+
+  // event handlers
   const onSubmitForm = event => {
     event.preventDefault();
     dispatch(actions.register(formData.id, formData.name, history));
