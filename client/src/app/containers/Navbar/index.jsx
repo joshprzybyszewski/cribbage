@@ -1,14 +1,19 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import { Link, useHistory } from 'react-router-dom';
+import { authSaga } from '../../../auth/saga';
+import { sliceKey, reducer, actions } from '../../../auth/slice';
 import { selectLoggedIn } from '../../../auth/selectors';
-import { actions } from '../../../auth/slice';
 
 const Navbar = () => {
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  useInjectSaga({ key: sliceKey, saga: authSaga });
   const loggedIn = useSelector(selectLoggedIn);
+  const history = useHistory();
   const dispatch = useDispatch();
   const onClickLogout = () => {
-    dispatch(actions.logout());
+    dispatch(actions.logout(history));
   };
 
   return (

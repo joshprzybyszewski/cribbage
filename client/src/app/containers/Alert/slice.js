@@ -1,3 +1,4 @@
+import { nanoid } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
 export const initialState = {
@@ -8,15 +9,17 @@ const alertSlice = createSlice({
   name: 'alert',
   initialState,
   reducers: {
-    requestAlert(state) {
-      // idk if we need to do this
-      state = state;
-    },
-    addAlert(state, action) {
-      state.alerts = [...state.alerts, action.payload];
+    addAlert: {
+      reducer: (state, action) => {
+        state.alerts = [...state.alerts, action.payload];
+      },
+      prepare: (msg, type) => {
+        const id = nanoid();
+        return { payload: { id, msg, type } };
+      },
     },
     removeAlert(state, action) {
-      state.alerts.filter(a => a.id !== action.payload);
+      state.alerts = state.alerts.filter(a => a.id !== action.payload);
     },
   },
 });

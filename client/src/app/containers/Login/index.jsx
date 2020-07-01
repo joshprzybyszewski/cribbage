@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-import { Link } from 'react-router-dom';
-import { sliceKey, reducer, actions } from '../../../auth/slice';
+import { Link, useHistory } from 'react-router-dom';
 import { authSaga } from '../../../auth/saga';
+import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const LoginForm = () => {
-  // The redux stuff for auth lives outside of containers/ because it's used in a lot of places.
-  // We have to inject its reducer and saga _somewhere_ and I arbitrarily chose here.
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: authSaga });
 
+  const history = useHistory();
   const dispatch = useDispatch();
   const onSubmitLoginForm = event => {
     event.preventDefault();
-    dispatch(actions.login(playerID));
+    dispatch(actions.login(playerID, history));
   };
   const onInputChange = event => {
     setPlayerID(event.target.value);

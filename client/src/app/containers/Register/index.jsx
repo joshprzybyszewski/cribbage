@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { actions } from '../../../auth/slice';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import { Link, useHistory } from 'react-router-dom';
+import { authSaga } from '../../../auth/saga';
+import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const Landing = () => {
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  useInjectSaga({ key: sliceKey, saga: authSaga });
+  const history = useHistory();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({ id: '', name: '' });
   const onSubmitForm = event => {
     event.preventDefault();
-    dispatch(actions.register(formData));
+    dispatch(actions.register(formData.id, formData.name, history));
   };
   const onInputChange = event =>
-    setFormData({ ...formData, id: event.target.value });
+    setFormData({ ...formData, [event.target.name]: event.target.value });
 
   return (
     <div className='max-w-sm m-auto mt-12'>
@@ -19,6 +24,7 @@ const Landing = () => {
       <p>Play cribbage against your friends online. Get started now!</p>
       <form onSubmit={onSubmitForm}>
         <input
+          name='id'
           onChange={onInputChange}
           value={formData.id}
           placeholder='Username'
@@ -26,6 +32,7 @@ const Landing = () => {
           className='mt-2 form-input'
         ></input>
         <input
+          name='name'
           onChange={onInputChange}
           value={formData.name}
           placeholder='Display name'

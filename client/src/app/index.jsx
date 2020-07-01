@@ -1,15 +1,17 @@
 import React from 'react';
-import { ConnectedRouter } from 'connected-react-router';
+import { BrowserRouter } from 'react-router-dom';
 import { Switch, Route } from 'react-router-dom';
-import { history } from '../store/reducers';
+import Alert from './containers/Alert';
 import Home from './containers/Home';
-import Register from './containers/Register';
-import PrivateRoute from './containers/PrivateRoute';
 import Login from './containers/Login';
+import Navbar from './containers/Navbar';
+import PrivateRoute from './containers/PrivateRoute';
+import Register from './containers/Register';
+import '../styles.css';
 
 export const App = () => {
   return (
-    <ConnectedRouter history={history}>
+    <BrowserRouter>
       <div className='relative bg-gray-200 h-screen'>
         <Navbar />
         <Alert />
@@ -19,6 +21,6 @@ export const App = () => {
           <PrivateRoute exact path='/home' component={Home} />
         </Switch>
       </div>
-    </ConnectedRouter>
+    </BrowserRouter>
   );
 };
