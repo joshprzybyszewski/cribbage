@@ -54,7 +54,7 @@ func getConfigFile() string {
 }
 
 func getEnvironment() string {
-	v := os.Getenv(`deployed`)
+	v := os.Getenv(`deploy`)
 	if v == `` {
 		return `local`
 	}
