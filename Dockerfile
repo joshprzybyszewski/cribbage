@@ -51,6 +51,8 @@ RUN npm run build
 FROM scratch
 
 WORKDIR /prod
+COPY --from=server /tmp /tmp
+COPY inis inis
 COPY templates templates
 COPY assets assets
 COPY --from=react /app/build client/build/
@@ -59,5 +61,3 @@ COPY --from=server /bin/cribbageServer .
 
 # Define the gin server binary as the entry point
 ENTRYPOINT ["/prod/cribbageServer"]
-# We're gonna need to read these from an INI or something instead of trying to pass them in as flags
-CMD ["-restPort=8081", "-dsn_host=host.docker.internal", "-dsn_user=root", "-dsn_password="]

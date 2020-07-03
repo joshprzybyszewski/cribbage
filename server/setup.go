@@ -32,6 +32,10 @@ var (
 
 // Setup connects to a database and starts serving requests
 func Setup() error {
+	err := loadVarsFromINI()
+	if err != nil {
+		return err
+	}
 	log.Printf("Using %s for persistence\n", *database)
 
 	ctx := context.Background()

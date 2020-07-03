@@ -51,7 +51,7 @@ dockerbuild: ## Builds the docker image
 
 .PHONY: dockerrunlocal
 dockerrunlocal: ## Runs the latest tag of the built docker image locally on port :8081
-	docker run -t -i -p 8081:8081 cribbage
+	docker run -t -i --env deployed=docker -p 8081:8081 cribbage
 
 .PHONY: wasm
 wasm: ## Builds the wasm output for the gowasm client
