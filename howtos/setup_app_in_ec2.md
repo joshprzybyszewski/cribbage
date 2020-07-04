@@ -39,19 +39,38 @@ Other Reading:
 
 Alright, so here's where things get fun. So if we start with [this article](https://aws.amazon.com/getting-started/hands-on/deploy-docker-containers/), and then tweak it a little, it'll be all-good.
 
-1. Create an ECS Cluster. On [this page](https://console.aws.amazon.com/ecs/home#/clusters), click `Create Cluster`. [!Create Cluster Image](images/create_cluster.png)
-1. Select `EC2 Linux + Networking` and `Next Step`. [!Create EC2 Linux](images/create_linux_cluster.png)
+1. Create an ECS Cluster. On [this page](https://console.aws.amazon.com/ecs/home#/clusters), click `Create Cluster`. [!Create Cluster Image](./images/create_cluster.png)
+1. Select `EC2 Linux + Networking` and `Next Step`. [!Create EC2 Linux](./images/create_linux_cluster.png)
 1. Choose the starting values for your Cluster.
    1. Set `Cluster name` to `my-app-cluster`.
    1. Set `EC2 instance type` to `t3.micro` for free-tier.
    1. For `VPC`, you should choose the one listed in your RDS under `Connectivity & security`'s `Networking` portion.
    1. Click `Create`. Once the Cluster is created, you should be able to see it as a card on [this page](https://console.aws.amazon.com/ecs/home#/clusters).
-1. Setup the Service inside of the Cluster.
-   - TODO
 1. Setup the Task for the Service.
-   - TODO
+   1. Navigate to the Task Definition page (probably [here](https://console.aws.amazon.com/ecs/home#/taskDefinitions)).
+   1. Click `Create new Task Definition`. [!Task Create page](./images/task_definition_page.png)
+   1. Select `EC2`.
+   1. Give your task a name (`my-app-task` will do).
+   1. Click `Add Container`.
+   1. Here is where you get to define your Docker container stats. This repo looks similar to [!this](./images/docker_container_defintion.png).
+      - Scroll partway down to `Environment variables` and add one like this: [!env var in task definition](./images/envvar_task_definition.png)
+         - PROTIP: You can edit these in future revisions by scrolling to bottom, selecting `Configure via JSON`, and then updating the JSON field `environment` under `containerDefinitions`. [!edit JSON](./images/edit_task_json.png) [!see JSON fields](./images/edit_task_json_fields.png)
+      - The rest of these options can be configured if you like, but I left most of them alone.
+      - Click `Add` when you're finished
+   1. Click `Create`. You'll use this task when creating the Service.
 1. Create a Load Balancer for the Service.
    - TODO
+1. Setup the Service inside of the Cluster.
+   1. Navigate to the cluster page (which looks like this: `https://console.aws.amazon.com/ecs/home#/clusters/<your-cluster-name>/services`).
+   1. Click `Create` under the `Service` tab. [!New Cluster page](./images/new_cluster.png)
+   1. Choose `EC2` for `Launch type`.
+   1. Choose your task definition for `Task Definition`.
+   1. Give the service a name (perhaps `my-app-service` :shrug:).
+   1. Set `1` for `Number of tasks`.
+   1. Click `Next`.
+   1. Choose your VPC and subnets.
+   1. Choose `Application Load Balancer` and then select the one you created.
+   1. Click through and create.
 
 Badda-bing, badda-boom. Now we'll just have to smooth out the cracks.
 
