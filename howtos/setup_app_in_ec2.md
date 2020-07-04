@@ -59,7 +59,10 @@ Alright, so here's where things get fun. So if we start with [this article](http
       - Click `Add` when you're finished
    1. Click `Create`. You'll use this task when creating the Service.
 1. Create a Load Balancer for the Service.
-   - TODO
+   1. Navigate to [the Load Balancer page](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers:).
+   1. Push `Create Load Balancer` and then `Create` under `Application Load Balancer`.
+   1. Give it a name (to be used for the Service) and select your VPC and zones.
+   1. Click through the rest of the pages and create the load balancer.
 1. Setup the Service inside of the Cluster.
    1. Navigate to the cluster page (which looks like this: `https://console.aws.amazon.com/ecs/home#/clusters/<your-cluster-name>/services`).
    1. Click `Create` under the `Service` tab. [!New Cluster page](./images/new_cluster.png)
