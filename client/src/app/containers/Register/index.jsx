@@ -1,32 +1,42 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import { Link, useHistory } from 'react-router-dom';
+import { authSaga } from '../../../auth/saga';
+import { sliceKey, reducer, actions } from '../../../auth/slice';
 
-import { authActions } from '../../sagas/actions';
-
-const Landing = ({ register }) => {
+const Landing = () => {
+  // hooks
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  useInjectSaga({ key: sliceKey, saga: authSaga });
+  const history = useHistory();
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({ id: '', name: '' });
+
+  // event handlers
+  const onSubmitForm = event => {
+    event.preventDefault();
+    dispatch(actions.register(formData.id, formData.name, history));
+  };
+  const onInputChange = event =>
+    setFormData({ ...formData, [event.target.name]: event.target.value });
 
   return (
     <div className='max-w-sm m-auto mt-12'>
       <h1 className='text-4xl'>Welcome to Cribbage!</h1>
       <p>Play cribbage against your friends online. Get started now!</p>
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          register(formData);
-        }}
-      >
+      <form onSubmit={onSubmitForm}>
         <input
-          onChange={e => setFormData({ ...formData, id: e.target.value })}
+          name='id'
+          onChange={onInputChange}
           value={formData.id}
           placeholder='Username'
           required
           className='mt-2 form-input'
         ></input>
         <input
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          name='name'
+          onChange={onInputChange}
           value={formData.name}
           placeholder='Display name'
           required
@@ -50,15 +60,4 @@ const Landing = ({ register }) => {
   );
 };
 
-Landing.propTypes = {
-  register: PropTypes.func.isRequired,
-};
-
-const mapDispatchToProps = dispatch => {
-  return {
-    register: formData =>
-      dispatch(authActions.register(formData.id, formData.name)),
-  };
-};
-
-export default connect(null, mapDispatchToProps)(Landing);
+export default Landing;
