@@ -18,12 +18,20 @@ const Navbar = () => {
 
   return (
     <nav className='h-12 px-4 bg-blue-900 flex justify-between items-center text-gray-400'>
-      <Link
-        to={loggedIn ? '/home' : '/'}
-        className='uppercase text-xl tracking-wider hover:text-white'
-      >
-        Cribbage
-      </Link>
+      <div className='flex'>
+        <Link
+          to={loggedIn ? '/home' : '/'}
+          className='uppercase text-xl tracking-wider hover:text-white'
+        >
+          Cribbage
+        </Link>
+        <Link
+          to='/wasm'
+          className='tracking-wider hover:text-white'
+        >
+          <img src="wasm.png" className="wasmIcon" />
+        </Link>
+      </div>
       {!loggedIn ? (
         <div className='flex'>
           <Link to='/login' className='px-2 hover:text-white'>
