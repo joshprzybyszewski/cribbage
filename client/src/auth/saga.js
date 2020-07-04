@@ -15,8 +15,12 @@ export function* handleLogin({ payload: { history } }) {
     const res = yield axios.get(`/player/${currentUser.id}`);
     const { id, name } = res.data.player;
     yield put(authActions.loginSuccess({ id, name }));
-    yield put(alertActions.addAlert('Login successful!', 'success'));
     yield call(history.push, '/home');
+
+    const res = yield axios.get(`/player/${currentUser.id}`);
+    const { id, name } = res.data.player;
+    yield put(authActions.loginSuccess({ id, name }));
+    
   } catch (err) {
     yield put(authActions.loginFailed(err.response.data));
     yield put(alertActions.addAlert(err.response.data, 'error'));
