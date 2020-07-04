@@ -4,18 +4,18 @@ In this tutorial, we're going to use AWS free tier to deploy your barebones app 
 
 Prereqs:
 1. An application that works. That is, your app should be running locally/in CI and talking to mySQL already.
-1. Docker image of your app published to docker Hub. This isn't terrible difficult. (will link an article).
+1. Docker image of your app published to docker Hub. This isn't terrible difficult. [do it in CI](https://docs.github.com/en/actions/language-and-framework-guides/publishing-docker-images), [some tutorial](https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html), [another article](https://hackernoon.com/publish-your-docker-image-to-docker-hub-10b826793faf).
 1. An AWS account.
 
 Outcomes:
+1. An RDS instance for your MySQL database.
 1. An ALB (Application Load Balancer) that is open for the internet to talk to.
 1. A Cluster, Service, and Task with one EC2 instance (t3.micro) running your app via Docker image.
-1. An RDS instance for your MySQL database.
 1. A VPC (Virtual Private Cloud) and a Security Group that allows all of your AWS resources to talk to each other.
 1. A HealthCheck for your Service that makes sense.
 
 A few caveats:
-1. The following guide is based off [this AWS article](https://aws.amazon.com/getting-started/hands-on/deploy-docker-containers/), but I found the detail to be insufficient. Also, it appears that it no longer falls in the "free tier" (I'm not sure how AWS charges for FarGate).
+1. The following guide is based off [this AWS article](https://aws.amazon.com/getting-started/hands-on/deploy-docker-containers/), but I found the detail to be insufficient. Also, it appears that it no longer falls in the "free tier" (since I'm not sure how AWS FarGate falls into the Free Tier).
 1. I'm not yet an AWS security-minded expert, so a lot of what I'll suggest in this article is intended to get your app on its feet rather than "the right choice". I do not claim to be experienced in this at all yet; I'm just sharing what I've found so far.
 
 Let's dive in.
@@ -89,3 +89,7 @@ Alright, so here's some of the mistakes I made, what they looked like, and how I
     - For me, this happened because the ALB needs to health check anything it routes traffic to. So this means a few things:
         - Make sure your app is hosting HTTP traffic on the same port the ALB is health checking. For me, my app defaults to serving at `:8080` instead of `:80`, and this needed to be updated via environment variable.
         - Make sure your ALB is doing something sane for a health check. By default, it should assume "healthy" if it gets a 200 back from the path `/`, but my target group health check was messing that up. Find your HealthChecks by accessing TargetGroups [here](https://console.aws.amazon.com/ec2/home#TargetGroups;sort=targetGroupName), and select the one for your load-balancer. Then, at the bottom, select the `Health checks` tab and make sure the path looks like `/` (not `/my-service-name`). [!Good ALB Health Check](images/good_alb_healthcheck.png)
+
+## Recap
+
+So now you should have an app deployed out into the cloud! Congrats! There's a lot of hullabaloo involved in this whole process, and software engineering is always changing. Best wishes, and good luck!
