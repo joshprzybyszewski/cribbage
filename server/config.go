@@ -10,9 +10,17 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
-func loadVarsFromINI() error {
+// loadVarsFromINI will check the INI for the given environment and any environment variables
+// It will give the following priority:
+// 1. Command-line value
+// 2. Environment Variable
+// 3. INI value
+// 4. Default value of flag
+// NOTE: All envvars need the prefix `CRIBBAGE_` and should exist in ALLCAPS.
+// NOTE: The INI file is pulled from the inis/ directory and is determined by the
+//       environment var `deploy` (set to `docker`, `prod`, etc.)
+func loadVarsFromINI() {
 	parseFlagsFromConfigFile(getConfigFile())
-	return nil
 }
 
 func parseFlagsFromConfigFile(confFileName string) {
@@ -42,21 +50,22 @@ func getConfigFile() string {
 
 	f, err := ini.LooseLoad(iniPath)
 	if err != nil {
-		panic(fmt.Sprintf("getConfigFile LooseLoad err: %+v", err))
+		panic(fmt.Sprintf("getConfigFile ini.LooseLoad err: %+v", err))
 	}
 
 	_, err = f.WriteTo(tmpFile)
 	if err != nil {
-		panic(fmt.Sprintf("getConfigFile WriteTo err: %+v", err))
+		panic(fmt.Sprintf("getConfigFile f.WriteTo(tmpFile) err: %+v", err))
 	}
 
 	return tmpFile.Name()
 }
 
+// getEnvironment returns the environment variable set for `deploy`
 func getEnvironment() string {
 	v := os.Getenv(`deploy`)
 	if v == `` {
-		return `local`
+		return `default`
 	}
 	return v
 }
