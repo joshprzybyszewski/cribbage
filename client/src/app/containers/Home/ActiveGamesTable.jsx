@@ -5,7 +5,7 @@ import { selectCurrentUser, selectActiveGames } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
 
-const ActiveGames = () => {
+const ActiveGamesTable = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: authSaga });
   const dispatch = useDispatch();
@@ -51,4 +51,4 @@ const goToGame = (gID) => {
     console.log(`Requesting game page for ID: ${gID}`)
 }
 
-export default ActiveGames;
+export default ActiveGamesTable;
