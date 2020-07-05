@@ -42,7 +42,11 @@ type GetActiveGamesForPlayerResponse struct {
 	ActiveGames map[model.GameID]string `json:"activeGames"`
 }
 
-func ConvertToGetActiveGamesForPlayerResponse(p model.Player, games map[model.GameID]model.Game) GetActiveGamesForPlayerResponse {
+func ConvertToGetActiveGamesForPlayerResponse(
+	p model.Player,
+	games map[model.GameID]model.Game,
+) GetActiveGamesForPlayerResponse {
+
 	return GetActiveGamesForPlayerResponse{
 		Player: Player{
 			ID:   p.ID,
