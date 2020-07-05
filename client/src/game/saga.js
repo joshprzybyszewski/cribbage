@@ -21,7 +21,7 @@ export function* handleGoToGame({ payload: { id, history } }) {
     yield call(history.push, '/game');
     yield put(alertActions.addAlert('Game Got!', 'success'));
 } catch (err) {
-    yield put(alertActions.addAlert(err.response.data, 'error could not get game'));
+    yield put(alertActions.addAlert(`something bad happened... ${err}`, 'error could not get game'));
   }
 }
 

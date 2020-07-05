@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import { useHistory } from 'react-router-dom';
 import { selectCurrentUser, selectActiveGames } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
@@ -13,6 +14,7 @@ const ActiveGames = () => {
   useInjectSaga({ key: sliceKey, saga: authSaga });
   useInjectReducer({ key: gameSliceKey, reducer: gameReducer });
   useInjectSaga({ key: gameSliceKey, saga: gameSaga });
+  const history = useHistory();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGames = useSelector(selectActiveGames);
@@ -22,7 +24,7 @@ const ActiveGames = () => {
     dispatch(actions.refreshActiveGames(currentUser.id));
   };
   const onGoToGame = (gID) => {
-    dispatch(gameActions.goToGame(gID));
+    dispatch(gameActions.goToGame(gID, history));
   };
 
   let gameButtons = [];
@@ -34,7 +36,7 @@ const ActiveGames = () => {
         gameButtons.push(<br key={`br ${gameButtons.length}`}></br>)
         gameButtons.push(<button
             key={gID}
-            onClick={onGoToGame(gID)}
+            onClick={() => onGoToGame(gID)}
         >
         {desc}
         </button>);
@@ -53,10 +55,5 @@ const ActiveGames = () => {
         </button>
     </div>;
 };
-
-const goToGame = (gID) => {
-    // We're gonna need to navigate to the games page
-    console.log(`Requesting game page for ID: ${gID}`)
-}
 
 export default ActiveGames;
