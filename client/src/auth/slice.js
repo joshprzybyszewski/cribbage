@@ -4,9 +4,8 @@ export const initialState = {
   currentUser: {
     id: '',
     name: '',
-    activeGameIDs: '',
-    activeGames: '',
   },
+  activeGames: {},
   loading: false,
 };
 
@@ -62,7 +61,7 @@ const authSlice = createSlice({
     },
     refreshActiveGames: {
       reducer: (state, action) => {
-        if (state.currentUser.id != action.payload.id) {
+        if (state.currentUser.id !== action.payload.id) {
           // what should we do when refreshing with an ID we do not expect?
           throw `bad user id: expected "${state.currentUser.id}", got "${action.payload.id}"`;
         }
@@ -73,8 +72,7 @@ const authSlice = createSlice({
     },
     gotActiveGames(state, action) {
       if ( state.currentUser.id === action.payload.player.id ) {
-        state.currentUser.activeGameIDs = action.payload.activeGameIDs;
-        state.currentUser.activeGames = action.payload.activeGames;
+        state.activeGames = action.payload.activeGames;
       }
     },
   },

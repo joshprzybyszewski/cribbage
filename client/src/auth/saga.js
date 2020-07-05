@@ -46,16 +46,7 @@ export function* handleRefreshActiveGames({ payload: { id } }) {
   try {
     const res = yield axios.get(`/player/${id}/activeGames`);
     const { player, activeGames } = res.data;
-    let activeGameIDs = [];
-    let activeGameDescriptions = [];
-    for (const [key, val] of Object.entries(activeGames)) {
-      if (!key || !val) {
-        continue;
-      }
-      activeGameIDs.push(key);
-      activeGameDescriptions.push(val);
-    }
-    yield put(authActions.gotActiveGames({ player, activeGameIDs, activeGameDescriptions }));
+    yield put(authActions.gotActiveGames({ player, activeGames }));
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, 'could not refresh active games'));
   }
