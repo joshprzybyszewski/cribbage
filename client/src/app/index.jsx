@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Switch, Route } from 'react-router-dom';
 import Alert from './containers/Alert';
+import Game from './containers/Game';
 import Home from './containers/Home';
 import Login from './containers/Login';
 import Navbar from './containers/Navbar';
@@ -19,6 +20,7 @@ export const App = () => {
           <Route exact path='/' component={Register} />
           <Route exact path='/login' component={Login} />
           <PrivateRoute exact path='/home' component={Home} />
+          <PrivateRoute exact path='/game' component={Game} />
         </Switch>
       </div>
     </BrowserRouter>

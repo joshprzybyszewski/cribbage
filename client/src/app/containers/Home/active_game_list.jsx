@@ -5,10 +5,14 @@ import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { selectCurrentUser, selectActiveGames } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
+import { gameSaga } from '../../../game/saga';
+import { sliceKey as gameSliceKey, reducer as gameReducer, actions as gameActions } from '../../../game/slice';
 
 const ActiveGames = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: authSaga });
+  useInjectReducer({ key: gameSliceKey, reducer: gameReducer });
+  useInjectSaga({ key: gameSliceKey, saga: gameSaga });
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGames = useSelector(selectActiveGames);
@@ -17,6 +21,9 @@ const ActiveGames = () => {
   const onRefreshActiveGames = () => {
     dispatch(actions.refreshActiveGames(currentUser.id));
   };
+  const onGoToGame = (gID) => {
+    dispatch(gameActions.goToGame(gID));
+  };
 
   let gameButtons = [];
   if ( activeGames ) {
@@ -24,10 +31,10 @@ const ActiveGames = () => {
         if ( !gID || !desc ) {
             continue;
         }
-        gameButtons.push(<br></br>)
+        gameButtons.push(<br key={`br ${gameButtons.length}`}></br>)
         gameButtons.push(<button
             key={gID}
-            onClick={() => goToGame({gID})}
+            onClick={onGoToGame(gID)}
         >
         {desc}
         </button>);
