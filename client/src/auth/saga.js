@@ -16,11 +16,6 @@ export function* handleLogin({ payload: { history } }) {
     const { id, name } = res.data.player;
     yield put(authActions.loginSuccess({ id, name }));
     yield call(history.push, '/home');
-
-    const res = yield axios.get(`/player/${currentUser.id}`);
-    const { id, name } = res.data.player;
-    yield put(authActions.loginSuccess({ id, name }));
-    
   } catch (err) {
     yield put(authActions.loginFailed(err.response.data));
     yield put(alertActions.addAlert(err.response.data, 'error'));
@@ -42,10 +37,35 @@ export function* handleRegister({ payload: { history } }) {
   }
 }
 
+export function* handleRefreshActiveGames({ payload: { id } }) {
+  if (!id) {
+    yield put(alertActions.addAlert('undefined player ID', 'could not refresh active games'));
+    return;
+  }
+
+  try {
+    const res = yield axios.get(`/player/${id}/activeGames`);
+    const { player, activeGames } = res.data;
+    let activeGameIDs = [];
+    let activeGameDescriptions = [];
+    for (const [key, val] of Object.entries(activeGames)) {
+      if (!key || !val) {
+        continue;
+      }
+      activeGameIDs.push(key);
+      activeGameDescriptions.push(val);
+    }
+    yield put(authActions.gotActiveGames({ player, activeGameIDs, activeGameDescriptions }));
+  } catch (err) {
+    yield put(alertActions.addAlert(err.response.data, 'could not refresh active games'));
+  }
+}
+
 export function* authSaga() {
   yield all([
     takeLatest(authActions.login.type, handleLogin),
     takeLatest(authActions.register.type, handleRegister),
     takeLatest(authActions.logout.type, handleLogout),
+    takeLatest(authActions.refreshActiveGames.type, handleRefreshActiveGames),
   ]);
 }
