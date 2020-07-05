@@ -15,6 +15,7 @@ export function* handleLogin({ payload: { history } }) {
     const res = yield axios.get(`/player/${currentUser.id}`);
     const { id, name } = res.data.player;
     yield put(authActions.loginSuccess({ id, name }));
+    yield put(authActions.refreshActiveGames(currentUser.id));
     yield call(history.push, '/home');
   } catch (err) {
     yield put(authActions.loginFailed(err.response.data));

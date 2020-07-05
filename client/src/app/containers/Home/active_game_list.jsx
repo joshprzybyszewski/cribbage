@@ -1,6 +1,5 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { selectCurrentUser, selectActiveGames } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
@@ -24,7 +23,7 @@ const ActiveGames = () => {
         if ( !gID || !desc ) {
             continue;
         }
-        gameButtons.push(<br></br>)
+        gameButtons.push(<br key={`br ${gID}`}></br>)
         gameButtons.push(<button
             key={gID}
             onClick={() => goToGame({gID})}
