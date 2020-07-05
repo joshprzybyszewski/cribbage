@@ -12,12 +12,12 @@ const Game = () => {
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const history = useHistory();
   const dispatch = useDispatch();
-  const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
+  const activeGameID = activeGame.id;
   
   // event handlers
   const onRefreshCurrentGame = () => {
-    dispatch(actions.refreshGame(currentUser.id, history));
+    dispatch(actions.refreshGame(activeGameID, history));
   };
 
   let gameResp = [];

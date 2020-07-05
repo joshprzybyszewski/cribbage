@@ -34,9 +34,8 @@ const gameSlice = createSlice({
     },
     refreshGame: {
       reducer: (state, action) => {
-        if (state.currentGameID !== action.payload.id) {
-          // what should we do when refreshing with an ID we do not expect?
-          throw `bad user id: expected "${state.currentUser.id}", got "${action.payload.id}"`;
+        if (state.currentGameID !== action.payload.activeGameID) {
+          throw `bad game id: expected "${state.currentGameID}", got "${action.payload.activeGameID}"`;
         }
       },
       prepare: (gameID) => {

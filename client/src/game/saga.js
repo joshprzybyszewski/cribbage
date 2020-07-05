@@ -19,7 +19,6 @@ export function* handleGoToGame({ payload: { id, history } }) {
     const res = yield axios.get(`/game/${id}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
     yield call(history.push, '/game');
-    yield put(alertActions.addAlert('Game Got!', 'success'));
 } catch (err) {
     yield put(alertActions.addAlert(`something bad happened... ${err}`, 'error could not get game'));
   }
@@ -36,7 +35,6 @@ export function* handleRefreshCurrentGame({ payload: { history } }) {
   try {
     const res = yield axios.get(`/game/${currentGameID}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
-    yield put(alertActions.addAlert('Game Refreshed!', 'success'));
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, 'error'));
   }
