@@ -1,5 +1,6 @@
 import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 import axios from 'axios';
+import { selectCurrentUser } from '../auth/selectors';
 import { selectCurrentGameID } from './selectors';
 import { actions as gameActions } from './slice';
 import { actions as alertActions } from '../app/containers/Alert/slice';
@@ -19,9 +20,11 @@ export function* handleGoToGame({ payload: { id, history } }) {
     return;
   }
 
+  const currentUser = yield select(selectCurrentUser);
+
   // select the id being used to login from the state
   try {
-    const res = yield axios.get(`/game/${id}`);
+    const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
     yield call(history.push, '/game');
   } catch (err) {
@@ -46,8 +49,12 @@ export function* handleRefreshCurrentGame({ payload: { history } }) {
     return;
   }
 
+  const currentUser = yield select(selectCurrentUser);
+
   try {
-    const res = yield axios.get(`/game/${currentGameID}`);
+    const res = yield axios.get(
+      `/game/${currentGameID}?player=${currentUser.id}`,
+    );
     yield put(gameActions.gameRetrieved({ data: res.data }));
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, 'error'));

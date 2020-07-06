@@ -43,6 +43,14 @@ const Game = () => {
   let dealerDesc = 'Dealer: ';
   let phaseDesc = 'Phase: ';
   let cutCardDiv;
+  let myHandDiv;
+  let oppHandDivs = [];
+  let cribDiv;
+  let playerNamesByID = {};
+  activeGame['players'].forEach(player => {
+    playerNamesByID[player.id] = player.name;
+  });
+
   for (const [key, val] of Object.entries(activeGame)) {
     gameResp.push(`${key}: ${val} `);
     gameResp.push(<br key={`br ${key}`}></br>);
@@ -90,21 +98,44 @@ const Game = () => {
         phaseDesc += val;
         break;
       case 'cut_card':
-        let skip = false;
-        switch (activeGame['phase']) {
-          case 'Deal':
-          case 'BuildCrib':
-            skip = true;
-            break;
-        }
-        if (skip) {
+        if (
+          activeGame['phase'] === 'Deal' ||
+          activeGame['phase'] === 'BuildCrib'
+        ) {
           break;
         }
         cutCardDiv = (
-          <div key={'cutCardDiv'}>
-            Cut Card: {val.name} ({val.value} of {val.suit})
-          </div>
+          <div key={'cutCardDiv'}>Cut Card: {cardToString(val)}</div>
         );
+        break;
+      case 'hands':
+        for (const [playerID, hand] of Object.entries(val)) {
+          if (!hand) {
+            continue;
+          } else if (playerID === currentUser.id) {
+            myHandDiv = (
+              <div key={'myHandDiv'}>
+                My Hand: {hand.map(cardToString).join(', ')}
+              </div>
+            );
+          } else {
+            oppHandDivs.push(
+              <div key={`oppHand ${playerID}`}>
+                {playerNamesByID[playerID]}'s Hand:{' '}
+                {hand.length > 0
+                  ? hand.map(cardToString).join(', ')
+                  : 'empty/unknown'}
+              </div>,
+            );
+          }
+        }
+
+        break;
+      case 'crib':
+        cribDiv = (
+          <div key={'cribDiv'}>Crib: {val.map(cardToString).join(', ')}</div>
+        );
+
         break;
     }
   }
@@ -119,6 +150,11 @@ const Game = () => {
       <div key={'dealerDiv'}>{dealerDesc}</div>
       <div key={'phaseDiv'}>{phaseDesc}</div>
       {cutCardDiv}
+      {myHandDiv}
+      {oppHandDivs.length > 0 ? (
+        <div key={'oppHandsDiv'}>{oppHandDivs}</div>
+      ) : null}
+      {cribDiv}
       <br></br>
       This will be a page for the game of a user.
       <br></br>
@@ -127,6 +163,11 @@ const Game = () => {
       {refreshButton}
     </div>
   );
+};
+
+const cardToString = card => {
+  // ${card.name}
+  return `${card.value} ${card.suit}`;
 };
 
 export default Game;
