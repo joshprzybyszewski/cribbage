@@ -8,11 +8,6 @@ export const selectCurrentUser = createSelector(
   authState => authState.currentUser,
 );
 
-export const selectActiveGames = createSelector(
-  [selectDomain],
-  authState => authState.activeGames,
-);
-
 export const selectLoggedIn = createSelector(
   [selectDomain],
   authState => authState.currentUser.id !== '',
