@@ -12,6 +12,7 @@ const Game = () => {
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const history = useHistory();
   const dispatch = useDispatch();
+  const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
   const activeGameID = activeGame.id;
 
@@ -35,6 +36,7 @@ const Game = () => {
     );
   }
 
+  const myColor = activeGame['player_colors'][currentUser.id];
   let gameResp = [];
   let gameDesc = 'Players are: ';
   let scoreChildren = [];
@@ -71,8 +73,14 @@ const Game = () => {
           if (lagScores && lagScores[color]) {
             scoreStr += ` (from ${lagScores[color]})`;
           }
-          scoreChildren.push(scoreStr);
-          scoreChildren.push(<br key={`br ${color}`}></br>);
+          if (color === myColor) {
+            scoreChildren.unshift(
+              <strong key='myTeamScore'>{scoreStr}</strong>,
+              <br key={`br ${color}`}></br>,
+            );
+          } else {
+            scoreChildren.push(scoreStr, <br key={`br ${color}`}></br>);
+          }
         }
         break;
       case 'current_dealer':
