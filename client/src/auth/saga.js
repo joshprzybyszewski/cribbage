@@ -45,7 +45,7 @@ export function* handleRefreshActiveGames({ payload: { id } }) {
   }
 
   try {
-    const res = yield axios.get(`/player/${id}/activeGames`);
+    const res = yield axios.get(`/games/active?playerID=${id}`);
     const { player, activeGames } = res.data;
     yield put(authActions.gotActiveGames({ player, activeGames }));
   } catch (err) {

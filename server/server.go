@@ -40,11 +40,16 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 
 	router.GET(`/game/:gameID`, cs.ginGetGame)
 
+	// Simple group: games
+	game := router.Group(`/games`)
+	{
+		game.GET(`/active`, cs.ginGetActiveGamesForPlayer)
+	}
+
 	// Simple group: player
 	player := router.Group(`/player`)
 	{
 		player.GET(`/:username`, cs.ginGetPlayer)
-		player.GET(`/:username/activeGames`, cs.ginGetActiveGamesForPlayer)
 	}
 
 	router.POST(`/action`, cs.ginPostAction)
@@ -300,9 +305,13 @@ func (cs *cribbageServer) ginGetPlayer(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// GET /player/:username/allgames
+// GET /games/active?playerID=pID
 func (cs *cribbageServer) ginGetActiveGamesForPlayer(c *gin.Context) {
-	pID := model.PlayerID(c.Param(`username`))
+	pID := model.PlayerID(c.Query(`playerID`))
+	if len(pID) == 0 {
+		c.String(http.StatusBadRequest, `Requires playerID`)
+		return
+	}
 
 	ctx := context.Background()
 	db, err := cs.dbFactory.New(ctx)
