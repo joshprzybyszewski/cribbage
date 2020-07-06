@@ -5,7 +5,6 @@ export const initialState = {
     id: '',
     name: '',
   },
-  activeGames: {},
   loading: false,
 };
 
@@ -58,17 +57,6 @@ const authSlice = createSlice({
       prepare: history => {
         return { payload: { history } };
       },
-    },
-    refreshActiveGames(state, action) {
-      if (state.currentUser.id !== action.payload.id) {
-        // what should we do when refreshing with an ID we do not expect?
-        throw `bad user id: expected "${state.currentUser.id}", got "${action.payload.id}"`;
-      }
-    },
-    gotActiveGames(state, action) {
-      if ( state.currentUser.id === action.payload.player.id ) {
-        state.activeGames = action.payload.activeGames;
-      }
     },
   },
 });

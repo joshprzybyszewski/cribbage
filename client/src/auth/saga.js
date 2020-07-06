@@ -3,6 +3,7 @@ import axios from 'axios';
 import { selectCurrentUser } from './selectors';
 import { actions as authActions } from './slice';
 import { actions as alertActions } from '../app/containers/Alert/slice';
+import { actions as homeActions } from '../home/slice';
 
 export function* handleLogout({ payload: { history } }) {
   yield call(history.push, '/');
@@ -15,7 +16,7 @@ export function* handleLogin({ payload: { history } }) {
     const res = yield axios.get(`/player/${currentUser.id}`);
     const { id, name } = res.data.player;
     yield put(authActions.loginSuccess({ id, name }));
-    yield put(authActions.refreshActiveGames({ id: currentUser.id }));
+    yield put(homeActions.refreshActiveGames({ id: currentUser.id }));
     yield call(history.push, '/home');
   } catch (err) {
     yield put(authActions.loginFailed(err.response.data));
@@ -38,26 +39,10 @@ export function* handleRegister({ payload: { history } }) {
   }
 }
 
-export function* handleRefreshActiveGames({ payload: { id } }) {
-  if (!id) {
-    yield put(alertActions.addAlert('undefined player ID', 'warning'));
-    return;
-  }
-
-  try {
-    const res = yield axios.get(`/games/active?playerID=${id}`);
-    const { player, activeGames } = res.data;
-    yield put(authActions.gotActiveGames({ player, activeGames }));
-  } catch (err) {
-    yield put(alertActions.addAlert(err.response.data, 'error'));
-  }
-}
-
 export function* authSaga() {
   yield all([
     takeLatest(authActions.login.type, handleLogin),
     takeLatest(authActions.register.type, handleRegister),
     takeLatest(authActions.logout.type, handleLogout),
-    takeLatest(authActions.refreshActiveGames.type, handleRefreshActiveGames),
   ]);
 }
