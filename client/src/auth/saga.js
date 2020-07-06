@@ -40,7 +40,7 @@ export function* handleRegister({ payload: { history } }) {
 
 export function* handleRefreshActiveGames({ payload: { id } }) {
   if (!id) {
-    yield put(alertActions.addAlert('undefined player ID', 'could not refresh active games'));
+    yield put(alertActions.addAlert('undefined player ID', 'warning'));
     return;
   }
 
@@ -49,7 +49,7 @@ export function* handleRefreshActiveGames({ payload: { id } }) {
     const { player, activeGames } = res.data;
     yield put(authActions.gotActiveGames({ player, activeGames }));
   } catch (err) {
-    yield put(alertActions.addAlert(err.response.data, 'could not refresh active games'));
+    yield put(alertActions.addAlert(err.response.data, 'error'));
   }
 }
 
