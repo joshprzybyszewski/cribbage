@@ -137,7 +137,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				Name: `alice`,
 			},
 			ActiveGames: map[model.GameID]ActiveGame{
-				123: ActiveGame{
+				123: {
 					PlayerNamesByID: map[model.PlayerID]string{
 						aliceID: `alice`,
 						bobID:   `bob`,
@@ -149,7 +149,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Created:  time.Time{},
 					LastMove: time.Time{},
 				},
-				456: ActiveGame{
+				456: {
 					PlayerNamesByID: map[model.PlayerID]string{
 						chelseaID: `chelsea`,
 						daveID:    `dave`,
@@ -161,7 +161,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Created:  time.Time{},
 					LastMove: time.Time{},
 				},
-				789: ActiveGame{
+				789: {
 					PlayerNamesByID: map[model.PlayerID]string{
 						erinID:    `erin`,
 						francisID: `francis`,
