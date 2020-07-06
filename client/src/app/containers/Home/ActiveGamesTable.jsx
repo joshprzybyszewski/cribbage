@@ -14,7 +14,7 @@ const ActiveGamesTable = () => {
   
   // event handlers
   const onRefreshActiveGames = () => {
-    dispatch(actions.refreshActiveGames(currentUser.id));
+    dispatch(actions.refreshActiveGames({ id: currentUser.id }));
   };
 
   let gameButtons = [];

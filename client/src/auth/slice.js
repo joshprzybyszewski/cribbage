@@ -59,16 +59,11 @@ const authSlice = createSlice({
         return { payload: { history } };
       },
     },
-    refreshActiveGames: {
-      reducer: (state, action) => {
-        if (state.currentUser.id !== action.payload.id) {
-          // what should we do when refreshing with an ID we do not expect?
-          throw `bad user id: expected "${state.currentUser.id}", got "${action.payload.id}"`;
-        }
-      },
-      prepare: (playerID) => {
-        return { payload: { id: playerID } };
-      },
+    refreshActiveGames(state, action) {
+      if (state.currentUser.id !== action.payload.id) {
+        // what should we do when refreshing with an ID we do not expect?
+        throw `bad user id: expected "${state.currentUser.id}", got "${action.payload.id}"`;
+      }
     },
     gotActiveGames(state, action) {
       if ( state.currentUser.id === action.payload.player.id ) {
