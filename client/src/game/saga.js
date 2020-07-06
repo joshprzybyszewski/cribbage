@@ -10,7 +10,12 @@ export function* handleExitGame({ payload: { history } }) {
 
 export function* handleGoToGame({ payload: { id, history } }) {
   if (!id) {
-    yield put(alertActions.addAlert('No id in handleGoToGame', 'could not get game to go to'));
+    yield put(
+      alertActions.addAlert(
+        'No id in handleGoToGame',
+        'could not get game to go to',
+      ),
+    );
     return;
   }
 
@@ -19,16 +24,25 @@ export function* handleGoToGame({ payload: { id, history } }) {
     const res = yield axios.get(`/game/${id}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
     yield call(history.push, '/game');
-} catch (err) {
-    yield put(alertActions.addAlert(`something bad happened... ${err}`, 'error could not get game'));
+  } catch (err) {
+    yield put(
+      alertActions.addAlert(
+        `something bad happened... ${err}`,
+        'error could not get game',
+      ),
+    );
   }
 }
 
 export function* handleRefreshCurrentGame({ payload: { history } }) {
-    
   const currentGameID = yield select(selectCurrentGameID);
   if (!currentGameID) {
-    yield put(alertActions.addAlert('No currentGameID', 'could not refresh current game'));
+    yield put(
+      alertActions.addAlert(
+        'No currentGameID',
+        'could not refresh current game',
+      ),
+    );
     return;
   }
 

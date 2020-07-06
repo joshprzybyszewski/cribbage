@@ -38,7 +38,7 @@ const gameSlice = createSlice({
           throw `bad game id: expected "${state.currentGameID}", got "${action.payload.activeGameID}"`;
         }
       },
-      prepare: (gameID) => {
+      prepare: gameID => {
         return { payload: { id: gameID } };
       },
     },

@@ -9,6 +9,6 @@ export const selectCurrentGameID = createSelector(
 );
 
 export const selectCurrentGame = createSelector(
-    [selectDomain],
-    gameState => gameState.currentGame,
-  );
+  [selectDomain],
+  gameState => gameState.currentGame,
+);
