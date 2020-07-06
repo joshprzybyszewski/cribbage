@@ -6,6 +6,7 @@ import { selectCurrentUser } from '../../../auth/selectors';
 import { gameSaga } from '../../../game/saga';
 import { sliceKey, reducer, actions } from '../../../game/slice';
 import { selectCurrentGame } from '../../../game/selectors';
+import PlayingCard from './PlayingCard';
 
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
@@ -105,7 +106,7 @@ const Game = () => {
           break;
         }
         cutCardDiv = (
-          <div key={'cutCardDiv'}>Cut Card: {cardToString(val)}</div>
+          <div key={'cutCardDiv'}>Cut Card: {jsonCardToCard(val)}</div>
         );
         break;
       case 'hands':
@@ -114,17 +115,13 @@ const Game = () => {
             continue;
           } else if (playerID === currentUser.id) {
             myHandDiv = (
-              <div key={'myHandDiv'}>
-                My Hand: {hand.map(cardToString).join(', ')}
-              </div>
+              <div key={'myHandDiv'}>My Hand: {hand.map(jsonCardToCard)}</div>
             );
           } else {
             oppHandDivs.push(
               <div key={`oppHand ${playerID}`}>
                 {playerNamesByID[playerID]}'s Hand:{' '}
-                {hand.length > 0
-                  ? hand.map(cardToString).join(', ')
-                  : 'empty/unknown'}
+                {hand.length > 0 ? hand.map(jsonCardToCard) : 'empty/unknown'}
               </div>,
             );
           }
@@ -133,7 +130,7 @@ const Game = () => {
         break;
       case 'crib':
         cribDiv = (
-          <div key={'cribDiv'}>Crib: {val.map(cardToString).join(', ')}</div>
+          <div key={'cribDiv'}>Crib: {val.map(jsonCardToCard).join(', ')}</div>
         );
 
         break;
@@ -165,9 +162,17 @@ const Game = () => {
   );
 };
 
-const cardToString = card => {
+const jsonCardToCard = card => {
   // ${card.name}
-  return `${card.value} ${card.suit}`;
+  // return `${card.value} ${card.suit}`;
+  return (
+    <PlayingCard
+      key={card.name}
+      name={card.name}
+      value={card.value}
+      suit={card.suit}
+    />
+  );
 };
 
 export default Game;
