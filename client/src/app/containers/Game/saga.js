@@ -38,12 +38,7 @@ export function* handleGoToGame({ payload: { id, history } }) {
 export function* handleRefreshCurrentGame({ payload: { history } }) {
   const currentGameID = yield select(selectCurrentGameID);
   if (!currentGameID) {
-    yield put(
-      alertActions.addAlert(
-        'No currentGameID',
-        'could not refresh current game',
-      ),
-    );
+    yield put(alertActions.addAlert('No currentGameID', alertTypes.error));
     return;
   }
 
@@ -55,7 +50,7 @@ export function* handleRefreshCurrentGame({ payload: { history } }) {
     );
     yield put(gameActions.gameRetrieved({ data: res.data }));
   } catch (err) {
-    yield put(alertActions.addAlert(err.response.data, 'error'));
+    yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }
 }
 
