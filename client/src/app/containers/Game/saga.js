@@ -11,12 +11,7 @@ export function* handleExitGame({ payload: { history } }) {
 
 export function* handleGoToGame({ payload: { id, history } }) {
   if (!id) {
-    yield put(
-      alertActions.addAlert(
-        'No id in handleGoToGame',
-        'could not get game to go to',
-      ),
-    );
+    yield put(alertActions.addAlert('No id in handleGoToGame', 'error'));
     return;
   }
 
@@ -29,10 +24,7 @@ export function* handleGoToGame({ payload: { id, history } }) {
     yield call(history.push, '/game');
   } catch (err) {
     yield put(
-      alertActions.addAlert(
-        `something bad happened... ${err}`,
-        'error could not get game',
-      ),
+      alertActions.addAlert(`something bad happened... ${err}`, 'error'),
     );
   }
 }
