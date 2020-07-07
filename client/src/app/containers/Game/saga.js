@@ -4,6 +4,7 @@ import { selectCurrentUser } from '../../../auth/selectors';
 import { selectCurrentGameID } from './selectors';
 import { actions as gameActions } from './slice';
 import { actions as alertActions } from '../Alert/slice';
+import { alertTypes } from '../Alert/types';
 
 export function* handleExitGame({ payload: { history } }) {
   yield call(history.push, '/home');
@@ -11,7 +12,9 @@ export function* handleExitGame({ payload: { history } }) {
 
 export function* handleGoToGame({ payload: { id, history } }) {
   if (!id) {
-    yield put(alertActions.addAlert('No id in handleGoToGame', 'error'));
+    yield put(
+      alertActions.addAlert('No id in handleGoToGame', alertTypes.error),
+    );
     return;
   }
 
@@ -24,7 +27,10 @@ export function* handleGoToGame({ payload: { id, history } }) {
     yield call(history.push, '/game');
   } catch (err) {
     yield put(
-      alertActions.addAlert(`something bad happened... ${err}`, 'error'),
+      alertActions.addAlert(
+        `something bad happened... ${err}`,
+        alertTypes.error,
+      ),
     );
   }
 }
