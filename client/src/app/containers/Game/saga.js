@@ -1,9 +1,9 @@
 import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 import axios from 'axios';
-import { selectCurrentUser } from '../auth/selectors';
+import { selectCurrentUser } from '../../../auth/selectors';
 import { selectCurrentGameID } from './selectors';
 import { actions as gameActions } from './slice';
-import { actions as alertActions } from '../app/containers/Alert/slice';
+import { actions as alertActions } from '../Alert/slice';
 
 export function* handleExitGame({ payload: { history } }) {
   yield call(history.push, '/home');

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { selectCurrentUser } from './selectors';
 import { actions as authActions } from './slice';
 import { actions as alertActions } from '../app/containers/Alert/slice';
-import { actions as homeActions } from '../home/slice';
+import { actions as homeActions } from '../app/containers/Home/slice';
 
 export function* handleLogout({ payload: { history } }) {
   yield call(history.push, '/');
