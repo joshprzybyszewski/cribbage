@@ -46,20 +46,20 @@ const ActiveGamesTable = () => {
       }
 
       gameButtons.push(
-        <tr>
-          <td class='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
+        <tr key={`gameRow ${gID}`}>
+          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
             {opponents.join(', ')}
           </td>
-          <td class='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
             {activeGame.colors[currentUser.id]}
           </td>
-          <td class='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
             {activeGame.created}
           </td>
-          <td class='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
             {activeGame.lastMove}
           </td>
-          <td class='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
+          <td className='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
             <button key={gID} onClick={() => goToGame(gID)}>
               Play!
             </button>
@@ -71,31 +71,31 @@ const ActiveGamesTable = () => {
 
   return (
     <div>
-      <div class='flex flex-col'>
-        <div class='-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'>
-          <div class='align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200'>
-            <table class='min-w-full'>
+      <div className='flex flex-col'>
+        <div className='-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'>
+          <div className='align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200'>
+            <table className='min-w-full'>
               <thead>
                 <tr>
-                  <th class='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
                     Opponent(s)
                   </th>
-                  <th class='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
                     Your Color
                   </th>
-                  <th class='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
                     Started
                   </th>
-                  <th class='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
                     Last Move
                   </th>
-                  <th class='px-6 py-3 border-b border-gray-200 bg-gray-50'>
+                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50'>
                     <div
-                      class='flex-shrink-0 h-5 w-5'
+                      className='flex-shrink-0 h-5 w-5'
                       onClick={onRefreshActiveGames}
                     >
                       <img
-                        class='h-10 w-10 rounded-full'
+                        className='h-10 w-10 rounded-full'
                         src='./refresh.svg'
                         alt='Refresh'
                       />
@@ -103,7 +103,7 @@ const ActiveGamesTable = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody class='bg-white'>{gameButtons}</tbody>
+              <tbody className='bg-white'>{gameButtons}</tbody>
             </table>
           </div>
         </div>
@@ -114,7 +114,7 @@ const ActiveGamesTable = () => {
 
 const goToGame = gID => {
   // We're gonna need to navigate to the games page
-  console.log(`Requesting game page for ID: ${gID}`);
+  console.log(`Will request game page for ID: ${gID}`);
 };
 
 export default ActiveGamesTable;
