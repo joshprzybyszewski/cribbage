@@ -30,44 +30,42 @@ const ActiveGamesTable = () => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
   };
 
-  let gameButtons = [];
-  if (activeGames) {
-    for (const [gID, activeGame] of Object.entries(activeGames)) {
-      if (!gID || !activeGame) {
+  let gameButtons = activeGames.map(activeGame => {
+    if (!activeGame || !activeGame.gameID) {
+      return;
+    }
+    const gID = activeGame.gameID;
+
+    let opponents = [];
+    for (const [pID, pName] of Object.entries(activeGame.players)) {
+      if (pID === currentUser.id) {
         continue;
       }
-
-      let opponents = [];
-      for (const [pID, pName] of Object.entries(activeGame.players)) {
-        if (pID === currentUser.id) {
-          continue;
-        }
-        opponents.push(pName);
-      }
-
-      gameButtons.push(
-        <tr key={`gameRow ${gID}`}>
-          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
-            {opponents.join(', ')}
-          </td>
-          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
-            {activeGame.colors[currentUser.id]}
-          </td>
-          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
-            {activeGame.created}
-          </td>
-          <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
-            {activeGame.lastMove}
-          </td>
-          <td className='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
-            <button key={gID} onClick={() => goToGame(gID)}>
-              Play!
-            </button>
-          </td>
-        </tr>,
-      );
+      opponents.push(pName);
     }
-  }
+
+    return (
+      <tr key={`gameRow ${gID}`}>
+        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
+          {opponents.join(', ')}
+        </td>
+        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          {activeGame.colors[currentUser.id]}
+        </td>
+        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          {activeGame.created}
+        </td>
+        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+          {activeGame.lastMove}
+        </td>
+        <td className='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
+          <button key={gID} onClick={() => goToGame(gID)}>
+            Play!
+          </button>
+        </td>
+      </tr>
+    );
+  });
 
   return (
     <div>
