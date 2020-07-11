@@ -71,8 +71,6 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 	bobID := model.PlayerID(`bob`)
 	chelseaID := model.PlayerID(`chelsea`)
 	daveID := model.PlayerID(`dave`)
-	erinID := model.PlayerID(`erin`)
-	francisID := model.PlayerID(`francis`)
 
 	tests := []struct {
 		desc       string
@@ -106,28 +104,28 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 			},
 			456: {
 				Players: []model.Player{{
+					ID:   aliceID,
+					Name: `alice`,
+				}, {
 					ID:   chelseaID,
 					Name: `chelsea`,
+				}},
+				PlayerColors: map[model.PlayerID]model.PlayerColor{
+					aliceID:   model.Red,
+					chelseaID: model.Blue,
+				},
+			},
+			789: {
+				Players: []model.Player{{
+					ID:   aliceID,
+					Name: `alice`,
 				}, {
 					ID:   daveID,
 					Name: `dave`,
 				}},
 				PlayerColors: map[model.PlayerID]model.PlayerColor{
-					chelseaID: model.Red,
-					daveID:    model.Blue,
-				},
-			},
-			789: {
-				Players: []model.Player{{
-					ID:   erinID,
-					Name: `erin`,
-				}, {
-					ID:   francisID,
-					Name: `francis`,
-				}},
-				PlayerColors: map[model.PlayerID]model.PlayerColor{
-					erinID:    model.Red,
-					francisID: model.Blue,
+					aliceID: model.Red,
+					daveID:  model.Blue,
 				},
 			},
 		},
@@ -151,24 +149,24 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				},
 				456: {
 					PlayerNamesByID: map[model.PlayerID]string{
+						aliceID:   `alice`,
 						chelseaID: `chelsea`,
-						daveID:    `dave`,
 					},
 					PlayerColorsByID: map[model.PlayerID]string{
-						chelseaID: `red`,
-						daveID:    `blue`,
+						aliceID:   `red`,
+						chelseaID: `blue`,
 					},
 					Created:  time.Time{},
 					LastMove: time.Time{},
 				},
 				789: {
 					PlayerNamesByID: map[model.PlayerID]string{
-						erinID:    `erin`,
-						francisID: `francis`,
+						aliceID: `alice`,
+						daveID:  `dave`,
 					},
 					PlayerColorsByID: map[model.PlayerID]string{
-						erinID:    `red`,
-						francisID: `blue`,
+						aliceID: `red`,
+						daveID:  `blue`,
 					},
 					Created:  time.Time{},
 					LastMove: time.Time{},

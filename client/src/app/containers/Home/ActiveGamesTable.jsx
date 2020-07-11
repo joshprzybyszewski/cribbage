@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { selectCurrentUser } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
@@ -7,13 +8,12 @@ import {
   sliceKey as authSliceKey,
   reducer as authReducer,
 } from '../../../auth/slice';
-import { selectActiveGames } from '../../../home/selectors';
-import { homeSaga } from '../../../home/saga';
+import { homeSaga } from './saga';
 import {
   sliceKey as homeSliceKey,
   reducer as homeReducer,
   actions as homeActions,
-} from '../../../home/slice';
+} from './slice';
 
 const ActiveGamesTable = () => {
   useInjectReducer({ key: authSliceKey, reducer: authReducer });
@@ -59,7 +59,7 @@ const ActiveGamesTable = () => {
             {activeGame.lastMove}
           </td>
           <td class='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
-            <button key={gID} onClick={() => goToGame({ gID })}>
+            <button key={gID} onClick={() => goToGame(gID)}>
               Play!
             </button>
           </td>
@@ -90,12 +90,12 @@ const ActiveGamesTable = () => {
                   </th>
                   <th class='px-6 py-3 border-b border-gray-200 bg-gray-50'>
                     <div
-                      class='flex-shrink-0 h-10 w-10'
+                      class='flex-shrink-0 h-5 w-5'
                       onClick={onRefreshActiveGames}
                     >
                       <img
                         class='h-10 w-10 rounded-full'
-                        src='./refresh.png'
+                        src='./refresh.svg'
                         alt='Refresh'
                       />
                     </div>
