@@ -103,12 +103,12 @@ const ActiveGamesTable = () => {
                   </th>
                   <th class='px-6 py-3 border-b border-gray-200 bg-gray-50'>
                     <div
-                      class='flex-shrink-0 h-10 w-10'
+                      class='flex-shrink-0 h-5 w-5'
                       onClick={onRefreshActiveGames}
                     >
                       <img
                         class='h-10 w-10 rounded-full'
-                        src='./refresh.png'
+                        src='./refresh.svg'
                         alt='Refresh'
                       />
                     </div>
