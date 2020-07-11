@@ -8,6 +8,7 @@ import {
   sliceKey as authSliceKey,
   reducer as authReducer,
 } from '../../../auth/slice';
+import { selectActiveGames } from './selectors';
 import { homeSaga } from './saga';
 import {
   sliceKey as homeSliceKey,
