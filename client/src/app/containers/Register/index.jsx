@@ -45,7 +45,7 @@ const Landing = () => {
         <p className='mt-1 text-xs text-gray-600'>
           Already have an account?{' '}
           <span>
-            <Link to='/login' className='hover:text-gray-500 hover:underline'>
+            <Link to='/' className='hover:text-gray-500 hover:underline'>
               Log in here.
             </Link>
           </span>

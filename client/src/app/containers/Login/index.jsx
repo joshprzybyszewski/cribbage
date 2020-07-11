@@ -34,7 +34,10 @@ const LoginForm = () => {
         <p className='mt-1 text-xs text-gray-600'>
           Don't have an account?{' '}
           <span>
-            <Link to='/' className='hover:text-gray-500 hover:underline'>
+            <Link
+              to='/register'
+              className='hover:text-gray-500 hover:underline'
+            >
               Register here.
             </Link>
           </span>
