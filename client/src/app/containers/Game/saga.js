@@ -35,19 +35,11 @@ export function* handleGoToGame({ payload: { id, history } }) {
   }
 }
 
-export function* handleRefreshCurrentGame({ payload: { history } }) {
-  const currentGameID = yield select(selectCurrentGameID);
-  if (!currentGameID) {
-    yield put(alertActions.addAlert('No currentGameID', alertTypes.error));
-    return;
-  }
-
+export function* handleRefreshCurrentGame({ payload: { id, history } }) {
   const currentUser = yield select(selectCurrentUser);
 
   try {
-    const res = yield axios.get(
-      `/game/${currentGameID}?player=${currentUser.id}`,
-    );
+    const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, alertTypes.error));

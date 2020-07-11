@@ -15,14 +15,16 @@ const Game = () => {
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
-  const activeGameID = activeGame.id;
 
   // event handlers
-  const onRefreshCurrentGame = () => {
-    dispatch(actions.refreshGame(activeGameID, history));
+  const onRefreshCurrentGame = id => {
+    dispatch(actions.refreshGame(id, history));
   };
   const refreshButton = (
-    <button onClick={onRefreshCurrentGame} className='hover:text-white'>
+    <button
+      onClick={() => onRefreshCurrentGame(activeGame.id)}
+      className='hover:text-white'
+    >
       Refresh
     </button>
   );
@@ -92,9 +94,12 @@ const Game = () => {
       {!['Deal', 'BuildCrib'].includes(activeGame.phase) && (
         <div>Cut Card: {jsonCardToCard(activeGame.cut_card)}</div>
       )}
-      <div>
-        My Hand: {activeGame.hands[currentUser.id].map(c => jsonCardToCard(c))}
-      </div>
+      {activeGame.hands[currentUser.id] ? (
+        <div>
+          My Hand:{' '}
+          {activeGame.hands[currentUser.id].map(c => jsonCardToCard(c))}
+        </div>
+      ) : null}
       {Object.keys(activeGame.hands)
         .filter(k => k !== currentUser.id)
         .map(k => (

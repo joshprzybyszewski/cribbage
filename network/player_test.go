@@ -90,6 +90,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 		},
 		inputGames: map[model.GameID]model.Game{
 			123: {
+				ID: 123,
 				Players: []model.Player{{
 					ID:   aliceID,
 					Name: `alice`,
@@ -103,6 +104,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				},
 			},
 			456: {
+				ID: 456,
 				Players: []model.Player{{
 					ID:   aliceID,
 					Name: `alice`,
@@ -116,6 +118,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				},
 			},
 			789: {
+				ID: 789,
 				Players: []model.Player{{
 					ID:   aliceID,
 					Name: `alice`,
@@ -134,44 +137,43 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				ID:   aliceID,
 				Name: `alice`,
 			},
-			ActiveGames: map[model.GameID]ActiveGame{
-				123: {
-					PlayerNamesByID: map[model.PlayerID]string{
-						aliceID: `alice`,
-						bobID:   `bob`,
-					},
-					PlayerColorsByID: map[model.PlayerID]string{
-						aliceID: `red`,
-						bobID:   `blue`,
-					},
-					Created:  time.Time{},
-					LastMove: time.Time{},
+			ActiveGames: []ActiveGame{{
+				GameID: 123,
+				PlayerNamesByID: map[model.PlayerID]string{
+					aliceID: `alice`,
+					bobID:   `bob`,
 				},
-				456: {
-					PlayerNamesByID: map[model.PlayerID]string{
-						aliceID:   `alice`,
-						chelseaID: `chelsea`,
-					},
-					PlayerColorsByID: map[model.PlayerID]string{
-						aliceID:   `red`,
-						chelseaID: `blue`,
-					},
-					Created:  time.Time{},
-					LastMove: time.Time{},
+				PlayerColorsByID: map[model.PlayerID]string{
+					aliceID: `red`,
+					bobID:   `blue`,
 				},
-				789: {
-					PlayerNamesByID: map[model.PlayerID]string{
-						aliceID: `alice`,
-						daveID:  `dave`,
-					},
-					PlayerColorsByID: map[model.PlayerID]string{
-						aliceID: `red`,
-						daveID:  `blue`,
-					},
-					Created:  time.Time{},
-					LastMove: time.Time{},
+				Created:  time.Time{},
+				LastMove: time.Time{},
+			}, {
+				GameID: 456,
+				PlayerNamesByID: map[model.PlayerID]string{
+					aliceID:   `alice`,
+					chelseaID: `chelsea`,
 				},
-			},
+				PlayerColorsByID: map[model.PlayerID]string{
+					aliceID:   `red`,
+					chelseaID: `blue`,
+				},
+				Created:  time.Time{},
+				LastMove: time.Time{},
+			}, {
+				GameID: 789,
+				PlayerNamesByID: map[model.PlayerID]string{
+					aliceID: `alice`,
+					daveID:  `dave`,
+				},
+				PlayerColorsByID: map[model.PlayerID]string{
+					aliceID: `red`,
+					daveID:  `blue`,
+				},
+				Created:  time.Time{},
+				LastMove: time.Time{},
+			}},
 		},
 	}}
 	for _, tc := range tests {

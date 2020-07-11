@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 export const initialState = {
   activeGamesPlayerID: '',
-  activeGames: {},
+  activeGames: [],
 };
 
 const homeSlice = createSlice({
