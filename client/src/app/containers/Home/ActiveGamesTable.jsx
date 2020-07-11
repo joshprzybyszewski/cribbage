@@ -8,19 +8,19 @@ import {
   sliceKey as authSliceKey,
   reducer as authReducer,
 } from '../../../auth/slice';
-import { gameSaga } from '../../../game/saga';
+import { gameSaga } from '../Game/saga';
 import {
   sliceKey as gameSliceKey,
   reducer as gameReducer,
   actions as gameActions,
-} from '../../../game/slice';
-import { selectActiveGames } from '../../../home/selectors';
-import { homeSaga } from '../../../home/saga';
+} from '../Game/slice';
+import { selectActiveGames } from './selectors';
+import { homeSaga } from './saga';
 import {
   sliceKey as homeSliceKey,
   reducer as homeReducer,
   actions as homeActions,
-} from '../../../home/slice';
+} from './slice';
 
 const ActiveGamesTable = () => {
   useInjectReducer({ key: authSliceKey, reducer: authReducer });

@@ -3,9 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { selectCurrentUser } from '../../../auth/selectors';
-import { gameSaga } from '../../../game/saga';
-import { sliceKey, reducer, actions } from '../../../game/slice';
-import { selectCurrentGame } from '../../../game/selectors';
+import { gameSaga } from './saga';
+import { sliceKey, reducer, actions } from './slice';
+import { selectCurrentGame } from './selectors';
 import PlayingCard from './PlayingCard';
 
 const Game = () => {
@@ -39,14 +39,7 @@ const Game = () => {
 
   const myColor = activeGame['player_colors'][currentUser.id];
   let gameResp = [];
-  let gameDesc = 'Players are: ';
   let scoreChildren = [];
-  let dealerDesc = 'Dealer: ';
-  let phaseDesc = 'Phase: ';
-  let cutCardDiv;
-  let myHandDiv;
-  let oppHandDivs = [];
-  let cribDiv;
   let playerNamesByID = {};
   activeGame['players'].forEach(player => {
     playerNamesByID[player.id] = player.name;
@@ -57,14 +50,6 @@ const Game = () => {
     gameResp.push(<br key={`br ${key}`}></br>);
 
     switch (key) {
-      case 'players':
-        val.forEach((player, index) => {
-          gameDesc += player.name;
-          if (index < val.length - 1) {
-            gameDesc += ', ';
-          }
-        });
-        break;
       case 'current_scores':
         let lagScores = activeGame['lag_scores'];
         let playerColors = activeGame['player_colors'];
@@ -92,66 +77,41 @@ const Game = () => {
           }
         }
         break;
-      case 'current_dealer':
-        dealerDesc += val;
-        break;
-      case 'phase':
-        phaseDesc += val;
-        break;
-      case 'cut_card':
-        if (
-          activeGame['phase'] === 'Deal' ||
-          activeGame['phase'] === 'BuildCrib'
-        ) {
-          break;
-        }
-        cutCardDiv = (
-          <div key={'cutCardDiv'}>Cut Card: {jsonCardToCard(val)}</div>
-        );
-        break;
-      case 'hands':
-        for (const [playerID, hand] of Object.entries(val)) {
-          if (!hand) {
-            continue;
-          } else if (playerID === currentUser.id) {
-            myHandDiv = (
-              <div key={'myHandDiv'}>My Hand: {hand.map(jsonCardToCard)}</div>
-            );
-          } else {
-            oppHandDivs.push(
-              <div key={`oppHand ${playerID}`}>
-                {playerNamesByID[playerID]}'s Hand:{' '}
-                {hand.length > 0 ? hand.map(jsonCardToCard) : 'empty/unknown'}
-              </div>,
-            );
-          }
-        }
-
-        break;
-      case 'crib':
-        cribDiv = (
-          <div key={'cribDiv'}>Crib: {val.map(jsonCardToCard).join(', ')}</div>
-        );
-
-        break;
     }
   }
-
+  // TODO I know this component is super preliminary, but we would probably do well to break it down into more manageable subcomponents :#
   return (
     <div>
-      <div key={'gameDescDiv'}>{gameDesc}</div>
-      <div key={'scoresDiv'}>
+      <div>Players are: {activeGame.players.map(p => p.name).join(', ')}</div>
+      <div>
         <h2>Scores:</h2>
         {scoreChildren}
       </div>
-      <div key={'dealerDiv'}>{dealerDesc}</div>
-      <div key={'phaseDiv'}>{phaseDesc}</div>
-      {cutCardDiv}
-      {myHandDiv}
-      {oppHandDivs.length > 0 ? (
-        <div key={'oppHandsDiv'}>{oppHandDivs}</div>
-      ) : null}
-      {cribDiv}
+      <div>Dealer: {activeGame.current_dealer}</div>
+      <div>Phase: {activeGame.phase}</div>
+      {!['Deal', 'BuildCrib'].includes(activeGame.phase) && (
+        <div>Cut Card: {jsonCardToCard(activeGame.cut_card)}</div>
+      )}
+      <div>
+        My Hand: {activeGame.hands[currentUser.id].map(c => jsonCardToCard(c))}
+      </div>
+      {Object.keys(activeGame.hands)
+        .filter(k => k !== currentUser.id)
+        .map(k => (
+          <div key={k}>
+            {k}'s Hand:{' '}
+            {activeGame.hands[k]
+              ? activeGame.hands[k].map(c => jsonCardToCard(c))
+              : 'empty/unknown'}
+          </div>
+        ))}
+      {activeGame.crib ? (
+        <div>
+          Crib: {activeGame.crib.map(c => jsonCardToCard(c).join(', '))}
+        </div>
+      ) : (
+        <div>no crib yet</div>
+      )}
       <br></br>
       This will be a page for the game of a user.
       <br></br>
