@@ -4,10 +4,7 @@ const PlayingCard = props => {
   if (!props.name) {
     return null;
   }
-  let useRed = true;
-  if (props.suit === 'Spades' || props.suit === 'Clubs') {
-    useRed = false;
-  }
+  const useRed = !['Spade', 'Clubs'].includes(props.suit);
   return (
     <div
       class={`w-16 h-20 text-center align-middle inline-block border-2 border-black bg-white ${

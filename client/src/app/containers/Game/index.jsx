@@ -39,11 +39,11 @@ const Game = () => {
     );
   }
 
-  const myColor = activeGame['player_colors'][currentUser.id];
+  const myColor = activeGame.player_colors[currentUser.id];
   let gameResp = [];
   let scoreChildren = [];
   let playerNamesByID = {};
-  activeGame['players'].forEach(player => {
+  activeGame.players.forEach(player => {
     playerNamesByID[player.id] = player.name;
   });
 
@@ -53,8 +53,8 @@ const Game = () => {
 
     switch (key) {
       case 'current_scores':
-        let lagScores = activeGame['lag_scores'];
-        let playerColors = activeGame['player_colors'];
+        let lagScores = activeGame.lag_scores;
+        let playerColors = activeGame.player_colors;
         let teams = {};
         for (const [playerName, color] of Object.entries(playerColors)) {
           if (teams[color]) {
