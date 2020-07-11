@@ -17,8 +17,8 @@ export const App = () => {
         <Navbar />
         <Alert />
         <Switch>
-          <Route exact path='/' component={Register} />
-          <Route exact path='/login' component={Login} />
+          <Route exact path='/' component={Login} />
+          <Route exact path='/register' component={Register} />
           <PrivateRoute exact path='/home' component={Home} />
           <PrivateRoute exact path='/game' component={Game} />
         </Switch>
