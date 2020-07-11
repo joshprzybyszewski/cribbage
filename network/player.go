@@ -41,12 +41,17 @@ func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
 	}
 }
 
+type ActiveGamePlayer struct {
+	ID    model.PlayerID `json:"id"`
+	Name  string         `json:"name"`
+	Color string         `json:"color"`
+}
+
 type ActiveGame struct {
-	GameID           model.GameID              `json:"gameID"`
-	PlayerNamesByID  map[model.PlayerID]string `json:"players"`
-	PlayerColorsByID map[model.PlayerID]string `json:"colors"`
-	Created          time.Time                 `json:"created"`
-	LastMove         time.Time                 `json:"lastMove"`
+	GameID   model.GameID       `json:"gameID"`
+	Players  []ActiveGamePlayer `json:"players"`
+	Created  time.Time          `json:"created"`
+	LastMove time.Time          `json:"lastMove"`
 }
 
 type GetActiveGamesForPlayerResponse struct {
@@ -83,14 +88,16 @@ func convertToParticipatingGames(
 
 func getActiveGame(mg model.Game) ActiveGame {
 	ag := ActiveGame{
-		GameID:           mg.ID,
-		PlayerNamesByID:  map[model.PlayerID]string{},
-		PlayerColorsByID: map[model.PlayerID]string{},
+		GameID: mg.ID,
 	}
-	for _, p := range mg.Players {
+	ag.Players = make([]ActiveGamePlayer, len(mg.Players))
+	for i, p := range mg.Players {
 		pID := p.ID
-		ag.PlayerNamesByID[pID] = p.Name
-		ag.PlayerColorsByID[pID] = mg.PlayerColors[pID].String()
+		ag.Players[i] = ActiveGamePlayer{
+			ID:    pID,
+			Name:  p.Name,
+			Color: mg.PlayerColors[pID].String(),
+		}
 	}
 	return ag
 }

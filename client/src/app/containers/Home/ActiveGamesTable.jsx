@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { selectCurrentUser } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
@@ -36,29 +35,27 @@ const ActiveGamesTable = () => {
     }
     const gID = activeGame.gameID;
 
-    let opponents = [];
-    for (const [pID, pName] of Object.entries(activeGame.players)) {
-      if (pID === currentUser.id) {
-        continue;
-      }
-      opponents.push(pName);
-    }
-
     return (
       <tr key={`gameRow ${gID}`}>
-        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200'>
-          {opponents.join(', ')}
+        <td className='active-games-table-data'>
+          {activeGame.players
+            .filter(p => p.id !== currentUser.id)
+            .map(p => p.name)
+            .join(', ')}
         </td>
-        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
-          {activeGame.colors[currentUser.id]}
+        <td className='active-games-table-data active-games-table-data-sm'>
+          {activeGame.players
+            .filter(p => p.id === currentUser.id)
+            .map(p => p.color)
+            .toString()}
         </td>
-        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+        <td className='active-games-table-data active-games-table-data-sm'>
           {activeGame.created}
         </td>
-        <td className='px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5 text-gray-500'>
+        <td className='active-games-table-data active-games-table-data-sm'>
           {activeGame.lastMove}
         </td>
-        <td className='px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium'>
+        <td className='active-games-table-data active-games-table-data-sm'>
           <button key={gID} onClick={() => goToGame(gID)}>
             Play!
           </button>
@@ -75,19 +72,19 @@ const ActiveGamesTable = () => {
             <table className='min-w-full'>
               <thead>
                 <tr>
-                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='active-games-table-head active-games-table-head-text'>
                     Opponent(s)
                   </th>
-                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='active-games-table-head active-games-table-head-text'>
                     Your Color
                   </th>
-                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='active-games-table-head active-games-table-head-text'>
                     Started
                   </th>
-                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider'>
+                  <th className='active-games-table-head active-games-table-head-text'>
                     Last Move
                   </th>
-                  <th className='px-6 py-3 border-b border-gray-200 bg-gray-50'>
+                  <th className='active-games-table-head'>
                     <div
                       className='flex-shrink-0 h-5 w-5'
                       onClick={onRefreshActiveGames}

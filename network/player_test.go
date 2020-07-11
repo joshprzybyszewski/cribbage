@@ -139,38 +139,114 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 			},
 			ActiveGames: []ActiveGame{{
 				GameID: 123,
-				PlayerNamesByID: map[model.PlayerID]string{
-					aliceID: `alice`,
-					bobID:   `bob`,
-				},
-				PlayerColorsByID: map[model.PlayerID]string{
-					aliceID: `red`,
-					bobID:   `blue`,
-				},
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    bobID,
+					Name:  `bob`,
+					Color: `blue`,
+				}},
 				Created:  time.Time{},
 				LastMove: time.Time{},
 			}, {
 				GameID: 456,
-				PlayerNamesByID: map[model.PlayerID]string{
-					aliceID:   `alice`,
-					chelseaID: `chelsea`,
-				},
-				PlayerColorsByID: map[model.PlayerID]string{
-					aliceID:   `red`,
-					chelseaID: `blue`,
-				},
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    chelseaID,
+					Name:  `chelsea`,
+					Color: `blue`,
+				}},
 				Created:  time.Time{},
 				LastMove: time.Time{},
 			}, {
 				GameID: 789,
-				PlayerNamesByID: map[model.PlayerID]string{
-					aliceID: `alice`,
-					daveID:  `dave`,
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    daveID,
+					Name:  `dave`,
+					Color: `blue`,
+				}},
+				Created:  time.Time{},
+				LastMove: time.Time{},
+			}},
+		},
+	}, {
+		desc: `games where alice isn't playing`,
+		player: model.Player{
+			ID:   aliceID,
+			Name: `alice`,
+			Games: map[model.GameID]model.PlayerColor{
+				123: model.Blue,
+			},
+		},
+		inputGames: map[model.GameID]model.Game{
+			123: {
+				ID: 123,
+				Players: []model.Player{{
+					ID:   aliceID,
+					Name: `alice`,
+				}, {
+					ID:   bobID,
+					Name: `bob`,
+				}},
+				PlayerColors: map[model.PlayerID]model.PlayerColor{
+					aliceID: model.Red,
+					bobID:   model.Blue,
 				},
-				PlayerColorsByID: map[model.PlayerID]string{
-					aliceID: `red`,
-					daveID:  `blue`,
+			},
+			456: {
+				ID: 456,
+				Players: []model.Player{{
+					ID:   bobID,
+					Name: `bob`,
+				}, {
+					ID:   chelseaID,
+					Name: `chelsea`,
+				}},
+				PlayerColors: map[model.PlayerID]model.PlayerColor{
+					bobID:     model.Red,
+					chelseaID: model.Blue,
 				},
+			},
+			789: {
+				ID: 789,
+				Players: []model.Player{{
+					ID:   chelseaID,
+					Name: `chelsea`,
+				}, {
+					ID:   daveID,
+					Name: `dave`,
+				}},
+				PlayerColors: map[model.PlayerID]model.PlayerColor{
+					chelseaID: model.Red,
+					daveID:    model.Blue,
+				},
+			},
+		},
+		expResp: GetActiveGamesForPlayerResponse{
+			Player: Player{
+				ID:   aliceID,
+				Name: `alice`,
+			},
+			ActiveGames: []ActiveGame{{
+				GameID: 123,
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    bobID,
+					Name:  `bob`,
+					Color: `blue`,
+				}},
 				Created:  time.Time{},
 				LastMove: time.Time{},
 			}},
