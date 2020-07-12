@@ -1,6 +1,10 @@
 package network
 
-import "github.com/joshprzybyszewski/cribbage/model"
+import (
+	"time"
+
+	"github.com/joshprzybyszewski/cribbage/model"
+)
 
 type Player struct {
 	ID   model.PlayerID `json:"id"`
@@ -25,8 +29,7 @@ func ConvertToCreatePlayerResponse(pm model.Player) CreatePlayerResponse {
 }
 
 type GetPlayerResponse struct {
-	Player Player                  `json:"player"`
-	Games  map[model.GameID]string `json:"games"`
+	Player Player `json:"player"`
 }
 
 func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
@@ -35,16 +38,68 @@ func ConvertToGetPlayerResponse(p model.Player) GetPlayerResponse {
 			ID:   p.ID,
 			Name: p.Name,
 		},
-		Games: convertToParticipatingGames(p.Games),
 	}
 }
 
-func convertToParticipatingGames(mgs map[model.GameID]model.PlayerColor) map[model.GameID]string {
-	games := make(map[model.GameID]string, len(mgs))
-	for g, c := range mgs {
-		games[g] = c.String()
+type ActiveGamePlayer struct {
+	ID    model.PlayerID `json:"id"`
+	Name  string         `json:"name"`
+	Color string         `json:"color"`
+}
+
+type ActiveGame struct {
+	GameID   model.GameID       `json:"gameID"`
+	Players  []ActiveGamePlayer `json:"players"`
+	Created  time.Time          `json:"created"`
+	LastMove time.Time          `json:"lastMove"`
+}
+
+type GetActiveGamesForPlayerResponse struct {
+	Player      Player       `json:"player"`
+	ActiveGames []ActiveGame `json:"activeGames"`
+}
+
+func ConvertToGetActiveGamesForPlayerResponse(
+	p model.Player,
+	games map[model.GameID]model.Game,
+) GetActiveGamesForPlayerResponse {
+
+	return GetActiveGamesForPlayerResponse{
+		Player: Player{
+			ID:   p.ID,
+			Name: p.Name,
+		},
+		ActiveGames: convertToParticipatingGames(p, games),
 	}
-	return games
+}
+
+func convertToParticipatingGames(
+	p model.Player,
+	games map[model.GameID]model.Game,
+) []ActiveGame {
+	res := make([]ActiveGame, 0, len(p.Games))
+	for gID := range p.Games {
+		if mg, ok := games[gID]; ok {
+			res = append(res, getActiveGame(mg))
+		}
+	}
+	return res
+}
+
+func getActiveGame(mg model.Game) ActiveGame {
+	ag := ActiveGame{
+		GameID: mg.ID,
+	}
+	ag.Players = make([]ActiveGamePlayer, len(mg.Players))
+	for i, p := range mg.Players {
+		pID := p.ID
+		ag.Players[i] = ActiveGamePlayer{
+			ID:    pID,
+			Name:  p.Name,
+			Color: mg.PlayerColors[pID].String(),
+		}
+	}
+	return ag
 }
 
 func convertToPlayers(pms []model.Player) []Player {

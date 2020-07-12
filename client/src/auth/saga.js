@@ -3,6 +3,8 @@ import axios from 'axios';
 import { selectCurrentUser } from './selectors';
 import { actions as authActions } from './slice';
 import { actions as alertActions } from '../app/containers/Alert/slice';
+import { alertTypes } from '../app/containers/Alert/types';
+import { actions as homeActions } from '../app/containers/Home/slice';
 
 export function* handleLogout({ payload: { history } }) {
   yield call(history.push, '/');
@@ -15,11 +17,11 @@ export function* handleLogin({ payload: { history } }) {
     const res = yield axios.get(`/player/${currentUser.id}`);
     const { id, name } = res.data.player;
     yield put(authActions.loginSuccess({ id, name }));
-    yield put(alertActions.addAlert('Login successful!', 'success'));
+    yield put(homeActions.refreshActiveGames({ id: currentUser.id }));
     yield call(history.push, '/home');
   } catch (err) {
     yield put(authActions.loginFailed(err.response.data));
-    yield put(alertActions.addAlert(err.response.data, 'error'));
+    yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }
 }
 
@@ -30,11 +32,13 @@ export function* handleRegister({ payload: { history } }) {
     const res = yield axios.post('/create/player', { player: currentUser });
     const { id, name } = res.data.player;
     yield put(authActions.registerSuccess({ id, name }));
-    yield put(alertActions.addAlert('Registration successful!', 'success'));
+    yield put(
+      alertActions.addAlert('Registration successful!', alertTypes.success),
+    );
     yield call(history.push, '/home');
   } catch (err) {
     yield put(authActions.registerFailed(err.response.data));
-    yield put(alertActions.addAlert(err.response.data, 'error'));
+    yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }
 }
 
