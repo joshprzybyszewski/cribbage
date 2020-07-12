@@ -81,22 +81,10 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 }
 
 func getGame(_ context.Context, db persistence.DB, gID model.GameID) (model.Game, error) {
-	err := db.Start()
-	if err != nil {
-		return model.Game{}, err
-	}
-	defer commitOrRollback(db, &err)
-
 	return db.GetGame(gID)
 }
 
 func getPlayer(_ context.Context, db persistence.DB, pID model.PlayerID) (model.Player, error) {
-	err := db.Start()
-	if err != nil {
-		return model.Player{}, err
-	}
-	defer commitOrRollback(db, &err)
-
 	return db.GetPlayer(pID)
 }
 

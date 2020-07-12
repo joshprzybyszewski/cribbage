@@ -29,8 +29,8 @@ export const App = () => {
         <div className='w-full h-screen p-4 bg-gray-200'>
           <Alert />
           <Switch>
-            <Route exact path='/' component={Register} />
-            <Route exact path='/login' component={Login} />
+            <Route exact path='/' component={Login} />
+            <Route exact path='/register' component={Register} />
             <PrivateRoute exact path='/home' component={Home} />
             <PrivateRoute exact path='/newgame' component={NewGameForm} />
             <PrivateRoute exact path='/account' component={Account} />
