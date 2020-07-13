@@ -29,12 +29,13 @@ const (
 
 var (
 	tests = map[string]dbTest{
-		`createPlayer`:          testCreatePlayer,
-		`saveGame`:              testCreateGame,
-		`resaveGame`:            testSaveGameMultipleTimes,
-		`saveGameMissingAction`: testSaveGameWithMissingAction,
-		`saveInteraction`:       testSaveInteraction,
-		`addColorToGame`:        testAddPlayerColorToGame,
+		`createPlayer`:                  testCreatePlayer,
+		`createPlayersWithSimilarNames`: testCreatePlayersWithSimilarNames,
+		`saveGame`:                      testCreateGame,
+		`resaveGame`:                    testSaveGameMultipleTimes,
+		`saveGameMissingAction`:         testSaveGameWithMissingAction,
+		`saveInteraction`:               testSaveInteraction,
+		`addColorToGame`:                testAddPlayerColorToGame,
 	}
 )
 
@@ -129,6 +130,25 @@ func TestDB(t *testing.T) {
 			t.Run(string(dbName)+`:`+testName, func(t1 *testing.T) { testFn(t1, dbName, db) })
 		}
 	}
+}
+
+func testCreatePlayersWithSimilarNames(t *testing.T, name dbName, db persistence.DB) {
+	p1 := model.Player{
+		ID:    model.PlayerID(`alice`),
+		Name:  `alice`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NoError(t, db.CreatePlayer(p1))
+
+	p2 := model.Player{
+		ID:    model.PlayerID(`Alice`),
+		Name:  `Alice`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NotEqual(t, p1.ID, p2.ID)
+	assert.NoError(t, db.CreatePlayer(p2))
 }
 
 func testCreatePlayer(t *testing.T, name dbName, db persistence.DB) {
