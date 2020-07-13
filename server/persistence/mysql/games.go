@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -30,6 +31,7 @@ const (
 	createGameTable = `CREATE TABLE IF NOT EXISTS Games (
 		GameID INT UNSIGNED,
 		NumActions INT UNSIGNED,
+		Time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		ScoreBlue TINYINT UNSIGNED,
 		ScoreRed TINYINT UNSIGNED,
 		ScoreGreen TINYINT UNSIGNED,
@@ -88,7 +90,7 @@ const (
 	;`
 
 	queryPlayerActionsBefore = `SELECT 
-		NumActions, Action
+		NumActions, Action, Time
 	FROM Games
 	WHERE GameID = ? AND
 		NumActions <= ?
@@ -431,11 +433,15 @@ func (g *gameService) getActions(
 	if err != nil {
 		return nil, err
 	}
-	paMap := make(map[int][]byte, maxNumActions)
+	paMap := make(map[int]struct {
+		bytes     []byte
+		timestamp time.Time
+	}, maxNumActions)
 	var lenActionSlice, actionIndex int
 	var serAction []byte
+	var ts time.Time
 	for rows.Next() {
-		err = rows.Scan(&lenActionSlice, &serAction)
+		err = rows.Scan(&lenActionSlice, &serAction, &ts)
 		if err != nil {
 			return nil, err
 		}
@@ -444,7 +450,13 @@ func (g *gameService) getActions(
 		// this action's index (into the action slice) is one fewer than the
 		// number we persisted it at
 		actionIndex = lenActionSlice - 1
-		paMap[actionIndex] = serAction
+		paMap[actionIndex] = struct {
+			bytes     []byte
+			timestamp time.Time
+		}{
+			bytes:     serAction,
+			timestamp: ts,
+		}
 	}
 	err = rows.Err()
 	if err != nil {
@@ -453,14 +465,15 @@ func (g *gameService) getActions(
 
 	pas := make([]model.PlayerAction, maxNumActions)
 	for i := range pas {
-		bytes, ok := paMap[i]
+		pair, ok := paMap[i]
 		if !ok {
 			return nil, errors.New(`missing action`)
 		}
-		pa, err := getPlayerAction(bytes)
+		pa, err := getPlayerAction(pair.bytes)
 		if err != nil {
 			return nil, err
 		}
+		pa.TimeStamp = pair.timestamp
 		pas[i] = pa
 	}
 
