@@ -11,8 +11,8 @@ const (
 	// Players stores info about Players that we need to keep.
 	// The default PreferredInteractionMode should be equal to int(interaction.UnsetMode)
 	createPlayersTable = `CREATE TABLE IF NOT EXISTS Players (
-		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
-		Name VARCHAR(` + maxPlayerNameLenStr + `),
+		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
+		Name VARCHAR(` + maxPlayerNameLenStr + `) COLLATE utf8_unicode_ci,
 		PreferredInteractionMode INT DEFAULT 0,
 		PRIMARY KEY (PlayerID)
 	) ENGINE = INNODB;`
@@ -21,7 +21,7 @@ const (
 	// The default Color should match int(model.UnsetColor) for player colors
 	createGamePlayerColorsTable = `CREATE TABLE IF NOT EXISTS GamePlayerColors (
 		GameID INT UNSIGNED,
-		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
+		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
 		Color TINYINT UNSIGNED DEFAULT 0,
 		PRIMARY KEY (GameID, PlayerID)
 	) ENGINE = INNODB;`

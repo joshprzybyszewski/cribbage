@@ -11,7 +11,7 @@ import (
 const (
 	// Interactions stores the json-serialized InteractionMeans for a given player/mode
 	createInteractionTable = `CREATE TABLE IF NOT EXISTS Interactions (
-		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `),
+		PlayerID VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
 		Mode INT,
 		Means BLOB,
 		PRIMARY KEY (PlayerID)
