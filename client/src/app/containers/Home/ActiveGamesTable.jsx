@@ -77,8 +77,13 @@ const ActiveGamesTable = () => {
   });
 
   return (
-    <TableContainer component={Paper}>
-      <Table size='small' aria-label='active games table'>
+    <TableContainer
+      component={Paper}
+      style={{
+        maxHeight: 500,
+      }}
+    >
+      <Table stickyHeader size='small' aria-label='active games table'>
         <TableHead>
           <TableRow>
             <TableCell>Opponent(s)</TableCell>
@@ -94,7 +99,7 @@ const ActiveGamesTable = () => {
         </TableHead>
         <TableBody>
           {rows.map(row => (
-            <TableRow key={row.name}>
+            <TableRow hover key={row.gameID}>
               <TableCell component='th' scope='row'>
                 {row.opponents}
               </TableCell>
