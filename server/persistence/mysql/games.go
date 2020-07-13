@@ -41,7 +41,7 @@ const (
 		Phase TINYINT UNSIGNED,
 		CutCard SMALLINT,
 		Crib INT,
-		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
+		CurrentDealer VARCHAR(` + maxPlayerUUIDLenStr + `) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs,
 		BlockingPlayers BLOB,
 		Hands BLOB,
 		PeggedCards BLOB,
@@ -51,10 +51,10 @@ const (
 
 	createGamePlayersTable = `CREATE TABLE IF NOT EXISTS GamePlayers (
 		GameID INT UNSIGNED,
-		Player1ID VARCHAR(` + maxPlayerUUIDLenStr + `) NOT NULL COLLATE utf8_unicode_ci,
-		Player2ID VARCHAR(` + maxPlayerUUIDLenStr + `) NOT NULL COLLATE utf8_unicode_ci,
-		Player3ID VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
-		Player4ID VARCHAR(` + maxPlayerUUIDLenStr + `) COLLATE utf8_unicode_ci,
+		Player1ID VARCHAR(` + maxPlayerUUIDLenStr + `) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+		Player2ID VARCHAR(` + maxPlayerUUIDLenStr + `) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+		Player3ID VARCHAR(` + maxPlayerUUIDLenStr + `) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs,
+		Player4ID VARCHAR(` + maxPlayerUUIDLenStr + `) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs,
 		PRIMARY KEY (GameID)
 	) ENGINE = INNODB;`
 
