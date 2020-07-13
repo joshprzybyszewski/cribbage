@@ -24,7 +24,7 @@ var (
 	dsnPassword = flag.String(`dsn_password`, ``, `The password for the user for the MySQL DB`)
 	dsnHost     = flag.String(`dsn_host`, `127.0.0.1`, `The host for the MySQL DB`)
 	dsnPort     = flag.Int(`dsn_port`, 3306, `The port for the MySQL DB`)
-	dsnParams   = flag.String(`dsn_params`, ``, `The params for the MySQL DB`)
+	dsnParams   = flag.String(`dsn_params`, `parseTime=true`, `The params for the MySQL DB`)
 	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
 
 	createTables = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
