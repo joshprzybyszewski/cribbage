@@ -17,7 +17,8 @@ func UnmarshalGame(b []byte) (model.Game, error) {
 		return model.Game{}, err
 	}
 
-	for i, a := range game.Actions {
+	for i := range game.Actions {
+		a := game.Actions[i]
 		b, err := json.Marshal(a)
 		if err != nil {
 			return model.Game{}, err

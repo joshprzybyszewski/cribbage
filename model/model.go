@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type Suit int
 
 const (
@@ -146,10 +148,11 @@ type CribBlocker struct {
 }
 
 type PlayerAction struct {
-	GameID    GameID      `protobuf:"varint,1,req,name=gameID,proto3" json:"gID" bson:"gID"` //nolint:lll
-	ID        PlayerID    `protobuf:"varint,2,req,name=id,proto3" json:"pID" bson:"pID"`     //nolint:lll
-	Overcomes Blocker     `protobuf:"varint,3,req,name=overcomes,proto3" json:"o" bson:"o"`  //nolint:lll
-	Action    interface{} `protobuf:"-" json:"a" bson:"a"`                                   //nolint:lll
+	GameID    GameID      `json:"gID" bson:"gID"`
+	ID        PlayerID    `json:"pID" bson:"pID"`
+	Overcomes Blocker     `json:"o" bson:"o"`
+	Action    interface{} `json:"a" bson:"a"`
+	TimeStamp time.Time   `json:"timestamp" bson:"timestamp"`
 }
 
 type DealAction struct {

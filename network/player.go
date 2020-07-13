@@ -1,6 +1,7 @@
 package network
 
 import (
+	"sort"
 	"time"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -83,12 +84,17 @@ func convertToParticipatingGames(
 			res = append(res, getActiveGame(mg))
 		}
 	}
+	sort.Slice(res, func(i, j int) bool { return !res[i].LastMove.Before(res[j].LastMove) })
 	return res
 }
 
 func getActiveGame(mg model.Game) ActiveGame {
 	ag := ActiveGame{
 		GameID: mg.ID,
+	}
+	if len(mg.Actions) > 0 {
+		ag.Created = mg.Actions[0].TimeStamp
+		ag.LastMove = mg.Actions[len(mg.Actions)-1].TimeStamp
 	}
 	ag.Players = make([]ActiveGamePlayer, len(mg.Players))
 	for i, p := range mg.Players {

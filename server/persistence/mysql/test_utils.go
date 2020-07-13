@@ -9,7 +9,7 @@ func GetTestConfig() Config {
 		DSNHost:        `localhost`,
 		DSNPort:        3306,
 		DatabaseName:   `testing_cribbage`,
-		DSNParams:      ``,
+		DSNParams:      `parseTime=true`,
 		RunCreateStmts: true,
 	}
 }
@@ -21,7 +21,7 @@ func GetTestConfigForLocal() Config {
 		DSNHost:        `127.0.0.1`,
 		DSNPort:        3306,
 		DatabaseName:   `testing_cribbage`,
-		DSNParams:      ``,
+		DSNParams:      `parseTime=true`,
 		RunCreateStmts: true,
 	}
 }

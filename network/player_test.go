@@ -72,13 +72,16 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 	chelseaID := model.PlayerID(`chelsea`)
 	daveID := model.PlayerID(`dave`)
 
+	t2 := time.Now()
+	t1 := t2.Add(-time.Minute)
+
 	tests := []struct {
 		desc       string
 		player     model.Player
 		inputGames map[model.GameID]model.Game
 		expResp    GetActiveGamesForPlayerResponse
 	}{{
-		desc: ``,
+		desc: `knows how to sort based on timestamp`,
 		player: model.Player{
 			ID:   aliceID,
 			Name: `alice`,
@@ -116,6 +119,9 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID:   model.Red,
 					chelseaID: model.Blue,
 				},
+				Actions: []model.PlayerAction{{
+					TimeStamp: t1,
+				}},
 			},
 			789: {
 				ID: 789,
@@ -130,6 +136,11 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID: model.Red,
 					daveID:  model.Blue,
 				},
+				Actions: []model.PlayerAction{{
+					TimeStamp: t1,
+				}, {
+					TimeStamp: t2,
+				}},
 			},
 		},
 		expResp: GetActiveGamesForPlayerResponse{
@@ -138,6 +149,32 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				Name: `alice`,
 			},
 			ActiveGames: []ActiveGame{{
+				GameID: 789,
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    daveID,
+					Name:  `dave`,
+					Color: `blue`,
+				}},
+				Created:  t1,
+				LastMove: t2,
+			}, {
+				GameID: 456,
+				Players: []ActiveGamePlayer{{
+					ID:    aliceID,
+					Name:  `alice`,
+					Color: `red`,
+				}, {
+					ID:    chelseaID,
+					Name:  `chelsea`,
+					Color: `blue`,
+				}},
+				Created:  t1,
+				LastMove: t1,
+			}, {
 				GameID: 123,
 				Players: []ActiveGamePlayer{{
 					ID:    aliceID,
@@ -150,36 +187,10 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				}},
 				Created:  time.Time{},
 				LastMove: time.Time{},
-			}, {
-				GameID: 456,
-				Players: []ActiveGamePlayer{{
-					ID:    aliceID,
-					Name:  `alice`,
-					Color: `red`,
-				}, {
-					ID:    chelseaID,
-					Name:  `chelsea`,
-					Color: `blue`,
-				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
-			}, {
-				GameID: 789,
-				Players: []ActiveGamePlayer{{
-					ID:    aliceID,
-					Name:  `alice`,
-					Color: `red`,
-				}, {
-					ID:    daveID,
-					Name:  `dave`,
-					Color: `blue`,
-				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
 			}},
 		},
 	}, {
-		desc: `games where alice isn't playing`,
+		desc: `knows how to filter games where alice isn't playing`,
 		player: model.Player{
 			ID:   aliceID,
 			Name: `alice`,

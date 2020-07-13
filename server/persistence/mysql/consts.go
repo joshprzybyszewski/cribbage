@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	maxPlayerUUIDLen    = 255
-	maxPlayerUUIDLenStr = `255`
+	maxPlayerUUIDLen    = 191
+	maxPlayerUUIDLenStr = `191`
 
-	maxPlayerNameLen    = 255
-	maxPlayerNameLenStr = `255`
+	maxPlayerNameLen    = 191
+	maxPlayerNameLenStr = `191`
 
 	maxGameID = model.GameID(math.MaxUint32)
 )

@@ -109,7 +109,8 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 		if len(savedActions) != len(myKnownActions) {
 			return persistence.ErrGameActionsOutOfOrder
 		}
-		for ai, a := range savedActions {
+		for ai := range savedActions {
+			a := savedActions[ai]
 			if a.ID != myKnownActions[ai].ID || a.Overcomes != myKnownActions[ai].Overcomes {
 				return persistence.ErrGameActionsOutOfOrder
 			}
