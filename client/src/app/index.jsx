@@ -33,6 +33,7 @@ export const App = () => {
             <Route exact path='/' component={Login} />
             <Route exact path='/register' component={Register} />
             <PrivateRoute exact path='/home' component={Home} />
+            <PrivateRoute exact path='/game' component={Game} />
             <PrivateRoute exact path='/newgame' component={NewGameForm} />
             <PrivateRoute exact path='/account' component={Account} />
             <PrivateRoute exact path='/game' component={Game} />

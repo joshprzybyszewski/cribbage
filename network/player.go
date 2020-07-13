@@ -116,12 +116,19 @@ func convertToPlayers(pms []model.Player) []Player {
 	return ps
 }
 
-func convertFromPlayers(pms []Player) []model.Player {
-	ps := make([]model.Player, len(pms))
-	for i, pm := range pms {
-		ps[i] = convertFromPlayer(pm)
+func convertTeamsToPlayersAndPlayerColors(
+	ts []GetGameResponseTeam,
+) ([]model.Player, map[model.PlayerID]model.PlayerColor) {
+	// length of 4 at most
+	players := make([]model.Player, 0)
+	playerColors := make(map[model.PlayerID]model.PlayerColor, len(ts))
+	for _, t := range ts {
+		for _, p := range t.Players {
+			players = append(players, convertFromPlayer(p))
+			playerColors[p.ID] = model.NewPlayerColorFromString(t.Color)
+		}
 	}
-	return ps
+	return players, playerColors
 }
 
 func convertToPlayer(p model.Player) Player {

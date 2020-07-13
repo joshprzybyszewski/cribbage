@@ -28,12 +28,16 @@ func ConvertToCreateGameResponse(g model.Game) CreateGameResponse {
 	}
 }
 
+type GetGameResponseTeam struct {
+	Players      []Player `json:"players"`
+	Color        string   `json:"color"`
+	CurrentScore int      `json:"current_score"`
+	LagScore     int      `json:"lag_score"`
+}
+
 type GetGameResponse struct {
 	ID              model.GameID              `json:"id"`
-	Players         []Player                  `json:"players"`
-	PlayerColors    map[model.PlayerID]string `json:"player_colors,omitempty"`
-	CurrentScores   map[string]int            `json:"current_scores"`
-	LagScores       map[string]int            `json:"lag_scores"`
+	Teams           []GetGameResponseTeam     `json:"teams"`
 	Phase           string                    `json:"phase"`
 	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID            `json:"current_dealer"`
@@ -44,13 +48,9 @@ type GetGameResponse struct {
 }
 
 func ConvertToGetGameResponse(g model.Game) GetGameResponse {
-	currentScores, lagScores := convertToScores(g.CurrentScores, g.LagScores)
 	return GetGameResponse{
 		ID:              g.ID,
-		Players:         convertToPlayers(g.Players),
-		PlayerColors:    convertToColors(g.PlayerColors),
-		CurrentScores:   currentScores,
-		LagScores:       lagScores,
+		Teams:           convertToTeams(g),
 		Phase:           convertToPhase(g.Phase),
 		BlockingPlayers: convertToBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
@@ -79,11 +79,12 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 }
 
 func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
-	currentScores, lagScores := convertFromScores(g.CurrentScores, g.LagScores)
+	currentScores, lagScores := convertFromScores(g.Teams)
+	ps, pcs := convertTeamsToPlayersAndPlayerColors(g.Teams)
 	return model.Game{
 		ID:              g.ID,
-		Players:         convertFromPlayers(g.Players),
-		PlayerColors:    convertFromColors(g.PlayerColors),
+		Players:         ps,
+		PlayerColors:    pcs,
 		CurrentScores:   currentScores,
 		LagScores:       lagScores,
 		Phase:           convertFromPhase(g.Phase),
