@@ -28,6 +28,8 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 	}
 	if len(config.DSNParams) > 0 {
 		dsn += `?` + config.DSNParams
+	} else {
+		dsn += `?parseTime=true`
 	}
 	db, err := sql.Open(`mysql`, dsn)
 	if err != nil {
