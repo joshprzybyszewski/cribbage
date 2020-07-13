@@ -1,6 +1,7 @@
 package network
 
 import (
+	"sort"
 	"time"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -83,6 +84,7 @@ func convertToParticipatingGames(
 			res = append(res, getActiveGame(mg))
 		}
 	}
+	sort.Slice(res, func(i, j int) bool { return !res[i].LastMove.Before(res[j].LastMove) })
 	return res
 }
 
