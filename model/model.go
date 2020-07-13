@@ -148,10 +148,10 @@ type CribBlocker struct {
 }
 
 type PlayerAction struct {
-	GameID    GameID      `json:"gID" bson:"gID"`            
-	ID        PlayerID    `json:"pID" bson:"pID"`            
-	Overcomes Blocker     `json:"o" bson:"o"`                
-	Action    interface{} `json:"a" bson:"a"`                
+	GameID    GameID      `json:"gID" bson:"gID"`
+	ID        PlayerID    `json:"pID" bson:"pID"`
+	Overcomes Blocker     `json:"o" bson:"o"`
+	Action    interface{} `json:"a" bson:"a"`
 	TimeStamp time.Time   `json:"timestamp" bson:"timestamp"`
 }
 
