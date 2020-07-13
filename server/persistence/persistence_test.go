@@ -3,6 +3,7 @@ package persistence_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,12 +30,13 @@ const (
 
 var (
 	tests = map[string]dbTest{
-		`createPlayer`:          testCreatePlayer,
-		`saveGame`:              testCreateGame,
-		`resaveGame`:            testSaveGameMultipleTimes,
-		`saveGameMissingAction`: testSaveGameWithMissingAction,
-		`saveInteraction`:       testSaveInteraction,
-		`addColorToGame`:        testAddPlayerColorToGame,
+		`createPlayer`:                  testCreatePlayer,
+		`createPlayersWithSimilarNames`: testCreatePlayersWithSimilarNames,
+		`saveGame`:                      testCreateGame,
+		`resaveGame`:                    testSaveGameMultipleTimes,
+		`saveGameMissingAction`:         testSaveGameWithMissingAction,
+		`saveInteraction`:               testSaveInteraction,
+		`addColorToGame`:                testAddPlayerColorToGame,
 	}
 )
 
@@ -81,7 +83,7 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 	_ = copy(dst.Actions, src.Actions)
 }
 
-func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
+func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame model.Game) {
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
 	if len(actGame.Crib) == 0 {
@@ -91,6 +93,13 @@ func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
 	if len(actGame.Actions) == 0 {
 		expGame.Actions = nil
 		actGame.Actions = nil
+	}
+	for i := range actGame.Actions {
+		if !(name == memoryDB || name == mongoDB) {
+			// memory provider and mongodb do not have this feature implemented
+			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+		}
+		actGame.Actions[i].TimeStamp = time.Time{}
 	}
 	assert.Equal(t, expGame, actGame)
 }
@@ -129,6 +138,25 @@ func TestDB(t *testing.T) {
 			t.Run(string(dbName)+`:`+testName, func(t1 *testing.T) { testFn(t1, dbName, db) })
 		}
 	}
+}
+
+func testCreatePlayersWithSimilarNames(t *testing.T, name dbName, db persistence.DB) {
+	p1 := model.Player{
+		ID:    model.PlayerID(`alice`),
+		Name:  `alice`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NoError(t, db.CreatePlayer(p1))
+
+	p2 := model.Player{
+		ID:    model.PlayerID(`Alice`),
+		Name:  `Alice`,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
+	assert.NotEqual(t, p1.ID, p2.ID)
+	assert.NoError(t, db.CreatePlayer(p2))
 }
 
 func testCreatePlayer(t *testing.T, name dbName, db persistence.DB) {
@@ -294,7 +322,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -305,7 +333,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -316,7 +344,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -327,7 +355,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 }
 
 func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
@@ -430,7 +458,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -441,7 +469,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -452,7 +480,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -463,7 +491,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -708,7 +736,7 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 
 	require.NoError(t, db1.CreateGame(g1))
 
-	checkPersistedGame(t, db1, g1Copy)
+	checkPersistedGame(t, databaseName, db1, g1Copy)
 
 	actGame, err := db2.GetGame(g1.ID)
 	assert.Error(t, err)
@@ -716,5 +744,5 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 
 	assert.NoError(t, db1.Commit())
 
-	checkPersistedGame(t, postCommitDB, g1Copy)
+	checkPersistedGame(t, databaseName, postCommitDB, g1Copy)
 }
