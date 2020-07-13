@@ -1,6 +1,23 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import blue from '@material-ui/core/colors/blue';
+import grey from '@material-ui/core/colors/grey';
+import green from '@material-ui/core/colors/green';
+import red from '@material-ui/core/colors/red';
+import IconButton from '@material-ui/core/IconButton';
+import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+
 import { selectCurrentUser } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
 import {
@@ -29,81 +46,76 @@ const ActiveGamesTable = () => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
   };
 
-  let gameButtons = activeGames.map(activeGame => {
+  let createData = (gameID, startedTime, lastMoveTime, opponents, color) => {
+    let myColor = color
+      ? color.includes('red')
+        ? red[800]
+        : color.includes('blue')
+        ? blue[800]
+        : color.includes('green')
+        ? green[800]
+        : grey[400]
+      : grey[400];
+    return { gameID, startedTime, lastMoveTime, opponents, myColor };
+  };
+
+  let rows = activeGames.map(activeGame => {
     if (!activeGame || !activeGame.gameID) {
       return;
     }
-    const gID = activeGame.gameID;
 
-    return (
-      <tr key={`gameRow ${gID}`}>
-        <td className='active-games-table-data'>
-          {activeGame.players
-            .filter(p => p.id !== currentUser.id)
-            .map(p => p.name)
-            .join(', ')}
-        </td>
-        <td className='active-games-table-data active-games-table-data-sm'>
-          {activeGame.players
-            .filter(p => p.id === currentUser.id)
-            .map(p => p.color)
-            .toString()}
-        </td>
-        <td className='active-games-table-data active-games-table-data-sm'>
-          {activeGame.created}
-        </td>
-        <td className='active-games-table-data active-games-table-data-sm'>
-          {activeGame.lastMove}
-        </td>
-        <td className='active-games-table-data active-games-table-data-sm'>
-          <button key={gID} onClick={() => goToGame(gID)}>
-            Play!
-          </button>
-        </td>
-      </tr>
+    return createData(
+      activeGame.gameID,
+      activeGame.created,
+      activeGame.lastMove,
+      activeGame.players
+        .filter(p => p.id !== currentUser.id)
+        .map(p => p.name)
+        .join(', '),
+      activeGame.players.filter(p => p.id === currentUser.id).map(p => p.color),
     );
   });
 
   return (
-    <div>
-      <div className='flex flex-col'>
-        <div className='-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'>
-          <div className='align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200'>
-            <table className='min-w-full'>
-              <thead>
-                <tr>
-                  <th className='active-games-table-head active-games-table-head-text'>
-                    Opponent(s)
-                  </th>
-                  <th className='active-games-table-head active-games-table-head-text'>
-                    Your Color
-                  </th>
-                  <th className='active-games-table-head active-games-table-head-text'>
-                    Started
-                  </th>
-                  <th className='active-games-table-head active-games-table-head-text'>
-                    Last Move
-                  </th>
-                  <th className='active-games-table-head'>
-                    <div
-                      className='flex-shrink-0 h-5 w-5'
-                      onClick={onRefreshActiveGames}
-                    >
-                      <img
-                        className='h-10 w-10 rounded-full'
-                        src='./refresh.svg'
-                        alt='Refresh'
-                      />
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white'>{gameButtons}</tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+    <TableContainer component={Paper}>
+      <Table size='small' aria-label='active games table'>
+        <TableHead>
+          <TableRow>
+            <TableCell>Opponent(s)</TableCell>
+            <TableCell>Your Color</TableCell>
+            <TableCell>Started</TableCell>
+            <TableCell>Last Move</TableCell>
+            <TableCell>
+              <IconButton aria-label='refresh' onClick={onRefreshActiveGames}>
+                <RefreshIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.map(row => (
+            <TableRow key={row.name}>
+              <TableCell component='th' scope='row'>
+                {row.opponents}
+              </TableCell>
+              <TableCell>
+                <PersonPinCircleIcon style={{ color: row.myColor }} />
+              </TableCell>
+              <TableCell>{row.startedTime}</TableCell>
+              <TableCell>{row.lastMoveTime}</TableCell>
+              <TableCell>
+                <IconButton
+                  aria-label='play'
+                  onClick={() => goToGame(row.gameID)}
+                >
+                  <SportsEsportsIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 
