@@ -3,6 +3,7 @@ package persistence_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -92,6 +93,10 @@ func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
 	if len(actGame.Actions) == 0 {
 		expGame.Actions = nil
 		actGame.Actions = nil
+	}
+	for i := range actGame.Actions {
+		assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+		actGame.Actions[i].TimeStamp = time.Time{}
 	}
 	assert.Equal(t, expGame, actGame)
 }
