@@ -81,7 +81,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 		inputGames map[model.GameID]model.Game
 		expResp    GetActiveGamesForPlayerResponse
 	}{{
-		desc: ``,
+		desc: `knows how to sort based on timestamp`,
 		player: model.Player{
 			ID:   aliceID,
 			Name: `alice`,
@@ -190,7 +190,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 			}},
 		},
 	}, {
-		desc: `games where alice isn't playing`,
+		desc: `knows how to filter games where alice isn't playing`,
 		player: model.Player{
 			ID:   aliceID,
 			Name: `alice`,
