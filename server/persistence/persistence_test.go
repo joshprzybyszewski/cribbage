@@ -83,7 +83,7 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 	_ = copy(dst.Actions, src.Actions)
 }
 
-func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
+func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame model.Game) {
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
 	if len(actGame.Crib) == 0 {
@@ -95,7 +95,10 @@ func checkPersistedGame(t *testing.T, db persistence.DB, expGame model.Game) {
 		actGame.Actions = nil
 	}
 	for i := range actGame.Actions {
-		assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+		if !(name == memoryDB || name == mongoDB) {
+			// memory provider and mongodb do not have this feature implemented
+			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+		}
 		actGame.Actions[i].TimeStamp = time.Time{}
 	}
 	assert.Equal(t, expGame, actGame)
@@ -319,7 +322,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -330,7 +333,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -341,7 +344,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -352,7 +355,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 }
 
 func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
@@ -455,7 +458,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -466,7 +469,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,
@@ -477,7 +480,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -488,7 +491,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, db, gCopy)
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        bob.ID,
@@ -733,7 +736,7 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 
 	require.NoError(t, db1.CreateGame(g1))
 
-	checkPersistedGame(t, db1, g1Copy)
+	checkPersistedGame(t, databaseName, db1, g1Copy)
 
 	actGame, err := db2.GetGame(g1.ID)
 	assert.Error(t, err)
@@ -741,5 +744,5 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 
 	assert.NoError(t, db1.Commit())
 
-	checkPersistedGame(t, postCommitDB, g1Copy)
+	checkPersistedGame(t, databaseName, postCommitDB, g1Copy)
 }
