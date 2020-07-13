@@ -71,9 +71,6 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 			DSNParams:      *dsnParams,
 			RunCreateStmts: cfg.canRunCreateStmts && *createTables,
 		}
-		if cfg.RunCreateStmts {
-			cfg.DatabaseName = ``
-		}
 		log.Println("Creating mysql factory")
 		log.Printf("  len(User): %d\n", len(cfg.DSNUser))
 		log.Printf("  empty Password: %v\n", cfg.DSNPassword == ``)
