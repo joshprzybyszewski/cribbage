@@ -72,6 +72,9 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 	chelseaID := model.PlayerID(`chelsea`)
 	daveID := model.PlayerID(`dave`)
 
+	t2 := time.Now()
+	t1 := t2.Add(-time.Minute)
+
 	tests := []struct {
 		desc       string
 		player     model.Player
@@ -116,6 +119,9 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID:   model.Red,
 					chelseaID: model.Blue,
 				},
+				Actions: []model.PlayerAction{{
+					TimeStamp: t1,
+				}},
 			},
 			789: {
 				ID: 789,
@@ -130,6 +136,11 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID: model.Red,
 					daveID:  model.Blue,
 				},
+				Actions: []model.PlayerAction{{
+					TimeStamp: t1,
+				}, {
+					TimeStamp: t2,
+				}},
 			},
 		},
 		expResp: GetActiveGamesForPlayerResponse{
@@ -138,18 +149,18 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 				Name: `alice`,
 			},
 			ActiveGames: []ActiveGame{{
-				GameID: 123,
+				GameID: 789,
 				Players: []ActiveGamePlayer{{
 					ID:    aliceID,
 					Name:  `alice`,
 					Color: `red`,
 				}, {
-					ID:    bobID,
-					Name:  `bob`,
+					ID:    daveID,
+					Name:  `dave`,
 					Color: `blue`,
 				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
+				Created:  t1,
+				LastMove: t2,
 			}, {
 				GameID: 456,
 				Players: []ActiveGamePlayer{{
@@ -161,17 +172,17 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Name:  `chelsea`,
 					Color: `blue`,
 				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
+				Created:  t1,
+				LastMove: t1,
 			}, {
-				GameID: 789,
+				GameID: 123,
 				Players: []ActiveGamePlayer{{
 					ID:    aliceID,
 					Name:  `alice`,
 					Color: `red`,
 				}, {
-					ID:    daveID,
-					Name:  `dave`,
+					ID:    bobID,
+					Name:  `bob`,
 					Color: `blue`,
 				}},
 				Created:  time.Time{},
