@@ -170,25 +170,23 @@ func TestConvertToGetGameResponse(t *testing.T) {
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   `a`,
+					Name: `a`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   `b`,
+					Name: `b`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `CribCounting`,
 			BlockingPlayers: map[model.PlayerID]string{
 				`b`: `CountCrib`,
@@ -273,25 +271,23 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   `a`,
+					Name: `a`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   `b`,
+					Name: `b`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Pegging`,
 			BlockingPlayers: map[model.PlayerID]string{
 				`a`: `PegCard`,
@@ -360,25 +356,23 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   `a`,
+					Name: `a`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   `b`,
+					Name: `b`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Pegging`,
 			BlockingPlayers: map[model.PlayerID]string{
 				`a`: `PegCard`,
@@ -471,25 +465,23 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   `a`,
+					Name: `a`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   `b`,
+					Name: `b`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Counting`,
 			BlockingPlayers: map[model.PlayerID]string{
 				`a`: `CountHand`,
@@ -588,25 +580,23 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   `a`,
+					Name: `a`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   `b`,
+					Name: `b`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `CribCounting`,
 			BlockingPlayers: map[model.PlayerID]string{
 				`b`: `CountCrib`,
