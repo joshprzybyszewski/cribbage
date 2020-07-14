@@ -27,24 +27,39 @@ const Game = () => {
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid
+      container
+      xl
+      spacing={1}
+      className='bg-green-200'
+      direction='row'
+      justify='space-between'
+    >
       <Grid
         item
-        xs={12}
-        sm
         container
+        md
+        spacing={2}
         direction='column'
+        align-content='space-between'
         className='bg-green-300'
       >
         <Grid item xs sm container>
           <PlayerHand hand={activeGame.hands[currentUser.id]} />
         </Grid>
-        <Grid item xs sm container>
-          <Grid>
+        <Grid
+          item
+          xs
+          md
+          container
+          justify='space-between'
+          align-content='center'
+        >
+          <Grid item>
             <PlayerHand side hand={activeGame.hands[currentUser.id]} />
           </Grid>
-          <Grid>Do action here</Grid>
-          <Grid>
+          <Grid item>TODO: Do action here</Grid>
+          <Grid item>
             <PlayerHand side hand={activeGame.hands[currentUser.id]} />
           </Grid>
         </Grid>
@@ -52,9 +67,11 @@ const Game = () => {
           <PlayerHand hand={activeGame.hands[currentUser.id]} />
         </Grid>
       </Grid>
-      <Grid item xs container direction='column' spacing={2}>
-        <ScoreBoard teams={activeGame.teams} />
-        <div>deck</div>
+      <Grid item container xs direction='column' spacing={1}>
+        <Grid item>
+          <ScoreBoard teams={activeGame.teams} />
+        </Grid>
+        <Grid item>TODO put an image of the deck here</Grid>
       </Grid>
     </Grid>
   );

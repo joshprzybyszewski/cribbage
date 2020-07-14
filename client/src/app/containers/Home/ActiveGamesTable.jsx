@@ -72,12 +72,7 @@ const ActiveGamesTable = () => {
   };
 
   return (
-    <TableContainer
-      component={Paper}
-      style={{
-        maxHeight: 500,
-      }}
-    >
+    <TableContainer component={Paper}>
       <Table stickyHeader size='small' aria-label='active games table'>
         <TableHead>
           <TableRow>
