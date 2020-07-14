@@ -7,6 +7,7 @@ import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
 import { selectCurrentGame } from './selectors';
 import PlayingCard from './PlayingCard';
+import PeggingHand from './PeggingHand';
 import ScoreBoard from './ScoreBoard';
 
 const Game = () => {
@@ -24,7 +25,9 @@ const Game = () => {
 
   return (
     <div className='flex flex-row h-screen'>
-      <div className='flex-3 bg-green-300'>hi</div>
+      <div className='flex-3 bg-green-300'>
+        <PeggingHand hand={activeGame.hands[currentUser.id]} />
+      </div>
       <div className='flex-1 bg-red-300'>
         <div className='flex flex-col'>
           <ScoreBoard teams={activeGame.teams} />
