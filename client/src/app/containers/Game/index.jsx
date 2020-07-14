@@ -2,12 +2,15 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import Grid from '@material-ui/core/Grid';
+
 import { selectCurrentUser } from '../../../auth/selectors';
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
 import { selectCurrentGame } from './selectors';
 import PlayingCard from './PlayingCard';
-import PeggingHand from './PeggingHand';
+import PlayerHand from './PlayerHand';
 import ScoreBoard from './ScoreBoard';
 
 const Game = () => {
@@ -24,17 +27,36 @@ const Game = () => {
   };
 
   return (
-    <div className='flex flex-row h-screen'>
-      <div className='flex-3 bg-green-300'>
-        <PeggingHand hand={activeGame.hands[currentUser.id]} />
-      </div>
-      <div className='flex-1 bg-red-300'>
-        <div className='flex flex-col'>
-          <ScoreBoard teams={activeGame.teams} />
-          <div>deck</div>
-        </div>
-      </div>
-    </div>
+    <Grid container spacing={2}>
+      <Grid
+        item
+        xs={12}
+        sm
+        container
+        direction='column'
+        className='bg-green-300'
+      >
+        <Grid item xs sm container>
+          <PlayerHand hand={activeGame.hands[currentUser.id]} />
+        </Grid>
+        <Grid item xs sm container>
+          <Grid>
+            <PlayerHand side hand={activeGame.hands[currentUser.id]} />
+          </Grid>
+          <Grid>Do action here</Grid>
+          <Grid>
+            <PlayerHand side hand={activeGame.hands[currentUser.id]} />
+          </Grid>
+        </Grid>
+        <Grid item xs sm container>
+          <PlayerHand hand={activeGame.hands[currentUser.id]} />
+        </Grid>
+      </Grid>
+      <Grid item xs container direction='column' spacing={2}>
+        <ScoreBoard teams={activeGame.teams} />
+        <div>deck</div>
+      </Grid>
+    </Grid>
   );
 
   // const refreshButton = (
