@@ -11,6 +11,7 @@ import { selectCurrentUser } from '../../../auth/selectors';
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
 import { selectCurrentGame } from './selectors';
+import ActionBox from './ActionBox';
 import PlayingCard from './PlayingCard';
 import PlayerHand from './PlayerHand';
 import ScoreBoard from './ScoreBoard';
@@ -21,7 +22,7 @@ const showCutCard = phase => {
 
 const handForPlayer = (game, myID, position) => {
   let isFourPlayer =
-    game.teams.length === 2 && game.teams[0].players.length == 2;
+    game.teams.length === 2 && game.teams[0].players.length === 2;
   if (position === 'across') {
     if (game.teams.length === 3) {
       let secondPlayerID = game.teams.filter(
@@ -109,7 +110,14 @@ const Game = () => {
               hand={handForPlayer(activeGame, currentUser.id, 'left')}
             />
           </Grid>
-          <Grid item>{'TODO: Do action here'}</Grid>
+          <Grid item>
+            <ActionBox
+              phase={activeGame.phase}
+              isBlocking={activeGame.blocking_players.hasOwnProperty(
+                currentUser.id,
+              )}
+            />
+          </Grid>
           <Grid item>
             <PlayerHand
               side
