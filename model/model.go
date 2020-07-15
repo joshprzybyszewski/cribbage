@@ -160,7 +160,7 @@ type DealAction struct {
 }
 
 type BuildCribAction struct {
-	Cards []Card `protobuf:"Card,rep,1,req,name=cards,proto3" json:"cs" bson:"cs"` //nolint:lll
+	Cards []Card `json:"cs" bson:"cs"` //nolint:lll
 }
 
 type CutDeckAction struct {

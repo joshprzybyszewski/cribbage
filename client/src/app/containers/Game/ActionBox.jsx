@@ -52,6 +52,9 @@ const ActionBox = props => {
           variant='contained'
           color='primary'
           endIcon={<SendIcon />}
+          onClick={() => {
+            dispatch(actions.buildCrib());
+          }}
         >
           Build Crib
         </Button>

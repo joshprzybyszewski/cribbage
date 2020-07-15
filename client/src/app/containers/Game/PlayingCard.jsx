@@ -1,6 +1,15 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { gameSaga } from './saga';
+import { sliceKey, reducer, actions } from './slice';
 
 const PlayingCard = props => {
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  useInjectSaga({ key: sliceKey, saga: gameSaga });
+  const dispatch = useDispatch();
+
   if (!props.name) {
     return null;
   } else if (props.name === 'unknown') {
@@ -20,8 +29,10 @@ const PlayingCard = props => {
       onClick={
         props.mine
           ? () => {
-              // TODO select this card (if allowed?)
-              console.log(`clicked my card ${props.name}`);
+              if (!props.disabled) {
+                console.log(`clicked my card ${props.name}`);
+                dispatch(actions.selectCard({ card: props.card }));
+              }
             }
           : () => {
               console.log(`clicked opponents card ${props.name}`);

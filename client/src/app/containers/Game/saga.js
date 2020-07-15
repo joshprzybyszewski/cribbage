@@ -46,31 +46,62 @@ export function* handleRefreshCurrentGame({ payload: { id, history } }) {
   }
 }
 
-export function* handleDeal({ payload: { history } }) {
+const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
+  let magicNum = 0;
+  let action = {};
+  switch (phase) {
+    case 'deal':
+      magicNum = 0;
+      action = { ns: currentAction.numShuffles };
+      break;
+    case 'crib':
+      magicNum = 1;
+      action = {
+        cs: currentAction.seletedCards ? currentAction.seletedCards : [],
+      };
+      console.log(
+        `currentAction.seletedCards is: ${currentAction.seletedCards}`,
+      );
+      break;
+  }
+  return {
+    pID: myID,
+    gID: gID,
+    o: magicNum,
+    a: action,
+  };
+};
+
+function* handleGenericAction(phase) {
   const currentUser = yield select(selectCurrentUser);
   const gameID = yield select(selectCurrentGameID);
   const currentAction = yield select(selectCurrentAction);
-  console.log(`num shuffles: ${currentAction.numShuffles}`);
 
   try {
     // the return of the post is just 'action handled'
     // it may be wise to make it return the new game state?
-    yield axios.post('/action', {
-      pID: currentUser.id,
-      gID: gameID,
-      o: 0, // magic number means "deals cards"
-      a: { ns: currentAction.numShuffles },
-    });
+    yield axios.post(
+      '/action',
+      getPlayerActionJSON(currentUser.id, gameID, phase, currentAction),
+    );
     // TODO wait a moment and re-fetch?
     yield put(gameActions.refreshGame({ id: gameID }));
   } catch (err) {
     yield put(
       alertActions.addAlert(
-        `handling deal broke ${err.response ? err.response.data : err}`,
+        `handling action broke ${err.response ? err.response.data : err}`,
         alertTypes.error,
       ),
     );
   }
+}
+
+export function* handleDeal() {
+  yield handleGenericAction('deal');
+}
+
+export function* handleBuildCrib() {
+  yield handleGenericAction('crib');
 }
 
 export function* gameSaga() {
@@ -79,5 +110,6 @@ export function* gameSaga() {
     takeLatest(gameActions.exitGame.type, handleExitGame),
     takeLatest(gameActions.refreshGame.type, handleRefreshCurrentGame),
     takeLatest(gameActions.dealCards.type, handleDeal),
+    takeLatest(gameActions.buildCrib.type, handleBuildCrib),
   ]);
 }

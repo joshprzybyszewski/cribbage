@@ -25,6 +25,7 @@ const PlayerHand = props => {
         <Grid key={card.name} item>
           <PlayingCard
             key={`handcard${index}`}
+            card={card}
             name={card.name}
             value={card.value}
             suit={card.suit}

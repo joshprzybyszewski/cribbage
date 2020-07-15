@@ -3,7 +3,10 @@ import { createSlice } from '@reduxjs/toolkit';
 export const initialState = {
   currentGameID: '',
   currentGame: {},
-  currentAction: {},
+  currentAction: {
+    numShuffles: 0,
+    selectedCards: [],
+  },
   loading: true,
 };
 
@@ -55,7 +58,37 @@ const gameSlice = createSlice({
         : (state.currentAction.numShuffles =
             state.currentAction.numShuffles + 1);
     },
+    selectCard: {
+      reducer: (state, action) => {
+        // Nothing here?
+        const card = action.payload.card;
+        if (!card) {
+          console.log('no payload card');
+          return;
+        }
+        console.log(`card name: ${card.name}`);
+        if (state.currentAction.selectedCards.some(c => c.name === card.name)) {
+          // TODO remove it
+        } else {
+          state.currentAction.selectedCards.push(card);
+        }
+        console.log(
+          `state.currentAction.selectedCards: ${state.currentAction.selectedCards}`,
+        );
+      },
+      prepare: (card, history) => {
+        return { payload: { card, history } };
+      },
+    },
     dealCards: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
+      },
+    },
+    buildCrib: {
       reducer: (state, action) => {
         // Nothing here?
       },
