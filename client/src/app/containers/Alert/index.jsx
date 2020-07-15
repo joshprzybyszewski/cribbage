@@ -24,7 +24,7 @@ const Alert = () => {
     }
   };
   return (
-    <div className='fixed w-half-screen right-0 px-3 py-2'>
+    <div className='fixed w-half-screen right-0 px-3 py-2 z-50'>
       {alerts.map(a => (
         // Issue#61 think about only displaying the last alert
         <div key={a.id} className={`alert ${alertTypeToStyle(a.type)} mb-2`}>

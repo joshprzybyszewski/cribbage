@@ -152,11 +152,11 @@ type PlayerAction struct {
 	ID        PlayerID    `json:"pID" bson:"pID"`
 	Overcomes Blocker     `json:"o" bson:"o"`
 	Action    interface{} `json:"a" bson:"a"`
-	TimeStamp time.Time   `json:"timestamp" bson:"timestamp"`
+	TimeStamp time.Time   `json:"timestamp,omitempty" bson:"timestamp"`
 }
 
 type DealAction struct {
-	NumShuffles int `protobuf:"varint,1,req,name=numShuffles,proto3" json:"ns" bson:"ns"` //nolint:lll
+	NumShuffles int `json:"ns" bson:"ns"` //nolint:lll
 }
 
 type BuildCribAction struct {

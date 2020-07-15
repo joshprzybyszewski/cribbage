@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 export const initialState = {
   currentGameID: '',
   currentGame: {},
+  currentAction: {},
   loading: true,
 };
 
@@ -22,6 +23,12 @@ const gameSlice = createSlice({
     gameRetrieved(state, action) {
       state.loading = false;
       state.currentGame = action.payload.data;
+      switch (state.currentGame.phase) {
+        case `Deal`:
+          // TODO leave numShuffles
+          state.currentAction = {};
+          break;
+      }
     },
     exitGame: {
       reducer: state => {
@@ -40,6 +47,20 @@ const gameSlice = createSlice({
       },
       prepare: gameID => {
         return { payload: { id: gameID } };
+      },
+    },
+    shuffleDeck(state) {
+      isNaN(state.currentAction.numShuffles)
+        ? (state.currentAction.numShuffles = 1)
+        : (state.currentAction.numShuffles =
+            state.currentAction.numShuffles + 1);
+    },
+    dealCards: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
       },
     },
   },

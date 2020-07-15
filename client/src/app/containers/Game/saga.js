@@ -1,7 +1,7 @@
 import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 import axios from 'axios';
 import { selectCurrentUser } from '../../../auth/selectors';
-import { selectCurrentGameID } from './selectors';
+import { selectCurrentGameID, selectCurrentAction } from './selectors';
 import { actions as gameActions } from './slice';
 import { actions as alertActions } from '../Alert/slice';
 import { alertTypes } from '../Alert/types';
@@ -46,10 +46,38 @@ export function* handleRefreshCurrentGame({ payload: { id, history } }) {
   }
 }
 
+export function* handleDeal({ payload: { history } }) {
+  const currentUser = yield select(selectCurrentUser);
+  const gameID = yield select(selectCurrentGameID);
+  const currentAction = yield select(selectCurrentAction);
+  console.log(`num shuffles: ${currentAction.numShuffles}`);
+
+  try {
+    // the return of the post is just 'action handled'
+    // it may be wise to make it return the new game state?
+    yield axios.post('/action', {
+      pID: currentUser.id,
+      gID: gameID,
+      o: 0, // magic number means "deals cards"
+      a: { ns: currentAction.numShuffles },
+    });
+    // TODO wait a moment and re-fetch?
+    yield put(gameActions.refreshGame({ id: gameID }));
+  } catch (err) {
+    yield put(
+      alertActions.addAlert(
+        `handling deal broke ${err.response ? err.response.data : err}`,
+        alertTypes.error,
+      ),
+    );
+  }
+}
+
 export function* gameSaga() {
   yield all([
     takeLatest(gameActions.goToGame.type, handleGoToGame),
     takeLatest(gameActions.exitGame.type, handleExitGame),
     takeLatest(gameActions.refreshGame.type, handleRefreshCurrentGame),
+    takeLatest(gameActions.dealCards.type, handleDeal),
   ]);
 }

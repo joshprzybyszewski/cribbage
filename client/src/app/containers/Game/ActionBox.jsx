@@ -1,4 +1,6 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
@@ -8,7 +10,15 @@ import SendIcon from '@material-ui/icons/Send';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
 import TextField from '@material-ui/core/TextField';
 
+import { gameSaga } from './saga';
+import { sliceKey, reducer, actions } from './slice';
+
 const ActionBox = props => {
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  useInjectSaga({ key: sliceKey, saga: gameSaga });
+
+  const dispatch = useDispatch();
+
   return (
     <Grid item container justify='center' spacing={1}>
       {props.phase === 'Deal' ? (
@@ -18,6 +28,9 @@ const ActionBox = props => {
             variant='contained'
             color='secondary'
             endIcon={<ShuffleIcon />}
+            onClick={() => {
+              dispatch(actions.shuffleDeck());
+            }}
           >
             Shuffle
           </Button>
@@ -26,6 +39,9 @@ const ActionBox = props => {
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}
+            onClick={() => {
+              dispatch(actions.dealCards());
+            }}
           >
             Deal
           </Button>
