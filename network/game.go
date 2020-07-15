@@ -99,9 +99,9 @@ func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
 
 func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {
 	rev := make(map[model.PlayerID][]Card, len(g.Players))
-	for pID := range g.Hands {
-		// we don't know how many cards will be revealed, but we know it's a max of 4
-		rev[pID] = make([]Card, 0, 4)
+	for pID, h := range g.Hands {
+		// we don't know how many cards will be revealed, but we know how may are in their hand
+		rev[pID] = make([]Card, 0, len(h))
 	}
 	for _, c := range g.PeggedCards {
 		if c.PlayerID == me {
@@ -110,6 +110,12 @@ func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID]
 		rev[c.PlayerID] = append(rev[c.PlayerID], convertToCard(c.Card))
 	}
 	rev[me] = convertToCards(g.Hands[me])
+
+	for pID := range rev {
+		for len(rev[pID]) < cap(rev[pID]) {
+			rev[pID] = append(rev[pID], invalidCard)
+		}
+	}
 	return rev
 }
 

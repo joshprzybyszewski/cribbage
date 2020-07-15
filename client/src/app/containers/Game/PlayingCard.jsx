@@ -3,6 +3,12 @@ import React from 'react';
 const PlayingCard = props => {
   if (!props.name) {
     return null;
+  } else if (props.name === 'unknown') {
+    return (
+      <div
+        class={`w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800`}
+      ></div>
+    );
   }
 
   // todo figure out how to state

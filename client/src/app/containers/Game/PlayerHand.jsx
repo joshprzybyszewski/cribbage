@@ -21,10 +21,10 @@ const PlayerHand = props => {
       spacing={1}
       className='bg-green-800'
     >
-      {props.hand.map(card => (
+      {props.hand.map((card, index) => (
         <Grid key={card.name} item>
           <PlayingCard
-            key={card.name}
+            key={`handcard${index}`}
             name={card.name}
             value={card.value}
             suit={card.suit}
