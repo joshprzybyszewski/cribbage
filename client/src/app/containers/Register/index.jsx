@@ -94,38 +94,6 @@ const RegisterForm = () => {
         </Link>
       </div>
     </Container>
-    // <div className='max-w-sm m-auto mt-12'>
-    //     <input
-    //       name='id'
-    //       onChange={onInputChange}
-    //       value={formData.id}
-    //       placeholder='Username'
-    //       required
-    //       className='mt-2 form-input'
-    //     ></input>
-    //     <input
-    //       name='name'
-    //       onChange={onInputChange}
-    //       value={formData.name}
-    //       placeholder='Display name'
-    //       required
-    //       className='mt-2 form-input'
-    //     ></input>
-    //     <p className='mt-1 text-xs text-gray-600'>
-    //       Already have an account?{' '}
-    //       <span>
-    //         <Link to='/' className='hover:text-gray-500 hover:underline'>
-    //           Log in here.
-    //         </Link>
-    //       </span>
-    //     </p>
-    //     <input
-    //       type='submit'
-    //       value='register'
-    //       className='mt-1 btn btn-primary'
-    //     ></input>
-    //   </form>
-    // </div>
   );
 };
 

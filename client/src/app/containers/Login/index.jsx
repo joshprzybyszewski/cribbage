@@ -86,32 +86,6 @@ const LoginForm = () => {
         </Link>
       </div>
     </Container>
-    // <div className='max-w-sm m-auto mt-12'>
-    //   <h1 className='text-4xl'>Login to Cribbage</h1>
-    //   <form onSubmit={onSubmitLoginForm}>
-    //     <input
-    //       placeholder='Username'
-    //       onChange={onInputChange}
-    //       className='form-input'
-    //     ></input>
-    //     <p className='mt-1 text-xs text-gray-600'>
-    //       Don't have an account?{' '}
-    //       <span>
-    //         <Link
-    //           to='/register'
-    //           className='hover:text-gray-500 hover:underline'
-    //         >
-    //           Register here.
-    //         </Link>
-    //       </span>
-    //     </p>
-    //     <input
-    //       type='submit'
-    //       value='login'
-    //       className='mt-1 btn btn-primary'
-    //     ></input>
-    //   </form>
-    // </div>
   );
 };
 
