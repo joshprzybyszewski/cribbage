@@ -4,8 +4,12 @@ import Grid from '@material-ui/core/Grid';
 
 import PlayingCard from './PlayingCard';
 
+const showOpponentsHand = phase => {
+  return phase !== 'Deal';
+};
+
 const PlayerHand = props => {
-  if (!props.hand) {
+  if (!props.hand || !showOpponentsHand(props.phase)) {
     return null;
   }
   return (
@@ -24,6 +28,7 @@ const PlayerHand = props => {
             name={card.name}
             value={card.value}
             suit={card.suit}
+            mine={props.mine}
           />
         </Grid>
       ))}

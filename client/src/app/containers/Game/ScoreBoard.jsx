@@ -29,7 +29,7 @@ const myColorToHue = color => {
     : grey[400];
 };
 
-const ScoreBoard = ({ teams }) => {
+const ScoreBoard = ({ current_dealer, teams }) => {
   return (
     <Container fixed width='35px' size='small'>
       <TableContainer component={Paper} size='small'>
@@ -55,7 +55,20 @@ const ScoreBoard = ({ teams }) => {
                   </TableCell>
                   <TableCell>{t.current_score}</TableCell>
                   <TableCell>{t.lag_score}</TableCell>
-                  <TableCell>{t.players.map(p => p.name).join(', ')}</TableCell>
+                  <TableCell>
+                    {t.players.map(p => {
+                      let s = p.name;
+                      if (p.id === current_dealer) {
+                        return (
+                          <span>
+                            <strong>{p.name}</strong>
+                            {' (dealer)'}
+                          </span>
+                        );
+                      }
+                      return s;
+                    })}
+                  </TableCell>
                 </TableRow>
               );
             })}

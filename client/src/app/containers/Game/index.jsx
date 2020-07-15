@@ -4,6 +4,8 @@ import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Grid from '@material-ui/core/Grid';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import IconButton from '@material-ui/core/IconButton';
 
 import { selectCurrentUser } from '../../../auth/selectors';
 import { gameSaga } from './saga';
@@ -12,6 +14,47 @@ import { selectCurrentGame } from './selectors';
 import PlayingCard from './PlayingCard';
 import PlayerHand from './PlayerHand';
 import ScoreBoard from './ScoreBoard';
+
+const showCutCard = phase => {
+  return phase !== 'Deal' && phase !== 'BuildCrib' && phase !== 'Cut';
+};
+
+const handForPlayer = (game, myID, position) => {
+  if (position === 'across') {
+    if (game.teams.length === 3) {
+      let secondPlayerID = game.teams.filter(
+        t => !t.players.some(p => p.id === myID),
+      )[1].players[0].id;
+      return game.hands[secondPlayerID];
+    } else if (game.teams.length === 4) {
+      let partnerID = game.teams
+        .filter(t => t.players.some(p => p.id === myID))[0]
+        .players.filter(p => p.id !== myID)[0].id;
+      return game.hands[partnerID];
+    }
+    let opponentID = game.teams.filter(
+      t => !t.players.some(p => p.id === myID),
+    )[0].players[0].id;
+    return game.hands[opponentID];
+  } else if (position === 'right') {
+    if (game.teams.length === 3) {
+      // nothing!
+      return null;
+    } else if (game.teams.length === 4) {
+      let rightID = game.teams
+        .filter(t => t.players.some(p => p.id !== myID))[0]
+        .players.filter(p => p.id !== myID)[1].id;
+      return game.hands[rightID];
+    }
+  } else if (position !== 'left') {
+    return null;
+  }
+  // position is left
+  let leftID = game.teams
+    .filter(t => t.players.some(p => p.id !== myID))[0]
+    .players.filter(p => p.id !== myID)[0].id;
+  return game.hands[leftID];
+};
 
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
@@ -45,7 +88,10 @@ const Game = () => {
         className='bg-green-300'
       >
         <Grid item xs sm container>
-          <PlayerHand hand={activeGame.hands[currentUser.id]} />
+          <PlayerHand
+            phase={activeGame.phase}
+            hand={handForPlayer(activeGame, currentUser.id, 'across')}
+          />
         </Grid>
         <Grid
           item
@@ -56,22 +102,50 @@ const Game = () => {
           align-content='center'
         >
           <Grid item>
-            <PlayerHand side hand={activeGame.hands[currentUser.id]} />
+            <PlayerHand
+              side
+              phase={activeGame.phase}
+              hand={handForPlayer(activeGame, currentUser.id, 'left')}
+            />
           </Grid>
-          <Grid item>TODO: Do action here</Grid>
+          <Grid item>{'TODO: Do action here'}</Grid>
           <Grid item>
-            <PlayerHand side hand={activeGame.hands[currentUser.id]} />
+            <PlayerHand
+              side
+              phase={activeGame.phase}
+              hand={handForPlayer(activeGame, currentUser.id, 'right')}
+            />
           </Grid>
         </Grid>
         <Grid item xs sm container>
-          <PlayerHand hand={activeGame.hands[currentUser.id]} />
+          <PlayerHand
+            mine
+            phase={activeGame.phase}
+            hand={activeGame.hands[currentUser.id]}
+          />
         </Grid>
       </Grid>
       <Grid item container xs direction='column' spacing={1}>
         <Grid item>
-          <ScoreBoard teams={activeGame.teams} />
+          <IconButton
+            aria-label='refresh'
+            onClick={() => onRefreshCurrentGame(activeGame.id)}
+          >
+            <RefreshIcon />
+          </IconButton>
+          <ScoreBoard
+            teams={activeGame.teams}
+            current_dealer={activeGame.current_dealer}
+          />
         </Grid>
-        <Grid item>TODO put an image of the deck here</Grid>
+        <Grid item>
+          {[
+            <div>{'TODO put an image of the deck here'}</div>,
+            showCutCard(activeGame.phase)
+              ? jsonCardToCard(activeGame.cut_card)
+              : null,
+          ]}
+        </Grid>
       </Grid>
     </Grid>
   );
