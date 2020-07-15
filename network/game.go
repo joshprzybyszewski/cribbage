@@ -39,6 +39,7 @@ type GetGameResponse struct {
 	ID              model.GameID              `json:"id"`
 	Teams           []GetGameResponseTeam     `json:"teams"`
 	Phase           string                    `json:"phase"`
+	CurrentPeg      int                       `json:"current_peg"`
 	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID            `json:"current_dealer"`
 	Hands           map[model.PlayerID][]Card `json:"hands,omitempty"`
@@ -54,6 +55,7 @@ func ConvertToGetGameResponse(g model.Game) GetGameResponse {
 		Phase:           convertToPhase(g.Phase),
 		BlockingPlayers: convertToBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
+		CurrentPeg:      g.CurrentPeg(),
 		CutCard:         convertToCard(g.CutCard),
 		PeggedCards:     convertToPeggedCards(g.PeggedCards),
 	}
@@ -74,6 +76,10 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 	resp.Hands = convertToRevealedHands(g, pID)
 	if g.Phase >= model.CribCounting {
 		resp.Crib = convertToCards(g.Crib)
+	} else {
+		for len(resp.Crib) < len(g.Crib) {
+			resp.Crib = append(resp.Crib, invalidCard)
+		}
 	}
 	return resp, nil
 }
@@ -112,7 +118,7 @@ func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID]
 	rev[me] = convertToCards(g.Hands[me])
 
 	for pID := range rev {
-		for len(rev[pID]) < cap(rev[pID]) {
+		for len(rev[pID]) < len(g.Hands[pID]) {
 			rev[pID] = append(rev[pID], invalidCard)
 		}
 	}

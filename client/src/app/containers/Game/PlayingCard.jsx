@@ -29,7 +29,9 @@ const PlayingCard = props => {
       }
       class={`w-12 h-16 text-center align-middle inline-block border-2 ${
         chosenCards.includes(props.name) ? 'border-red-700' : 'border-black'
-      } bg-white ${useRed ? 'text-red-700' : 'text-black'}`}
+      } ${props.disabled ? 'bg-gray-500' : 'bg-white'} ${
+        useRed ? 'text-red-700' : 'text-black'
+      }`}
     >
       {props.name}
     </div>

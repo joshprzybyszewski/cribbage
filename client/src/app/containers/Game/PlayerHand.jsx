@@ -29,6 +29,11 @@ const PlayerHand = props => {
             value={card.value}
             suit={card.suit}
             mine={props.mine}
+            disabled={
+              props.phase === 'Pegging' &&
+              props.pegged &&
+              props.pegged.some(pc => pc.card.name === card.name)
+            }
           />
         </Grid>
       ))}

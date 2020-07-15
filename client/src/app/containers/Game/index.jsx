@@ -14,6 +14,7 @@ import { selectCurrentGame } from './selectors';
 import ActionBox from './ActionBox';
 import PlayingCard from './PlayingCard';
 import PlayerHand from './PlayerHand';
+import CribHand from './CribHand';
 import ScoreBoard from './ScoreBoard';
 
 const showCutCard = phase => {
@@ -131,6 +132,7 @@ const Game = () => {
             mine
             phase={activeGame.phase}
             hand={activeGame.hands[currentUser.id]}
+            pegged={activeGame.pegged_cards}
           />
         </Grid>
       </Grid>
@@ -149,10 +151,17 @@ const Game = () => {
         </Grid>
         <Grid item>
           {[
-            <div>{'TODO put an image of the deck here'}</div>,
-            showCutCard(activeGame.phase)
-              ? jsonCardToCard(activeGame.cut_card)
-              : null,
+            showCutCard(activeGame.phase) ? (
+              jsonCardToCard(activeGame.cut_card)
+            ) : (
+              <div>{'TODO put an image of the deck here'}</div>
+            ),
+            <CribHand cards={activeGame.crib} />,
+            <div>
+              {activeGame.phase === 'Pegging' && activeGame.current_peg
+                ? `Current Peg: ${activeGame.current_peg}`
+                : ''}
+            </div>,
           ]}
         </Grid>
       </Grid>
