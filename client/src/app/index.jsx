@@ -23,7 +23,7 @@ export const App = () => {
 
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar loggedIn={loggedIn} />
       <div className='flex flex-row'>
         {loggedIn && <Sidebar />}
         <div className='w-full h-screen p-4 bg-gray-200'>
