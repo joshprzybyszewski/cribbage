@@ -168,8 +168,8 @@ type CutDeckAction struct {
 }
 
 type PegAction struct {
-	Card  Card `protobuf:"Card,1,req,name=card,proto3" json:"c" bson:"c"`    //nolint:lll
-	SayGo bool `protobuf:"bool,2,req,name=sayGo,proto3" json:"sg" bson:"sg"` //nolint:lll
+	Card  Card `json:"c" bson:"c"`
+	SayGo bool `json:"sg" bson:"sg"`
 }
 
 type CountHandAction struct {

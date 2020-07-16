@@ -91,13 +91,22 @@ const ActionBox = props => {
           color='primary'
           aria-label='vertical outlined primary button group'
         >
-          <Button disabled={!props.isBlocking} color='secondary'>
+          <Button
+            disabled={!props.isBlocking}
+            color='secondary'
+            onClick={() => {
+              dispatch(actions.pegCard());
+            }}
+          >
             Say Go
           </Button>
           <Button
             disabled={!props.isBlocking}
             color='primary'
             endIcon={<SendIcon />}
+            onClick={() => {
+              dispatch(actions.pegCard());
+            }}
           >
             Peg
           </Button>

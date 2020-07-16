@@ -27,10 +27,10 @@ const gameSlice = createSlice({
     gameRetrieved(state, action) {
       state.loading = false;
       state.currentGame = action.payload.data;
+      state.currentAction = initialState.currentAction;
       switch (state.currentGame.phase) {
         case `Deal`:
           // TODO leave numShuffles
-          // state.currentAction = {};
           break;
       }
     },
@@ -100,6 +100,14 @@ const gameSlice = createSlice({
       },
     },
     cutDeck: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
+      },
+    },
+    pegCard: {
       reducer: (state, action) => {
         // Nothing here?
       },

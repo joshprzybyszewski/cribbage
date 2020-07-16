@@ -158,8 +158,10 @@ const Game = () => {
             ),
             <CribHand cards={activeGame.crib} />,
             <div>
-              {activeGame.phase === 'Pegging' && activeGame.current_peg
-                ? `Current Peg: ${activeGame.current_peg}`
+              {activeGame.phase === 'Pegging'
+                ? `Current Peg: ${
+                    activeGame.current_peg ? activeGame.current_peg : 0
+                  }`
                 : ''}
             </div>,
           ]}
