@@ -8,17 +8,21 @@ import (
 	"strconv"
 )
 
+var (
+	InvalidCard = Card{}
+)
+
 func NewCardFromString(card string) Card {
 	value, err := getCardValue(card)
 	if err != nil {
 		log.Printf(`NewCardFromString invalid value: %s`, err.Error())
-		return Card{}
+		return InvalidCard
 	}
 
 	suit, err := getSuit(card)
 	if err != nil {
 		log.Printf(`NewCardFromString invalid suit: %s`, err.Error())
-		return Card{}
+		return InvalidCard
 	}
 
 	return NewCard(suit, value)
@@ -71,14 +75,14 @@ func NewCardFromNumber(val int) Card {
 	c, err := newCardFromNumber(val)
 	if err != nil {
 		// set the card to the zero value (invalid card)
-		c = Card{}
+		c = InvalidCard
 	}
 	return c
 }
 
 func newCardFromNumber(val int) (Card, error) {
 	if val < 0 || val > 51 {
-		return Card{}, fmt.Errorf(`invalid num: %d`, val)
+		return InvalidCard, fmt.Errorf(`invalid num: %d`, val)
 	}
 
 	return NewCard(Suit(val/13), (val%13)+1), nil

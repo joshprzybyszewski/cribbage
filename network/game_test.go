@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -20,7 +19,11 @@ func modelCardsFromStrings(cs ...string) []model.Card {
 func cardsFromStrings(cs ...string) []Card {
 	hand := make([]Card, len(cs))
 	for i, c := range cs {
-		hand[i] = convertToCard(model.NewCardFromString(c))
+		if c == `` {
+			hand[i] = invalidCard
+		} else {
+			hand[i] = convertToCard(model.NewCardFromString(c))
+		}
 	}
 	return hand
 }
@@ -216,6 +219,7 @@ func TestConvertToGetGameResponse(t *testing.T) {
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
+
 func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 	tests := []struct {
 		desc    string
@@ -295,9 +299,9 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			CurrentDealer: `b`,
 			Hands: map[model.PlayerID][]Card{
 				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
-				`b`: cardsFromStrings(`AS`),
+				`b`: cardsFromStrings(`AS`, ``, ``, ``),
 			},
-			Crib: nil,
+			Crib: cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
@@ -307,6 +311,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				newPeggedCard(`AH`, `a`),
 				newPeggedCard(`AS`, `b`),
 			},
+			CurrentPeg: 2,
 		},
 	}, {
 		desc:   `should only return the cards which have been revealed to player b`,
@@ -379,10 +384,11 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: `b`,
 			Hands: map[model.PlayerID][]Card{
-				`a`: cardsFromStrings(`AH`),
+				`a`: cardsFromStrings(`AH`, ``, ``, ``),
 				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
-			Crib: nil,
+			CurrentPeg: 2,
+			Crib:       cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
@@ -491,7 +497,8 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
 				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
-			Crib: nil,
+			CurrentPeg: 0,
+			Crib:       cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
@@ -684,20 +691,20 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		}
 		assert.NotEqual(t, mg2, tc.game, tc.desc)
 
-		assert.Empty(t, mg2.Crib, tc.desc)
+		assert.Len(t, mg2.Crib, len(tc.game.Crib), tc.desc)
 		for pID, hand := range mg2.Hands {
 			if pID == tc.player {
 				assert.Equal(t, tc.game.Hands[pID], hand)
 			} else {
 				for _, c := range hand {
-					wasPegged := false
+					wasPegged := c == model.InvalidCard
 					for _, pc := range tc.game.PeggedCards {
 						if pc.Card == c {
 							wasPegged = true
 							break
 						}
 					}
-					require.True(t, wasPegged, tc.desc)
+					assert.True(t, wasPegged, `expected revealed card (%v) to have been pegged, but wasn't. (%s)`, c, tc.desc)
 				}
 			}
 		}
