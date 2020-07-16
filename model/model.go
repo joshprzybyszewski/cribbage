@@ -26,9 +26,9 @@ func (s Suit) String() string {
 }
 
 type Card struct {
-	Suit Suit `protobuf:"varint,1,req,name=suit,proto3" json:"s" bson:"s"` //nolint:lll
+	Suit Suit `json:"s" bson:"s"` //nolint:lll
 	// Ace is 1, King is 13
-	Value int `protobuf:"varint,2,req,name=value,proto3" json:"v" bson:"v"` //nolint:lll
+	Value int `json:"v" bson:"v"` //nolint:lll
 }
 
 const NumCardsPerDeck = 52

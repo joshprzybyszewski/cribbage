@@ -46,35 +46,48 @@ export function* handleRefreshCurrentGame({ payload: { id, history } }) {
   }
 }
 
+const cardToGolangCard = c => {
+  const magicMap = {
+    Spades: 0,
+    Clubs: 1,
+    Diamonds: 2,
+    Hearts: 3,
+  };
+  return {
+    s: magicMap[c.suit],
+    v: c.value,
+  };
+};
+
 const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
-  let magicNum = 0;
+  let overcomesMap = {
+    deal: 0,
+    crib: 1,
+  };
   let action = {};
   switch (phase) {
     case 'deal':
-      magicNum = 0;
       action = { ns: currentAction.numShuffles };
       break;
     case 'crib':
-      magicNum = 1;
       action = {
-        cs: currentAction.seletedCards ? currentAction.seletedCards : [],
+        cs: currentAction.selectedCards
+          ? currentAction.selectedCards.map(cardToGolangCard)
+          : [],
       };
-      console.log(
-        `currentAction.seletedCards is: ${currentAction.seletedCards}`,
-      );
       break;
   }
   return {
     pID: myID,
     gID: gID,
-    o: magicNum,
+    o: overcomesMap[phase],
     a: action,
   };
 };
 
 function* handleGenericAction(phase) {
   const currentUser = yield select(selectCurrentUser);
-  const gameID = yield select(selectCurrentGameID);
+  const id = yield select(selectCurrentGameID);
   const currentAction = yield select(selectCurrentAction);
 
   try {
@@ -82,10 +95,10 @@ function* handleGenericAction(phase) {
     // it may be wise to make it return the new game state?
     yield axios.post(
       '/action',
-      getPlayerActionJSON(currentUser.id, gameID, phase, currentAction),
+      getPlayerActionJSON(currentUser.id, id, phase, currentAction),
     );
     // TODO wait a moment and re-fetch?
-    yield put(gameActions.refreshGame({ id: gameID }));
+    yield put(gameActions.refreshGame(id));
   } catch (err) {
     yield put(
       alertActions.addAlert(

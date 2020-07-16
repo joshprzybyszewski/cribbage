@@ -29,7 +29,7 @@ const gameSlice = createSlice({
       switch (state.currentGame.phase) {
         case `Deal`:
           // TODO leave numShuffles
-          state.currentAction = {};
+          // state.currentAction = {};
           break;
       }
     },
