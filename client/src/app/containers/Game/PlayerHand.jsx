@@ -19,7 +19,6 @@ const PlayerHand = props => {
       direction={props.side ? 'column' : 'row'}
       justify='center'
       spacing={1}
-      className='bg-green-800'
     >
       {props.hand.map((card, index) => (
         <Grid key={card.name} item>
