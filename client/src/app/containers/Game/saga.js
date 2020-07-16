@@ -63,6 +63,7 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
   let overcomesMap = {
     deal: 0,
     crib: 1,
+    cut: 2,
   };
   let action = {};
   switch (phase) {
@@ -75,6 +76,9 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
           ? currentAction.selectedCards.map(cardToGolangCard)
           : [],
       };
+      break;
+    case 'cut':
+      action = { p: currentAction.percCut };
       break;
   }
   return {
@@ -117,6 +121,10 @@ export function* handleBuildCrib() {
   yield handleGenericAction('crib');
 }
 
+export function* handleCutDeck() {
+  yield handleGenericAction('cut');
+}
+
 export function* gameSaga() {
   yield all([
     takeLatest(gameActions.goToGame.type, handleGoToGame),
@@ -124,5 +132,6 @@ export function* gameSaga() {
     takeLatest(gameActions.refreshGame.type, handleRefreshCurrentGame),
     takeLatest(gameActions.dealCards.type, handleDeal),
     takeLatest(gameActions.buildCrib.type, handleBuildCrib),
+    takeLatest(gameActions.cutDeck.type, handleCutDeck),
   ]);
 }

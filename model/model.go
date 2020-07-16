@@ -156,15 +156,15 @@ type PlayerAction struct {
 }
 
 type DealAction struct {
-	NumShuffles int `json:"ns" bson:"ns"` //nolint:lll
+	NumShuffles int `json:"ns" bson:"ns"`
 }
 
 type BuildCribAction struct {
-	Cards []Card `json:"cs" bson:"cs"` //nolint:lll
+	Cards []Card `json:"cs" bson:"cs"`
 }
 
 type CutDeckAction struct {
-	Percentage float64 `protobuf:"varint,1,req,name=percentage,proto3" json:"p" bson:"p"` //nolint:lll
+	Percentage float64 `json:"p" bson:"p"`
 }
 
 type PegAction struct {

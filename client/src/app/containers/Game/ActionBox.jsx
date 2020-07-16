@@ -77,6 +77,10 @@ const ActionBox = props => {
             variant='contained'
             color='primary'
             endIcon={<CallSplitIcon />}
+            onClick={() => {
+              // TODO get the value of the Slider and use that to cut
+              dispatch(actions.cutDeck());
+            }}
           >
             Cut
           </Button>

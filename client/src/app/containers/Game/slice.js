@@ -6,6 +6,7 @@ export const initialState = {
   currentAction: {
     numShuffles: 0,
     selectedCards: [],
+    percCut: 0.5,
   },
   loading: true,
 };
@@ -91,6 +92,14 @@ const gameSlice = createSlice({
       },
     },
     buildCrib: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
+      },
+    },
+    cutDeck: {
       reducer: (state, action) => {
         // Nothing here?
       },

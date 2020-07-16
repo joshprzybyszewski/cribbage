@@ -22,8 +22,8 @@ const PlayerHand = props => {
       justify='center'
       spacing={1}
     >
-      {props.hand.map((card, index) => (
-        <GridList key={card.name} item>
+      <GridList item>
+        {props.hand.map((card, index) => (
           <PlayingCard
             key={`handcard${index}`}
             card={card}
@@ -34,8 +34,8 @@ const PlayerHand = props => {
               props.pegged.some(pc => pc.card.name === card.name)
             }
           />
-        </GridList>
-      ))}
+        ))}
+      </GridList>
     </Grid>
   );
 };
