@@ -9,6 +9,8 @@ import Grid from '@material-ui/core/Grid';
 import SendIcon from '@material-ui/icons/Send';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
+import Slider from '@material-ui/core/Slider';
 
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
@@ -18,6 +20,10 @@ const ActionBox = props => {
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
   const dispatch = useDispatch();
+
+  function perc(value) {
+    return `${value}%`;
+  }
 
   return (
     <Grid item container justify='center' spacing={1}>
@@ -59,14 +65,22 @@ const ActionBox = props => {
           Build Crib
         </Button>
       ) : props.phase === 'Cut' ? (
-        <Button
-          disabled={!props.isBlocking}
-          variant='contained'
-          color='primary'
-          endIcon={<CallSplitIcon />}
-        >
-          Cut
-        </Button>
+        <div>
+          <Slider
+            orientation='vertical'
+            getAriaValueText={perc}
+            defaultValue={50}
+            aria-labelledby='vertical-slider'
+          />
+          <Button
+            disabled={!props.isBlocking}
+            variant='contained'
+            color='primary'
+            endIcon={<CallSplitIcon />}
+          >
+            Cut
+          </Button>
+        </div>
       ) : props.phase === 'Pegging' ? (
         <ButtonGroup
           orientation='vertical'
