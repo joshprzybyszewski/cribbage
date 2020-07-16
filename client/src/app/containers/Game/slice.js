@@ -63,18 +63,20 @@ const gameSlice = createSlice({
         // Nothing here?
         const card = action.payload.card;
         if (!card) {
-          console.log('no payload card');
           return;
         }
-        console.log(`card name: ${card.name}`);
-        if (state.currentAction.selectedCards.some(c => c.name === card.name)) {
-          // TODO remove it
-        } else {
-          state.currentAction.selectedCards.push(card);
-        }
-        console.log(
-          `state.currentAction.selectedCards: ${state.currentAction.selectedCards}`,
+
+        const currentIndex = state.currentAction.selectedCards.findIndex(
+          c => c.name === card.name,
         );
+        const newSelected = [...state.currentAction.selectedCards];
+
+        if (currentIndex === -1) {
+          newSelected.push(card);
+        } else {
+          newSelected.splice(currentIndex, 1);
+        }
+        state.currentAction.selectedCards = newSelected;
       },
       prepare: (card, history) => {
         return { payload: { card, history } };

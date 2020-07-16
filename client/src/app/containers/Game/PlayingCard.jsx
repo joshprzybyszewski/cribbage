@@ -1,14 +1,16 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
+import { selectCurrentAction } from './selectors';
 
 const PlayingCard = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
-  const [chosen, setChosen] = React.useState(false);
+  const dispatch = useDispatch();
+  const currentAction = useSelector(selectCurrentAction);
 
   if (!props.card) {
     return null;
@@ -22,18 +24,17 @@ const PlayingCard = props => {
     );
   }
 
+  let chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
+  let toggleChosen = () => {
+    if (!props.disabled) {
+      dispatch(actions.selectCard(props.card));
+    }
+  };
+
   const useRed = !['Spade', 'Clubs'].includes(props.suit);
   return (
     <div
-      onClick={
-        props.mine
-          ? () => {
-              if (!props.disabled) {
-                setChosen(!chosen);
-              }
-            }
-          : () => {}
-      }
+      onClick={props.mine ? toggleChosen : () => {}}
       className={`w-12 h-16 text-center align-middle inline-block border-2 border-black ${
         props.disabled ? 'bg-gray-500' : 'bg-white'
       } ${useRed ? 'text-red-700' : 'text-black'}`}
