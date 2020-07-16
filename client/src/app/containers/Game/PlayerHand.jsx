@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
+import GridList from '@material-ui/core/GridList';
 
 import PlayingCard from './PlayingCard';
 
@@ -12,6 +13,7 @@ const PlayerHand = props => {
   if (!props.hand || !showOpponentsHand(props.phase)) {
     return null;
   }
+
   return (
     <Grid
       item
@@ -21,13 +23,10 @@ const PlayerHand = props => {
       spacing={1}
     >
       {props.hand.map((card, index) => (
-        <Grid key={card.name} item>
+        <GridList key={card.name} item>
           <PlayingCard
             key={`handcard${index}`}
             card={card}
-            name={card.name}
-            value={card.value}
-            suit={card.suit}
             mine={props.mine}
             disabled={
               props.phase === 'Pegging' &&
@@ -35,7 +34,7 @@ const PlayerHand = props => {
               props.pegged.some(pc => pc.card.name === card.name)
             }
           />
-        </Grid>
+        </GridList>
       ))}
     </Grid>
   );
