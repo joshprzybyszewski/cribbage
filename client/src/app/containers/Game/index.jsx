@@ -152,29 +152,25 @@ const Game = () => {
         <Grid item>
           {[
             showCutCard(activeGame.phase) ? (
-              jsonCardToCard(activeGame.cut_card)
+              <PlayingCard key='cutCard' card={activeGame.cut_card} />
             ) : (
-              <div>{'TODO put an image of the deck here'}</div>
+              <div key='deckTODOdiv'>
+                {'TODO put an image of the deck here'}
+              </div>
             ),
             <CribHand cards={activeGame.crib} />,
-            activeGame.phase === 'Pegging' ? (
-              <div>
-                {`Current Peg: ${
-                  activeGame.current_peg ? activeGame.current_peg : 0
-                }`}
-              </div>
-            ) : (
-              <div>derp</div>
-            ),
+            <div key='currentPeg'>
+              {activeGame.phase === 'Pegging'
+                ? `Current Peg: ${
+                    activeGame.current_peg ? activeGame.current_peg : 0
+                  }`
+                : ''}
+            </div>,
           ]}
         </Grid>
       </Grid>
     </Grid>
   );
-};
-
-const jsonCardToCard = card => {
-  return <PlayingCard card={card} />;
 };
 
 export default Game;

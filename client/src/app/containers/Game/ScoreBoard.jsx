@@ -60,7 +60,7 @@ const ScoreBoard = ({ current_dealer, teams }) => {
                       let s = p.name;
                       if (p.id === current_dealer) {
                         return (
-                          <span>
+                          <span key='dealer span'>
                             <strong>{p.name}</strong>
                             {' (dealer)'}
                           </span>

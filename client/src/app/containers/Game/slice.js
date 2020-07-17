@@ -33,6 +33,9 @@ const gameSlice = createSlice({
         case `Deal`:
           // TODO leave numShuffles
           break;
+        default:
+          // TODO here too
+          break;
       }
     },
     exitGame: {

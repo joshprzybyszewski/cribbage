@@ -99,6 +99,9 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
     case 'countcrib':
       action = { pts: currentAction.points };
       break;
+    default:
+      action = { badstate: true };
+      break;
   }
   return {
     pID: myID,

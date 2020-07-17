@@ -11,7 +11,7 @@ const CribHand = props => {
   }
   return (
     <Grid item container direction={'row'} justify='center' spacing={1}>
-      <GridList item>
+      <GridList>
         {props.cards.map((card, index) => (
           <PlayingCard key={`cribcard${index}`} card={card} />
         ))}

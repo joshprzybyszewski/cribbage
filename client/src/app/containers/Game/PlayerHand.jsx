@@ -22,7 +22,7 @@ const PlayerHand = props => {
       justify='center'
       spacing={1}
     >
-      <GridList item>
+      <GridList>
         {props.hand.map((card, index) => (
           <PlayingCard
             key={`handcard${index}`}
