@@ -712,7 +712,9 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		// Make the hands field nil on both of the games. _Now_ they should be equal
 		mg2.Hands = nil
 		tc.game.Hands = nil
-		tc.game.Crib = nil
+		for i := range tc.game.Crib {
+			tc.game.Crib[i] = model.InvalidCard
+		}
 		assert.Equal(t, tc.game, mg2, tc.desc)
 	}
 }
