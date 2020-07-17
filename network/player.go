@@ -120,8 +120,8 @@ func convertTeamsToPlayersAndPlayerColors(
 	ts []GetGameResponseTeam,
 ) ([]model.Player, map[model.PlayerID]model.PlayerColor) {
 	// length of 4 at most
-	players := make([]model.Player, 0)
-	playerColors := make(map[model.PlayerID]model.PlayerColor, len(ts))
+	players := make([]model.Player, 0, 4)
+	playerColors := make(map[model.PlayerID]model.PlayerColor, 4)
 	for _, t := range ts {
 		for _, p := range t.Players {
 			players = append(players, convertFromPlayer(p))
