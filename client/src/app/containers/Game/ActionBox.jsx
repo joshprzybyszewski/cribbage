@@ -2,16 +2,17 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import { FormGroup, FormControl, InputLabel, Input } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import CallSplitIcon from '@material-ui/icons/CallSplit';
+import FormControl from '@material-ui/core/FormControl';
+import FormGroup from '@material-ui/core/FormGroup';
 import Grid from '@material-ui/core/Grid';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import Slider from '@material-ui/core/Slider';
 import SendIcon from '@material-ui/icons/Send';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
-import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
-import Slider from '@material-ui/core/Slider';
 
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
