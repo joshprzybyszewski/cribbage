@@ -65,6 +65,8 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
     crib: 1,
     cut: 2,
     peg: 3,
+    counthand: 4,
+    countcrib: 5,
   };
   let action = {};
   switch (phase) {
@@ -82,7 +84,6 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
       action = { p: currentAction.percCut };
       break;
     case 'peg':
-      console.log('is pegging?');
       action =
         !currentAction.selectedCards || currentAction.selectedCards.length !== 1
           ? {
@@ -91,6 +92,13 @@ const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
           : {
               c: cardToGolangCard(currentAction.selectedCards[0]),
             };
+      break;
+    case 'counthand':
+      action = { pts: currentAction.points };
+      break;
+    case 'countcrib':
+      action = { pts: currentAction.points };
+      break;
   }
   return {
     pID: myID,
@@ -136,8 +144,16 @@ export function* handleCutDeck() {
   yield handleGenericAction('cut');
 }
 
-export function* handPegCard() {
+export function* handlePeg() {
   yield handleGenericAction('peg');
+}
+
+export function* handleCountHand() {
+  yield handleGenericAction('counthand');
+}
+
+export function* handleCountCrib() {
+  yield handleGenericAction('countcrib');
 }
 
 export function* gameSaga() {
@@ -148,6 +164,8 @@ export function* gameSaga() {
     takeLatest(gameActions.dealCards.type, handleDeal),
     takeLatest(gameActions.buildCrib.type, handleBuildCrib),
     takeLatest(gameActions.cutDeck.type, handleCutDeck),
-    takeLatest(gameActions.pegCard.type, handPegCard),
+    takeLatest(gameActions.pegCard.type, handlePeg),
+    takeLatest(gameActions.countHand.type, handleCountHand),
+    takeLatest(gameActions.countCrib.type, handleCountCrib),
   ]);
 }

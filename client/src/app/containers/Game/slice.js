@@ -7,6 +7,7 @@ export const initialState = {
     numShuffles: 0,
     selectedCards: [],
     percCut: 0.5,
+    points: -1,
   },
   loading: true,
 };
@@ -99,6 +100,24 @@ const gameSlice = createSlice({
         return { payload: { history } };
       },
     },
+    chooseCut: {
+      reducer: (state, action) => {
+        const newPerc = action.payload.perc;
+        if (!newPerc) {
+          return;
+        } else if (newPerc > 100) {
+          return;
+        } else if (newPerc >= 1) {
+          state.currentAction.percCut = newPerc / 100;
+          return;
+        }
+
+        state.currentAction.percCut = newPerc;
+      },
+      prepare: (perc, history) => {
+        return { payload: { perc, history } };
+      },
+    },
     cutDeck: {
       reducer: (state, action) => {
         // Nothing here?
@@ -108,6 +127,35 @@ const gameSlice = createSlice({
       },
     },
     pegCard: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
+      },
+    },
+    claimPoints: {
+      reducer: (state, action) => {
+        const points = action.payload.points;
+        if (!points) {
+          return;
+        }
+
+        state.currentAction.points = points;
+      },
+      prepare: (points, history) => {
+        return { payload: { points, history } };
+      },
+    },
+    countHand: {
+      reducer: (state, action) => {
+        // Nothing here?
+      },
+      prepare: history => {
+        return { payload: { history } };
+      },
+    },
+    countCrib: {
       reducer: (state, action) => {
         // Nothing here?
       },

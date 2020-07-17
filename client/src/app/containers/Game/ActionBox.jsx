@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
+import { FormGroup, FormControl, InputLabel, Input } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import CallSplitIcon from '@material-ui/icons/CallSplit';
@@ -67,10 +68,14 @@ const ActionBox = props => {
       ) : props.phase === 'Cut' ? (
         <div>
           <Slider
+            disabled={!props.isBlocking}
             orientation='vertical'
             getAriaValueText={perc}
             defaultValue={50}
             aria-labelledby='vertical-slider'
+            onChange={event => {
+              dispatch(actions.claimPoints(Number(event.target.value) / 100));
+            }}
           />
           <Button
             disabled={!props.isBlocking}
@@ -112,45 +117,54 @@ const ActionBox = props => {
           </Button>
         </ButtonGroup>
       ) : props.phase === 'Counting' ? (
-        <form autoComplete='off'>
-          <TextField
-            id='handCountField'
-            label='Hand Points'
-            type='number'
-            variant='outlined'
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
+        <FormGroup row autoComplete='off'>
+          <FormControl>
+            <InputLabel htmlFor='component-simple'>Hand Points</InputLabel>
+            <Input
+              disabled={!props.isBlocking}
+              id='component-simple'
+              type='number'
+              onChange={event => {
+                dispatch(actions.claimPoints(Number(event.target.value)));
+              }}
+            />
+          </FormControl>
           <Button
             disabled={!props.isBlocking}
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}
+            onClick={() => {
+              dispatch(actions.countHand());
+            }}
           >
             Count
           </Button>
-        </form>
+        </FormGroup>
       ) : props.phase === 'CribCounting' ? (
-        <form autoComplete='off'>
-          <TextField
-            id='cribCountField'
-            label='Crib Points'
-            type='number'
-            variant='outlined'
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
+        <FormGroup row autoComplete='off'>
+          <FormControl>
+            <InputLabel htmlFor='component-simple'>Crib Points</InputLabel>
+            <Input
+              id='component-simple'
+              type='number'
+              onChange={event => {
+                dispatch(actions.claimPoints(Number(event.target.value)));
+              }}
+            />
+          </FormControl>
           <Button
             disabled={!props.isBlocking}
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}
+            onClick={() => {
+              dispatch(actions.countCrib());
+            }}
           >
             Count
           </Button>
-        </form>
+        </FormGroup>
       ) : (
         'dev error!'
       )}

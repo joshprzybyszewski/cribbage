@@ -19,7 +19,7 @@ const PlayingCard = props => {
     // a back of a card
     return (
       <div
-        class={`w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800`}
+        className={`w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800`}
       />
     );
   }
@@ -31,7 +31,7 @@ const PlayingCard = props => {
     }
   };
 
-  const useRed = !['Spade', 'Clubs'].includes(props.suit);
+  const useRed = !['Spades', 'Clubs'].includes(props.card.suit);
   return (
     <div
       onClick={props.mine ? toggleChosen : () => {}}

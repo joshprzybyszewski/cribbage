@@ -157,13 +157,15 @@ const Game = () => {
               <div>{'TODO put an image of the deck here'}</div>
             ),
             <CribHand cards={activeGame.crib} />,
-            <div>
-              {activeGame.phase === 'Pegging'
-                ? `Current Peg: ${
-                    activeGame.current_peg ? activeGame.current_peg : 0
-                  }`
-                : ''}
-            </div>,
+            activeGame.phase === 'Pegging' ? (
+              <div>
+                {`Current Peg: ${
+                  activeGame.current_peg ? activeGame.current_peg : 0
+                }`}
+              </div>
+            ) : (
+              <div>derp</div>
+            ),
           ]}
         </Grid>
       </Grid>
@@ -172,14 +174,7 @@ const Game = () => {
 };
 
 const jsonCardToCard = card => {
-  return (
-    <PlayingCard
-      key={card.name}
-      name={card.name}
-      value={card.value}
-      suit={card.suit}
-    />
-  );
+  return <PlayingCard card={card} />;
 };
 
 export default Game;

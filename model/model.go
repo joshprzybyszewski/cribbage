@@ -173,11 +173,11 @@ type PegAction struct {
 }
 
 type CountHandAction struct {
-	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
+	Pts int `json:"pts" bson:"pts"`
 }
 
 type CountCribAction struct {
-	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
+	Pts int `json:"pts" bson:"pts"`
 }
 
 type Phase int
