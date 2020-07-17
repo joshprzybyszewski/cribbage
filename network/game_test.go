@@ -196,7 +196,7 @@ func TestConvertToGetGameResponse(t *testing.T) {
 			},
 			CurrentDealer: `b`,
 			Hands:         nil,
-			Crib:          nil,
+			Crib:          cardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,

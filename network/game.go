@@ -49,7 +49,7 @@ type GetGameResponse struct {
 }
 
 func ConvertToGetGameResponse(g model.Game) GetGameResponse {
-	return GetGameResponse{
+	ggr := GetGameResponse{
 		ID:              g.ID,
 		Teams:           convertToTeams(g),
 		Phase:           convertToPhase(g.Phase),
@@ -59,6 +59,16 @@ func ConvertToGetGameResponse(g model.Game) GetGameResponse {
 		CutCard:         convertToCard(g.CutCard),
 		PeggedCards:     convertToPeggedCards(g.PeggedCards),
 	}
+
+	if g.Phase >= model.CribCounting {
+		ggr.Crib = convertToCards(g.Crib)
+	} else {
+		for len(ggr.Crib) < len(g.Crib) {
+			ggr.Crib = append(ggr.Crib, invalidCard)
+		}
+	}
+
+	return ggr
 }
 
 func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
@@ -74,13 +84,7 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 	}
 	resp := ConvertToGetGameResponse(g)
 	resp.Hands = convertToRevealedHands(g, pID)
-	if g.Phase >= model.CribCounting {
-		resp.Crib = convertToCards(g.Crib)
-	} else {
-		for len(resp.Crib) < len(g.Crib) {
-			resp.Crib = append(resp.Crib, invalidCard)
-		}
-	}
+
 	return resp, nil
 }
 
