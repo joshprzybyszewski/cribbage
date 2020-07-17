@@ -63,16 +63,16 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 // Assumes input is sorted and has len 5
 func scoreFifteens(ptVals []int) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
-		// all odd cards, no fifteens possible
+		// all even numbered cards => no fifteens possible
 		return none, 0
 	}
 
 	sum := ptVals[0] + ptVals[1] + ptVals[2] + ptVals[3] + ptVals[4]
-	if sum < 15 || sum > 46 {
-		return none, 0
-	} else if sum == 15 {
+	if sum == 15 {
 		// only one fifteen possible
 		return fifteen1, 2
+	} else if sum < 15 || sum > 46 {
+		return none, 0
 	}
 
 	var numFifteens uint
