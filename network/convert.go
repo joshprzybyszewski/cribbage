@@ -62,23 +62,39 @@ func convertFromBlockingPlayers(bs map[model.PlayerID]string) map[model.PlayerID
 }
 
 func convertToTeams(g model.Game) []GetGameResponseTeam {
-	teams := make([]GetGameResponseTeam, 0, len(g.CurrentScores))
-	for c, s := range g.CurrentScores {
-		t := GetGameResponseTeam{
-			Color:        c.String(),
-			CurrentScore: s,
-			LagScore:     g.LagScores[c],
-		}
-		// a team will only ever have 1 or 2 players on it
+	teams := make([]GetGameResponseTeam, 0, 3)
+	for i, p := range g.Players {
 		ps := make([]Player, 0, 2)
-		for _, p := range g.Players {
-			if g.PlayerColors[p.ID] == c {
-				ps = append(ps, convertToPlayer(p))
+		ps = append(ps, convertToPlayer(p))
+		if len(g.Players) == 4 {
+			if i > 1 {
+				break
 			}
+			ps = append(ps, convertToPlayer(g.Players[i+2]))
 		}
-		t.Players = ps
+
+		color, ok := p.Games[g.ID]
+		if !ok {
+			color = model.UnsetColor
+		}
+
+		colorStr := color.String()
+		if color == model.UnsetColor {
+			colorStr = ``
+		}
+
+		t := GetGameResponseTeam{
+			Color:        colorStr,
+			CurrentScore: g.CurrentScores[color],
+			LagScore:     g.LagScores[color],
+			Players:      ps,
+		}
+
 		teams = append(teams, t)
 	}
-	sort.Slice(teams, func(i, j int) bool { return teams[i].Color < teams[j].Color })
+
+	sort.Slice(teams, func(i, j int) bool {
+		return teams[i].Color == `` && teams[j].Color != `` && teams[i].Color > teams[j].Color
+	})
 	return teams
 }

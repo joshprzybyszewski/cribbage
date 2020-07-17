@@ -30,7 +30,7 @@ func ConvertToCreateGameResponse(g model.Game) CreateGameResponse {
 
 type GetGameResponseTeam struct {
 	Players      []Player `json:"players"`
-	Color        string   `json:"color"`
+	Color        string   `json:"color,omitempty"`
 	CurrentScore int      `json:"current_score"`
 	LagScore     int      `json:"lag_score"`
 }
