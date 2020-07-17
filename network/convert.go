@@ -1,6 +1,10 @@
 package network
 
-import "github.com/joshprzybyszewski/cribbage/model"
+import (
+	"sort"
+
+	"github.com/joshprzybyszewski/cribbage/model"
+)
 
 func convertToColor(c model.PlayerColor) string {
 	return c.String()
@@ -75,5 +79,6 @@ func convertToTeams(g model.Game) []GetGameResponseTeam {
 		t.Players = ps
 		teams = append(teams, t)
 	}
+	sort.Slice(teams, func(i, j int) bool { return teams[i].Color < teams[j].Color })
 	return teams
 }
