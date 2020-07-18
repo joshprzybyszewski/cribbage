@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import PropTypes from 'prop-types';
 import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
@@ -16,6 +17,10 @@ const ConnectedApp = ({ Component }) => (
     </React.StrictMode>
   </Provider>
 );
+
+ConnectedApp.propTypes = {
+  Component: PropTypes.node.isRequired,
+};
 
 const render = Component => {
   ReactDOM.render(<ConnectedApp Component={Component} />, MOUNT_NODE);

@@ -6,6 +6,7 @@ import IconButton from '@material-ui/core/IconButton';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import clsx from 'clsx';
+import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
 
@@ -102,6 +103,10 @@ const Layout = props => {
       </div>
     </React.Fragment>
   );
+};
+
+Layout.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export default Layout;
