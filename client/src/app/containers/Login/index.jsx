@@ -82,7 +82,7 @@ const LoginForm = () => {
           </Button>
         </form>
         <Link href='/register' variant='body2'>
-          Don&apos;t have an account? Register here
+          {`Don't have an account? Register here`}
         </Link>
       </div>
     </Container>
