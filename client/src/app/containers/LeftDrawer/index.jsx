@@ -48,17 +48,15 @@ const Navbar = ({ loggedIn, handleDrawerOpen }) => {
   return (
     <AppBar position='static'>
       <Toolbar>
-        {true && (
-          <IconButton
-            edge='start'
-            className={classes.menuButton}
-            color='inherit'
-            aria-label='menu'
-            onClick={handleDrawerOpen}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
+        <IconButton
+          edge='start'
+          className={classes.menuButton}
+          color='inherit'
+          aria-label='menu'
+          onClick={handleDrawerOpen}
+        >
+          <MenuIcon />
+        </IconButton>
         <Typography variant='h6' className={classes.title}>
           Cribbage
         </Typography>
