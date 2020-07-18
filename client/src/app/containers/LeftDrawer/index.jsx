@@ -1,22 +1,20 @@
 import React from 'react';
+
+import AppBar from '@material-ui/core/AppBar';
+import Button from '@material-ui/core/Button';
+import grey from '@material-ui/core/colors/grey';
+import IconButton from '@material-ui/core/IconButton';
+import Link from '@material-ui/core/Link';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import MenuIcon from '@material-ui/icons/Menu';
 import { useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { useHistory } from 'react-router-dom';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
 import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
-
-import { grey } from '@material-ui/core/colors';
-import {
-  AppBar,
-  Button,
-  IconButton,
-  Link,
-  Toolbar,
-  Typography,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-
-import MenuIcon from '@material-ui/icons/Menu';
 
 const useStyles = makeStyles(theme => ({
   loggedOutLink: {

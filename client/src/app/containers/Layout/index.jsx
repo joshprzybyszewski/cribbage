@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+
+import Divider from '@material-ui/core/Divider';
+import Drawer from '@material-ui/core/Drawer';
+import IconButton from '@material-ui/core/IconButton';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
-import clsx from 'clsx';
-import { Divider, Drawer, IconButton } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+
 import { selectLoggedIn } from '../../../auth/selectors';
 import { sliceKey, reducer } from '../../../auth/slice';
-import Alert from '../Alert';
 import Navbar from '../../components/Navbar';
+import Alert from '../Alert';
 import LoggedInDrawer from '../LeftDrawer/LoggedInDrawer';
 import LoggedOutDrawer from '../LeftDrawer/LoggedOutDrawer';
 

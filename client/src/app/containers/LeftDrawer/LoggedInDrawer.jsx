@@ -1,19 +1,18 @@
 import React from 'react';
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from '@material-ui/core';
+
+import Divider from '@material-ui/core/Divider';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
-
 import { useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 import { useHistory } from 'react-router-dom';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
 import { authSaga } from '../../../auth/saga';
 import { sliceKey, reducer, actions } from '../../../auth/slice';
 

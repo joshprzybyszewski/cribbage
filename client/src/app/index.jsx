@@ -1,10 +1,12 @@
 import React from 'react';
+
 import { BrowserRouter } from 'react-router-dom';
 import { Switch, Route } from 'react-router-dom';
+
 import Account from './containers/Account';
 import Home from './containers/Home';
-import Login from './containers/Login';
 import Layout from './containers/Layout';
+import Login from './containers/Login';
 import NewGameForm from './containers/NewGameForm';
 import PrivateRoute from './containers/PrivateRoute';
 import Register from './containers/Register';

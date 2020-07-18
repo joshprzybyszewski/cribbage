@@ -1,24 +1,14 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
-import {
-  Link,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  makeStyles,
-} from '@material-ui/core';
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import CreateIcon from '@material-ui/icons/Create';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import { useHistory } from 'react-router-dom';
 
-const useStyles = makeStyles(theme => ({
-  link: {
-    color: 'inherit',
-  },
-}));
-
-const LoggedInDrawer = props => {
-  const classes = useStyles();
+const LoggedOutDrawer = props => {
   const history = useHistory();
 
   return (
@@ -39,4 +29,4 @@ const LoggedInDrawer = props => {
   );
 };
 
-export default LoggedInDrawer;
+export default LoggedOutDrawer;
