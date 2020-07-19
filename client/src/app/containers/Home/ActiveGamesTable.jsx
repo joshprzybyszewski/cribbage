@@ -1,31 +1,31 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import blue from '@material-ui/core/colors/blue';
-import grey from '@material-ui/core/colors/grey';
 import green from '@material-ui/core/colors/green';
+import grey from '@material-ui/core/colors/grey';
 import red from '@material-ui/core/colors/red';
 import IconButton from '@material-ui/core/IconButton';
-import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import { selectCurrentUser } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
+import { selectCurrentUser } from '../../../auth/selectors';
 import {
   sliceKey as authSliceKey,
   reducer as authReducer,
 } from '../../../auth/slice';
-import { selectActiveGames } from './selectors';
 import { homeSaga } from './saga';
+import { selectActiveGames } from './selectors';
 import {
   sliceKey as homeSliceKey,
   reducer as homeReducer,

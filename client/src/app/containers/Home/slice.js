@@ -12,7 +12,7 @@ const homeSlice = createSlice({
     refreshActiveGames(state, action) {
       if (!action.payload.id) {
         // what should we do when refreshing with an ID we do not expect?
-        throw `requires a playerID: got "${action.payload.id}"`;
+        throw Error(`requires a playerID: got "${action.payload.id}"`);
       }
     },
     gotActiveGames(state, action) {

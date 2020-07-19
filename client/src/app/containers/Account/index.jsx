@@ -1,5 +1,7 @@
 import React from 'react';
 
-export default () => {
+const Account = () => {
   return <div>Edit your account here</div>;
 };
+
+export default Account;

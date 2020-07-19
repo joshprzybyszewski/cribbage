@@ -1,5 +1,7 @@
 import React from 'react';
 
-export default () => {
+const NewGameForm = () => {
   return <div>Make a new game here</div>;
 };
+
+export default NewGameForm;
