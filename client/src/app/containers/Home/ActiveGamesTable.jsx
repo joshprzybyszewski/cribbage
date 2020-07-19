@@ -1,4 +1,7 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
@@ -15,8 +18,6 @@ import TableRow from '@material-ui/core/TableRow';
 import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import { authSaga } from '../../../auth/saga';
 import { selectCurrentUser } from '../../../auth/selectors';
@@ -24,6 +25,12 @@ import {
   sliceKey as authSliceKey,
   reducer as authReducer,
 } from '../../../auth/slice';
+import { gameSaga } from '../Game/saga';
+import {
+  sliceKey as gameSliceKey,
+  reducer as gameReducer,
+  actions as gameActions,
+} from '../Game/slice';
 import { homeSaga } from './saga';
 import { selectActiveGames } from './selectors';
 import {
@@ -49,6 +56,9 @@ const ActiveGamesTable = () => {
   useInjectSaga({ key: authSliceKey, saga: authSaga });
   useInjectReducer({ key: homeSliceKey, reducer: homeReducer });
   useInjectSaga({ key: homeSliceKey, saga: homeSaga });
+  useInjectReducer({ key: gameSliceKey, reducer: gameReducer });
+  useInjectSaga({ key: gameSliceKey, saga: gameSaga });
+  const history = useHistory();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGames = useSelector(selectActiveGames(currentUser.id));
@@ -57,14 +67,12 @@ const ActiveGamesTable = () => {
   const onRefreshActiveGames = () => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
   };
+  const onGoToGame = gID => {
+    dispatch(gameActions.goToGame(gID, history));
+  };
 
   return (
-    <TableContainer
-      component={Paper}
-      style={{
-        maxHeight: 500,
-      }}
-    >
+    <TableContainer component={Paper}>
       <Table stickyHeader size='small' aria-label='active games table'>
         <TableHead>
           <TableRow>
@@ -107,7 +115,7 @@ const ActiveGamesTable = () => {
                   <TableCell>
                     <IconButton
                       aria-label='play'
-                      onClick={() => goToGame(ag.gameID)}
+                      onClick={() => onGoToGame(ag.gameID)}
                     >
                       <SportsEsportsIcon />
                     </IconButton>
@@ -119,11 +127,6 @@ const ActiveGamesTable = () => {
       </Table>
     </TableContainer>
   );
-};
-
-const goToGame = gID => {
-  // We're gonna need to navigate to the games page
-  console.log(`Will request game page for ID: ${gID}`);
 };
 
 export default ActiveGamesTable;

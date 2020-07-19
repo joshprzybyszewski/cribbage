@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -20,7 +19,11 @@ func modelCardsFromStrings(cs ...string) []model.Card {
 func cardsFromStrings(cs ...string) []Card {
 	hand := make([]Card, len(cs))
 	for i, c := range cs {
-		hand[i] = convertToCard(model.NewCardFromString(c))
+		if c == `` {
+			hand[i] = invalidCard
+		} else {
+			hand[i] = convertToCard(model.NewCardFromString(c))
+		}
 	}
 	return hand
 }
@@ -96,6 +99,11 @@ func TestConvertToCreateGameResponse(t *testing.T) {
 }
 
 func TestConvertToGetGameResponse(t *testing.T) {
+	aliceID := model.PlayerID(`alice`)
+	bobID := model.PlayerID(`bob`)
+
+	gID := model.GameID(123456)
+
 	tests := []struct {
 		desc    string
 		game    model.Game
@@ -103,17 +111,23 @@ func TestConvertToGetGameResponse(t *testing.T) {
 	}{{
 		desc: `shouldn't return hands or crib`,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `alicia`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `bobbette`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -125,91 +139,89 @@ func TestConvertToGetGameResponse(t *testing.T) {
 			},
 			Phase: model.CribCounting,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`b`: model.CountCrib,
+				bobID: model.CountCrib,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
 				Action:   0,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`as`),
 				Action:   1,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`2h`),
 				Action:   2,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`2s`),
 				Action:   3,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`3h`),
 				Action:   4,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`3s`),
 				Action:   5,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`4h`),
 				Action:   6,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`4s`),
 				Action:   7,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}},
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   aliceID,
+					Name: `alicia`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   bobID,
+					Name: `bobbette`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `CribCounting`,
 			BlockingPlayers: map[model.PlayerID]string{
-				`b`: `CountCrib`,
+				bobID: `CountCrib`,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands:         nil,
-			Crib:          nil,
+			Crib:          cardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
 				Name:  `5C`,
 			},
 			PeggedCards: []PeggedCard{
-				newPeggedCard(`AH`, `a`),
-				newPeggedCard(`AS`, `b`),
-				newPeggedCard(`2H`, `a`),
-				newPeggedCard(`2S`, `b`),
-				newPeggedCard(`3H`, `a`),
-				newPeggedCard(`3S`, `b`),
-				newPeggedCard(`4H`, `a`),
-				newPeggedCard(`4S`, `b`),
+				newPeggedCard(`AH`, aliceID),
+				newPeggedCard(`AS`, bobID),
+				newPeggedCard(`2H`, aliceID),
+				newPeggedCard(`2S`, bobID),
+				newPeggedCard(`3H`, aliceID),
+				newPeggedCard(`3S`, bobID),
+				newPeggedCard(`4H`, aliceID),
+				newPeggedCard(`4S`, bobID),
 			},
 		},
 	}}
@@ -218,7 +230,13 @@ func TestConvertToGetGameResponse(t *testing.T) {
 		assert.Equal(t, tc.expResp, resp, tc.desc)
 	}
 }
+
 func TestConvertToGetGameResponseForPlayer(t *testing.T) {
+	aliceID := model.PlayerID(`alice`)
+	bobID := model.PlayerID(`bob`)
+
+	gID := model.GameID(123456)
+
 	tests := []struct {
 		desc    string
 		player  model.PlayerID
@@ -226,21 +244,27 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		game    model.Game
 		expResp GetGameResponse
 	}{{
-		desc:   `should only return the cards which have been revealed to player a`,
-		player: `a`,
+		desc:   `should only return the cards which have been revealed to alice`,
+		player: aliceID,
 		expErr: false,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `alice`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `bob`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -252,82 +276,87 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			Phase: model.Pegging,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`a`: model.PegCard,
+				aliceID: model.PegCard,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
 				Action:   0,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`as`),
 				Action:   1,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}},
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   aliceID,
+					Name: `alice`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   bobID,
+					Name: `bob`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Pegging`,
 			BlockingPlayers: map[model.PlayerID]string{
-				`a`: `PegCard`,
+				aliceID: `PegCard`,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]Card{
-				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
-				`b`: cardsFromStrings(`AS`),
+				aliceID: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
+				bobID:   cardsFromStrings(`AS`, ``, ``, ``),
 			},
-			Crib: nil,
+			Crib: cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
 				Name:  `5C`,
 			},
 			PeggedCards: []PeggedCard{
-				newPeggedCard(`AH`, `a`),
-				newPeggedCard(`AS`, `b`),
+				newPeggedCard(`AH`, aliceID),
+				newPeggedCard(`AS`, bobID),
 			},
+			CurrentPeg: 2,
 		},
 	}, {
 		desc:   `should only return the cards which have been revealed to player b`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `alice`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `bob`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -339,82 +368,87 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			Phase: model.Pegging,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`a`: model.PegCard,
+				aliceID: model.PegCard,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
 				Action:   0,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`as`),
 				Action:   1,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}},
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   aliceID,
+					Name: `alice`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   bobID,
+					Name: `bob`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Pegging`,
 			BlockingPlayers: map[model.PlayerID]string{
-				`a`: `PegCard`,
+				aliceID: `PegCard`,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]Card{
-				`a`: cardsFromStrings(`AH`),
-				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
+				aliceID: cardsFromStrings(`AH`, ``, ``, ``),
+				bobID:   cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
-			Crib: nil,
+			CurrentPeg: 2,
+			Crib:       cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
 				Name:  `5C`,
 			},
 			PeggedCards: []PeggedCard{
-				newPeggedCard(`AH`, `a`),
-				newPeggedCard(`AS`, `b`),
+				newPeggedCard(`AH`, aliceID),
+				newPeggedCard(`AS`, bobID),
 			},
 		},
 	}, {
 		desc:   `should return both hands but no crib after counting`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `anne`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `bryan`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -426,112 +460,117 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			Phase: model.Counting,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`a`: model.CountHand,
+				aliceID: model.CountHand,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
 				Action:   0,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`as`),
 				Action:   1,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`2h`),
 				Action:   2,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`2s`),
 				Action:   3,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`3h`),
 				Action:   4,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`3s`),
 				Action:   5,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`4h`),
 				Action:   6,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`4s`),
 				Action:   7,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}},
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   aliceID,
+					Name: `anne`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   bobID,
+					Name: `bryan`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `Counting`,
 			BlockingPlayers: map[model.PlayerID]string{
-				`a`: `CountHand`,
+				aliceID: `CountHand`,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]Card{
-				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
-				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
+				aliceID: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
+				bobID:   cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
-			Crib: nil,
+			CurrentPeg: 0,
+			Crib:       cardsFromStrings(``, ``, ``, ``),
 			CutCard: Card{
 				Suit:  `Clubs`,
 				Value: 5,
 				Name:  `5C`,
 			},
 			PeggedCards: []PeggedCard{
-				newPeggedCard(`AH`, `a`),
-				newPeggedCard(`AS`, `b`),
-				newPeggedCard(`2H`, `a`),
-				newPeggedCard(`2S`, `b`),
-				newPeggedCard(`3H`, `a`),
-				newPeggedCard(`3S`, `b`),
-				newPeggedCard(`4H`, `a`),
-				newPeggedCard(`4S`, `b`),
+				newPeggedCard(`AH`, aliceID),
+				newPeggedCard(`AS`, bobID),
+				newPeggedCard(`2H`, aliceID),
+				newPeggedCard(`2S`, bobID),
+				newPeggedCard(`3H`, aliceID),
+				newPeggedCard(`3S`, bobID),
+				newPeggedCard(`4H`, aliceID),
+				newPeggedCard(`4S`, bobID),
 			},
 		},
 	}, {
 		desc:   `should return both hands and crib after counting crib`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `alishia`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `robert`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -543,78 +582,76 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			Phase: model.CribCounting,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`b`: model.CountCrib,
+				bobID: model.CountCrib,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
 				Action:   0,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`as`),
 				Action:   1,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`2h`),
 				Action:   2,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`2s`),
 				Action:   3,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`3h`),
 				Action:   4,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`3s`),
 				Action:   5,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}, {
 				Card:     model.NewCardFromString(`4h`),
 				Action:   6,
-				PlayerID: `a`,
+				PlayerID: aliceID,
 			}, {
 				Card:     model.NewCardFromString(`4s`),
 				Action:   7,
-				PlayerID: `b`,
+				PlayerID: bobID,
 			}},
 		},
 		expResp: GetGameResponse{
 			ID: model.GameID(123456),
-			Players: []Player{{
-				ID:   `a`,
-				Name: `a`,
+			Teams: []GetGameResponseTeam{{
+				Color:        `blue`,
+				CurrentScore: 11,
+				LagScore:     10,
+				Players: []Player{{
+					ID:   aliceID,
+					Name: `alishia`,
+				}},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				Color:        `red`,
+				CurrentScore: 22,
+				LagScore:     20,
+				Players: []Player{{
+					ID:   bobID,
+					Name: `robert`,
+				}},
 			}},
-			PlayerColors: map[model.PlayerID]string{
-				`a`: `blue`,
-				`b`: `red`,
-			},
-			CurrentScores: map[string]int{
-				`blue`: 11,
-				`red`:  22,
-			},
-			LagScores: map[string]int{
-				`blue`: 10,
-				`red`:  20,
-			},
 			Phase: `CribCounting`,
 			BlockingPlayers: map[model.PlayerID]string{
-				`b`: `CountCrib`,
+				bobID: `CountCrib`,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]Card{
-				`a`: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
-				`b`: cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
+				aliceID: cardsFromStrings(`AH`, `2H`, `3H`, `4H`),
+				bobID:   cardsFromStrings(`AS`, `2S`, `3S`, `4S`),
 			},
 			Crib: cardsFromStrings(`5H`, `6H`, `5S`, `6S`),
 			CutCard: Card{
@@ -623,32 +660,38 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 				Name:  `5C`,
 			},
 			PeggedCards: []PeggedCard{
-				newPeggedCard(`AH`, `a`),
-				newPeggedCard(`AS`, `b`),
-				newPeggedCard(`2H`, `a`),
-				newPeggedCard(`2S`, `b`),
-				newPeggedCard(`3H`, `a`),
-				newPeggedCard(`3S`, `b`),
-				newPeggedCard(`4H`, `a`),
-				newPeggedCard(`4S`, `b`),
+				newPeggedCard(`AH`, aliceID),
+				newPeggedCard(`AS`, bobID),
+				newPeggedCard(`2H`, aliceID),
+				newPeggedCard(`2S`, bobID),
+				newPeggedCard(`3H`, aliceID),
+				newPeggedCard(`3S`, bobID),
+				newPeggedCard(`4H`, aliceID),
+				newPeggedCard(`4S`, bobID),
 			},
 		},
 	}, {
 		desc:   `player not in game`,
-		player: `c`,
+		player: `dne`,
 		expErr: true,
 		game: model.Game{
-			ID: model.GameID(123456),
+			ID: gID,
 			Players: []model.Player{{
-				ID:   `a`,
-				Name: `a`,
+				ID:   aliceID,
+				Name: `alicia`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Blue,
+				},
 			}, {
-				ID:   `b`,
-				Name: `b`,
+				ID:   bobID,
+				Name: `bobb`,
+				Games: map[model.GameID]model.PlayerColor{
+					gID: model.Red,
+				},
 			}},
 			PlayerColors: map[model.PlayerID]model.PlayerColor{
-				`a`: model.Blue,
-				`b`: model.Red,
+				aliceID: model.Blue,
+				bobID:   model.Red,
 			},
 			CurrentScores: map[model.PlayerColor]int{
 				model.Blue: 11,
@@ -660,12 +703,12 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			Phase: model.Pegging,
 			BlockingPlayers: map[model.PlayerID]model.Blocker{
-				`a`: model.PegCard,
+				aliceID: model.PegCard,
 			},
-			CurrentDealer: `b`,
+			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				`a`: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				`b`: modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
 			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
@@ -686,36 +729,42 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		}
 
 		mg2 := ConvertFromGetGameResponse(resp)
+		expGame := tc.game
+		for i := range expGame.Players {
+			expGame.Players[i].Games = nil
+		}
 		if mg2.Phase >= model.CribCounting {
 			// by the time the crib comes around, the network and the model
 			// games should be identical
-			assert.Equal(t, mg2, tc.game, tc.desc)
+			assert.Equal(t, mg2, expGame, tc.desc)
 			continue
 		}
-		assert.NotEqual(t, mg2, tc.game, tc.desc)
+		assert.NotEqual(t, mg2, expGame, tc.desc)
 
-		assert.Empty(t, mg2.Crib, tc.desc)
+		assert.Len(t, mg2.Crib, len(tc.game.Crib), tc.desc)
 		for pID, hand := range mg2.Hands {
 			if pID == tc.player {
-				assert.Equal(t, tc.game.Hands[pID], hand)
+				assert.Equal(t, expGame.Hands[pID], hand)
 			} else {
 				for _, c := range hand {
-					wasPegged := false
-					for _, pc := range tc.game.PeggedCards {
+					wasPegged := c == model.InvalidCard
+					for _, pc := range expGame.PeggedCards {
 						if pc.Card == c {
 							wasPegged = true
 							break
 						}
 					}
-					require.True(t, wasPegged, tc.desc)
+					assert.True(t, wasPegged, `expected revealed card (%v) to have been pegged, but wasn't. (%s)`, c, tc.desc)
 				}
 			}
 		}
 
 		// Make the hands field nil on both of the games. _Now_ they should be equal
 		mg2.Hands = nil
-		tc.game.Hands = nil
-		tc.game.Crib = nil
-		assert.Equal(t, tc.game, mg2, tc.desc)
+		expGame.Hands = nil
+		for i := range expGame.Crib {
+			expGame.Crib[i] = model.InvalidCard
+		}
+		assert.Equal(t, expGame, mg2, tc.desc)
 	}
 }

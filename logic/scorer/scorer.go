@@ -63,16 +63,16 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 // Assumes input is sorted and has len 5
 func scoreFifteens(ptVals []int) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
-		// all odd cards, no fifteens possible
+		// all even numbered cards => no fifteens possible
 		return none, 0
 	}
 
 	sum := ptVals[0] + ptVals[1] + ptVals[2] + ptVals[3] + ptVals[4]
-	if sum < 15 || sum > 46 {
-		return none, 0
-	} else if sum == 15 {
+	if sum == 15 {
 		// only one fifteen possible
 		return fifteen1, 2
+	} else if sum < 15 || sum > 46 {
+		return none, 0
 	}
 
 	var numFifteens uint
@@ -110,21 +110,8 @@ func howManyAddUpTo(goal int, ptVals []int) uint {
 
 // Assumes input is sorted and has len 5
 func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
-	max := values[4]
 	min := values[0]
-	diffOf5Cards := max - min
-
-	if diffOf5Cards == 1 {
-		// this hand is either
-		// A A A|B B (wlog cuz A A|B B B)
-		// A A A A|B (wlog cuz A|B B B B)
-		if values[1] == values[3] {
-			// it is a four-of-a-kind because the second and fourth cards are the same value
-			return quad, 12 /* 4 of a kind is worth 12 */
-		}
-		// this is a triple and a pair
-		return triplet | onepair, 8 /* 6 for a triple, 2 for a pair */
-	}
+	max := values[4]
 
 	// check quad for all hands is the same
 	if values[3] == min || values[1] == max {
@@ -133,7 +120,16 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 		return quad, 12 /* 4 of a kind is worth 12 */
 	}
 
-	if diffOf5Cards == 2 {
+	diffOf5Cards := max - min
+
+	if diffOf5Cards == 1 {
+		// this hand is either
+		// A A A|B B (wlog cuz A A|B B B)
+		// A A A A|B (wlog cuz A|B B B B)
+		// but we've already checked the quad
+		// therefore this is a triple and a pair
+		return triplet | onepair, 8 /* 6 for a triple, 2 for a pair */
+	} else if diffOf5Cards == 2 {
 		// check hands with triples
 		if values[1] == values[3] {
 			// we know that values[0] = values[1] - 1 and values[3] = values[4] + 1
@@ -206,22 +202,37 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 		return doubleRunOfFour, 10 /* double run of four */
 
 	case 4:
-		// check run of 5
-		if (values[0]+1 == values[1]) &&
-			(values[1]+1 == values[2]) &&
-			(values[2]+1 == values[3]) {
-			return run5, 5 /* run of 5 */
+		// So here's the options:
+		// Run of 5
+		// 1,2,3,4,5
+		// double run of three
+		// 1,2,x,3,5
+		// two pair
+		// 1,1,3,3,5
+		// 1,3,3,5,5
+		// pair + run of three
+		// 1,2,3,5,5
+		// 1,1,3,4,5
+		// pair alone (regardless of fifteens)
+		// 6,6,7,9,10
+		// 6,7,9,10,10
+		var numPairs, numIncs int
+		for i := 0; i < len(values)-1; i++ {
+			if iv, nv := values[i], values[i+1]; iv == nv {
+				numPairs++
+			} else if iv+1 == nv {
+				numIncs++
+			}
 		}
-
-		// check two pair, because it's easier than a double run of 3
-		if (values[0] == values[1] && values[2] == values[3]) ||
-			(values[1] == values[2] && values[3] == values[4]) ||
-			(values[0] == values[1] && values[3] == values[4]) {
-			// A,A,x,x,E
-			// A,x,x,E,E
-			// A,A,x,E,E
-
+		if numPairs == 2 {
 			return twopair, 4 /* two pair */
+		} else if numIncs == 4 {
+			return run5, 5 /* run of 5 */
+		} else if values[2] == max-2 && (values[3] == max || values[1] == min) {
+			return run3 | onepair, 5 /* run of three and a pair*/
+		} else if (values[2] == min+1 && values[3] != values[2]+1) ||
+			(values[2] == max-1 && values[1] != values[2]-1) {
+			return onepair, 2 /* a pair*/
 		}
 
 		return doubleRunOfThree, 8 /* double run of 3 */
@@ -229,13 +240,13 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 
 	// check run of 4 (and middle set run of 3)
 	if (values[1]+1 == values[2]) && (values[2]+1 == values[3]) {
-		if (values[0]+1 == values[1]) || (values[3]+1 == values[4]) {
+		if (min+1 == values[1]) || (values[3]+1 == max) {
 			// there's no way all 5 can be, so we just check for 4
 			return run4, 4
 		}
 		// since we were checking for 4, but we found the middle three to be a run,
 		// then we can check the two ends for a double run
-		if values[0] == values[1] || values[3] == values[4] {
+		if min == values[1] || values[3] == max {
 			return doubleRunOfThree, 8 /* double run of 3 */
 		}
 		return run3, 3 /* run of 3 */
@@ -264,8 +275,8 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 	var st scoreType
 	pts := 0
 
-	if ((values[0]+1 == values[1]) && (values[1]+1 == values[2])) ||
-		((values[2]+1 == values[3]) && (values[3]+1 == values[4])) {
+	if ((min+1 == values[1]) && (values[1]+1 == values[2])) ||
+		((values[2]+1 == values[3]) && (values[3]+1 == max)) {
 		st = st | run3 /* run of 3 (and maybe a pair) */
 		pts += 3
 	}

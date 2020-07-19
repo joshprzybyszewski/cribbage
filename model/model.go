@@ -26,9 +26,9 @@ func (s Suit) String() string {
 }
 
 type Card struct {
-	Suit Suit `protobuf:"varint,1,req,name=suit,proto3" json:"s" bson:"s"` //nolint:lll
+	Suit Suit `json:"s" bson:"s"`
 	// Ace is 1, King is 13
-	Value int `protobuf:"varint,2,req,name=value,proto3" json:"v" bson:"v"` //nolint:lll
+	Value int `json:"v" bson:"v"`
 }
 
 const NumCardsPerDeck = 52
@@ -152,32 +152,32 @@ type PlayerAction struct {
 	ID        PlayerID    `json:"pID" bson:"pID"`
 	Overcomes Blocker     `json:"o" bson:"o"`
 	Action    interface{} `json:"a" bson:"a"`
-	TimeStamp time.Time   `json:"timestamp" bson:"timestamp"`
+	TimeStamp time.Time   `json:"timestamp,omitempty" bson:"timestamp"`
 }
 
 type DealAction struct {
-	NumShuffles int `protobuf:"varint,1,req,name=numShuffles,proto3" json:"ns" bson:"ns"` //nolint:lll
+	NumShuffles int `json:"ns" bson:"ns"`
 }
 
 type BuildCribAction struct {
-	Cards []Card `protobuf:"Card,rep,1,req,name=cards,proto3" json:"cs" bson:"cs"` //nolint:lll
+	Cards []Card `json:"cs" bson:"cs"`
 }
 
 type CutDeckAction struct {
-	Percentage float64 `protobuf:"varint,1,req,name=percentage,proto3" json:"p" bson:"p"` //nolint:lll
+	Percentage float64 `json:"p" bson:"p"`
 }
 
 type PegAction struct {
-	Card  Card `protobuf:"Card,1,req,name=card,proto3" json:"c" bson:"c"`    //nolint:lll
-	SayGo bool `protobuf:"bool,2,req,name=sayGo,proto3" json:"sg" bson:"sg"` //nolint:lll
+	Card  Card `json:"c" bson:"c"`
+	SayGo bool `json:"sg" bson:"sg"`
 }
 
 type CountHandAction struct {
-	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
+	Pts int `json:"pts" bson:"pts"`
 }
 
 type CountCribAction struct {
-	Pts int `protobuf:"varint,1,req,name=pts,proto3" json:"pts" bson:"pts"` //nolint:lll
+	Pts int `json:"pts" bson:"pts"`
 }
 
 type Phase int

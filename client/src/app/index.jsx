@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Switch, Route } from 'react-router-dom';
 
 import Account from './containers/Account';
+import Game from './containers/Game';
 import Home from './containers/Home';
 import Layout from './containers/Layout';
 import Login from './containers/Login';
@@ -22,6 +23,7 @@ export const App = () => {
           <PrivateRoute exact path='/home' component={Home} />
           <PrivateRoute exact path='/newgame' component={NewGameForm} />
           <PrivateRoute exact path='/account' component={Account} />
+          <PrivateRoute exact path='/game' component={Game} />
         </Switch>
       </Layout>
     </BrowserRouter>
