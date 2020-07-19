@@ -6,17 +6,16 @@ import GridList from '@material-ui/core/GridList';
 import PlayingCard from './PlayingCard';
 
 const CribHand = props => {
-  if (!props.cards) {
-    return null;
-  }
   return (
-    <Grid item container direction={'row'} justify='center' spacing={1}>
-      <GridList>
-        {props.cards.map((card, index) => (
-          <PlayingCard key={`cribcard${index}`} card={card} />
-        ))}
-      </GridList>
-    </Grid>
+    !props.cards || (
+      <Grid item container direction={'row'} justify='center' spacing={1}>
+        <GridList>
+          {props.cards.map((card, index) => (
+            <PlayingCard key={`cribcard${index}`} card={card} />
+          ))}
+        </GridList>
+      </Grid>
+    )
   );
 };
 

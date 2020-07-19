@@ -15,16 +15,14 @@ const CutAction = props => {
 
   const dispatch = useDispatch();
 
-  function perc(value) {
-    return `${value}%`;
-  }
-
   return (
     <div>
       <Slider
         disabled={!props.isBlocking}
         orientation='vertical'
-        getAriaValueText={perc}
+        getAriaValueText={value => {
+          return `${value}%`;
+        }}
         defaultValue={50}
         aria-labelledby='vertical-slider'
         onChange={event => {
