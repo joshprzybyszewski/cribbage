@@ -1,10 +1,11 @@
-import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 import axios from 'axios';
-import { selectCurrentUser } from './selectors';
-import { actions as authActions } from './slice';
+import { all, put, select, takeLatest, call } from 'redux-saga/effects';
+
 import { actions as alertActions } from '../app/containers/Alert/slice';
 import { alertTypes } from '../app/containers/Alert/types';
 import { actions as homeActions } from '../app/containers/Home/slice';
+import { selectCurrentUser } from './selectors';
+import { actions as authActions } from './slice';
 
 export function* handleLogout({ payload: { history } }) {
   yield call(history.push, '/');

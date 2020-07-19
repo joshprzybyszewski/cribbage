@@ -4,8 +4,8 @@ import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import blue from '@material-ui/core/colors/blue';
-import grey from '@material-ui/core/colors/grey';
 import green from '@material-ui/core/colors/green';
+import grey from '@material-ui/core/colors/grey';
 import red from '@material-ui/core/colors/red';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
@@ -19,8 +19,8 @@ import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 
-import { selectCurrentUser } from '../../../auth/selectors';
 import { authSaga } from '../../../auth/saga';
+import { selectCurrentUser } from '../../../auth/selectors';
 import {
   sliceKey as authSliceKey,
   reducer as authReducer,
@@ -33,6 +33,7 @@ import {
 } from '../Game/slice';
 import { selectActiveGames } from './selectors';
 import { homeSaga } from './saga';
+import { selectActiveGames } from './selectors';
 import {
   sliceKey as homeSliceKey,
   reducer as homeReducer,
