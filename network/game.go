@@ -28,13 +28,18 @@ func ConvertToCreateGameResponse(g model.Game) CreateGameResponse {
 	}
 }
 
+type GetGameResponseTeam struct {
+	Players      []Player `json:"players"`
+	Color        string   `json:"color,omitempty"`
+	CurrentScore int      `json:"current_score"`
+	LagScore     int      `json:"lag_score"`
+}
+
 type GetGameResponse struct {
 	ID              model.GameID              `json:"id"`
-	Players         []Player                  `json:"players"`
-	PlayerColors    map[model.PlayerID]string `json:"player_colors,omitempty"`
-	CurrentScores   map[string]int            `json:"current_scores"`
-	LagScores       map[string]int            `json:"lag_scores"`
+	Teams           []GetGameResponseTeam     `json:"teams"`
 	Phase           string                    `json:"phase"`
+	CurrentPeg      int                       `json:"current_peg"`
 	BlockingPlayers map[model.PlayerID]string `json:"blocking_players,omitempty"`
 	CurrentDealer   model.PlayerID            `json:"current_dealer"`
 	Hands           map[model.PlayerID][]Card `json:"hands,omitempty"`
@@ -44,19 +49,26 @@ type GetGameResponse struct {
 }
 
 func ConvertToGetGameResponse(g model.Game) GetGameResponse {
-	currentScores, lagScores := convertToScores(g.CurrentScores, g.LagScores)
-	return GetGameResponse{
+	ggr := GetGameResponse{
 		ID:              g.ID,
-		Players:         convertToPlayers(g.Players),
-		PlayerColors:    convertToColors(g.PlayerColors),
-		CurrentScores:   currentScores,
-		LagScores:       lagScores,
+		Teams:           convertToTeams(g),
 		Phase:           convertToPhase(g.Phase),
 		BlockingPlayers: convertToBlockingPlayers(g.BlockingPlayers),
 		CurrentDealer:   g.CurrentDealer,
+		CurrentPeg:      g.CurrentPeg(),
 		CutCard:         convertToCard(g.CutCard),
 		PeggedCards:     convertToPeggedCards(g.PeggedCards),
 	}
+
+	if g.Phase >= model.CribCounting {
+		ggr.Crib = convertToCards(g.Crib)
+	} else {
+		for len(ggr.Crib) < len(g.Crib) {
+			ggr.Crib = append(ggr.Crib, invalidCard)
+		}
+	}
+
+	return ggr
 }
 
 func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGameResponse, error) {
@@ -72,18 +84,17 @@ func ConvertToGetGameResponseForPlayer(g model.Game, pID model.PlayerID) (GetGam
 	}
 	resp := ConvertToGetGameResponse(g)
 	resp.Hands = convertToRevealedHands(g, pID)
-	if g.Phase >= model.CribCounting {
-		resp.Crib = convertToCards(g.Crib)
-	}
+
 	return resp, nil
 }
 
 func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
-	currentScores, lagScores := convertFromScores(g.CurrentScores, g.LagScores)
+	currentScores, lagScores := convertFromScores(g.Teams)
+	ps, pcs := convertTeamsToPlayersAndPlayerColors(g.Teams)
 	return model.Game{
 		ID:              g.ID,
-		Players:         convertFromPlayers(g.Players),
-		PlayerColors:    convertFromColors(g.PlayerColors),
+		Players:         ps,
+		PlayerColors:    pcs,
 		CurrentScores:   currentScores,
 		LagScores:       lagScores,
 		Phase:           convertFromPhase(g.Phase),
@@ -98,9 +109,9 @@ func ConvertFromGetGameResponse(g GetGameResponse) model.Game {
 
 func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID][]Card {
 	rev := make(map[model.PlayerID][]Card, len(g.Players))
-	for pID := range g.Hands {
-		// we don't know how many cards will be revealed, but we know it's a max of 4
-		rev[pID] = make([]Card, 0, 4)
+	for pID, h := range g.Hands {
+		// we don't know how many cards will be revealed, but we know how may are in their hand
+		rev[pID] = make([]Card, 0, len(h))
 	}
 	for _, c := range g.PeggedCards {
 		if c.PlayerID == me {
@@ -109,6 +120,12 @@ func convertToRevealedHands(g model.Game, me model.PlayerID) map[model.PlayerID]
 		rev[c.PlayerID] = append(rev[c.PlayerID], convertToCard(c.Card))
 	}
 	rev[me] = convertToCards(g.Hands[me])
+
+	for pID := range rev {
+		for len(rev[pID]) < len(g.Hands[pID]) {
+			rev[pID] = append(rev[pID], invalidCard)
+		}
+	}
 	return rev
 }
 

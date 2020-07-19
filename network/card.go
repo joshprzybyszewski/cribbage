@@ -2,6 +2,14 @@ package network
 
 import "github.com/joshprzybyszewski/cribbage/model"
 
+var (
+	invalidCard Card = Card{
+		Suit:  ``,
+		Value: -1,
+		Name:  `unknown`,
+	}
+)
+
 type Card struct {
 	Suit  string `json:"suit"`
 	Value int    `json:"value"`

@@ -34,7 +34,7 @@ goclient: ## Runs the old golang survey client to play cribbage
 
 tailwind: client/src/styles.css
 
-client/src/styles.css: client/src/tailwind.css
+client/src/styles.css: client/src/tailwind.css client/tailwind.config.js
 	cd client/ && npx tailwindcss build src/tailwind.css -o src/styles.css
 
 .PHONY: client
