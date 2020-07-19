@@ -337,7 +337,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 	}, {
 		desc:   `should only return the cards which have been revealed to player b`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
 			ID: gID,
@@ -429,7 +429,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 	}, {
 		desc:   `should return both hands but no crib after counting`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
 			ID: gID,
@@ -551,7 +551,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 	}, {
 		desc:   `should return both hands and crib after counting crib`,
-		player: `b`,
+		player: bobID,
 		expErr: false,
 		game: model.Game{
 			ID: gID,
@@ -672,7 +672,7 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		},
 	}, {
 		desc:   `player not in game`,
-		player: `c`,
+		player: `dne`,
 		expErr: true,
 		game: model.Game{
 			ID: gID,
@@ -729,22 +729,26 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 		}
 
 		mg2 := ConvertFromGetGameResponse(resp)
+		expGame := tc.game
+		for i := range expGame.Players {
+			expGame.Players[i].Games = nil
+		}
 		if mg2.Phase >= model.CribCounting {
 			// by the time the crib comes around, the network and the model
 			// games should be identical
-			assert.Equal(t, mg2, tc.game, tc.desc)
+			assert.Equal(t, mg2, expGame, tc.desc)
 			continue
 		}
-		assert.NotEqual(t, mg2, tc.game, tc.desc)
+		assert.NotEqual(t, mg2, expGame, tc.desc)
 
 		assert.Len(t, mg2.Crib, len(tc.game.Crib), tc.desc)
 		for pID, hand := range mg2.Hands {
 			if pID == tc.player {
-				assert.Equal(t, tc.game.Hands[pID], hand)
+				assert.Equal(t, expGame.Hands[pID], hand)
 			} else {
 				for _, c := range hand {
 					wasPegged := c == model.InvalidCard
-					for _, pc := range tc.game.PeggedCards {
+					for _, pc := range expGame.PeggedCards {
 						if pc.Card == c {
 							wasPegged = true
 							break
@@ -757,10 +761,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 
 		// Make the hands field nil on both of the games. _Now_ they should be equal
 		mg2.Hands = nil
-		tc.game.Hands = nil
-		for i := range tc.game.Crib {
-			tc.game.Crib[i] = model.InvalidCard
+		expGame.Hands = nil
+		for i := range expGame.Crib {
+			expGame.Crib[i] = model.InvalidCard
 		}
-		assert.Equal(t, tc.game, mg2, tc.desc)
+		assert.Equal(t, expGame, mg2, tc.desc)
 	}
 }
