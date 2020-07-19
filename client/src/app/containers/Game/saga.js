@@ -20,7 +20,6 @@ export function* handleGoToGame({ payload: { id, history } }) {
 
   const currentUser = yield select(selectCurrentUser);
 
-  // select the id being used to login from the state
   try {
     const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
     yield put(gameActions.gameRetrieved({ data: res.data }));
@@ -59,7 +58,9 @@ const cardToGolangCard = c => {
   };
 };
 
-const getPlayerActionJSON = (myID, gID, phase, currentAction) => {
+// getPlayerAction returns the JSON struct which the server knows
+// how to interpret
+const getPlayerAction = (myID, gID, phase, currentAction) => {
   let overcomesMap = {
     deal: 0,
     crib: 1,
@@ -121,9 +122,8 @@ function* handleGenericAction(phase) {
     // it may be wise to make it return the new game state?
     yield axios.post(
       '/action',
-      getPlayerActionJSON(currentUser.id, id, phase, currentAction),
+      getPlayerAction(currentUser.id, id, phase, currentAction),
     );
-    // TODO wait a moment and re-fetch?
     yield put(gameActions.refreshGame(id));
   } catch (err) {
     yield put(

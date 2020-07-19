@@ -18,7 +18,7 @@ import CribHand from './CribHand';
 import ScoreBoard from './ScoreBoard';
 
 const showCutCard = phase => {
-  return phase !== 'Deal' && phase !== 'BuildCrib' && phase !== 'Cut';
+  return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
 };
 
 const handForPlayer = (game, myID, position) => {
@@ -73,14 +73,7 @@ const Game = () => {
   };
 
   return (
-    <Grid
-      container
-      xl
-      spacing={1}
-      className='bg-green-200'
-      direction='row'
-      justify='space-between'
-    >
+    <Grid container xl spacing={1} direction='row' justify='space-between'>
       <Grid
         item
         container
@@ -88,7 +81,6 @@ const Game = () => {
         spacing={2}
         direction='column'
         align-content='space-between'
-        className='bg-green-300'
       >
         <Grid item xs sm container>
           <PlayerHand
