@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
@@ -16,12 +16,24 @@ import ShuffleIcon from '@material-ui/icons/Shuffle';
 
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
+import { selectCurrentAction, selectCurrentGame } from './selectors';
+
+const expNumCardsToCribForGame = game => {
+  if (game.teams.length === 3 || game.teams[0].players.length === 2) {
+    return 1;
+  }
+
+  return 2;
+};
 
 const ActionBox = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
   const dispatch = useDispatch();
+
+  const currentAction = useSelector(selectCurrentAction);
+  const activeGame = useSelector(selectCurrentGame);
 
   function perc(value) {
     return `${value}%`;
@@ -43,7 +55,7 @@ const ActionBox = props => {
             Shuffle
           </Button>
           <Button
-            disabled={!props.isBlocking}
+            disabled={!props.isBlocking || currentAction.numShuffles <= 0}
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}
@@ -56,7 +68,11 @@ const ActionBox = props => {
         </Grid>
       ) : props.phase === 'BuildCrib' ? (
         <Button
-          disabled={!props.isBlocking}
+          disabled={
+            !props.isBlocking ||
+            currentAction.selectedCards.length !==
+              expNumCardsToCribForGame(activeGame)
+          }
           variant='contained'
           color='primary'
           endIcon={<SendIcon />}
@@ -107,7 +123,9 @@ const ActionBox = props => {
             Say Go
           </Button>
           <Button
-            disabled={!props.isBlocking}
+            disabled={
+              !props.isBlocking || currentAction.selectedCards.length !== 1
+            }
             color='primary'
             endIcon={<SendIcon />}
             onClick={() => {
@@ -131,7 +149,7 @@ const ActionBox = props => {
             />
           </FormControl>
           <Button
-            disabled={!props.isBlocking}
+            disabled={!props.isBlocking || currentAction.points < 0}
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}
@@ -155,7 +173,7 @@ const ActionBox = props => {
             />
           </FormControl>
           <Button
-            disabled={!props.isBlocking}
+            disabled={!props.isBlocking || currentAction.points < 0}
             variant='contained'
             color='primary'
             endIcon={<SendIcon />}

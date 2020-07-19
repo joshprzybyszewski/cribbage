@@ -96,6 +96,16 @@ func TestPointsStandardFunThings(t *testing.T) {
 		leadCard:  `9C`,
 		hand:      `1H,5D,7D,7S`,
 		expPoints: 6,
+	}, {
+		desc:      `another hand to break it`,
+		leadCard:  `7H`,
+		hand:      `6D,6S,10H,9C`,
+		expPoints: 6,
+	}, {
+		desc:      `actual double run of three with a fifteen`,
+		leadCard:  `7H`,
+		hand:      `6D,6S,10H,8C`,
+		expPoints: 10,
 	}}
 
 	for _, tc := range testCases {

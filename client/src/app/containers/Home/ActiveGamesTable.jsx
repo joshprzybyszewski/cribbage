@@ -31,7 +31,6 @@ import {
   reducer as gameReducer,
   actions as gameActions,
 } from '../Game/slice';
-import { selectActiveGames } from './selectors';
 import { homeSaga } from './saga';
 import { selectActiveGames } from './selectors';
 import {

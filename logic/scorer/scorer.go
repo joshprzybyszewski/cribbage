@@ -213,6 +213,9 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 		// pair + run of three
 		// 1,2,3,5,5
 		// 1,1,3,4,5
+		// pair alone (regardless of fifteens)
+		// 6,6,7,9,10
+		// 6,7,9,10,10
 		var numPairs, numIncs int
 		for i := 0; i < len(values)-1; i++ {
 			if iv, nv := values[i], values[i+1]; iv == nv {
@@ -227,6 +230,9 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 			return run5, 5 /* run of 5 */
 		} else if values[2] == max-2 && (values[3] == max || values[1] == min) {
 			return run3 | onepair, 5 /* run of three and a pair*/
+		} else if (values[2] == min+1 && values[3] != values[2]+1) ||
+			(values[2] == max-1 && values[1] != values[2]-1) {
+			return onepair, 2 /* a pair*/
 		}
 
 		return doubleRunOfThree, 8 /* double run of 3 */
