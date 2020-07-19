@@ -2,6 +2,7 @@ import axios from 'axios';
 import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 
 import { actions as alertActions } from '../Alert/slice';
+import { actions as gameActions } from '../Game/slice';
 import { alertTypes } from '../Alert/types';
 import { selectCurrentUser } from '../../../auth/selectors';
 import { actions as newGameActions } from './slice';
@@ -22,7 +23,8 @@ export function* handleCreateGame({
       playerIDs: playerIDs,
     });
     const id = res.data.id;
-    yield call(history.push, '/home');
+    yield put(gameActions.goToGame(id, history));
+    // yield call(history.push, '/home');
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }
