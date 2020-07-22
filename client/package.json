@@ -24,8 +24,7 @@
   },
   "scripts": {
     "build": "npx tailwindcss build src/tailwind.css -o src/styles.css && react-scripts build",
-    "client": "react-scripts start",
-    "lint": "eslint ."
+    "client": "react-scripts start"
   },
   "eslintConfig": {
     "extends": "react-app"
