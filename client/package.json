@@ -44,7 +44,8 @@
   "devDependencies": {
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-react": "^7.20.3"
+    "eslint-plugin-react": "^7.20.3",
+    "prettier": "^2.0.5"
   },
   "proxy": "http://localhost:8080"
 }
