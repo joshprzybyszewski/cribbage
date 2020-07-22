@@ -2,8 +2,7 @@ import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
-
-import PlayingCard from './PlayingCard';
+import PlayingCard from 'app/containers/Game/PlayingCard';
 
 const showOpponentsHand = phase => {
   return phase !== 'Deal';

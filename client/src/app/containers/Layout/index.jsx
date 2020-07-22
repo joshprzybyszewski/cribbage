@@ -5,17 +5,17 @@ import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import Navbar from 'app/components/Navbar';
+import Alert from 'app/containers/Alert';
+// TODO fix this - should only have to import drawer?
+import LoggedInDrawer from 'app/containers/LeftDrawer/LoggedInDrawer';
+import LoggedOutDrawer from 'app/containers/LeftDrawer/LoggedOutDrawer';
+import { selectLoggedIn } from 'auth/selectors';
+import { sliceKey, reducer } from 'auth/slice';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
-
-import { selectLoggedIn } from '../../../auth/selectors';
-import { sliceKey, reducer } from '../../../auth/slice';
-import Navbar from '../../components/Navbar';
-import Alert from '../Alert';
-import LoggedInDrawer from '../LeftDrawer/LoggedInDrawer';
-import LoggedOutDrawer from '../LeftDrawer/LoggedOutDrawer';
 
 const drawerWidth = 240;
 

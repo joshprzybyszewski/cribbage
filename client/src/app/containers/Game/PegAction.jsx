@@ -1,14 +1,13 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import SendIcon from '@material-ui/icons/Send';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction, selectCurrentGame } from './selectors';
+import { gameSaga } from 'app/containers/Game/saga';
+import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const PegAction = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });

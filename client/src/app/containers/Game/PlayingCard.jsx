@@ -1,17 +1,14 @@
 import React from 'react';
+
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import { gameSaga } from 'app/containers/Game/saga';
+import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { makeStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction } from './selectors';
 
 const useStyles = makeStyles({
   root: {
@@ -75,8 +72,8 @@ const PlayingCard = props => {
     );
   }
 
-  let chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
-  let toggleChosen = () => {
+  const chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
+  const toggleChosen = () => {
     if (!props.disabled) {
       dispatch(actions.selectCard(props.card));
     }

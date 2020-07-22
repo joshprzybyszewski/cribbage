@@ -1,13 +1,15 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
 import SendIcon from '@material-ui/icons/Send';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction, selectCurrentGame } from './selectors';
+import { gameSaga } from 'app/containers/Game/saga';
+import {
+  selectCurrentAction,
+  selectCurrentGame,
+} from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const expNumCardsToCribForGame = game => {
   if (game.teams.length === 3 || game.teams[0].players.length === 2) {

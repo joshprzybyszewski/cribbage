@@ -1,16 +1,15 @@
 import React from 'react';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Grid from '@material-ui/core/Grid';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer } from './slice';
-import DealAction from './DealAction';
-import CribAction from './CribAction';
-import CutAction from './CutAction';
-import PegAction from './PegAction';
-import CountHandAction from './CountHandAction';
-import CountCribAction from './CountCribAction';
+import CountCribAction from 'app/containers/Game/CountCribAction';
+import CountHandAction from 'app/containers/Game/CountHandAction';
+import CribAction from 'app/containers/Game/CribAction';
+import CutAction from 'app/containers/Game/CutAction';
+import DealAction from 'app/containers/Game/DealAction';
+import PegAction from 'app/containers/Game/PegAction';
+import { gameSaga } from 'app/containers/Game/saga';
+import { sliceKey, reducer } from 'app/containers/Game/slice';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const ActionBox = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });

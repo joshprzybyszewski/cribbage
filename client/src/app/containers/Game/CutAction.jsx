@@ -1,13 +1,12 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
-import CallSplitIcon from '@material-ui/icons/CallSplit';
 import Slider from '@material-ui/core/Slider';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
+import CallSplitIcon from '@material-ui/icons/CallSplit';
+import { gameSaga } from 'app/containers/Game/saga';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const CutAction = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });

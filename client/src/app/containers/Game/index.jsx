@@ -1,48 +1,47 @@
 import React from 'react';
+
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import ActionBox from 'app/containers/Game/ActionBox';
+import CribHand from 'app/containers/Game/CribHand';
+import PlayerHand from 'app/containers/Game/PlayerHand';
+import PlayingCard from 'app/containers/Game/PlayingCard';
+import { gameSaga } from 'app/containers/Game/saga';
+import ScoreBoard from 'app/containers/Game/ScoreBoard';
+import { selectCurrentGame } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import Grid from '@material-ui/core/Grid';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import IconButton from '@material-ui/core/IconButton';
-
-import { selectCurrentUser } from '../../../auth/selectors';
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentGame } from './selectors';
-import ActionBox from './ActionBox';
-import PlayingCard from './PlayingCard';
-import PlayerHand from './PlayerHand';
-import CribHand from './CribHand';
-import ScoreBoard from './ScoreBoard';
 
 const showCutCard = phase => {
   return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
 };
 
 const handForPlayer = (game, myID, position) => {
-  let isFourPlayer =
+  const isFourPlayer =
     game.teams.length === 2 && game.teams[0].players.length === 2;
   if (position === 'across') {
     if (game.teams.length === 3) {
-      let secondPlayerID = game.teams.filter(
+      const secondPlayerID = game.teams.filter(
         t => !t.players.some(p => p.id === myID),
       )[1].players[0].id;
       return game.hands[secondPlayerID];
     } else if (isFourPlayer) {
-      let partnerID = game.teams
+      const partnerID = game.teams
         .filter(t => t.players.some(p => p.id === myID))[0]
         .players.filter(p => p.id !== myID)[0].id;
       return game.hands[partnerID];
     }
-    let opponentID = game.teams.filter(
+    const opponentID = game.teams.filter(
       t => !t.players.some(p => p.id === myID),
     )[0].players[0].id;
     return game.hands[opponentID];
   } else if (position === 'right') {
     if (isFourPlayer) {
-      let rightID = game.teams
+      const rightID = game.teams
         .filter(t => t.players.some(p => p.id !== myID))[0]
         .players.filter(p => p.id !== myID)[1].id;
       return game.hands[rightID];
@@ -53,7 +52,7 @@ const handForPlayer = (game, myID, position) => {
     return null;
   }
   // position is left
-  let leftID = game.teams
+  const leftID = game.teams
     .filter(t => t.players.some(p => p.id !== myID))[0]
     .players.filter(p => p.id !== myID)[0].id;
   return game.hands[leftID];

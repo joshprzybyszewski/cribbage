@@ -9,12 +9,11 @@ import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
+import { authSaga } from 'auth/saga';
+import { sliceKey, reducer, actions } from 'auth/slice';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { authSaga } from '../../../auth/saga';
-import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const LoggedInDrawer = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
