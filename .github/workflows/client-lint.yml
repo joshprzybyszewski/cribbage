@@ -12,10 +12,10 @@ jobs:
     env:
       working-directory: client
     steps:
-      - name: CD to client
-        run: cd client
       - name: Check out Git repository
         uses: actions/checkout@v2
+      - name: CD to client
+        run: cd client
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
