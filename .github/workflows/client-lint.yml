@@ -20,5 +20,5 @@ jobs:
           node-version: '13'
       - name: Install node modules
         run: npm install
-      - name: Lint
+      - name: Lint client
         run: npx eslint src --max-warnings 0 --ext .js,.jsx
