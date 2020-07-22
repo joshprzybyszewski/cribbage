@@ -1,8 +1,7 @@
 name: client-lint
-#
-# defaults:
-#   run:
-#     working-directory: ./client
+defaults:
+  run:
+    working-directory: ./client
 on:
   push:
     tags:
@@ -16,10 +15,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: hallee/eslint-action@1.0.3
-        # GITHUB_TOKEN in forked repositories is read-only
-        # https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
-        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+      - uses: actions/setup-node@v2-beta
         with:
-          repo-token: ${{secrets.GITHUB_TOKEN}}
-          source-root: client/src
+          node-version: '13'
+      - name: Install node modules
+        run: npm install
+      - name: Lint
+        run: npx eslint src
