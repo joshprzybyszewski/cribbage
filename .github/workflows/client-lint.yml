@@ -21,4 +21,4 @@ jobs:
       - name: Install node modules
         run: npm install
       - name: Lint
-        run: npx eslint src
+        run: npx eslint src --max-warnings 0
