@@ -3,7 +3,7 @@
     "browser": true,
     "es2020": true
   },
-  "extends": ["plugin:react/recommended", "google"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
