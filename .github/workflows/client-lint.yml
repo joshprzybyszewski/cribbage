@@ -9,16 +9,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      working-directory: client
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
+        working-directory: ${{env.working-directory}}
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
           node-version: 13
+        working-directory: ${{env.working-directory}}
       # ESLint and Prettier must be in `package.json`
       - name: Install Node.js dependencies
         run: npm install
+        working-directory: ${{env.working-directory}}
       - name: Run linters
         uses: samuelmeuli/lint-action@v1
         with:
@@ -26,3 +31,4 @@ jobs:
           # Enable linters
           eslint: true
           prettier: true
+        working-directory: ${{env.working-directory}}
