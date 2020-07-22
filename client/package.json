@@ -43,7 +43,6 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^6.6.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-react": "^7.20.3",
     "prettier": "^2.0.5"
