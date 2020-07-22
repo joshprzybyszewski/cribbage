@@ -38,5 +38,10 @@
       }
     ],
     "react/prop-types": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }
