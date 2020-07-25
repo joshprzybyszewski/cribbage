@@ -12,14 +12,8 @@ import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
 import { selectCurrentGame } from './selectors';
 import ActionBox from './ActionBox';
-import PlayingCard from './PlayingCard';
 import PlayerHand from './PlayerHand';
-import CribHand from './CribHand';
-import ScoreBoard from './ScoreBoard';
-
-const showCutCard = phase => {
-  return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
-};
+import RightSide from './RightSide';
 
 const handForPlayer = (game, myID, position) => {
   let isFourPlayer =
@@ -62,15 +56,8 @@ const handForPlayer = (game, myID, position) => {
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
-  const history = useHistory();
-  const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
-
-  // event handlers
-  const onRefreshCurrentGame = id => {
-    dispatch(actions.refreshGame(id, history));
-  };
 
   return (
     <Grid container xl spacing={1} direction='row' justify='space-between'>
@@ -128,39 +115,7 @@ const Game = () => {
           />
         </Grid>
       </Grid>
-      <Grid item container xs direction='column' spacing={1}>
-        <Grid item>
-          <IconButton
-            aria-label='refresh'
-            onClick={() => onRefreshCurrentGame(activeGame.id)}
-          >
-            <RefreshIcon />
-          </IconButton>
-          <ScoreBoard
-            teams={activeGame.teams}
-            current_dealer={activeGame.current_dealer}
-          />
-        </Grid>
-        <Grid item>
-          {[
-            showCutCard(activeGame.phase) ? (
-              <PlayingCard key='cutCard' card={activeGame.cut_card} />
-            ) : (
-              <div key='deckTODOdiv'>
-                {'TODO put an image of the deck here'}
-              </div>
-            ),
-            <CribHand cards={activeGame.crib} />,
-            <div key='currentPeg'>
-              {activeGame.phase === 'Pegging'
-                ? `Current Peg: ${
-                    activeGame.current_peg ? activeGame.current_peg : 0
-                  }`
-                : ''}
-            </div>,
-          ]}
-        </Grid>
-      </Grid>
+      <RightSide key='rightSidePanel' />
     </Grid>
   );
 };
