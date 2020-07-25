@@ -38,23 +38,26 @@ const NewGameForm = () => {
   useInjectSaga({ key: sliceKey, saga: createGameSaga });
   const history = useHistory();
   const dispatch = useDispatch();
-  const [opp1ID, setOpp1ID] = useState('');
-  const [opp2ID, setOpp2ID] = useState('');
-  const [teammateID, setTeammateID] = useState('');
 
   // event handlers
+  const [formData, setFormData] = useState({
+    id1: '',
+    id2: '',
+    teammateID: '',
+  });
+  const onFormDataChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   const onSubmitLoginForm = event => {
     event.preventDefault();
-    dispatch(actions.createGame(opp1ID, opp2ID, teammateID, history));
-  };
-  const onOpp1IDChange = event => {
-    setOpp1ID(event.target.value);
-  };
-  const onOpp2IDChange = event => {
-    setOpp2ID(event.target.value);
-  };
-  const onTeammateIDChange = event => {
-    setTeammateID(event.target.value);
+    dispatch(
+      actions.createGame(
+        formData.id1,
+        formData.id2,
+        formData.teammateID,
+        history,
+      ),
+    );
   };
 
   const classes = useStyles();
@@ -75,7 +78,7 @@ const NewGameForm = () => {
             label='Opponent 1'
             name='id1'
             autoFocus
-            onChange={onOpp1IDChange}
+            onChange={onFormDataChange}
           />
           <TextField
             disabled
@@ -85,7 +88,7 @@ const NewGameForm = () => {
             label='Opponent 2'
             name='id2'
             autoFocus
-            onChange={onOpp2IDChange}
+            onChange={onFormDataChange}
           />
           <TextField
             disabled
@@ -95,7 +98,7 @@ const NewGameForm = () => {
             label='Teammate'
             name='teammateID'
             autoFocus
-            onChange={onTeammateIDChange}
+            onChange={onFormDataChange}
           />
           <Button
             type='submit'
@@ -103,7 +106,7 @@ const NewGameForm = () => {
             variant='contained'
             color='primary'
             className={classes.submit}
-            disabled={opp1ID.length === 0}
+            disabled={formData.id1.length === 0}
           >
             Challenge
           </Button>
