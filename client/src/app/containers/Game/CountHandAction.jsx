@@ -11,7 +11,7 @@ import SendIcon from '@material-ui/icons/Send';
 
 import { gameSaga } from './saga';
 import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction, selectCurrentGame } from './selectors';
+import { selectCurrentAction } from './selectors';
 
 const CountHandAction = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
