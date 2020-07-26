@@ -50,7 +50,9 @@ const gameSlice = createSlice({
     refreshGame: {
       reducer: (state, action) => {
         if (state.currentGameID !== action.payload.id) {
-          throw `bad game id: expected "${state.currentGameID}", got "${action.payload.id}"`;
+          throw Error(
+            `bad game id: expected "${state.currentGameID}", got "${action.payload.id}"`,
+          );
         }
       },
       prepare: gameID => {
