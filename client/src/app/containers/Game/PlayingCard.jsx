@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { red, grey } from '@material-ui/core/colors';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import Typography from '@material-ui/core/Typography';
 
 import { gameSaga } from './saga';
@@ -16,8 +17,16 @@ const useStyles = makeStyles({
   root: {
     width: 96,
     height: 120,
+    display: 'flex',
+    flex: '1 0 auto',
+  },
+  content: {
+    flex: '1 0 auto',
   },
   unknown: {
+    backgroundColor: grey[600],
+  },
+  used: {
     backgroundColor: grey[400],
   },
   value: {
@@ -47,6 +56,13 @@ const PlayingCard = props => {
 
   const useRed = !['Spades', 'Clubs'].includes(props.card.suit);
 
+  const chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
+  const toggleChosen = () => {
+    if (!props.disabled) {
+      dispatch(actions.selectCard(props.card));
+    }
+  };
+
   if (!props.experimental) {
     if (props.card.name === 'unknown') {
       return <Card className={`${classes.root} ${classes.unknown}`}></Card>;
@@ -63,26 +79,34 @@ const PlayingCard = props => {
       13: 'K',
       1: 'A',
     };
+    let value = valueStrings[props.card.value]
+      ? valueStrings[props.card.value]
+      : props.card.value;
+    value += suitEmojis[props.card.suit];
     return (
-      <Card className={classes.root}>
-        <CardContent boxShadow={2}>
-          <Typography
-            variant='button'
-            className={`${classes.value} ${
-              useRed ? classes.redCard : classes.blackCard
-            }`}
-          >
-            {valueStrings[props.card.value]
-              ? valueStrings[props.card.value]
-              : props.card.value}
-          </Typography>
-          <Typography
-            className={`${classes.suit} ${
-              useRed ? classes.redCard : classes.blackCard
-            }`}
-          >
-            {suitEmojis[props.card.suit]}
-          </Typography>
+      <Card
+        variant={props.chosen ? 'outlined' : ''}
+        onClick={props.mine ? toggleChosen : () => {}}
+        className={`${classes.root} ${props.disabled ? classes.used : ''}`}
+      >
+        <CardContent boxShadow={2} className={classes.content}>
+          <CardActionArea disabled={props.disabled || !props.mine}>
+            <Typography
+              variant='button'
+              className={`${classes.value} ${
+                useRed ? classes.redCard : classes.blackCard
+              }`}
+            >
+              {value}
+            </Typography>
+            <Typography
+              className={`${classes.suit} ${
+                useRed ? classes.redCard : classes.blackCard
+              }`}
+            >
+              {suitEmojis[props.card.suit]}
+            </Typography>
+          </CardActionArea>
         </CardContent>
       </Card>
     );
@@ -97,13 +121,6 @@ const PlayingCard = props => {
       <div className='w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800' />
     );
   }
-
-  let chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
-  let toggleChosen = () => {
-    if (!props.disabled) {
-      dispatch(actions.selectCard(props.card));
-    }
-  };
 
   return (
     <div
