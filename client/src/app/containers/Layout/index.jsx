@@ -50,6 +50,9 @@ const Layout = props => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const handleDrawerOpen = () => {
     setDrawerOpen(true);
+    setTimeout(() => {
+      setDrawerOpen(false);
+    }, 5000);
   };
   const handleDrawerClose = () => {
     setDrawerOpen(false);
