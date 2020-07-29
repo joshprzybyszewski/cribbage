@@ -1,9 +1,8 @@
+import { actions as alertActions } from 'app/containers/Alert/slice';
+import { alertTypes } from 'app/containers/Alert/types';
+import { actions as homeActions } from 'app/containers/Home/slice';
 import axios from 'axios';
 import { all, put, takeLatest } from 'redux-saga/effects';
-
-import { actions as alertActions } from '../Alert/slice';
-import { alertTypes } from '../Alert/types';
-import { actions as homeActions } from './slice';
 
 export function* handleRefreshActiveGames({ payload: { id } }) {
   if (!id) {

@@ -1,16 +1,16 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import SendIcon from '@material-ui/icons/Send';
+import { gameSaga } from 'app/containers/Game/saga';
+import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction } from './selectors';
-
-const PegAction = props => {
+const PegAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -25,7 +25,7 @@ const PegAction = props => {
       aria-label='vertical outlined primary button group'
     >
       <Button
-        disabled={!props.isBlocking}
+        disabled={!isBlocking}
         color='secondary'
         onClick={() => {
           dispatch(actions.pegCard());
@@ -34,7 +34,7 @@ const PegAction = props => {
         Say Go
       </Button>
       <Button
-        disabled={!props.isBlocking || currentAction.selectedCards.length !== 1}
+        disabled={!isBlocking || currentAction.selectedCards.length !== 1}
         color='primary'
         endIcon={<SendIcon />}
         onClick={() => {
@@ -45,6 +45,10 @@ const PegAction = props => {
       </Button>
     </ButtonGroup>
   );
+};
+
+PegAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default PegAction;

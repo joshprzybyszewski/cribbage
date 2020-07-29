@@ -1,15 +1,15 @@
 import React from 'react';
+
+import Button from '@material-ui/core/Button';
+import Slider from '@material-ui/core/Slider';
+import CallSplitIcon from '@material-ui/icons/CallSplit';
+import { gameSaga } from 'app/containers/Game/saga';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import Button from '@material-ui/core/Button';
-import CallSplitIcon from '@material-ui/icons/CallSplit';
-import Slider from '@material-ui/core/Slider';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-
-const CutAction = props => {
+const CutAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -18,7 +18,7 @@ const CutAction = props => {
   return (
     <div>
       <Slider
-        disabled={!props.isBlocking}
+        disabled={!isBlocking}
         orientation='vertical'
         getAriaValueText={value => {
           return `${value}%`;
@@ -30,7 +30,7 @@ const CutAction = props => {
         }}
       />
       <Button
-        disabled={!props.isBlocking}
+        disabled={!isBlocking}
         variant='contained'
         color='primary'
         endIcon={<CallSplitIcon />}
@@ -43,6 +43,10 @@ const CutAction = props => {
       </Button>
     </div>
   );
+};
+
+CutAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CutAction;

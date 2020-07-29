@@ -1,7 +1,4 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
@@ -18,26 +15,25 @@ import TableRow from '@material-ui/core/TableRow';
 import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
-
-import { authSaga } from '../../../auth/saga';
-import { selectCurrentUser } from '../../../auth/selectors';
-import {
-  sliceKey as authSliceKey,
-  reducer as authReducer,
-} from '../../../auth/slice';
-import { gameSaga } from '../Game/saga';
+import { gameSaga } from 'app/containers/Game/saga';
 import {
   sliceKey as gameSliceKey,
   reducer as gameReducer,
   actions as gameActions,
-} from '../Game/slice';
-import { homeSaga } from './saga';
-import { selectActiveGames } from './selectors';
+} from 'app/containers/Game/slice';
+import { homeSaga } from 'app/containers/Home/saga';
+import { selectActiveGames } from 'app/containers/Home/selectors';
 import {
   sliceKey as homeSliceKey,
   reducer as homeReducer,
   actions as homeActions,
-} from './slice';
+} from 'app/containers/Home/slice';
+import { authSaga } from 'auth/saga';
+import { selectCurrentUser } from 'auth/selectors';
+import { sliceKey as authSliceKey, reducer as authReducer } from 'auth/slice';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const myColorToHue = color => {
   return color

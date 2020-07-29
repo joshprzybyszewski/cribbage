@@ -7,7 +7,7 @@ const newGameSlice = createSlice({
   initialState,
   reducers: {
     createGame: {
-      reducer: (state, action) => {
+      reducer: () => {
         // is there nothing to do here?
       },
       prepare: (opp1ID, opp2ID, teammateID, history) => {

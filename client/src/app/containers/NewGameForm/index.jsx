@@ -6,12 +6,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import { createGameSaga } from 'app/containers/NewGameForm/saga';
+import { sliceKey, reducer, actions } from 'app/containers/NewGameForm/slice';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { createGameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
 
 const useStyles = makeStyles(theme => ({
   title: {

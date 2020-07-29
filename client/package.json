@@ -24,7 +24,8 @@
   },
   "scripts": {
     "build": "npx tailwindcss build src/tailwind.css -o src/styles.css && react-scripts build",
-    "client": "react-scripts start"
+    "client": "react-scripts start",
+    "lint": "npx eslint src --ext .js,.jsx --max-warnings 0"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -42,9 +43,10 @@
     ]
   },
   "devDependencies": {
-    "eslint-config-google": "^0.14.0",
+    "eslint": "^6.6.0",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-react": "^7.20.3"
+    "eslint-plugin-react": "^7.20.3",
+    "prettier": "^2.0.5"
   },
   "proxy": "http://localhost:8080"
 }

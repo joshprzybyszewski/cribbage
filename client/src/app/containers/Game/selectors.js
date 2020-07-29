@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { initialState } from './slice';
+import { initialState } from 'app/containers/Game/slice';
 
 const selectDomain = state => state.game || initialState;
 
