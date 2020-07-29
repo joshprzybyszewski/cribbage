@@ -7,10 +7,11 @@ import ShuffleIcon from '@material-ui/icons/Shuffle';
 import { gameSaga } from 'app/containers/Game/saga';
 import { selectCurrentAction } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const DealAction = props => {
+const DealAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -21,7 +22,7 @@ const DealAction = props => {
   return (
     <Grid item container spacing={2}>
       <Button
-        disabled={!props.isBlocking}
+        disabled={!isBlocking}
         variant='contained'
         color='secondary'
         endIcon={<ShuffleIcon />}
@@ -32,7 +33,7 @@ const DealAction = props => {
         Shuffle
       </Button>
       <Button
-        disabled={!props.isBlocking || currentAction.numShuffles <= 0}
+        disabled={!isBlocking || currentAction.numShuffles <= 0}
         variant='contained'
         color='primary'
         endIcon={<SendIcon />}
@@ -44,6 +45,10 @@ const DealAction = props => {
       </Button>
     </Grid>
   );
+};
+
+DealAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default DealAction;

@@ -9,10 +9,11 @@ import SendIcon from '@material-ui/icons/Send';
 import { gameSaga } from 'app/containers/Game/saga';
 import { selectCurrentAction } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const CountCribAction = props => {
+const CountCribAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -33,7 +34,7 @@ const CountCribAction = props => {
         />
       </FormControl>
       <Button
-        disabled={!props.isBlocking || currentAction.points < 0}
+        disabled={!isBlocking || currentAction.points < 0}
         variant='contained'
         color='primary'
         endIcon={<SendIcon />}
@@ -45,6 +46,10 @@ const CountCribAction = props => {
       </Button>
     </FormGroup>
   );
+};
+
+CountCribAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CountCribAction;

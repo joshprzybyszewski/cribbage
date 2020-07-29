@@ -90,7 +90,7 @@ const gameSlice = createSlice({
       },
     },
     dealCards: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {
@@ -98,7 +98,7 @@ const gameSlice = createSlice({
       },
     },
     buildCrib: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {
@@ -124,7 +124,7 @@ const gameSlice = createSlice({
       },
     },
     cutDeck: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {
@@ -132,7 +132,7 @@ const gameSlice = createSlice({
       },
     },
     pegCard: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {
@@ -153,7 +153,7 @@ const gameSlice = createSlice({
       },
     },
     countHand: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {
@@ -161,7 +161,7 @@ const gameSlice = createSlice({
       },
     },
     countCrib: {
-      reducer: (state, action) => {
+      reducer: () => {
         // Nothing here?
       },
       prepare: history => {

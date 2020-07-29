@@ -37,7 +37,7 @@ export function* handleGoToGame({ payload: { id, history } }) {
   }
 }
 
-export function* handleRefreshCurrentGame({ payload: { id, history } }) {
+export function* handleRefreshCurrentGame({ payload: { id } }) {
   const currentUser = yield select(selectCurrentUser);
 
   try {

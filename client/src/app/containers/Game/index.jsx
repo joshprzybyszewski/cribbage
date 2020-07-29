@@ -105,7 +105,7 @@ const Game = () => {
           <Grid item>
             <ActionBox
               phase={activeGame.phase}
-              isBlocking={activeGame.blocking_players.hasOwnProperty(
+              isBlocking={Object.keys(activeGame.blocking_players).includes(
                 currentUser.id,
               )}
             />
@@ -149,7 +149,7 @@ const Game = () => {
                 {'TODO put an image of the deck here'}
               </div>
             ),
-            <CribHand cards={activeGame.crib} />,
+            <CribHand key='cribHand' cards={activeGame.crib} />,
             <div key='currentPeg'>
               {activeGame.phase === 'Pegging'
                 ? `Current Peg: ${

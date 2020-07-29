@@ -8,6 +8,7 @@ import {
   selectCurrentGame,
 } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
@@ -19,7 +20,7 @@ const expNumCardsToCribForGame = game => {
   return 2;
 };
 
-const CribAction = props => {
+const CribAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -31,7 +32,7 @@ const CribAction = props => {
   return (
     <Button
       disabled={
-        !props.isBlocking ||
+        !isBlocking ||
         currentAction.selectedCards.length !==
           expNumCardsToCribForGame(activeGame)
       }
@@ -45,6 +46,10 @@ const CribAction = props => {
       Build Crib
     </Button>
   );
+};
+
+CribAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CribAction;

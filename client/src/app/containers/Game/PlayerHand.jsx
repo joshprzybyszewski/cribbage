@@ -3,13 +3,14 @@ import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
 import PlayingCard from 'app/containers/Game/PlayingCard';
+import PropTypes from 'prop-types';
 
 const showOpponentsHand = phase => {
   return phase !== 'Deal';
 };
 
-const PlayerHand = props => {
-  if (!props.hand || !showOpponentsHand(props.phase)) {
+const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
+  if (!hand || !showOpponentsHand(phase)) {
     return null;
   }
 
@@ -17,26 +18,34 @@ const PlayerHand = props => {
     <Grid
       item
       container
-      direction={props.side ? 'column' : 'row'}
+      direction={side ? 'column' : 'row'}
       justify='center'
       spacing={1}
     >
       <GridList>
-        {props.hand.map((card, index) => (
+        {hand.map((card, index) => (
           <PlayingCard
             key={`handcard${index}`}
             card={card}
-            mine={props.mine}
+            mine={mine}
             disabled={
-              props.phase === 'Pegging' &&
-              props.pegged &&
-              props.pegged.some(pc => pc.card.name === card.name)
+              phase === 'Pegging' &&
+              pegged &&
+              pegged.some(pc => pc.card.name === card.name)
             }
           />
         ))}
       </GridList>
     </Grid>
   );
+};
+
+PlayerHand.propTypes = {
+  hand: PropTypes.array.isRequired,
+  phase: PropTypes.string.isRequired,
+  side: PropTypes.string.isRequired,
+  pegged: PropTypes.array.isRequired,
+  mine: PropTypes.bool.isRequired,
 };
 
 export default PlayerHand;

@@ -13,6 +13,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
+import PropTypes from 'prop-types';
 
 // TODO import from a utils instead of redeclaring
 // or even make an "atom" that is the icon
@@ -76,6 +77,11 @@ const ScoreBoard = ({ current_dealer, teams }) => {
       </TableContainer>
     </Container>
   );
+};
+
+ScoreBoard.propTypes = {
+  current_dealer: PropTypes.string.isRequired,
+  teams: PropTypes.array.isRequired,
 };
 
 export default ScoreBoard;
