@@ -1,17 +1,17 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import { makeStyles } from '@material-ui/core/styles';
 import { red, grey } from '@material-ui/core/colors';
 import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import CardActionArea from '@material-ui/core/CardActionArea';
+import CardContent from '@material-ui/core/CardContent';
+import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction } from './selectors';
+import { gameSaga } from 'app/containers/Game/saga';
+import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const useStyles = makeStyles({
   root: {
@@ -47,24 +47,24 @@ const useStyles = makeStyles({
   },
 });
 
-const PlayingCard = props => {
+const PlayingCard = ({ card, disabled, experimental, mine }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const classes = useStyles();
   const dispatch = useDispatch();
   const currentAction = useSelector(selectCurrentAction);
 
-  const useRed = !['Spades', 'Clubs'].includes(props.card.suit);
+  const useRed = !['Spades', 'Clubs'].includes(card.suit);
 
-  const chosen = currentAction.selectedCards.indexOf(props.card) !== -1;
+  const chosen = currentAction.selectedCards.indexOf(card) !== -1;
   const toggleChosen = () => {
-    if (!props.disabled) {
-      dispatch(actions.selectCard(props.card));
+    if (!disabled) {
+      dispatch(actions.selectCard(card));
     }
   };
 
-  if (!props.experimental) {
-    if (props.card.name === 'unknown') {
+  if (!experimental) {
+    if (card.name === 'unknown') {
       return <Card className={`${classes.root} ${classes.unknown}`}></Card>;
     }
     const suitEmojis = {
@@ -79,18 +79,18 @@ const PlayingCard = props => {
       13: 'K',
       1: 'A',
     };
-    let value = valueStrings[props.card.value]
-      ? valueStrings[props.card.value]
-      : props.card.value;
-    value += suitEmojis[props.card.suit];
+    let value = valueStrings[card.value]
+      ? valueStrings[card.value]
+      : card.value;
+    value += suitEmojis[card.suit];
     return (
       <Card
-        variant={props.chosen ? 'outlined' : ''}
-        onClick={props.mine ? toggleChosen : () => {}}
-        className={`${classes.root} ${props.disabled ? classes.used : ''}`}
+        variant={chosen ? 'outlined' : ''}
+        onClick={mine ? toggleChosen : () => {}}
+        className={`${classes.root} ${disabled ? classes.used : ''}`}
       >
         <CardContent boxShadow={2} className={classes.content}>
-          <CardActionArea disabled={props.disabled || !props.mine}>
+          <CardActionArea disabled={disabled || !mine}>
             <Typography
               variant='button'
               className={`${classes.value} ${
@@ -104,7 +104,7 @@ const PlayingCard = props => {
                 useRed ? classes.redCard : classes.blackCard
               }`}
             >
-              {suitEmojis[props.card.suit]}
+              {suitEmojis[card.suit]}
             </Typography>
             <Typography
               variant='button'
@@ -120,9 +120,9 @@ const PlayingCard = props => {
     );
   }
 
-  if (!props.card) {
+  if (!card) {
     return null;
-  } else if (props.card.name === 'unknown') {
+  } else if (card.name === 'unknown') {
     // Currently, this returns a grayed out box, but it should show
     // a back of a card
     return (
@@ -132,18 +132,25 @@ const PlayingCard = props => {
 
   return (
     <div
-      onClick={props.mine ? toggleChosen : () => {}}
+      onClick={mine ? toggleChosen : () => {}}
       className={`w-12 h-16 text-center align-middle inline-block border-2 border-black ${
-        props.disabled ? 'bg-gray-500' : 'bg-white'
+        disabled ? 'bg-gray-500' : 'bg-white'
       } ${useRed ? 'text-red-700' : 'text-black'}`}
       style={{
         position: 'relative',
         top: chosen ? '-10px' : '',
       }}
     >
-      {props.card.name}
+      {card.name}
     </div>
   );
+};
+
+PlayingCard.propTypes = {
+  card: PropTypes.object.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  experimental: PropTypes.bool.isRequired,
+  mine: PropTypes.bool.isRequired,
 };
 
 export default PlayingCard;

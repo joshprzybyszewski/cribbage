@@ -1,6 +1,4 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
@@ -8,12 +6,14 @@ import FormGroup from '@material-ui/core/FormGroup';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 import SendIcon from '@material-ui/icons/Send';
+import { gameSaga } from 'app/containers/Game/saga';
+import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-import { gameSaga } from './saga';
-import { sliceKey, reducer, actions } from './slice';
-import { selectCurrentAction } from './selectors';
-
-const CountHandAction = props => {
+const CountHandAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
 
@@ -26,7 +26,7 @@ const CountHandAction = props => {
       <FormControl>
         <InputLabel htmlFor='component-simple'>Hand Points</InputLabel>
         <Input
-          disabled={!props.isBlocking}
+          disabled={!isBlocking}
           id='component-simple'
           type='number'
           onChange={event => {
@@ -35,7 +35,7 @@ const CountHandAction = props => {
         />
       </FormControl>
       <Button
-        disabled={!props.isBlocking || currentAction.points < 0}
+        disabled={!isBlocking || currentAction.points < 0}
         variant='contained'
         color='primary'
         endIcon={<SendIcon />}
@@ -47,6 +47,10 @@ const CountHandAction = props => {
       </Button>
     </FormGroup>
   );
+};
+
+CountHandAction.propTypes = {
+  isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CountHandAction;

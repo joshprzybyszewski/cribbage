@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 
+import ActiveGamesTable from 'app/containers/Home/ActiveGamesTable';
+import { actions as homeActions } from 'app/containers/Home/slice';
+import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-
-import { selectCurrentUser } from '../../../auth/selectors';
-import { actions as homeActions } from './slice';
-
-import ActiveGamesTable from './ActiveGamesTable';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -16,7 +14,7 @@ const Home = () => {
   // this will run once when we first render Home
   useEffect(() => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
-  }, []);
+  }, [dispatch, currentUser.id]);
 
   return (
     <div>

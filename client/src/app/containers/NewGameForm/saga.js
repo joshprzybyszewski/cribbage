@@ -1,11 +1,10 @@
+import { actions as alertActions } from 'app/containers/Alert/slice';
+import { alertTypes } from 'app/containers/Alert/types';
+import { actions as gameActions } from 'app/containers/Game/slice';
+import { actions as newGameActions } from 'app/containers/NewGameForm/slice';
+import { selectCurrentUser } from 'auth/selectors';
 import axios from 'axios';
-import { all, put, select, takeLatest, call } from 'redux-saga/effects';
-
-import { actions as alertActions } from '../Alert/slice';
-import { actions as gameActions } from '../Game/slice';
-import { alertTypes } from '../Alert/types';
-import { selectCurrentUser } from '../../../auth/selectors';
-import { actions as newGameActions } from './slice';
+import { all, put, select, takeLatest } from 'redux-saga/effects';
 
 export function* handleCreateGame({
   payload: { opp1ID, opp2ID, teammateID, history },

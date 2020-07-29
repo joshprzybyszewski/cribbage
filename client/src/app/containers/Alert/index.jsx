@@ -1,11 +1,10 @@
 import React from 'react';
 
+import { alertSaga } from 'app/containers/Alert/saga';
+import { selectAlerts } from 'app/containers/Alert/selectors';
+import { sliceKey, reducer } from 'app/containers/Alert/slice';
 import { useSelector } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { alertSaga } from './saga';
-import { selectAlerts } from './selectors';
-import { sliceKey, reducer } from './slice';
 
 const Alert = () => {
   useInjectReducer({ key: sliceKey, reducer });

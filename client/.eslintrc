@@ -3,7 +3,7 @@
     "browser": true,
     "es2020": true
   },
-  "extends": ["plugin:react/recommended", "google"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -13,7 +13,7 @@
   },
   "plugins": ["react", "import"],
   "rules": {
-    "operator-linebreak": ["error", "before"],
+    "operator-linebreak": "off",
     "indent": "off", // prettier enforces this for us
     "require-jsdoc": "off",
     "object-curly-spacing": "off",
@@ -38,5 +38,10 @@
       }
     ],
     "react/prop-types": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }

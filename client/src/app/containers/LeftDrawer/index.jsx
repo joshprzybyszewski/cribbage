@@ -9,13 +9,12 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
+import { authSaga } from 'auth/saga';
+import { sliceKey, reducer, actions } from 'auth/slice';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { authSaga } from '../../../auth/saga';
-import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const useStyles = makeStyles(theme => ({
   loggedOutLink: {

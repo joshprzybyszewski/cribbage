@@ -7,12 +7,11 @@ import Link from '@material-ui/core/Link';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import { authSaga } from 'auth/saga';
+import { sliceKey, reducer, actions } from 'auth/slice';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-import { authSaga } from '../../../auth/saga';
-import { sliceKey, reducer, actions } from '../../../auth/slice';
 
 const useStyles = makeStyles(theme => ({
   title: {

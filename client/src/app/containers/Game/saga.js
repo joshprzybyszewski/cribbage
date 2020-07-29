@@ -1,10 +1,13 @@
-import { all, put, select, takeLatest, call } from 'redux-saga/effects';
+import { actions as alertActions } from 'app/containers/Alert/slice';
+import { alertTypes } from 'app/containers/Alert/types';
+import {
+  selectCurrentGameID,
+  selectCurrentAction,
+} from 'app/containers/Game/selectors';
+import { actions as gameActions } from 'app/containers/Game/slice';
+import { selectCurrentUser } from 'auth/selectors';
 import axios from 'axios';
-import { selectCurrentUser } from '../../../auth/selectors';
-import { selectCurrentGameID, selectCurrentAction } from './selectors';
-import { actions as gameActions } from './slice';
-import { actions as alertActions } from '../Alert/slice';
-import { alertTypes } from '../Alert/types';
+import { all, put, select, takeLatest, call } from 'redux-saga/effects';
 
 export function* handleExitGame({ payload: { history } }) {
   yield call(history.push, '/home');
@@ -34,7 +37,7 @@ export function* handleGoToGame({ payload: { id, history } }) {
   }
 }
 
-export function* handleRefreshCurrentGame({ payload: { id, history } }) {
+export function* handleRefreshCurrentGame({ payload: { id } }) {
   const currentUser = yield select(selectCurrentUser);
 
   try {
@@ -61,7 +64,7 @@ const cardToGolangCard = c => {
 // getPlayerAction returns the JSON struct which the server knows
 // how to interpret
 const getPlayerAction = (myID, gID, phase, currentAction) => {
-  let overcomesMap = {
+  const overcomesMap = {
     deal: 0,
     crib: 1,
     cut: 2,
