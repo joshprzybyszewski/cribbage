@@ -106,6 +106,14 @@ const PlayingCard = props => {
             >
               {suitEmojis[props.card.suit]}
             </Typography>
+            <Typography
+              variant='button'
+              className={`${classes.value} ${
+                useRed ? classes.redCard : classes.blackCard
+              }`}
+            >
+              {value}
+            </Typography>
           </CardActionArea>
         </CardContent>
       </Card>
