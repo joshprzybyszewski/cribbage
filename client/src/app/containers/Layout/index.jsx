@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
 
-import Divider from '@material-ui/core/Divider';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
 import makeStyles from '@material-ui/core/styles/makeStyles';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import Navbar from 'app/components/Navbar';
 import Alert from 'app/containers/Alert';
-// TODO fix this - should only have to import drawer?
-import LoggedInDrawer from 'app/containers/LeftDrawer/LoggedInDrawer';
-import LoggedOutDrawer from 'app/containers/LeftDrawer/LoggedOutDrawer';
+import LeftDrawer from 'app/containers/LeftDrawer';
 import { selectLoggedIn } from 'auth/selectors';
 import { sliceKey, reducer } from 'auth/slice';
 import clsx from 'clsx';
@@ -22,13 +16,6 @@ const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
-  },
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: drawerWidth,
   },
   drawerHeader: {
     display: 'flex',
@@ -74,23 +61,7 @@ const Layout = props => {
     <React.Fragment>
       <Navbar loggedIn={loggedIn} handleDrawerOpen={handleDrawerOpen} />
       <div className={classes.root}>
-        <Drawer
-          className={classes.drawer}
-          variant='persistent'
-          anchor='left'
-          open={drawerOpen}
-          classes={{
-            paper: classes.drawerPaper,
-          }}
-        >
-          <div className={classes.drawerHeader}>
-            <IconButton onClick={handleDrawerClose}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </div>
-          <Divider />
-          {loggedIn ? <LoggedInDrawer /> : <LoggedOutDrawer />}
-        </Drawer>
+        <LeftDrawer isOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
