@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import Navbar from 'app/components/Navbar';
@@ -46,16 +46,20 @@ const useStyles = makeStyles(theme => ({
 const Layout = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   const loggedIn = useSelector(selectLoggedIn);
-
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // use a ref so we can reset the timer
+  const timerID = useRef(-1);
+
   const handleDrawerOpen = () => {
     setDrawerOpen(true);
-    setTimeout(() => {
+    timerID.current = setTimeout(() => {
       setDrawerOpen(false);
     }, 5000);
   };
   const handleDrawerClose = () => {
     setDrawerOpen(false);
+    clearTimeout(timerID.current);
+    timerID.current = -1;
   };
 
   const classes = useStyles();
