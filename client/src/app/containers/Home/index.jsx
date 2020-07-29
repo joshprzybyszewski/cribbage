@@ -14,7 +14,7 @@ const Home = () => {
   // this will run once when we first render Home
   useEffect(() => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
-  }, []);
+  }, [dispatch, currentUser.id]);
 
   return (
     <div>

@@ -26,8 +26,9 @@ const Action = ({ phase, isBlocking }) => {
       return <CountHandAction isBlocking={isBlocking} />;
     case 'CribCounting':
       return <CountCribAction isBlocking={isBlocking} />;
+    default:
+      return 'dev error!';
   }
-  return 'dev error!';
 };
 
 const ActionBox = ({ phase, isBlocking }) => {
