@@ -8,7 +8,7 @@ import CreateIcon from '@material-ui/icons/Create';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { useHistory } from 'react-router-dom';
 
-const LoggedOutDrawer = props => {
+const LoggedOutDrawer = () => {
   const history = useHistory();
 
   return (
