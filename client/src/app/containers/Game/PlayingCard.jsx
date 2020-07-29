@@ -30,7 +30,11 @@ const useStyles = makeStyles({
     backgroundColor: grey[400],
   },
   value: {
-    fontSize: 18,
+    fontSize: 16,
+  },
+  bottomValue: {
+    textAlign: 'right',
+    transform: [{ rotate: '90deg' }],
   },
   redCard: {
     color: red[800],
@@ -39,7 +43,7 @@ const useStyles = makeStyles({
     color: grey[900],
   },
   suit: {
-    fontSize: 36,
+    fontSize: 34,
     justifyContent: 'center',
     alignItems: 'center',
     verticalAlign: 'center',
@@ -89,33 +93,31 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
         onClick={mine ? toggleChosen : () => {}}
         className={`${classes.root} ${disabled ? classes.used : ''}`}
       >
-        <CardContent boxShadow={2} className={classes.content}>
-          <CardActionArea disabled={disabled || !mine}>
-            <Typography
-              variant='button'
-              className={`${classes.value} ${
-                useRed ? classes.redCard : classes.blackCard
-              }`}
-            >
-              {value}
-            </Typography>
-            <Typography
-              className={`${classes.suit} ${
-                useRed ? classes.redCard : classes.blackCard
-              }`}
-            >
-              {suitEmojis[card.suit]}
-            </Typography>
-            <Typography
-              variant='button'
-              className={`${classes.value} ${
-                useRed ? classes.redCard : classes.blackCard
-              }`}
-            >
-              {value}
-            </Typography>
-          </CardActionArea>
-        </CardContent>
+        <CardActionArea disabled={!mine || disabled}>
+          <Typography
+            variant='button'
+            className={`${classes.value} ${
+              useRed ? classes.redCard : classes.blackCard
+            }`}
+          >
+            {value}
+          </Typography>
+          <Typography
+            className={`${classes.suit} ${
+              useRed ? classes.redCard : classes.blackCard
+            }`}
+          >
+            {suitEmojis[card.suit]}
+          </Typography>
+          <Typography
+            variant='button'
+            className={`${classes.value} ${classes.bottomValue} ${
+              useRed ? classes.redCard : classes.blackCard
+            }`}
+          >
+            {value}
+          </Typography>
+        </CardActionArea>
       </Card>
     );
   }
