@@ -13,7 +13,7 @@
   },
   "plugins": ["react", "import"],
   "rules": {
-    "operator-linebreak": ["error", "before"],
+    "operator-linebreak": "off",
     "indent": "off", // prettier enforces this for us
     "require-jsdoc": "off",
     "object-curly-spacing": "off",
