@@ -105,24 +105,6 @@ const gameSlice = createSlice({
         return { payload: { history } };
       },
     },
-    chooseCut: {
-      reducer: (state, action) => {
-        const newPerc = action.payload.perc;
-        if (!newPerc) {
-          return;
-        } else if (newPerc > 100) {
-          return;
-        } else if (newPerc >= 1) {
-          state.currentAction.percCut = newPerc / 100;
-          return;
-        }
-
-        state.currentAction.percCut = newPerc;
-      },
-      prepare: (perc, history) => {
-        return { payload: { perc, history } };
-      },
-    },
     cutDeck() {},
     pegCard: {
       reducer: () => {
