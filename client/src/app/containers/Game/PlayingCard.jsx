@@ -20,14 +20,12 @@ const useStyles = makeStyles({
   },
 });
 
-const PlayingCard = ({ card, disabled, experimental, mine }) => {
+const PlayingCard = ({ card, disabled, mine }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const classes = useStyles();
   const dispatch = useDispatch();
   const currentAction = useSelector(selectCurrentAction);
-
-  const useRed = !['Spades', 'Clubs'].includes(card.suit);
 
   const chosen = currentAction.selectedCards.indexOf(card) !== -1;
   const toggleChosen = () => {
@@ -36,31 +34,16 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
     }
   };
 
-  const suitEmojis = {
-    Spades: '♠️',
-    Clubs: '♣️',
-    Diamonds: '♦️',
-    Hearts: '♥️',
-  };
-  const valueStrings = {
-    11: 'J',
-    12: 'Q',
-    13: 'K',
-    1: 'A',
-  };
-  let value = valueStrings[card.value] ? valueStrings[card.value] : card.value;
-  value += suitEmojis[card.suit];
-
   return (
     <Card
-      variant={chosen ? 'outlined' : ''}
       onClick={mine ? toggleChosen : () => {}}
       className={`${classes.root} ${disabled ? classes.used : ''}`}
+      raised={chosen}
     >
       <CardActionArea disabled={!mine || disabled}>
         <CardMedia
           component='img'
-          alt={value}
+          alt={card.name}
           image={`/cards/${
             card.name === 'unknown' ? 'background' : card.name
           }.svg`}
@@ -74,7 +57,6 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
 PlayingCard.propTypes = {
   card: PropTypes.object.isRequired,
   disabled: PropTypes.bool.isRequired,
-  experimental: PropTypes.bool.isRequired,
   mine: PropTypes.bool.isRequired,
 };
 

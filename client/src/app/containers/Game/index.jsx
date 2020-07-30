@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
+import { makeStyles } from '@material-ui/core/styles';
 import ActionBox from 'app/containers/Game/ActionBox';
 import PlayerHand from 'app/containers/Game/PlayerHand';
 import { gameSaga } from 'app/containers/Game/saga';
@@ -10,6 +11,12 @@ import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+const useStyles = makeStyles({
+  gameArea: {
+    width: '80%',
+  },
+});
 
 const handForPlayer = (game, myID, position) => {
   const isFourPlayer =
@@ -52,67 +59,76 @@ const handForPlayer = (game, myID, position) => {
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
+  const classes = useStyles();
   const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
 
   return (
-    <Grid container xl spacing={1} direction='row' justify='space-between'>
+    <div>
       <Grid
-        item
+        className={classes.gameArea}
         container
-        md
-        spacing={2}
-        direction='column'
-        align-content='space-between'
+        xl
+        spacing={1}
+        direction='row'
+        justify='space-between'
       >
-        <Grid item xs sm container>
-          <PlayerHand
-            phase={activeGame.phase}
-            hand={handForPlayer(activeGame, currentUser.id, 'across')}
-          />
-        </Grid>
         <Grid
           item
-          xs
-          md
           container
-          justify='space-between'
-          align-content='center'
+          md
+          spacing={2}
+          direction='column'
+          align-content='space-between'
         >
-          <Grid item>
+          <Grid item sm container>
             <PlayerHand
-              side
               phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'left')}
+              hand={handForPlayer(activeGame, currentUser.id, 'across')}
             />
           </Grid>
-          <Grid item>
-            <ActionBox
-              phase={activeGame.phase}
-              isBlocking={Object.keys(activeGame.blocking_players).includes(
-                currentUser.id,
-              )}
-            />
+          <Grid
+            item
+            md
+            container
+            justify='space-between'
+            align-content='center'
+          >
+            <Grid item>
+              <PlayerHand
+                side
+                phase={activeGame.phase}
+                hand={handForPlayer(activeGame, currentUser.id, 'left')}
+              />
+            </Grid>
+            <Grid item>
+              <ActionBox
+                phase={activeGame.phase}
+                isBlocking={Object.keys(activeGame.blocking_players).includes(
+                  currentUser.id,
+                )}
+              />
+            </Grid>
+            <Grid item>
+              <PlayerHand
+                side
+                phase={activeGame.phase}
+                hand={handForPlayer(activeGame, currentUser.id, 'right')}
+              />
+            </Grid>
           </Grid>
-          <Grid item>
+          <Grid item sm container>
             <PlayerHand
-              side
+              mine
               phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'right')}
+              hand={activeGame.hands[currentUser.id]}
+              pegged={activeGame.pegged_cards}
             />
           </Grid>
-        </Grid>
-        <Grid item xs sm container>
-          <PlayerHand
-            mine
-            phase={activeGame.phase}
-            hand={activeGame.hands[currentUser.id]}
-            pegged={activeGame.pegged_cards}
-          />
         </Grid>
       </Grid>
       <RightSide key='rightSidePanel' />
-    </Grid>
+    </div>
   );
 };
 

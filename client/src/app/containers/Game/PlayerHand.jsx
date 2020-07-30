@@ -22,20 +22,18 @@ const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
       justify='center'
       spacing={1}
     >
-      <GridList>
-        {hand.map((card, index) => (
-          <PlayingCard
-            key={`handcard${index}`}
-            card={card}
-            mine={mine}
-            disabled={
-              phase === 'Pegging' &&
-              pegged &&
-              pegged.some(pc => pc.card.name === card.name)
-            }
-          />
-        ))}
-      </GridList>
+      {hand.map((card, index) => (
+        <PlayingCard
+          key={`handcard${index}`}
+          card={card}
+          mine={mine}
+          disabled={
+            phase === 'Pegging' &&
+            pegged &&
+            pegged.some(pc => pc.card.name === card.name)
+          }
+        />
+      ))}
     </Grid>
   );
 };
