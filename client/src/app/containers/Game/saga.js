@@ -150,14 +150,9 @@ export function* handleBuildCrib() {
 export function* handleCutDeck({ payload: cutPct }) {
   const currentUser = yield select(selectCurrentUser);
   const gameID = yield select(selectCurrentGameID);
-  console.log(cutPct);
-
   const playerAction = newPlayerAction(currentUser.id, gameID, 'cut', {
     p: cutPct,
   });
-
-  console.log(playerAction);
-
   try {
     yield axios.post('/action', playerAction);
     yield put(gameActions.refreshGame(gameID));

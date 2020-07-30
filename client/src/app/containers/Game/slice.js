@@ -123,7 +123,7 @@ const gameSlice = createSlice({
         return { payload: { perc, history } };
       },
     },
-    cutDeck(state, action) {},
+    cutDeck() {},
     pegCard: {
       reducer: () => {
         // Nothing here?

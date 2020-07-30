@@ -37,10 +37,7 @@ const CutAction = ({ isBlocking }) => {
         color='primary'
         endIcon={<CallSplitIcon />}
         onClick={() => {
-          // TODO get the value of the Slider and use that to cut
-          console.log('trying action');
-          console.log(sliderVal);
-          dispatch(actions.cutDeck(sliderVal));
+          dispatch(actions.cutDeck(sliderVal / 100));
         }}
       >
         Cut
