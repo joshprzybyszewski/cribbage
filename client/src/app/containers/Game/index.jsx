@@ -1,24 +1,30 @@
 import React from 'react';
 
+import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import RefreshIcon from '@material-ui/icons/Refresh';
+import { makeStyles } from '@material-ui/core/styles';
 import ActionBox from 'app/containers/Game/ActionBox';
-import CribHand from 'app/containers/Game/CribHand';
 import PlayerHand from 'app/containers/Game/PlayerHand';
-import PlayingCard from 'app/containers/Game/PlayingCard';
 import { gameSaga } from 'app/containers/Game/saga';
-import ScoreBoard from 'app/containers/Game/ScoreBoard';
+import RightSide from 'app/containers/Game/RightSide';
 import { selectCurrentGame } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const showCutCard = phase => {
-  return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
-};
+const useStyles = makeStyles({
+  gameArea: {
+    width: '60%',
+    maxWidth: '60%',
+    height: '100%',
+  },
+  extrasArea: {
+    width: '30%',
+    maxWidth: '40%',
+    height: '100%',
+  },
+});
 
 const handForPlayer = (game, myID, position) => {
   const isFourPlayer =
@@ -61,106 +67,83 @@ const handForPlayer = (game, myID, position) => {
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
-  const history = useHistory();
-  const dispatch = useDispatch();
+  const classes = useStyles();
   const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
 
-  // event handlers
-  const onRefreshCurrentGame = id => {
-    dispatch(actions.refreshGame(id, history));
-  };
-
   return (
-    <Grid container xl spacing={1} direction='row' justify='space-between'>
-      <Grid
-        item
-        container
-        md
-        spacing={2}
-        direction='column'
-        align-content='space-between'
+    <Box display='flex' flexDirection='row' p={1} m={1}>
+      <Box
+        display='flex'
+        justifyContent='flex-start'
+        m={1}
+        p={1}
+        className={classes.gameArea}
       >
-        <Grid item xs sm container>
-          <PlayerHand
-            phase={activeGame.phase}
-            hand={handForPlayer(activeGame, currentUser.id, 'across')}
-          />
-        </Grid>
         <Grid
           item
-          xs
-          md
           container
-          justify='space-between'
-          align-content='center'
+          md
+          spacing={2}
+          direction='column'
+          align-content='space-between'
         >
-          <Grid item>
+          <Grid item sm container>
             <PlayerHand
-              side
               phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'left')}
+              hand={handForPlayer(activeGame, currentUser.id, 'across')}
             />
           </Grid>
-          <Grid item>
-            <ActionBox
-              phase={activeGame.phase}
-              isBlocking={Object.keys(activeGame.blocking_players).includes(
-                currentUser.id,
-              )}
-            />
-          </Grid>
-          <Grid item>
-            <PlayerHand
-              side
-              phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'right')}
-            />
-          </Grid>
-        </Grid>
-        <Grid item xs sm container>
-          <PlayerHand
-            mine
-            phase={activeGame.phase}
-            hand={activeGame.hands[currentUser.id]}
-            pegged={activeGame.pegged_cards}
-          />
-        </Grid>
-      </Grid>
-      <Grid item container xs direction='column' spacing={1}>
-        <Grid item>
-          <IconButton
-            aria-label='refresh'
-            onClick={() => onRefreshCurrentGame(activeGame.id)}
+          <Grid
+            item
+            md
+            container
+            justify='space-between'
+            align-content='center'
           >
-            <RefreshIcon />
-          </IconButton>
-          <ScoreBoard
-            teams={activeGame.teams}
-            current_dealer={activeGame.current_dealer}
-          />
+            <Grid item>
+              <PlayerHand
+                side
+                phase={activeGame.phase}
+                hand={handForPlayer(activeGame, currentUser.id, 'left')}
+              />
+            </Grid>
+            <Grid item>
+              <ActionBox
+                phase={activeGame.phase}
+                isBlocking={Object.keys(activeGame.blocking_players).includes(
+                  currentUser.id,
+                )}
+              />
+            </Grid>
+            <Grid item>
+              <PlayerHand
+                side
+                phase={activeGame.phase}
+                hand={handForPlayer(activeGame, currentUser.id, 'right')}
+              />
+            </Grid>
+          </Grid>
+          <Grid item sm container>
+            <PlayerHand
+              mine
+              phase={activeGame.phase}
+              hand={activeGame.hands[currentUser.id]}
+              pegged={activeGame.pegged_cards}
+            />
+          </Grid>
         </Grid>
-        <Grid item>
-          {[
-            showCutCard(activeGame.phase) ? (
-              <PlayingCard key='cutCard' card={activeGame.cut_card} />
-            ) : (
-              <div key='deckTODOdiv'>
-                {'TODO put an image of the deck here'}
-              </div>
-            ),
-            <CribHand key='cribHand' cards={activeGame.crib} />,
-            <div key='currentPeg'>
-              {activeGame.phase === 'Pegging'
-                ? `Current Peg: ${
-                    activeGame.current_peg ? activeGame.current_peg : 0
-                  }`
-                : ''}
-            </div>,
-          ]}
-        </Grid>
-      </Grid>
-    </Grid>
+      </Box>
+      <Box
+        display='flex'
+        justifyContent='flex-end'
+        m={1}
+        p={1}
+        className={classes.extrasArea}
+      >
+        <RightSide key='rightSidePanel' />
+      </Box>
+    </Box>
   );
 };
 

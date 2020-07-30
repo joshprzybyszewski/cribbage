@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { makeStyles } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import grey from '@material-ui/core/colors/grey';
@@ -29,9 +30,18 @@ const myColorToHue = color => {
     : grey[400];
 };
 
+const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    flex: '0 1 auto',
+  },
+});
+
 const ScoreBoard = ({ current_dealer, teams }) => {
+  const classes = useStyles();
+
   return (
-    <Container fixed width='35px' size='small'>
+    <Container className={classes.container} fixed maxWidth='sm' size='sm'>
       <TableContainer component={Paper} size='small'>
         <Table stickyHeader size='small' padding='none' aria-label='scoreboard'>
           <TableHead>

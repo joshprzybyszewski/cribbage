@@ -1,9 +1,9 @@
 import React from 'react';
 
 import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardMedia from '@material-ui/core/CardMedia';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import { gameSaga } from 'app/containers/Game/saga';
 import { selectCurrentAction } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
@@ -13,65 +13,19 @@ import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const useStyles = makeStyles({
   root: {
-    width: 120,
-    height: 160,
+    maxWidth: 96,
   },
-  value: {
-    fontSize: 14,
-  },
-  suit: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    verticalAlign: 'center',
-    textAlign: 'center',
+  used: {
+    opacity: 0.6,
   },
 });
 
-const PlayingCard = ({ card, disabled, experimental, mine }) => {
+const PlayingCard = ({ card, disabled, mine }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const classes = useStyles();
   const dispatch = useDispatch();
   const currentAction = useSelector(selectCurrentAction);
-
-  const useRed = !['Spades', 'Clubs'].includes(card.suit);
-
-  if (experimental) {
-    return (
-      <Card className={classes.root}>
-        <CardContent>
-          <Typography
-            className={classes.value}
-            color={useRed ? 'red' : 'black'}
-            gutterBottom
-          >
-            {card.value}
-          </Typography>
-          <Typography className={classes.suit}>
-            {card.suit === 'Spades'
-              ? '♠️'
-              : card.suit === 'Clubs'
-              ? '♣️'
-              : card.suit === 'Diamonds'
-              ? '♦️'
-              : card.suit === 'Hearts'
-              ? '♥️'
-              : '?'}
-          </Typography>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!card) {
-    return null;
-  } else if (card.name === 'unknown') {
-    // Currently, this returns a grayed out box, but it should show
-    // a back of a card
-    return (
-      <div className='w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800' />
-    );
-  }
 
   const chosen = currentAction.selectedCards.indexOf(card) !== -1;
   const toggleChosen = () => {
@@ -81,25 +35,28 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
   };
 
   return (
-    <div
+    <Card
       onClick={mine ? toggleChosen : () => {}}
-      className={`w-12 h-16 text-center align-middle inline-block border-2 border-black ${
-        disabled ? 'bg-gray-500' : 'bg-white'
-      } ${useRed ? 'text-red-700' : 'text-black'}`}
-      style={{
-        position: 'relative',
-        top: chosen ? '-10px' : '',
-      }}
+      className={`${classes.root} ${disabled ? classes.used : ''}`}
+      raised={chosen}
     >
-      {card.name}
-    </div>
+      <CardActionArea disabled={!mine || disabled}>
+        <CardMedia
+          component='img'
+          alt={card.name}
+          image={`/cards/${
+            card.name === 'unknown' ? 'background' : card.name
+          }.svg`}
+          title='Card'
+        />
+      </CardActionArea>
+    </Card>
   );
 };
 
 PlayingCard.propTypes = {
   card: PropTypes.object.isRequired,
   disabled: PropTypes.bool.isRequired,
-  experimental: PropTypes.bool.isRequired,
   mine: PropTypes.bool.isRequired,
 };
 
