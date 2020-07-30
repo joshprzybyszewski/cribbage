@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
 import Button from '@material-ui/core/Button';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import MenuItem from '@material-ui/core/MenuItem';
+import AndroidIcon from '@material-ui/icons/Android';
+import PersonIcon from '@material-ui/icons/Person';
 import Container from '@material-ui/core/Container';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import makeStyles from '@material-ui/core/styles/makeStyles';
@@ -47,6 +51,11 @@ const NewGameForm = () => {
   const onFormDataChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const [robots, setRobots] = useState({
+    robot1: false,
+    robot2: false,
+    robot3: false,
+  });
   const onSubmitLoginForm = event => {
     event.preventDefault();
     dispatch(
@@ -58,6 +67,12 @@ const NewGameForm = () => {
       ),
     );
   };
+
+  const robotPlayers = [
+    { id: 'DumbNPC', label: 'easy' },
+    { id: 'SimpleNPC', label: 'medium' },
+    { id: 'CalculatedNPC', label: 'hard' },
+  ];
 
   const classes = useStyles();
 
@@ -78,7 +93,35 @@ const NewGameForm = () => {
             name='id1'
             autoFocus
             onChange={onFormDataChange}
-          />
+            helperText='Please select your opponent'
+            select={robots.robot1}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position='end'>
+                  {robots.robot1 ? (
+                    <AndroidIcon
+                      onClick={() => {
+                        setRobots({ ...robots, robot1: false });
+                      }}
+                    />
+                  ) : (
+                    <PersonIcon
+                      onClick={() => {
+                        setRobots({ ...robots, robot1: true });
+                      }}
+                    />
+                  )}
+                </InputAdornment>
+              ),
+            }}
+          >
+            {robots.robot1 &&
+              robotPlayers.map(option => (
+                <MenuItem key={option.id} value={option.id}>
+                  {option.label}
+                </MenuItem>
+              ))}
+          </TextField>
           <TextField
             disabled
             variant='outlined'
