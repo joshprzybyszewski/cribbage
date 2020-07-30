@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/core/styles';
 import ActionBox from 'app/containers/Game/ActionBox';
@@ -14,7 +15,14 @@ import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const useStyles = makeStyles({
   gameArea: {
-    width: '80%',
+    width: '60%',
+    maxWidth: '60%',
+    height: '100%',
+  },
+  extrasArea: {
+    width: '30%',
+    maxWidth: '40%',
+    height: '100%',
   },
 });
 
@@ -64,14 +72,13 @@ const Game = () => {
   const activeGame = useSelector(selectCurrentGame);
 
   return (
-    <div>
-      <Grid
+    <Box display='flex' flexDirection='row' p={1} m={1}>
+      <Box
+        display='flex'
+        justifyContent='flex-start'
+        m={1}
+        p={1}
         className={classes.gameArea}
-        container
-        xl
-        spacing={1}
-        direction='row'
-        justify='space-between'
       >
         <Grid
           item
@@ -126,9 +133,17 @@ const Game = () => {
             />
           </Grid>
         </Grid>
-      </Grid>
-      <RightSide key='rightSidePanel' />
-    </div>
+      </Box>
+      <Box
+        display='flex'
+        justifyContent='flex-end'
+        m={1}
+        p={1}
+        className={classes.extrasArea}
+      >
+        <RightSide key='rightSidePanel' />
+      </Box>
+    </Box>
   );
 };
 
