@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
@@ -12,12 +12,14 @@ import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 const CutAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
+  const [sliderVal, setSliderVal] = useState(0.5);
 
   const dispatch = useDispatch();
 
   return (
     <div>
       <Slider
+        value={sliderVal}
         disabled={!isBlocking}
         orientation='vertical'
         getAriaValueText={value => {
@@ -25,8 +27,8 @@ const CutAction = ({ isBlocking }) => {
         }}
         defaultValue={50}
         aria-labelledby='vertical-slider'
-        onChange={event => {
-          dispatch(actions.claimPoints(Number(event.target.value) / 100));
+        onChange={(_, newValue) => {
+          setSliderVal(newValue);
         }}
       />
       <Button
@@ -36,7 +38,9 @@ const CutAction = ({ isBlocking }) => {
         endIcon={<CallSplitIcon />}
         onClick={() => {
           // TODO get the value of the Slider and use that to cut
-          dispatch(actions.cutDeck());
+          console.log('trying action');
+          console.log(sliderVal);
+          dispatch(actions.cutDeck(sliderVal));
         }}
       >
         Cut

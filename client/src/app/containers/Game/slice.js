@@ -123,14 +123,7 @@ const gameSlice = createSlice({
         return { payload: { perc, history } };
       },
     },
-    cutDeck: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
+    cutDeck(state, action) {},
     pegCard: {
       reducer: () => {
         // Nothing here?

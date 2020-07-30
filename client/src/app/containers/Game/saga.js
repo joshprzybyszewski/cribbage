@@ -1,5 +1,6 @@
 import { actions as alertActions } from 'app/containers/Alert/slice';
 import { alertTypes } from 'app/containers/Alert/types';
+import { newPlayerAction } from 'app/containers/Game/convert';
 import {
   selectCurrentGameID,
   selectCurrentAction,
@@ -146,8 +147,28 @@ export function* handleBuildCrib() {
   yield handleGenericAction('crib');
 }
 
-export function* handleCutDeck() {
-  yield handleGenericAction('cut');
+export function* handleCutDeck({ payload: cutPct }) {
+  const currentUser = yield select(selectCurrentUser);
+  const gameID = yield select(selectCurrentGameID);
+  console.log(cutPct);
+
+  const playerAction = newPlayerAction(currentUser.id, gameID, 'cut', {
+    p: cutPct,
+  });
+
+  console.log(playerAction);
+
+  try {
+    yield axios.post('/action', playerAction);
+    yield put(gameActions.refreshGame(gameID));
+  } catch (err) {
+    yield put(
+      alertActions.addAlert(
+        `handling action broke ${err.response ? err.response.data : err}`,
+        alertTypes.error,
+      ),
+    );
+  }
 }
 
 export function* handlePeg() {
