@@ -89,14 +89,7 @@ const gameSlice = createSlice({
         return { payload: { card, history } };
       },
     },
-    dealCards: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
+    dealCards() {},
     buildCrib: {
       reducer: () => {
         // Nothing here?

@@ -139,14 +139,6 @@ function* handleGenericAction(phase) {
   }
 }
 
-export function* handleDeal() {
-  yield handleGenericAction('deal');
-}
-
-export function* handleBuildCrib() {
-  yield handleGenericAction('crib');
-}
-
 // postAction returns the next redux action to dispatch so each function* can `put` it
 const postAction = async playerAction => {
   try {
@@ -159,6 +151,18 @@ const postAction = async playerAction => {
   }
   return gameActions.refreshGame(playerAction.gID);
 };
+
+export function* handleDeal({ payload: { userID, gameID, numShuffles } }) {
+  const playerAction = newPlayerAction(userID, gameID, 'deal', {
+    ns: numShuffles,
+  });
+  const next = yield postAction(playerAction);
+  yield put(next);
+}
+
+export function* handleBuildCrib() {
+  yield handleGenericAction('crib');
+}
 
 export function* handleCutDeck({ payload: { userID, gameID, cutPct } }) {
   const playerAction = newPlayerAction(userID, gameID, 'cut', {
