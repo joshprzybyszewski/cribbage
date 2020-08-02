@@ -13,7 +13,7 @@ import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 const CutAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
-  const [sliderVal, setSliderVal] = useState(0.5);
+  const [sliderVal, setSliderVal] = useState(50);
   const { currentUser, gameID } = useCurrentPlayerAndGame();
 
   const dispatch = useDispatch();
