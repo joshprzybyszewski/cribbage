@@ -176,8 +176,6 @@ export function* handleCountHand({
       pts: points,
     },
   );
-  console.log(isCrib);
-  console.log(playerAction);
   const next = yield postAction(playerAction);
   yield put(next);
 }

@@ -16,7 +16,6 @@ const CountHandAction = ({ isBlocking, isCrib }) => {
   const [points, handlePointsChange] = useFormInput(0);
   const { currentUser, gameID } = useCurrentPlayerAndGame();
   const dispatch = useDispatch();
-  console.log(isCrib);
   return (
     <FormGroup row autoComplete='off'>
       <FormControl>
