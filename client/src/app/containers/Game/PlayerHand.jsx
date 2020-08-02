@@ -5,9 +5,7 @@ import GridList from '@material-ui/core/GridList';
 import PlayingCard from 'app/containers/Game/PlayingCard';
 import PropTypes from 'prop-types';
 
-const showOpponentsHand = phase => {
-  return phase !== 'Deal';
-};
+const showOpponentsHand = phase => phase !== 'Deal';
 
 const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
   if (!hand || !showOpponentsHand(phase)) {
