@@ -20,7 +20,7 @@ const ConnectedApp = ({ Component }) => (
 );
 
 ConnectedApp.propTypes = {
-  Component: PropTypes.node.isRequired,
+  Component: PropTypes.func.isRequired,
 };
 
 const render = Component => {
