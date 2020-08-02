@@ -12,14 +12,17 @@ import { useFormInput } from 'hooks/useFormInput';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-const CountHandAction = ({ isBlocking }) => {
+const CountHandAction = ({ isBlocking, isCrib }) => {
   const [points, handlePointsChange] = useFormInput(0);
   const { currentUser, gameID } = useCurrentPlayerAndGame();
   const dispatch = useDispatch();
+  console.log(isCrib);
   return (
     <FormGroup row autoComplete='off'>
       <FormControl>
-        <InputLabel htmlFor='component-simple'>Hand Points</InputLabel>
+        <InputLabel htmlFor='component-simple'>
+          {isCrib ? 'Crib' : 'Hand'} Points
+        </InputLabel>
         <Input
           disabled={!isBlocking}
           id='component-simple'
@@ -38,6 +41,7 @@ const CountHandAction = ({ isBlocking }) => {
               userID: currentUser.id,
               gameID,
               points: Number(points),
+              isCrib,
             }),
           );
         }}
@@ -50,6 +54,7 @@ const CountHandAction = ({ isBlocking }) => {
 
 CountHandAction.propTypes = {
   isBlocking: PropTypes.bool.isRequired,
+  isCrib: PropTypes.bool.isRequired,
 };
 
 export default CountHandAction;

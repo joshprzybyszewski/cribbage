@@ -1,5 +1,6 @@
 import { actions as alertActions } from 'app/containers/Alert/slice';
 import { alertTypes } from 'app/containers/Alert/types';
+import { phase } from 'app/containers/Game/constants';
 import { newPlayerAction } from 'app/containers/Game/convert';
 import {
   selectCurrentGameID,
@@ -92,9 +93,6 @@ const getPlayerAction = (myID, gID, phase, currentAction) => {
               c: cardToGolangCard(currentAction.selectedCards[0]),
             };
       break;
-    case 'countcrib':
-      action = { pts: currentAction.points };
-      break;
     default:
       action = { badstate: true };
       break;
@@ -142,42 +140,46 @@ const postAction = async playerAction => {
   }
   return gameActions.refreshGame(playerAction.gID);
 };
-
-export function* handleDeal({ payload: { userID, gameID, numShuffles } }) {
-  const playerAction = newPlayerAction(userID, gameID, 'deal', {
-    ns: numShuffles,
-  });
-  const next = yield postAction(playerAction);
-  yield put(next);
-}
-
+// TODO refactor these two
 export function* handleBuildCrib() {
   yield handleGenericAction('crib');
-}
-
-export function* handleCutDeck({ payload: { userID, gameID, cutPct } }) {
-  const playerAction = newPlayerAction(userID, gameID, 'cut', {
-    p: cutPct,
-  });
-  const next = yield postAction(playerAction);
-  yield put(next);
 }
 
 export function* handlePeg() {
   yield handleGenericAction('peg');
 }
 
-export function* handleCountHand({ payload: { userID, gameID, points } }) {
-  const playerAction = newPlayerAction(userID, gameID, 'counthand', {
-    pts: points,
+export function* handleDeal({ payload: { userID, gameID, numShuffles } }) {
+  const playerAction = newPlayerAction(userID, gameID, phase.deal, {
+    ns: numShuffles,
   });
-  console.log(playerAction);
   const next = yield postAction(playerAction);
   yield put(next);
 }
 
-export function* handleCountCrib() {
-  yield handleGenericAction('countcrib');
+export function* handleCutDeck({ payload: { userID, gameID, cutPct } }) {
+  const playerAction = newPlayerAction(userID, gameID, phase.cut, {
+    p: cutPct,
+  });
+  const next = yield postAction(playerAction);
+  yield put(next);
+}
+
+export function* handleCountHand({
+  payload: { userID, gameID, points, isCrib },
+}) {
+  const playerAction = newPlayerAction(
+    userID,
+    gameID,
+    isCrib ? phase.countCrib : phase.countHand,
+    {
+      pts: points,
+    },
+  );
+  console.log(isCrib);
+  console.log(playerAction);
+  const next = yield postAction(playerAction);
+  yield put(next);
 }
 
 export function* gameSaga() {
@@ -190,6 +192,5 @@ export function* gameSaga() {
     takeLatest(gameActions.cutDeck.type, handleCutDeck),
     takeLatest(gameActions.pegCard.type, handlePeg),
     takeLatest(gameActions.countHand.type, handleCountHand),
-    takeLatest(gameActions.countCrib.type, handleCountCrib),
   ]);
 }

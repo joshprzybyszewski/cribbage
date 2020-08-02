@@ -1,7 +1,6 @@
 import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
-import CountCribAction from 'app/containers/Game/CountCribAction';
 import CountHandAction from 'app/containers/Game/CountHandAction';
 import CribAction from 'app/containers/Game/CribAction';
 import CutAction from 'app/containers/Game/CutAction';
@@ -23,9 +22,9 @@ const Action = ({ phase, isBlocking }) => {
     case 'Pegging':
       return <PegAction isBlocking={isBlocking} />;
     case 'Counting':
-      return <CountHandAction isBlocking={isBlocking} />;
+      return <CountHandAction isBlocking={isBlocking} isCrib={false} />;
     case 'CribCounting':
-      return <CountCribAction isBlocking={isBlocking} />;
+      return <CountHandAction isBlocking={isBlocking} isCrib={true} />;
     default:
       return 'dev error!';
   }
