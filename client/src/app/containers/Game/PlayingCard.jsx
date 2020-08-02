@@ -82,13 +82,13 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
 
   return (
     <div
-      onClick={mine ? toggleChosen : () => {}}
+      onClick={mine && toggleChosen}
       className={`w-12 h-16 text-center align-middle inline-block border-2 border-black ${
         disabled ? 'bg-gray-500' : 'bg-white'
       } ${useRed ? 'text-red-700' : 'text-black'}`}
       style={{
         position: 'relative',
-        top: chosen ? '-10px' : '',
+        top: chosen && '-10px',
       }}
     >
       {card.name}
