@@ -98,9 +98,9 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
 
 PlayingCard.propTypes = {
   card: PropTypes.object.isRequired,
-  disabled: PropTypes.bool.isRequired,
-  experimental: PropTypes.bool.isRequired,
-  mine: PropTypes.bool.isRequired,
+  disabled: PropTypes.bool,
+  experimental: PropTypes.bool,
+  mine: PropTypes.bool,
 };
 
 export default PlayingCard;
