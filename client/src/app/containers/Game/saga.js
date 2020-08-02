@@ -75,18 +75,12 @@ const getPlayerAction = (myID, gID, phase, currentAction) => {
   };
   let action = {};
   switch (phase) {
-    case 'deal':
-      action = { ns: currentAction.numShuffles };
-      break;
     case 'crib':
       action = {
         cs: currentAction.selectedCards
           ? currentAction.selectedCards.map(cardToGolangCard)
           : [],
       };
-      break;
-    case 'cut':
-      action = { p: currentAction.percCut };
       break;
     case 'peg':
       action =
@@ -97,9 +91,6 @@ const getPlayerAction = (myID, gID, phase, currentAction) => {
           : {
               c: cardToGolangCard(currentAction.selectedCards[0]),
             };
-      break;
-    case 'counthand':
-      action = { pts: currentAction.points };
       break;
     case 'countcrib':
       action = { pts: currentAction.points };
