@@ -4,14 +4,16 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 import Navbar from 'app/components/Navbar';
 import Alert from 'app/containers/Alert';
 import LeftDrawer from 'app/containers/LeftDrawer';
+import {
+  drawerWidth,
+  drawerCloseDelay,
+} from 'app/containers/LeftDrawer/constants';
 import { selectLoggedIn } from 'auth/selectors';
 import { sliceKey, reducer } from 'auth/slice';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
-
-const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -48,14 +50,16 @@ const Layout = props => {
   const loggedIn = useSelector(selectLoggedIn);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [mouseInDrawer, drawerMouseOverBinding] = useMouseIn();
+
   useEffect(() => {
-    if (drawerOpen) {
+    if (drawerOpen && !mouseInDrawer) {
       const timer = setTimeout(() => {
         setDrawerOpen(false);
-      }, 5000);
+      }, drawerCloseDelay);
       return () => clearTimeout(timer);
     }
-  }, [drawerOpen]);
+  }, [drawerOpen, mouseInDrawer]);
 
   const handleDrawerOpen = () => {
     setDrawerOpen(true);
@@ -70,7 +74,12 @@ const Layout = props => {
     <React.Fragment>
       <Navbar loggedIn={loggedIn} handleDrawerOpen={handleDrawerOpen} />
       <div className={classes.root}>
-        <LeftDrawer isOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
+        <LeftDrawer
+          width={drawerWidth}
+          mouseOverBinding={drawerMouseOverBinding}
+          isOpen={drawerOpen}
+          handleDrawerClose={handleDrawerClose}
+        />
         <main
           className={clsx(classes.content, {
             [classes.contentShift]: drawerOpen,
@@ -87,6 +96,17 @@ const Layout = props => {
 
 Layout.propTypes = {
   children: PropTypes.node.isRequired,
+};
+
+const useMouseIn = () => {
+  const [mouseIn, setMouseIn] = useState(false);
+  const onMouseEnter = () => {
+    setMouseIn(true);
+  };
+  const onMouseLeave = () => {
+    setMouseIn(false);
+  };
+  return [mouseIn, { onMouseEnter, onMouseLeave }];
 };
 
 export default Layout;

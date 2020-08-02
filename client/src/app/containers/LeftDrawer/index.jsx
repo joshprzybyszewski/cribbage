@@ -5,6 +5,7 @@ import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import { drawerWidth } from 'app/containers/LeftDrawer/constants';
 import LoggedInDrawer from 'app/containers/LeftDrawer/LoggedInDrawer';
 import LoggedOutDrawer from 'app/containers/LeftDrawer/LoggedOutDrawer';
 import { selectLoggedIn } from 'auth/selectors';
@@ -12,8 +13,6 @@ import { sliceKey, reducer } from 'auth/slice';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
-
-const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
   drawer: {
@@ -33,7 +32,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const LeftDrawer = ({ isOpen, handleDrawerClose }) => {
+const LeftDrawer = ({ isOpen, handleDrawerClose, mouseOverBinding }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   const loggedIn = useSelector(selectLoggedIn);
 
@@ -48,6 +47,7 @@ const LeftDrawer = ({ isOpen, handleDrawerClose }) => {
       classes={{
         paper: classes.drawerPaper,
       }}
+      {...mouseOverBinding}
     >
       <div className={classes.drawerHeader}>
         <IconButton onClick={handleDrawerClose}>
@@ -63,6 +63,7 @@ const LeftDrawer = ({ isOpen, handleDrawerClose }) => {
 LeftDrawer.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   handleDrawerClose: PropTypes.func.isRequired,
+  mouseOverBinding: PropTypes.object.isRequired,
 };
 
 export default LeftDrawer;
