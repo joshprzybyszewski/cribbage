@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 const showOpponentsHand = phase => phase !== 'Deal';
 
 const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
-  if (!hand || mine === undefined || !showOpponentsHand(phase)) {
+  if (!hand || !showOpponentsHand(phase)) {
     return null;
   }
 
