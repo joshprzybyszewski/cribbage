@@ -6,21 +6,22 @@ import PlayingCard from 'app/containers/Game/PlayingCard';
 import PropTypes from 'prop-types';
 
 const CribHand = ({ cards }) => {
+  if (!cards) {
+    return null;
+  }
   return (
-    !cards || (
-      <Grid item container direction={'row'} justify='center' spacing={1}>
-        <GridList>
-          {cards.map((card, index) => (
-            <PlayingCard key={`cribcard${index}`} card={card} />
-          ))}
-        </GridList>
-      </Grid>
-    )
+    <Grid item container direction={'row'} justify='center' spacing={1}>
+      <GridList>
+        {cards.map((card, index) => (
+          <PlayingCard key={`cribcard${index}`} card={card} />
+        ))}
+      </GridList>
+    </Grid>
   );
 };
 
 CribHand.propTypes = {
-  cards: PropTypes.array.isRequired,
+  cards: PropTypes.array,
 };
 
 export default CribHand;

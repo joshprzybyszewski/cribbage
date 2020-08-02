@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 const showOpponentsHand = phase => phase !== 'Deal';
 
 const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
-  if (!hand || !showOpponentsHand(phase)) {
+  if (!hand || mine === undefined || !showOpponentsHand(phase)) {
     return null;
   }
 
@@ -39,11 +39,11 @@ const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
 };
 
 PlayerHand.propTypes = {
-  hand: PropTypes.array.isRequired,
+  hand: PropTypes.array,
   phase: PropTypes.string.isRequired,
-  side: PropTypes.string.isRequired,
-  pegged: PropTypes.array.isRequired,
-  mine: PropTypes.bool.isRequired,
+  side: PropTypes.bool,
+  pegged: PropTypes.array,
+  mine: PropTypes.bool,
 };
 
 export default PlayerHand;
