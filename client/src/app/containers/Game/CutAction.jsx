@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import CallSplitIcon from '@material-ui/icons/CallSplit';
+import { useCurrentPlayerAndGame } from 'app/containers/Game/hooks';
 import { gameSaga } from 'app/containers/Game/saga';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
@@ -13,6 +14,7 @@ const CutAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
   const [sliderVal, setSliderVal] = useState(0.5);
+  const { currentUser, gameID } = useCurrentPlayerAndGame();
 
   const dispatch = useDispatch();
 
@@ -37,7 +39,13 @@ const CutAction = ({ isBlocking }) => {
         color='primary'
         endIcon={<CallSplitIcon />}
         onClick={() => {
-          dispatch(actions.cutDeck(sliderVal / 100));
+          dispatch(
+            actions.cutDeck({
+              userID: currentUser.id,
+              gameID,
+              cutPct: sliderVal / 100,
+            }),
+          );
         }}
       >
         Cut

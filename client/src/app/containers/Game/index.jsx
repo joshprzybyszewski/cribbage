@@ -65,7 +65,6 @@ const Game = () => {
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGame = useSelector(selectCurrentGame);
-
   // event handlers
   const onRefreshCurrentGame = id => {
     dispatch(actions.refreshGame(id, history));

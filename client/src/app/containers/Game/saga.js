@@ -147,23 +147,25 @@ export function* handleBuildCrib() {
   yield handleGenericAction('crib');
 }
 
-export function* handleCutDeck({ payload: cutPct }) {
-  const currentUser = yield select(selectCurrentUser);
-  const gameID = yield select(selectCurrentGameID);
-  const playerAction = newPlayerAction(currentUser.id, gameID, 'cut', {
-    p: cutPct,
-  });
+// postAction returns the next redux action to dispatch so each function* can `put` it
+const postAction = async playerAction => {
   try {
-    yield axios.post('/action', playerAction);
-    yield put(gameActions.refreshGame(gameID));
+    await axios.post('/action', playerAction);
   } catch (err) {
-    yield put(
-      alertActions.addAlert(
-        `handling action broke ${err.response ? err.response.data : err}`,
-        alertTypes.error,
-      ),
+    return alertActions.addAlert(
+      `handling action broke ${err.response ? err.response.data : err}`,
+      alertTypes.error,
     );
   }
+  return gameActions.refreshGame(playerAction.gID);
+};
+
+export function* handleCutDeck({ payload: { userID, gameID, cutPct } }) {
+  const playerAction = newPlayerAction(userID, gameID, 'cut', {
+    p: cutPct,
+  });
+  const next = yield postAction(playerAction);
+  yield put(next);
 }
 
 export function* handlePeg() {
