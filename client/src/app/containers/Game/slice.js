@@ -107,27 +107,7 @@ const gameSlice = createSlice({
         return { payload: { history } };
       },
     },
-    claimPoints: {
-      reducer: (state, action) => {
-        const points = action.payload.points;
-        if (!points) {
-          return;
-        }
-
-        state.currentAction.points = points;
-      },
-      prepare: (points, history) => {
-        return { payload: { points, history } };
-      },
-    },
-    countHand: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
+    countHand() {},
     countCrib: {
       reducer: () => {
         // Nothing here?

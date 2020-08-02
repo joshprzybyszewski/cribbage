@@ -176,8 +176,13 @@ export function* handlePeg() {
   yield handleGenericAction('peg');
 }
 
-export function* handleCountHand() {
-  yield handleGenericAction('counthand');
+export function* handleCountHand({ payload: { userID, gameID, points } }) {
+  const playerAction = newPlayerAction(userID, gameID, 'counthand', {
+    pts: points,
+  });
+  console.log(playerAction);
+  const next = yield postAction(playerAction);
+  yield put(next);
 }
 
 export function* handleCountCrib() {

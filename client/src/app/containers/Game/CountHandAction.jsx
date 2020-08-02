@@ -6,21 +6,16 @@ import FormGroup from '@material-ui/core/FormGroup';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 import SendIcon from '@material-ui/icons/Send';
-import { gameSaga } from 'app/containers/Game/saga';
-import { selectCurrentAction } from 'app/containers/Game/selectors';
-import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { useCurrentPlayerAndGame } from 'app/containers/Game/hooks';
+import { actions } from 'app/containers/Game/slice';
+import { useFormInput } from 'hooks/useFormInput';
 import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import { useDispatch } from 'react-redux';
 
 const CountHandAction = ({ isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
-
+  const [points, handlePointsChange] = useFormInput(0);
+  const { currentUser, gameID } = useCurrentPlayerAndGame();
   const dispatch = useDispatch();
-
-  const currentAction = useSelector(selectCurrentAction);
-
   return (
     <FormGroup row autoComplete='off'>
       <FormControl>
@@ -29,18 +24,22 @@ const CountHandAction = ({ isBlocking }) => {
           disabled={!isBlocking}
           id='component-simple'
           type='number'
-          onChange={event => {
-            dispatch(actions.claimPoints(Number(event.target.value)));
-          }}
+          onChange={handlePointsChange}
         />
       </FormControl>
       <Button
-        disabled={!isBlocking || currentAction.points < 0}
+        disabled={!isBlocking || points < 0}
         variant='contained'
         color='primary'
         endIcon={<SendIcon />}
         onClick={() => {
-          dispatch(actions.countHand());
+          dispatch(
+            actions.countHand({
+              userID: currentUser.id,
+              gameID,
+              points: Number(points),
+            }),
+          );
         }}
       >
         Count
