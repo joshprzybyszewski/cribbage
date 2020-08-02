@@ -48,24 +48,24 @@ const useStyles = makeStyles(theme => ({
 const Layout = props => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   const loggedIn = useSelector(selectLoggedIn);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [mouseInDrawer, drawerMouseOverBinding] = useMouseIn();
 
   useEffect(() => {
-    if (drawerOpen && !mouseInDrawer) {
+    if (isDrawerOpen && !mouseInDrawer) {
       const timer = setTimeout(() => {
-        setDrawerOpen(false);
+        setIsDrawerOpen(false);
       }, drawerCloseDelay);
       return () => clearTimeout(timer);
     }
-  }, [drawerOpen, mouseInDrawer]);
+  }, [isDrawerOpen, mouseInDrawer]);
 
   const handleDrawerOpen = () => {
-    setDrawerOpen(true);
+    setIsDrawerOpen(true);
   };
   const handleDrawerClose = () => {
-    setDrawerOpen(false);
+    setIsDrawerOpen(false);
   };
 
   const classes = useStyles();
@@ -77,12 +77,12 @@ const Layout = props => {
         <LeftDrawer
           width={drawerWidth}
           mouseOverBinding={drawerMouseOverBinding}
-          isOpen={drawerOpen}
+          isOpen={isDrawerOpen}
           handleDrawerClose={handleDrawerClose}
         />
         <main
           className={clsx(classes.content, {
-            [classes.contentShift]: drawerOpen,
+            [classes.contentShift]: isDrawerOpen,
           })}
         >
           <div className={classes.drawerHeader} />
