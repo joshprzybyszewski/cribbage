@@ -4,13 +4,15 @@ import Button from '@material-ui/core/Button';
 import SendIcon from '@material-ui/icons/Send';
 import { gameSaga } from 'app/containers/Game/saga';
 import {
-  selectCurrentAction,
   selectCurrentGame,
+  selectSelectedCards,
 } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useCurrentPlayerAndGame } from './hooks';
 
 const expNumCardsToCribForGame = game => {
   if (game.teams.length === 3 || game.teams[0].players.length === 2) {
@@ -26,21 +28,27 @@ const CribAction = ({ isBlocking }) => {
 
   const dispatch = useDispatch();
 
-  const currentAction = useSelector(selectCurrentAction);
+  const selectedCards = useSelector(selectSelectedCards);
   const activeGame = useSelector(selectCurrentGame);
+  const { currentUser, gameID } = useCurrentPlayerAndGame();
 
   return (
     <Button
       disabled={
         !isBlocking ||
-        currentAction.selectedCards.length !==
-          expNumCardsToCribForGame(activeGame)
+        selectedCards.length !== expNumCardsToCribForGame(activeGame)
       }
       variant='contained'
       color='primary'
       endIcon={<SendIcon />}
       onClick={() => {
-        dispatch(actions.buildCrib());
+        dispatch(
+          actions.buildCrib({
+            userID: currentUser.id,
+            gameID,
+            cards: selectedCards,
+          }),
+        );
       }}
     >
       Build Crib

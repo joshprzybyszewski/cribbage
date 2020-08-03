@@ -4,11 +4,13 @@ import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import SendIcon from '@material-ui/icons/Send';
 import { gameSaga } from 'app/containers/Game/saga';
-import { selectCurrentAction } from 'app/containers/Game/selectors';
+import { selectSelectedCards } from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useCurrentPlayerAndGame } from './hooks';
 
 const PegAction = ({ isBlocking }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
@@ -16,7 +18,8 @@ const PegAction = ({ isBlocking }) => {
 
   const dispatch = useDispatch();
 
-  const currentAction = useSelector(selectCurrentAction);
+  const selectedCards = useSelector(selectSelectedCards);
+  const { currentUser, gameID } = useCurrentPlayerAndGame();
 
   return (
     <ButtonGroup
@@ -28,17 +31,23 @@ const PegAction = ({ isBlocking }) => {
         disabled={!isBlocking}
         color='secondary'
         onClick={() => {
-          dispatch(actions.pegCard());
+          dispatch(actions.sayGo({ userID: currentUser.id, gameID }));
         }}
       >
         Say Go
       </Button>
       <Button
-        disabled={!isBlocking || currentAction.selectedCards.length !== 1}
+        disabled={!isBlocking || selectedCards.length !== 1}
         color='primary'
         endIcon={<SendIcon />}
         onClick={() => {
-          dispatch(actions.pegCard());
+          dispatch(
+            actions.pegCard({
+              userID: currentUser.id,
+              gameID,
+              card: selectedCards[0],
+            }),
+          );
         }}
       >
         Peg

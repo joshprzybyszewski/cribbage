@@ -17,3 +17,8 @@ export const selectCurrentAction = createSelector(
   [selectDomain],
   gameState => gameState.currentAction,
 );
+
+export const selectSelectedCards = createSelector(
+  [selectDomain],
+  gameState => gameState.selectedCards,
+);

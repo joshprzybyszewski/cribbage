@@ -3,12 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 export const initialState = {
   currentGameID: '',
   currentGame: {},
-  currentAction: {
-    numShuffles: 0,
-    selectedCards: [],
-    percCut: 0.5,
-    points: -1,
-  },
+  selectedCards: [],
   loading: true,
 };
 
@@ -59,63 +54,27 @@ const gameSlice = createSlice({
         return { payload: { id: gameID } };
       },
     },
-    shuffleDeck(state) {
-      isNaN(state.currentAction.numShuffles)
-        ? (state.currentAction.numShuffles = 1)
-        : (state.currentAction.numShuffles =
-            state.currentAction.numShuffles + 1);
+    selectCard(state, action) {
+      const { payload: card } = action;
+      if (!state.selectedCards.map(c => c.name).includes(card.name)) {
+        state.selectedCards.push(card);
+      }
     },
-    selectCard: {
-      reducer: (state, action) => {
-        // Nothing here?
-        const card = action.payload.card;
-        if (!card) {
-          return;
-        }
-
-        const currentIndex = state.currentAction.selectedCards.findIndex(
-          c => c.name === card.name,
-        );
-        const newSelected = [...state.currentAction.selectedCards];
-
-        if (currentIndex === -1) {
-          newSelected.push(card);
-        } else {
-          newSelected.splice(currentIndex, 1);
-        }
-        state.currentAction.selectedCards = newSelected;
-      },
-      prepare: (card, history) => {
-        return { payload: { card, history } };
-      },
+    unselectCard(state, action) {
+      const { payload: card } = action;
+      state.selectedCards = state.selectedCards.filter(
+        c => c.name !== card.name,
+      );
+    },
+    clearSelectedCards(state) {
+      state.selectedCards = [];
     },
     dealCards() {},
-    buildCrib: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
+    buildCrib() {},
     cutDeck() {},
-    pegCard: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
+    pegCard() {},
+    sayGo() {},
     countHand() {},
-    countCrib: {
-      reducer: () => {
-        // Nothing here?
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
-    },
   },
 });
 
