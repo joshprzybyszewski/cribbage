@@ -26,6 +26,7 @@ import {
 import { authSaga } from 'auth/saga';
 import { selectCurrentUser } from 'auth/selectors';
 import { sliceKey as authSliceKey, reducer as authReducer } from 'auth/slice';
+import Moment from 'react-moment';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
@@ -82,8 +83,12 @@ const ActiveGamesTable = () => {
                     }
                   />
                 </TableCell>
-                <TableCell>{ag.created}</TableCell>
-                <TableCell>{ag.lastMove}</TableCell>
+                <TableCell>
+                  <Moment format='hh:mm:ss, MMM DD, YYYY'>{ag.created}</Moment>
+                </TableCell>
+                <TableCell>
+                  <Moment format='hh:mm:ss, MMM DD, YYYY'>{ag.lastMove}</Moment>
+                </TableCell>
                 <TableCell>
                   <Link to={`game/${ag.gameID}`}>
                     <IconButton aria-label='play'>
