@@ -31,6 +31,7 @@ const DealAction = ({ isBlocking }) => {
         color='primary'
         endIcon={<SendIcon />}
         onClick={() => {
+          setNumShuffles(0);
           dispatch(
             actions.dealCards({ userID: currentUser.id, gameID, numShuffles }),
           );
