@@ -11,7 +11,6 @@ const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
   if (!hand || !showOpponentsHand(phase)) {
     return null;
   }
-
   return (
     <Grid
       item

@@ -4,15 +4,11 @@ import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import CallSplitIcon from '@material-ui/icons/CallSplit';
 import { useCurrentPlayerAndGame } from 'app/containers/Game/hooks';
-import { gameSaga } from 'app/containers/Game/saga';
-import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
+import { actions } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const CutAction = ({ isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
   const [sliderVal, setSliderVal] = useState(50);
   const { currentUser, gameID } = useCurrentPlayerAndGame();
 

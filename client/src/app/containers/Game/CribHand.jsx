@@ -6,10 +6,7 @@ import PlayingCard from 'app/containers/Game/PlayingCard';
 import PropTypes from 'prop-types';
 
 const CribHand = ({ cards }) => {
-  if (!cards) {
-    return null;
-  }
-  return (
+  return !cards ? null : (
     <Grid item container direction={'row'} justify='center' spacing={1}>
       <GridList>
         {cards.map((card, index) => (
