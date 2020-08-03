@@ -12,38 +12,21 @@ const gameSlice = createSlice({
   initialState,
   reducers: {
     requestGame(state, action) {
-      state.currentGameID = action.payload.gameID;
       state.isLoading = true;
+      state.currentGameID = action.payload.gameID;
     },
     requestGameSuccess(state, action) {
-      state.currentGame = action.payload;
       state.isLoading = false;
+      state.currentGame = action.payload;
     },
     requestGameFailure(state) {
+      state.isLoading = false;
       state.currentGame = {};
-      state.isLoading = false;
     },
-    gameRetrieved(state, action) {
-      state.isLoading = false;
-      state.currentGame = action.payload.data;
-      state.currentAction = initialState.currentAction;
-      switch (state.currentGame.phase) {
-        case `Deal`:
-          // TODO leave numShuffles
-          break;
-        default:
-          // TODO here too
-          break;
-      }
-    },
-    exitGame: {
-      reducer: state => {
-        state.isLoading = false;
-        state.currentGameID = '';
-      },
-      prepare: history => {
-        return { payload: { history } };
-      },
+    exitGame(state) {
+      state.currentGameID = '';
+      state.currentGame = {};
+      state.selectedCards = [];
     },
     selectCard(state, action) {
       const { payload: card } = action;
