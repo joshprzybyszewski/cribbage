@@ -1,9 +1,5 @@
 import React from 'react';
 
-import blue from '@material-ui/core/colors/blue';
-import green from '@material-ui/core/colors/green';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -12,22 +8,8 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
+import PlayerIcon from 'app/components/PlayerIcon';
 import PropTypes from 'prop-types';
-
-// TODO import from a utils instead of redeclaring
-// or even make an "atom" that is the icon
-const myColorToHue = color => {
-  return color
-    ? color.includes('red')
-      ? red[800]
-      : color.includes('blue')
-      ? blue[800]
-      : color.includes('green')
-      ? green[800]
-      : grey[400]
-    : grey[400];
-};
 
 const ScoreBoard = ({ current_dealer, teams }) => {
   return (
@@ -47,11 +29,7 @@ const ScoreBoard = ({ current_dealer, teams }) => {
               return (
                 <TableRow key={t.color}>
                   <TableCell>
-                    <PersonPinCircleIcon
-                      style={{
-                        color: myColorToHue(t.color),
-                      }}
-                    />
+                    <PlayerIcon color={t.color} />
                   </TableCell>
                   <TableCell>{t.current_score}</TableCell>
                   <TableCell>{t.lag_score}</TableCell>

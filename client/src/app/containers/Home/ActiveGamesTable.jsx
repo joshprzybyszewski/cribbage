@@ -1,9 +1,5 @@
 import React from 'react';
 
-import blue from '@material-ui/core/colors/blue';
-import green from '@material-ui/core/colors/green';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -12,9 +8,9 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
+import PlayerIcon from 'app/components/PlayerIcon';
 import { gameSaga } from 'app/containers/Game/saga';
 import {
   sliceKey as gameSliceKey,
@@ -33,18 +29,6 @@ import { sliceKey as authSliceKey, reducer as authReducer } from 'auth/slice';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-const myColorToHue = color => {
-  return color
-    ? color.includes('red')
-      ? red[800]
-      : color.includes('blue')
-      ? blue[800]
-      : color.includes('green')
-      ? green[800]
-      : grey[400]
-    : grey[400];
-};
 
 const ActiveGamesTable = () => {
   useInjectReducer({ key: authSliceKey, reducer: authReducer });
@@ -90,14 +74,12 @@ const ActiveGamesTable = () => {
                     .join(', ')}
                 </TableCell>
                 <TableCell>
-                  <PersonPinCircleIcon
-                    style={{
-                      color: myColorToHue(
-                        ag.players
-                          .filter(p => p.id === currentUser.id)
-                          .map(p => p.color),
-                      ),
-                    }}
+                  <PlayerIcon
+                    color={
+                      ag.players
+                        .filter(p => p.id === currentUser.id)
+                        .map(p => p.color)[0]
+                    }
                   />
                 </TableCell>
                 <TableCell>{ag.created}</TableCell>
