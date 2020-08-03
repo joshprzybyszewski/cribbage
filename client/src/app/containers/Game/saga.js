@@ -3,9 +3,8 @@ import { alertTypes } from 'app/containers/Alert/types';
 import { phase } from 'app/containers/Game/constants';
 import { newPlayerAction } from 'app/containers/Game/convert';
 import { actions as gameActions } from 'app/containers/Game/slice';
-import { selectCurrentUser } from 'auth/selectors';
 import axios from 'axios';
-import { all, put, select, takeLatest, call } from 'redux-saga/effects';
+import { all, put, takeLatest } from 'redux-saga/effects';
 
 const cardToGolangCard = c => {
   const magicMap = {
@@ -32,22 +31,6 @@ export function* handleRequestGame({ payload: { userID, gameID } }) {
       ),
     );
     yield put(gameActions.requestGameFailure());
-  }
-}
-
-export function* handleExitGame({ payload: { history } }) {
-  yield call(history.push, '/home');
-}
-
-export function* handleRefreshCurrentGame({ payload: { id } }) {
-  const currentUser = yield select(selectCurrentUser);
-  yield put(gameActions.requestGame({ userID: currentUser.id, gameID: id }));
-
-  try {
-    const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
-    yield put(gameActions.gameRetrieved({ data: res.data }));
-  } catch (err) {
-    yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }
 }
 
@@ -124,7 +107,6 @@ export function* handleCountHand({
 export function* gameSaga() {
   yield all([
     takeLatest(gameActions.requestGame.type, handleRequestGame),
-    takeLatest(gameActions.exitGame.type, handleExitGame),
     takeLatest(gameActions.dealCards.type, handleDeal),
     takeLatest(gameActions.buildCrib.type, handleBuildCrib),
     takeLatest(gameActions.cutDeck.type, handleCutDeck),
