@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export const useFormInput = initialState => {
-  const [val, setVal] = useState(initialState);
-  const handleChange = e => setVal(e.target.value);
-  return [val, handleChange];
+  const [value, setValue] = useState(initialState);
+  const handleChange = e => setValue(e.target.value);
+  return [{ value, setValue }, handleChange];
 };

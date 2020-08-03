@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
 const CountHandAction = ({ isBlocking, isCrib }) => {
-  const [points, handlePointsChange] = useFormInput(0);
+  const [points, handlePointsChange] = useFormInput('');
   const { currentUser, gameID } = useCurrentPlayerAndGame();
   const dispatch = useDispatch();
   return (
@@ -26,6 +26,7 @@ const CountHandAction = ({ isBlocking, isCrib }) => {
           disabled={!isBlocking}
           id='component-simple'
           type='number'
+          value={points.value}
           onChange={handlePointsChange}
         />
       </FormControl>
@@ -35,11 +36,12 @@ const CountHandAction = ({ isBlocking, isCrib }) => {
         color='primary'
         endIcon={<SendIcon />}
         onClick={() => {
+          points.setValue('');
           dispatch(
             actions.countHand({
               userID: currentUser.id,
               gameID,
-              points: Number(points),
+              points: Number(points.value),
               isCrib,
             }),
           );
