@@ -22,7 +22,7 @@ export const App = () => {
           <PrivateRoute exact path='/home' component={Home} />
           <PrivateRoute exact path='/newgame' component={NewGameForm} />
           <PrivateRoute exact path='/account' component={Account} />
-          <PrivateRoute exact path='/game' component={Game} />
+          <PrivateRoute path='/game/:id' component={Game} />
         </Switch>
       </Layout>
     </BrowserRouter>

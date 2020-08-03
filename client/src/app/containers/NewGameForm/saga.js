@@ -1,10 +1,9 @@
 import { actions as alertActions } from 'app/containers/Alert/slice';
 import { alertTypes } from 'app/containers/Alert/types';
-import { actions as gameActions } from 'app/containers/Game/slice';
 import { actions as newGameActions } from 'app/containers/NewGameForm/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import axios from 'axios';
-import { all, put, select, takeLatest } from 'redux-saga/effects';
+import { all, call, put, select, takeLatest } from 'redux-saga/effects';
 
 export function* handleCreateGame({
   payload: { opp1ID, opp2ID, teammateID, history },
@@ -22,8 +21,7 @@ export function* handleCreateGame({
       playerIDs: playerIDs,
     });
     const id = res.data.id;
-    yield put(gameActions.goToGame(id, history));
-    // yield call(history.push, '/home');
+    yield call(history.push, `/game/${id}`);
   } catch (err) {
     yield put(alertActions.addAlert(err.response.data, alertTypes.error));
   }

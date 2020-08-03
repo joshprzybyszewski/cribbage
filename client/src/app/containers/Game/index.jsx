@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -9,11 +9,14 @@ import PlayerHand from 'app/containers/Game/PlayerHand';
 import PlayingCard from 'app/containers/Game/PlayingCard';
 import { gameSaga } from 'app/containers/Game/saga';
 import ScoreBoard from 'app/containers/Game/ScoreBoard';
-import { selectCurrentGame } from 'app/containers/Game/selectors';
+import {
+  selectCurrentGame,
+  selectIsLoading,
+} from 'app/containers/Game/selectors';
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const showCutCard = phase => {
@@ -64,13 +67,18 @@ const Game = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
-  const activeGame = useSelector(selectCurrentGame);
+  const currentGame = useSelector(selectCurrentGame);
+  const isLoading = useSelector(selectIsLoading);
+  const { id } = useParams();
+  useEffect(() => {
+    dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
+  }, [currentUser.id, id]);
   // event handlers
   const onRefreshCurrentGame = id => {
     dispatch(actions.refreshGame(id, history));
   };
 
-  return (
+  return isLoading ? null : (
     <Grid container xl spacing={1} direction='row' justify='space-between'>
       <Grid
         item
@@ -82,8 +90,8 @@ const Game = () => {
       >
         <Grid item xs sm container>
           <PlayerHand
-            phase={activeGame.phase}
-            hand={handForPlayer(activeGame, currentUser.id, 'across')}
+            phase={currentGame.phase}
+            hand={handForPlayer(currentGame, currentUser.id, 'across')}
           />
         </Grid>
         <Grid
@@ -97,14 +105,14 @@ const Game = () => {
           <Grid item>
             <PlayerHand
               side
-              phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'left')}
+              phase={currentGame.phase}
+              hand={handForPlayer(currentGame, currentUser.id, 'left')}
             />
           </Grid>
           <Grid item>
             <ActionBox
-              phase={activeGame.phase}
-              isBlocking={Object.keys(activeGame.blocking_players).includes(
+              phase={currentGame.phase}
+              isBlocking={Object.keys(currentGame.blocking_players).includes(
                 currentUser.id,
               )}
             />
@@ -112,17 +120,17 @@ const Game = () => {
           <Grid item>
             <PlayerHand
               side
-              phase={activeGame.phase}
-              hand={handForPlayer(activeGame, currentUser.id, 'right')}
+              phase={currentGame.phase}
+              hand={handForPlayer(currentGame, currentUser.id, 'right')}
             />
           </Grid>
         </Grid>
         <Grid item xs sm container>
           <PlayerHand
             mine
-            phase={activeGame.phase}
-            hand={activeGame.hands[currentUser.id]}
-            pegged={activeGame.pegged_cards}
+            phase={currentGame.phase}
+            hand={currentGame.hands[currentUser.id]}
+            pegged={currentGame.pegged_cards}
           />
         </Grid>
       </Grid>
@@ -130,29 +138,29 @@ const Game = () => {
         <Grid item>
           <IconButton
             aria-label='refresh'
-            onClick={() => onRefreshCurrentGame(activeGame.id)}
+            onClick={() => onRefreshCurrentGame(currentGame.id)}
           >
             <RefreshIcon />
           </IconButton>
           <ScoreBoard
-            teams={activeGame.teams}
-            current_dealer={activeGame.current_dealer}
+            teams={currentGame.teams}
+            current_dealer={currentGame.current_dealer}
           />
         </Grid>
         <Grid item>
           {[
-            showCutCard(activeGame.phase) ? (
-              <PlayingCard key='cutCard' card={activeGame.cut_card} />
+            showCutCard(currentGame.phase) ? (
+              <PlayingCard key='cutCard' card={currentGame.cut_card} />
             ) : (
               <div key='deckTODOdiv'>
                 {'TODO put an image of the deck here'}
               </div>
             ),
-            <CribHand key='cribHand' cards={activeGame.crib} />,
+            <CribHand key='cribHand' cards={currentGame.crib} />,
             <div key='currentPeg'>
-              {activeGame.phase === 'Pegging'
+              {currentGame.phase === 'Pegging'
                 ? `Current Peg: ${
-                    activeGame.current_peg ? activeGame.current_peg : 0
+                    currentGame.current_peg ? currentGame.current_peg : 0
                   }`
                 : ''}
             </div>,

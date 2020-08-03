@@ -20,24 +20,10 @@ const cardToGolangCard = c => {
   };
 };
 
-export function* handleExitGame({ payload: { history } }) {
-  yield call(history.push, '/home');
-}
-
-export function* handleGoToGame({ payload: { id, history } }) {
-  if (!id) {
-    yield put(
-      alertActions.addAlert('No id in handleGoToGame', alertTypes.error),
-    );
-    return;
-  }
-
-  const currentUser = yield select(selectCurrentUser);
-
+export function* handleRequestGame({ payload: { userID, gameID } }) {
   try {
-    const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
-    yield put(gameActions.gameRetrieved({ data: res.data }));
-    yield call(history.push, '/game');
+    const res = yield axios.get(`/game/${gameID}?player=${userID}`);
+    yield put(gameActions.requestGameSuccess(res.data));
   } catch (err) {
     yield put(
       alertActions.addAlert(
@@ -45,7 +31,12 @@ export function* handleGoToGame({ payload: { id, history } }) {
         alertTypes.error,
       ),
     );
+    yield put(gameActions.requestGameFailure());
   }
+}
+
+export function* handleExitGame({ payload: { history } }) {
+  yield call(history.push, '/home');
 }
 
 export function* handleRefreshCurrentGame({ payload: { id } }) {
@@ -128,7 +119,7 @@ export function* handleCountHand({
 
 export function* gameSaga() {
   yield all([
-    takeLatest(gameActions.goToGame.type, handleGoToGame),
+    takeLatest(gameActions.requestGame.type, handleRequestGame),
     takeLatest(gameActions.exitGame.type, handleExitGame),
     takeLatest(gameActions.refreshGame.type, handleRefreshCurrentGame),
     takeLatest(gameActions.dealCards.type, handleDeal),

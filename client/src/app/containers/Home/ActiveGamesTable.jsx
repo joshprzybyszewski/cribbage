@@ -19,7 +19,6 @@ import { gameSaga } from 'app/containers/Game/saga';
 import {
   sliceKey as gameSliceKey,
   reducer as gameReducer,
-  actions as gameActions,
 } from 'app/containers/Game/slice';
 import { homeSaga } from 'app/containers/Home/saga';
 import { selectActiveGames } from 'app/containers/Home/selectors';
@@ -32,7 +31,7 @@ import { authSaga } from 'auth/saga';
 import { selectCurrentUser } from 'auth/selectors';
 import { sliceKey as authSliceKey, reducer as authReducer } from 'auth/slice';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const myColorToHue = color => {
@@ -54,7 +53,6 @@ const ActiveGamesTable = () => {
   useInjectSaga({ key: homeSliceKey, saga: homeSaga });
   useInjectReducer({ key: gameSliceKey, reducer: gameReducer });
   useInjectSaga({ key: gameSliceKey, saga: gameSaga });
-  const history = useHistory();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const activeGames = useSelector(selectActiveGames(currentUser.id));
@@ -62,9 +60,6 @@ const ActiveGamesTable = () => {
   // event handlers
   const onRefreshActiveGames = () => {
     dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
-  };
-  const onGoToGame = gID => {
-    dispatch(gameActions.goToGame(gID, history));
   };
 
   return (
@@ -86,39 +81,36 @@ const ActiveGamesTable = () => {
         <TableBody>
           {activeGames
             .filter(ag => ag && ag.gameID)
-            .map(ag => {
-              return (
-                <TableRow hover key={ag.gameID}>
-                  <TableCell component='th' scope='row'>
-                    {ag.players
-                      .filter(p => p.id !== currentUser.id)
-                      .map(p => p.name)
-                      .join(', ')}
-                  </TableCell>
-                  <TableCell>
-                    <PersonPinCircleIcon
-                      style={{
-                        color: myColorToHue(
-                          ag.players
-                            .filter(p => p.id === currentUser.id)
-                            .map(p => p.color),
-                        ),
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{ag.created}</TableCell>
-                  <TableCell>{ag.lastMove}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      aria-label='play'
-                      onClick={() => onGoToGame(ag.gameID)}
-                    >
+            .map(ag => (
+              <TableRow hover key={ag.gameID}>
+                <TableCell component='th' scope='row'>
+                  {ag.players
+                    .filter(p => p.id !== currentUser.id)
+                    .map(p => p.name)
+                    .join(', ')}
+                </TableCell>
+                <TableCell>
+                  <PersonPinCircleIcon
+                    style={{
+                      color: myColorToHue(
+                        ag.players
+                          .filter(p => p.id === currentUser.id)
+                          .map(p => p.color),
+                      ),
+                    }}
+                  />
+                </TableCell>
+                <TableCell>{ag.created}</TableCell>
+                <TableCell>{ag.lastMove}</TableCell>
+                <TableCell>
+                  <Link to={`game/${ag.gameID}`}>
+                    <IconButton aria-label='play'>
                       <SportsEsportsIcon />
                     </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>

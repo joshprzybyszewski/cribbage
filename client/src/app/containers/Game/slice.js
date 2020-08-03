@@ -4,24 +4,27 @@ export const initialState = {
   currentGameID: '',
   currentGame: {},
   selectedCards: [],
-  loading: true,
+  isLoading: true,
 };
 
 const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    goToGame: {
-      reducer: (state, action) => {
-        state.loading = true;
-        state.currentGameID = action.payload.id;
-      },
-      prepare: (id, history) => {
-        return { payload: { id, history } };
-      },
+    requestGame(state, action) {
+      state.currentGameID = action.payload;
+      state.isLoading = true;
+    },
+    requestGameSuccess(state, action) {
+      state.currentGame = action.payload;
+      state.isLoading = false;
+    },
+    requestGameFailure(state) {
+      state.currentGame = {};
+      state.isLoading = false;
     },
     gameRetrieved(state, action) {
-      state.loading = false;
+      state.isLoading = false;
       state.currentGame = action.payload.data;
       state.currentAction = initialState.currentAction;
       switch (state.currentGame.phase) {
@@ -35,7 +38,7 @@ const gameSlice = createSlice({
     },
     exitGame: {
       reducer: state => {
-        state.loading = false;
+        state.isLoading = false;
         state.currentGameID = '';
       },
       prepare: history => {

@@ -13,9 +13,9 @@ export const selectCurrentGame = createSelector(
   gameState => gameState.currentGame,
 );
 
-export const selectCurrentAction = createSelector(
+export const selectIsLoading = createSelector(
   [selectDomain],
-  gameState => gameState.currentAction,
+  gameState => gameState.isLoading,
 );
 
 export const selectSelectedCards = createSelector(
