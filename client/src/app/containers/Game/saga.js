@@ -64,7 +64,6 @@ const postAction = async playerAction => {
   try {
     await axios.post('/action', playerAction);
   } catch (err) {
-    console.log(err.response.data);
     return alertActions.addAlert(
       `handling action broke ${err.response ? err.response.data : err}`,
       alertTypes.error,
@@ -82,7 +81,6 @@ export function* handleBuildCrib({ payload: { userID, gameID, cards } }) {
 }
 
 export function* handlePeg({ payload: { userID, gameID, card } }) {
-  console.log(card);
   const playerAction = newPlayerAction(userID, gameID, phase.peg, {
     c: cardToGolangCard(card),
   });
