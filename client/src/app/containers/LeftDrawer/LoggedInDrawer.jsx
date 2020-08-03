@@ -12,7 +12,7 @@ import PersonIcon from '@material-ui/icons/Person';
 import { authSaga } from 'auth/saga';
 import { sliceKey, reducer, actions } from 'auth/slice';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const LoggedInDrawer = () => {
@@ -26,24 +26,30 @@ const LoggedInDrawer = () => {
   return (
     <React.Fragment>
       <List>
-        <ListItem button onClick={() => history.push('/home')}>
-          <ListItemIcon>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary='Home' />
-        </ListItem>
-        <ListItem button onClick={() => history.push('/newgame')}>
-          <ListItemIcon>
-            <AddCircleOutlineIcon />
-          </ListItemIcon>
-          <ListItemText primary='New Game' />
-        </ListItem>
-        <ListItem button onClick={() => history.push('/account')}>
-          <ListItemIcon>
-            <PersonIcon />
-          </ListItemIcon>
-          <ListItemText primary='My Account' />
-        </ListItem>
+        <Link to='/home'>
+          <ListItem button>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary='Home' />
+          </ListItem>
+        </Link>
+        <Link to='/newgame'>
+          <ListItem button>
+            <ListItemIcon>
+              <AddCircleOutlineIcon />
+            </ListItemIcon>
+            <ListItemText primary='New Game' />
+          </ListItem>
+        </Link>
+        <Link to='account'>
+          <ListItem button>
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
+            <ListItemText primary='My Account' />
+          </ListItem>
+        </Link>
       </List>
       <Divider />
       <List>
