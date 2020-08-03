@@ -6,10 +6,7 @@ import CribAction from 'app/containers/Game/CribAction';
 import CutAction from 'app/containers/Game/CutAction';
 import DealAction from 'app/containers/Game/DealAction';
 import PegAction from 'app/containers/Game/PegAction';
-import { gameSaga } from 'app/containers/Game/saga';
-import { sliceKey, reducer } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const Action = ({ phase, isBlocking }) => {
   switch (phase) {
@@ -31,9 +28,6 @@ const Action = ({ phase, isBlocking }) => {
 };
 
 const ActionBox = ({ phase, isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
-
   return (
     <Grid item container justify='center' spacing={1}>
       <Action phase={phase} isBlocking={isBlocking} />
