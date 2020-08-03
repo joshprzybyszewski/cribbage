@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -16,17 +16,8 @@ import {
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, withRouter } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
-
-const useGameID = () => {
-  const { id } = useParams();
-  const numID = Number(id);
-  if (isNaN(numID)) {
-    return 0; // invalid GameID
-  }
-  return numID;
-};
 
 const showCutCard = phase => {
   return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
@@ -77,13 +68,20 @@ const Game = () => {
   const currentUser = useSelector(selectCurrentUser);
   const currentGame = useSelector(selectCurrentGame);
   const isLoading = useSelector(selectIsLoading);
-  const id = useGameID();
+  const { id } = useParams();
   useEffect(() => {
-    dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
+    console.log(`useEffect ran with id ${id}`);
+    dispatch(
+      actions.requestGame({ userID: currentUser.id, gameID: Number(id) }),
+    );
+    // TODO we should clean up the current game here, but for some reason useEffect doesn't run when `id` changes
+    // return () => dispatch(actions.exitGame());
   }, [currentUser.id, id, dispatch]);
   // event handlers
-  const onRefreshCurrentGame = id => {
-    dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
+  const onRefreshCurrentGame = () => {
+    dispatch(
+      actions.requestGame({ userID: currentUser.id, gameID: Number(id) }),
+    );
   };
 
   return isLoading ? null : (
@@ -144,10 +142,7 @@ const Game = () => {
       </Grid>
       <Grid item container xs direction='column' spacing={1}>
         <Grid item>
-          <IconButton
-            aria-label='refresh'
-            onClick={() => onRefreshCurrentGame(currentGame.id)}
-          >
+          <IconButton aria-label='refresh' onClick={onRefreshCurrentGame}>
             <RefreshIcon />
           </IconButton>
           <ScoreBoard
@@ -179,4 +174,4 @@ const Game = () => {
   );
 };
 
-export default Game;
+export default withRouter(Game);
