@@ -12,7 +12,7 @@ const gameSlice = createSlice({
   initialState,
   reducers: {
     requestGame(state, action) {
-      state.currentGameID = action.payload;
+      state.currentGameID = action.payload.gameID;
       state.isLoading = true;
     },
     requestGameSuccess(state, action) {
@@ -43,18 +43,6 @@ const gameSlice = createSlice({
       },
       prepare: history => {
         return { payload: { history } };
-      },
-    },
-    refreshGame: {
-      reducer: (state, action) => {
-        if (state.currentGameID !== action.payload.id) {
-          throw Error(
-            `bad game id: expected "${state.currentGameID}", got "${action.payload.id}"`,
-          );
-        }
-      },
-      prepare: gameID => {
-        return { payload: { id: gameID } };
       },
     },
     selectCard(state, action) {

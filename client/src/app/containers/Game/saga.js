@@ -41,6 +41,7 @@ export function* handleExitGame({ payload: { history } }) {
 
 export function* handleRefreshCurrentGame({ payload: { id } }) {
   const currentUser = yield select(selectCurrentUser);
+  yield put(gameActions.requestGame({ userID: currentUser.id, gameID: id }));
 
   try {
     const res = yield axios.get(`/game/${id}?player=${currentUser.id}`);
@@ -60,7 +61,10 @@ const postAction = async playerAction => {
       alertTypes.error,
     );
   }
-  return gameActions.refreshGame(playerAction.gID);
+  return gameActions.requestGame({
+    userID: playerAction.pID,
+    gameID: playerAction.gID,
+  });
 };
 export function* handleBuildCrib({ payload: { userID, gameID, cards } }) {
   const playerAction = newPlayerAction(userID, gameID, phase.crib, {
@@ -121,7 +125,6 @@ export function* gameSaga() {
   yield all([
     takeLatest(gameActions.requestGame.type, handleRequestGame),
     takeLatest(gameActions.exitGame.type, handleExitGame),
-    takeLatest(gameActions.refreshGame.type, handleRefreshCurrentGame),
     takeLatest(gameActions.dealCards.type, handleDeal),
     takeLatest(gameActions.buildCrib.type, handleBuildCrib),
     takeLatest(gameActions.cutDeck.type, handleCutDeck),

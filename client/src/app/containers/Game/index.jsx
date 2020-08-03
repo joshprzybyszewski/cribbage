@@ -16,8 +16,17 @@ import {
 import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
 import { selectCurrentUser } from 'auth/selectors';
 import { useSelector, useDispatch } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+const useGameID = () => {
+  const { id } = useParams();
+  const numID = Number(id);
+  if (isNaN(numID)) {
+    return 0; // invalid GameID
+  }
+  return numID;
+};
 
 const showCutCard = phase => {
   return !['Deal', 'BuildCrib', 'Cut'].includes(phase);
@@ -64,18 +73,17 @@ const handForPlayer = (game, myID, position) => {
 const Game = () => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   useInjectSaga({ key: sliceKey, saga: gameSaga });
-  const history = useHistory();
   const dispatch = useDispatch();
   const currentUser = useSelector(selectCurrentUser);
   const currentGame = useSelector(selectCurrentGame);
   const isLoading = useSelector(selectIsLoading);
-  const { id } = useParams();
+  const id = useGameID();
   useEffect(() => {
     dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
   }, [currentUser.id, id]);
   // event handlers
   const onRefreshCurrentGame = id => {
-    dispatch(actions.refreshGame(id, history));
+    dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
   };
 
   return isLoading ? null : (
