@@ -80,7 +80,7 @@ const Game = () => {
   const id = useGameID();
   useEffect(() => {
     dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));
-  }, [currentUser.id, id]);
+  }, [currentUser.id, id, dispatch]);
   // event handlers
   const onRefreshCurrentGame = id => {
     dispatch(actions.requestGame({ userID: currentUser.id, gameID: id }));

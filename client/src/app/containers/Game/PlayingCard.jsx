@@ -36,7 +36,7 @@ const PlayingCard = ({ card, disabled, experimental, mine }) => {
       setIsChosen(true);
       return () => setIsChosen(false);
     }
-  }, [selectedCards]);
+  }, [selectedCards, card.name]);
 
   const isRed = !['Spades', 'Clubs'].includes(card.suit);
 
