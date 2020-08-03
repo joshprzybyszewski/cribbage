@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -70,12 +70,12 @@ const Game = () => {
   const isLoading = useSelector(selectIsLoading);
   const { id } = useParams();
   useEffect(() => {
-    console.log(`useEffect ran with id ${id}`);
     dispatch(
       actions.requestGame({ userID: currentUser.id, gameID: Number(id) }),
     );
-    // TODO we should clean up the current game here, but for some reason useEffect doesn't run when `id` changes
-    // return () => dispatch(actions.exitGame());
+    return () => {
+      dispatch(actions.exitGame());
+    };
   }, [currentUser.id, id, dispatch]);
   // event handlers
   const onRefreshCurrentGame = () => {

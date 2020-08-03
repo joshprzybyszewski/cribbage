@@ -1,7 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 export const initialState = {
-  currentGameID: '',
   currentGame: {},
   selectedCards: [],
   isLoading: true,
@@ -11,9 +10,8 @@ const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    requestGame(state, action) {
+    requestGame(state) {
       state.isLoading = true;
-      state.currentGameID = action.payload.gameID;
     },
     requestGameSuccess(state, action) {
       state.isLoading = false;
@@ -23,10 +21,9 @@ const gameSlice = createSlice({
       state.isLoading = false;
       state.currentGame = {};
     },
+    // eslint-disable-next-line no-unused-vars
     exitGame(state) {
-      state.currentGameID = '';
-      state.currentGame = {};
-      state.selectedCards = [];
+      state = initialState;
     },
     selectCard(state, action) {
       const { payload: card } = action;
