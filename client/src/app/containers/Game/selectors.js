@@ -5,7 +5,7 @@ const selectDomain = state => state.game || initialState;
 
 export const selectCurrentGameID = createSelector(
   [selectDomain],
-  gameState => gameState.currentGameID,
+  gameState => gameState.currentGame.id,
 );
 
 export const selectCurrentGame = createSelector(
