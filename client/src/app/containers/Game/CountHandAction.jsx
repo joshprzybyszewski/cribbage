@@ -31,7 +31,7 @@ const CountHandAction = ({ isBlocking, isCrib, styles }) => {
         />
       </FormControl>
       <Button
-        className={styles.marginLeft}
+        className={styles.leftMargin}
         disabled={!isBlocking || points < 0}
         variant='contained'
         color='primary'
