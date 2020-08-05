@@ -12,7 +12,7 @@ import { useFormInput } from 'hooks/useFormInput';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-const CountHandAction = ({ isBlocking, isCrib }) => {
+const CountHandAction = ({ isBlocking, isCrib, styles }) => {
   const [points, handlePointsChange] = useFormInput('');
   const { currentUser, gameID } = useCurrentPlayerAndGame();
   const dispatch = useDispatch();
@@ -31,6 +31,7 @@ const CountHandAction = ({ isBlocking, isCrib }) => {
         />
       </FormControl>
       <Button
+        className={styles.marginLeft}
         disabled={!isBlocking || points < 0}
         variant='contained'
         color='primary'
@@ -56,6 +57,7 @@ const CountHandAction = ({ isBlocking, isCrib }) => {
 CountHandAction.propTypes = {
   isBlocking: PropTypes.bool.isRequired,
   isCrib: PropTypes.bool.isRequired,
+  styles: PropTypes.object.isRequired,
 };
 
 export default CountHandAction;

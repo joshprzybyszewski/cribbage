@@ -9,7 +9,7 @@ import { actions } from 'app/containers/Game/slice';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-const DealAction = ({ isBlocking }) => {
+const DealAction = ({ isBlocking, styles }) => {
   const dispatch = useDispatch();
   const { currentUser, gameID } = useCurrentPlayerAndGame();
   const [numShuffles, setNumShuffles] = useState(0);
@@ -26,6 +26,7 @@ const DealAction = ({ isBlocking }) => {
         Shuffle
       </Button>
       <Button
+        className={styles.leftMargin}
         disabled={!isBlocking || numShuffles <= 0}
         variant='contained'
         color='primary'
@@ -45,6 +46,7 @@ const DealAction = ({ isBlocking }) => {
 
 DealAction.propTypes = {
   isBlocking: PropTypes.bool.isRequired,
+  styles: PropTypes.object.isRequired,
 };
 
 export default DealAction;
