@@ -44,7 +44,7 @@ const postAction = async playerAction => {
       alertTypes.error,
     );
   }
-  return gameActions.requestGame({
+  return gameActions.refreshGame({
     userID: playerAction.pID,
     gameID: playerAction.gID,
   });
@@ -107,6 +107,7 @@ export function* handleCountHand({
 export function* gameSaga() {
   yield all([
     takeLatest(gameActions.requestGame.type, handleRequestGame),
+    takeLatest(gameActions.refreshGame.type, handleRequestGame),
     takeLatest(gameActions.dealCards.type, handleDeal),
     takeLatest(gameActions.buildCrib.type, handleBuildCrib),
     takeLatest(gameActions.cutDeck.type, handleCutDeck),

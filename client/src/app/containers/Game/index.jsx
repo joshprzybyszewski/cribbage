@@ -80,7 +80,7 @@ const Game = () => {
   // event handlers
   const onRefreshCurrentGame = () => {
     dispatch(
-      actions.requestGame({ userID: currentUser.id, gameID: Number(id) }),
+      actions.refreshGame({ userID: currentUser.id, gameID: Number(id) }),
     );
   };
 

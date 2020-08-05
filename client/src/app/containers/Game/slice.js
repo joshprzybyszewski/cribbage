@@ -13,6 +13,7 @@ const gameSlice = createSlice({
     requestGame(state) {
       state.isLoading = true;
     },
+    refreshGame() {},
     requestGameSuccess(state, action) {
       state.isLoading = false;
       state.currentGame = action.payload;
