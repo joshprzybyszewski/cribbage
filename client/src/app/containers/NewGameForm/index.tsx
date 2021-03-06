@@ -6,11 +6,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { createGameSaga } from 'app/containers/NewGameForm/saga';
-import { sliceKey, reducer, actions } from 'app/containers/NewGameForm/slice';
-import { useDispatch } from 'react-redux';
+import axios from 'axios';
 import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
+import { useAlert } from '../Alert/useAlert';
 
 const useStyles = makeStyles(theme => ({
     title: {
@@ -31,32 +31,47 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const NewGameForm = () => {
-    // hooks
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: createGameSaga });
+interface FormData {
+    [key: string]: string;
+}
+
+const NewGameForm: React.FunctionComponent = () => {
     const history = useHistory();
-    const dispatch = useDispatch();
+    const { currentUser } = useAuth();
+    const { setAlert } = useAlert();
 
     // event handlers
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         id1: '',
         id2: '',
         teammateID: '',
     });
-    const onFormDataChange = e => {
+
+    const handleCreateGame = async () => {
+        const playerIDs = [
+            currentUser.id,
+            ...Object.keys(formData)
+                .map(k => formData[k])
+                .filter(id => id.length > 0),
+        ];
+        try {
+            await axios.post(`/create/game`, {
+                playerIDs,
+            });
+            // const { id } = res.data;
+            // TODO load the new game up into state
+            // yield put(gameActions.goToGame(id, history));
+        } catch (err) {
+            setAlert(err.response.data, 'error');
+        }
+    };
+    const onFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-    const onSubmitLoginForm = event => {
-        event.preventDefault();
-        dispatch(
-            actions.createGame(
-                formData.id1,
-                formData.id2,
-                formData.teammateID,
-                history,
-            ),
-        );
+    const onSubmitLoginForm = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await handleCreateGame();
+        history.push('/game');
     };
 
     const classes = useStyles();
