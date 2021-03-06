@@ -1,25 +1,24 @@
-import { nanoid } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const initialState = {
-    alerts: [],
-};
+import { AlertType } from './types';
+
+export interface Alert {
+    id: string;
+    msg: string;
+    type: AlertType;
+}
+
+export const initialState: Alert[] = [];
 
 const alertSlice = createSlice({
     name: 'alert',
     initialState,
     reducers: {
-        addAlert: {
-            reducer: (state, action) => {
-                state.alerts = [...state.alerts, action.payload];
-            },
-            prepare: (msg, type) => {
-                const id = nanoid();
-                return { payload: { id, msg, type } };
-            },
+        addAlert(state, action: PayloadAction<Alert>) {
+            return [...state, action.payload];
         },
-        removeAlert(state, action) {
-            state.alerts = state.alerts.filter(a => a.id !== action.payload);
+        removeAlert(state, action: PayloadAction<string>) {
+            return state.filter(a => a.id !== action.payload);
         },
     },
 });
