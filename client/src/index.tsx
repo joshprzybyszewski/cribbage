@@ -4,9 +4,8 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import { App } from './app';
-import { configureAppStore } from './store/configureStore';
+import store from './store/store';
 
-const store = configureAppStore();
 ReactDOM.render(
     <Provider store={store}>
         <App />
