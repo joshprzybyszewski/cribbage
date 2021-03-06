@@ -1,38 +1,15 @@
-/* eslint-disable no-undef */
-import * as React from 'react';
+import React from 'react';
 
-import PropTypes from 'prop-types';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import { App } from './app';
 import { configureAppStore } from './store/configureStore';
 
 const store = configureAppStore();
-const MOUNT_NODE = document.getElementById('root');
-
-const ConnectedApp = ({ Component }) => (
+ReactDOM.render(
     <Provider store={store}>
-        <React.StrictMode>
-            <Component />
-        </React.StrictMode>
-    </Provider>
+        <App />
+    </Provider>,
+    document.getElementById('root'),
 );
-
-ConnectedApp.propTypes = {
-    Component: PropTypes.node.isRequired,
-};
-
-const render = Component => {
-    ReactDOM.render(<ConnectedApp Component={Component} />, MOUNT_NODE);
-};
-
-if (module.hot) {
-    module.hot.accept(['./app'], () => {
-        ReactDOM.unmountComponentAtNode(MOUNT_NODE);
-        const App = require('./app').App;
-        render(App);
-    });
-}
-
-render(App);
