@@ -11,44 +11,46 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const PegAction = ({ isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
+    useInjectReducer({ key: sliceKey, reducer: reducer });
+    useInjectSaga({ key: sliceKey, saga: gameSaga });
 
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const currentAction = useSelector(selectCurrentAction);
+    const currentAction = useSelector(selectCurrentAction);
 
-  return (
-    <ButtonGroup
-      orientation='vertical'
-      color='primary'
-      aria-label='vertical outlined primary button group'
-    >
-      <Button
-        disabled={!isBlocking}
-        color='secondary'
-        onClick={() => {
-          dispatch(actions.pegCard());
-        }}
-      >
-        Say Go
-      </Button>
-      <Button
-        disabled={!isBlocking || currentAction.selectedCards.length !== 1}
-        color='primary'
-        endIcon={<SendIcon />}
-        onClick={() => {
-          dispatch(actions.pegCard());
-        }}
-      >
-        Peg
-      </Button>
-    </ButtonGroup>
-  );
+    return (
+        <ButtonGroup
+            orientation='vertical'
+            color='primary'
+            aria-label='vertical outlined primary button group'
+        >
+            <Button
+                disabled={!isBlocking}
+                color='secondary'
+                onClick={() => {
+                    dispatch(actions.pegCard());
+                }}
+            >
+                Say Go
+            </Button>
+            <Button
+                disabled={
+                    !isBlocking || currentAction.selectedCards.length !== 1
+                }
+                color='primary'
+                endIcon={<SendIcon />}
+                onClick={() => {
+                    dispatch(actions.pegCard());
+                }}
+            >
+                Peg
+            </Button>
+        </ButtonGroup>
+    );
 };
 
 PegAction.propTypes = {
-  isBlocking: PropTypes.bool.isRequired,
+    isBlocking: PropTypes.bool.isRequired,
 };
 
 export default PegAction;

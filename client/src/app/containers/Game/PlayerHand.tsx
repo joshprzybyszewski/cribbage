@@ -6,46 +6,46 @@ import PlayingCard from 'app/containers/Game/PlayingCard';
 import PropTypes from 'prop-types';
 
 const showOpponentsHand = phase => {
-  return phase !== 'Deal';
+    return phase !== 'Deal';
 };
 
 const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
-  if (!hand || !showOpponentsHand(phase)) {
-    return null;
-  }
+    if (!hand || !showOpponentsHand(phase)) {
+        return null;
+    }
 
-  return (
-    <Grid
-      item
-      container
-      direction={side ? 'column' : 'row'}
-      justify='center'
-      spacing={1}
-    >
-      <GridList>
-        {hand.map((card, index) => (
-          <PlayingCard
-            key={`handcard${index}`}
-            card={card}
-            mine={mine}
-            disabled={
-              phase === 'Pegging' &&
-              pegged &&
-              pegged.some(pc => pc.card.name === card.name)
-            }
-          />
-        ))}
-      </GridList>
-    </Grid>
-  );
+    return (
+        <Grid
+            item
+            container
+            direction={side ? 'column' : 'row'}
+            justify='center'
+            spacing={1}
+        >
+            <GridList>
+                {hand.map((card, index) => (
+                    <PlayingCard
+                        key={`handcard${index}`}
+                        card={card}
+                        mine={mine}
+                        disabled={
+                            phase === 'Pegging' &&
+                            pegged &&
+                            pegged.some(pc => pc.card.name === card.name)
+                        }
+                    />
+                ))}
+            </GridList>
+        </Grid>
+    );
 };
 
 PlayerHand.propTypes = {
-  hand: PropTypes.array.isRequired,
-  phase: PropTypes.string.isRequired,
-  side: PropTypes.string.isRequired,
-  pegged: PropTypes.array.isRequired,
-  mine: PropTypes.bool.isRequired,
+    hand: PropTypes.array.isRequired,
+    phase: PropTypes.string.isRequired,
+    side: PropTypes.string.isRequired,
+    pegged: PropTypes.array.isRequired,
+    mine: PropTypes.bool.isRequired,
 };
 
 export default PlayerHand;

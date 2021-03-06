@@ -13,18 +13,22 @@ import { BrowserRouter } from 'react-router-dom';
 import 'styles.css';
 
 export const App = () => {
-  return (
-    <BrowserRouter>
-      <Layout>
-        <Switch>
-          <Route exact path='/' component={Login} />
-          <Route exact path='/register' component={Register} />
-          <PrivateRoute exact path='/home' component={Home} />
-          <PrivateRoute exact path='/newgame' component={NewGameForm} />
-          <PrivateRoute exact path='/account' component={Account} />
-          <PrivateRoute exact path='/game' component={Game} />
-        </Switch>
-      </Layout>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <Layout>
+                <Switch>
+                    <Route exact path='/' component={Login} />
+                    <Route exact path='/register' component={Register} />
+                    <PrivateRoute exact path='/home' component={Home} />
+                    <PrivateRoute
+                        exact
+                        path='/newgame'
+                        component={NewGameForm}
+                    />
+                    <PrivateRoute exact path='/account' component={Account} />
+                    <PrivateRoute exact path='/game' component={Game} />
+                </Switch>
+            </Layout>
+        </BrowserRouter>
+    );
 };

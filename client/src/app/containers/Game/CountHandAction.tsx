@@ -14,43 +14,45 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const CountHandAction = ({ isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
+    useInjectReducer({ key: sliceKey, reducer: reducer });
+    useInjectSaga({ key: sliceKey, saga: gameSaga });
 
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const currentAction = useSelector(selectCurrentAction);
+    const currentAction = useSelector(selectCurrentAction);
 
-  return (
-    <FormGroup row autoComplete='off'>
-      <FormControl>
-        <InputLabel htmlFor='component-simple'>Hand Points</InputLabel>
-        <Input
-          disabled={!isBlocking}
-          id='component-simple'
-          type='number'
-          onChange={event => {
-            dispatch(actions.claimPoints(Number(event.target.value)));
-          }}
-        />
-      </FormControl>
-      <Button
-        disabled={!isBlocking || currentAction.points < 0}
-        variant='contained'
-        color='primary'
-        endIcon={<SendIcon />}
-        onClick={() => {
-          dispatch(actions.countHand());
-        }}
-      >
-        Count
-      </Button>
-    </FormGroup>
-  );
+    return (
+        <FormGroup row autoComplete='off'>
+            <FormControl>
+                <InputLabel htmlFor='component-simple'>Hand Points</InputLabel>
+                <Input
+                    disabled={!isBlocking}
+                    id='component-simple'
+                    type='number'
+                    onChange={event => {
+                        dispatch(
+                            actions.claimPoints(Number(event.target.value)),
+                        );
+                    }}
+                />
+            </FormControl>
+            <Button
+                disabled={!isBlocking || currentAction.points < 0}
+                variant='contained'
+                color='primary'
+                endIcon={<SendIcon />}
+                onClick={() => {
+                    dispatch(actions.countHand());
+                }}
+            >
+                Count
+            </Button>
+        </FormGroup>
+    );
 };
 
 CountHandAction.propTypes = {
-  isBlocking: PropTypes.bool.isRequired,
+    isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CountHandAction;

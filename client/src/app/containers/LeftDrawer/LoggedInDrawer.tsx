@@ -16,46 +16,46 @@ import { useHistory } from 'react-router-dom';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const LoggedInDrawer = () => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: authSaga });
-  const history = useHistory();
-  const dispatch = useDispatch();
-  const onClickLogout = () => {
-    dispatch(actions.logout(history));
-  };
-  return (
-    <React.Fragment>
-      <List>
-        <ListItem button onClick={() => history.push('/home')}>
-          <ListItemIcon>
-            <HomeIcon />
-          </ListItemIcon>
-          <ListItemText primary='Home' />
-        </ListItem>
-        <ListItem button onClick={() => history.push('/newgame')}>
-          <ListItemIcon>
-            <AddCircleOutlineIcon />
-          </ListItemIcon>
-          <ListItemText primary='New Game' />
-        </ListItem>
-        <ListItem button onClick={() => history.push('/account')}>
-          <ListItemIcon>
-            <PersonIcon />
-          </ListItemIcon>
-          <ListItemText primary='My Account' />
-        </ListItem>
-      </List>
-      <Divider />
-      <List>
-        <ListItem button onClick={onClickLogout}>
-          <ListItemIcon>
-            <CancelIcon />
-          </ListItemIcon>
-          <ListItemText primary='Logout' />
-        </ListItem>
-      </List>
-    </React.Fragment>
-  );
+    useInjectReducer({ key: sliceKey, reducer: reducer });
+    useInjectSaga({ key: sliceKey, saga: authSaga });
+    const history = useHistory();
+    const dispatch = useDispatch();
+    const onClickLogout = () => {
+        dispatch(actions.logout(history));
+    };
+    return (
+        <React.Fragment>
+            <List>
+                <ListItem button onClick={() => history.push('/home')}>
+                    <ListItemIcon>
+                        <HomeIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='Home' />
+                </ListItem>
+                <ListItem button onClick={() => history.push('/newgame')}>
+                    <ListItemIcon>
+                        <AddCircleOutlineIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='New Game' />
+                </ListItem>
+                <ListItem button onClick={() => history.push('/account')}>
+                    <ListItemIcon>
+                        <PersonIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='My Account' />
+                </ListItem>
+            </List>
+            <Divider />
+            <List>
+                <ListItem button onClick={onClickLogout}>
+                    <ListItemIcon>
+                        <CancelIcon />
+                    </ListItemIcon>
+                    <ListItemText primary='Logout' />
+                </ListItem>
+            </List>
+        </React.Fragment>
+    );
 };
 
 export default LoggedInDrawer;

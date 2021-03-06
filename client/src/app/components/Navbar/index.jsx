@@ -9,39 +9,39 @@ import MenuIcon from '@material-ui/icons/Menu';
 import PropTypes from 'prop-types';
 
 const useStyles = makeStyles(theme => ({
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
-  },
+    menuButton: {
+        marginRight: theme.spacing(2),
+    },
+    title: {
+        flexGrow: 1,
+    },
 }));
 
 const Navbar = ({ handleDrawerOpen }) => {
-  const classes = useStyles();
+    const classes = useStyles();
 
-  return (
-    <AppBar position='static'>
-      <Toolbar>
-        <IconButton
-          edge='start'
-          className={classes.menuButton}
-          color='inherit'
-          aria-label='menu'
-          onClick={handleDrawerOpen}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant='h6' className={classes.title}>
-          Cribbage
-        </Typography>
-      </Toolbar>
-    </AppBar>
-  );
+    return (
+        <AppBar position='static'>
+            <Toolbar>
+                <IconButton
+                    edge='start'
+                    className={classes.menuButton}
+                    color='inherit'
+                    aria-label='menu'
+                    onClick={handleDrawerOpen}
+                >
+                    <MenuIcon />
+                </IconButton>
+                <Typography variant='h6' className={classes.title}>
+                    Cribbage
+                </Typography>
+            </Toolbar>
+        </AppBar>
+    );
 };
 
 Navbar.propTypes = {
-  handleDrawerOpen: PropTypes.func.isRequired,
+    handleDrawerOpen: PropTypes.func.isRequired,
 };
 
 export default Navbar;

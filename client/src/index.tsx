@@ -12,27 +12,27 @@ const store = configureAppStore();
 const MOUNT_NODE = document.getElementById('root');
 
 const ConnectedApp = ({ Component }) => (
-  <Provider store={store}>
-    <React.StrictMode>
-      <Component />
-    </React.StrictMode>
-  </Provider>
+    <Provider store={store}>
+        <React.StrictMode>
+            <Component />
+        </React.StrictMode>
+    </Provider>
 );
 
 ConnectedApp.propTypes = {
-  Component: PropTypes.node.isRequired,
+    Component: PropTypes.node.isRequired,
 };
 
 const render = Component => {
-  ReactDOM.render(<ConnectedApp Component={Component} />, MOUNT_NODE);
+    ReactDOM.render(<ConnectedApp Component={Component} />, MOUNT_NODE);
 };
 
 if (module.hot) {
-  module.hot.accept(['./app'], () => {
-    ReactDOM.unmountComponentAtNode(MOUNT_NODE);
-    const App = require('./app').App;
-    render(App);
-  });
+    module.hot.accept(['./app'], () => {
+        ReactDOM.unmountComponentAtNode(MOUNT_NODE);
+        const App = require('./app').App;
+        render(App);
+    });
 }
 
 render(App);

@@ -14,42 +14,44 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const CountCribAction = ({ isBlocking }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-  useInjectSaga({ key: sliceKey, saga: gameSaga });
+    useInjectReducer({ key: sliceKey, reducer: reducer });
+    useInjectSaga({ key: sliceKey, saga: gameSaga });
 
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const currentAction = useSelector(selectCurrentAction);
+    const currentAction = useSelector(selectCurrentAction);
 
-  return (
-    <FormGroup row autoComplete='off'>
-      <FormControl>
-        <InputLabel htmlFor='component-simple'>Crib Points</InputLabel>
-        <Input
-          id='component-simple'
-          type='number'
-          onChange={event => {
-            dispatch(actions.claimPoints(Number(event.target.value)));
-          }}
-        />
-      </FormControl>
-      <Button
-        disabled={!isBlocking || currentAction.points < 0}
-        variant='contained'
-        color='primary'
-        endIcon={<SendIcon />}
-        onClick={() => {
-          dispatch(actions.countCrib());
-        }}
-      >
-        Count
-      </Button>
-    </FormGroup>
-  );
+    return (
+        <FormGroup row autoComplete='off'>
+            <FormControl>
+                <InputLabel htmlFor='component-simple'>Crib Points</InputLabel>
+                <Input
+                    id='component-simple'
+                    type='number'
+                    onChange={event => {
+                        dispatch(
+                            actions.claimPoints(Number(event.target.value)),
+                        );
+                    }}
+                />
+            </FormControl>
+            <Button
+                disabled={!isBlocking || currentAction.points < 0}
+                variant='contained'
+                color='primary'
+                endIcon={<SendIcon />}
+                onClick={() => {
+                    dispatch(actions.countCrib());
+                }}
+            >
+                Count
+            </Button>
+        </FormGroup>
+    );
 };
 
 CountCribAction.propTypes = {
-  isBlocking: PropTypes.bool.isRequired,
+    isBlocking: PropTypes.bool.isRequired,
 };
 
 export default CountCribAction;

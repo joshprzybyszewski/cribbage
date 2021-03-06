@@ -18,70 +18,77 @@ import PropTypes from 'prop-types';
 // TODO import from a utils instead of redeclaring
 // or even make an "atom" that is the icon
 const myColorToHue = color => {
-  return color
-    ? color.includes('red')
-      ? red[800]
-      : color.includes('blue')
-      ? blue[800]
-      : color.includes('green')
-      ? green[800]
-      : grey[400]
-    : grey[400];
+    return color
+        ? color.includes('red')
+            ? red[800]
+            : color.includes('blue')
+            ? blue[800]
+            : color.includes('green')
+            ? green[800]
+            : grey[400]
+        : grey[400];
 };
 
 const ScoreBoard = ({ current_dealer, teams }) => {
-  return (
-    <Container fixed width='35px' size='small'>
-      <TableContainer component={Paper} size='small'>
-        <Table stickyHeader size='small' padding='none' aria-label='scoreboard'>
-          <TableHead>
-            <TableRow>
-              <TableCell>Color</TableCell>
-              <TableCell>Score</TableCell>
-              <TableCell>Lag</TableCell>
-              <TableCell>Names</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {teams.map(t => {
-              return (
-                <TableRow key={t.color}>
-                  <TableCell>
-                    <PersonPinCircleIcon
-                      style={{
-                        color: myColorToHue(t.color),
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{t.current_score}</TableCell>
-                  <TableCell>{t.lag_score}</TableCell>
-                  <TableCell>
-                    {t.players.map(p => {
-                      const s = p.name;
-                      if (p.id === current_dealer) {
-                        return (
-                          <span key='dealer span'>
-                            <strong>{p.name}</strong>
-                            {' (dealer)'}
-                          </span>
-                        );
-                      }
-                      return s;
-                    })}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Container>
-  );
+    return (
+        <Container fixed width='35px' size='small'>
+            <TableContainer component={Paper} size='small'>
+                <Table
+                    stickyHeader
+                    size='small'
+                    padding='none'
+                    aria-label='scoreboard'
+                >
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Color</TableCell>
+                            <TableCell>Score</TableCell>
+                            <TableCell>Lag</TableCell>
+                            <TableCell>Names</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {teams.map(t => {
+                            return (
+                                <TableRow key={t.color}>
+                                    <TableCell>
+                                        <PersonPinCircleIcon
+                                            style={{
+                                                color: myColorToHue(t.color),
+                                            }}
+                                        />
+                                    </TableCell>
+                                    <TableCell>{t.current_score}</TableCell>
+                                    <TableCell>{t.lag_score}</TableCell>
+                                    <TableCell>
+                                        {t.players.map(p => {
+                                            const s = p.name;
+                                            if (p.id === current_dealer) {
+                                                return (
+                                                    <span key='dealer span'>
+                                                        <strong>
+                                                            {p.name}
+                                                        </strong>
+                                                        {' (dealer)'}
+                                                    </span>
+                                                );
+                                            }
+                                            return s;
+                                        })}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Container>
+    );
 };
 
 ScoreBoard.propTypes = {
-  current_dealer: PropTypes.string.isRequired,
-  teams: PropTypes.array.isRequired,
+    current_dealer: PropTypes.string.isRequired,
+    teams: PropTypes.array.isRequired,
 };
 
 export default ScoreBoard;

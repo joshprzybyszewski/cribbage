@@ -9,24 +9,24 @@ import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import { useHistory } from 'react-router-dom';
 
 const LoggedOutDrawer = () => {
-  const history = useHistory();
+    const history = useHistory();
 
-  return (
-    <List>
-      <ListItem button onClick={() => history.push('/')}>
-        <ListItemIcon>
-          <ExitToAppIcon />
-        </ListItemIcon>
-        <ListItemText primary='Login' />
-      </ListItem>
-      <ListItem button onClick={() => history.push('/register')}>
-        <ListItemIcon>
-          <CreateIcon />
-        </ListItemIcon>
-        <ListItemText primary='Register' />
-      </ListItem>
-    </List>
-  );
+    return (
+        <List>
+            <ListItem button onClick={() => history.push('/')}>
+                <ListItemIcon>
+                    <ExitToAppIcon />
+                </ListItemIcon>
+                <ListItemText primary='Login' />
+            </ListItem>
+            <ListItem button onClick={() => history.push('/register')}>
+                <ListItemIcon>
+                    <CreateIcon />
+                </ListItemIcon>
+                <ListItemText primary='Register' />
+            </ListItem>
+        </List>
+    );
 };
 
 export default LoggedOutDrawer;

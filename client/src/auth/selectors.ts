@@ -5,16 +5,16 @@ import { initialState } from './slice';
 const selectDomain = state => state.auth || initialState;
 
 export const selectCurrentUser = createSelector(
-  [selectDomain],
-  authState => authState.currentUser,
+    [selectDomain],
+    authState => authState.currentUser,
 );
 
 export const selectLoggedIn = createSelector(
-  [selectDomain],
-  authState => authState.currentUser.id !== '',
+    [selectDomain],
+    authState => authState.currentUser.id !== '',
 );
 
 export const selectLoading = createSelector(
-  [selectDomain],
-  authState => authState.loading,
+    [selectDomain],
+    authState => authState.loading,
 );
