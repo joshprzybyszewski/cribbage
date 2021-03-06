@@ -1,6 +1,16 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const initialState = {
+export interface User {
+    id: string;
+    name: string;
+}
+
+interface AuthState {
+    currentUser: User;
+    loading: boolean;
+}
+
+export const initialState: AuthState = {
     currentUser: {
         id: '',
         name: '',
@@ -12,51 +22,20 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        login: {
-            reducer: (state, action) => {
-                state.loading = true;
-                state.currentUser.id = action.payload.id;
-            },
-            prepare: (id, history) => {
-                return { payload: { id, history } };
-            },
+        setLoading(state, action: PayloadAction<boolean>) {
+            return {
+                ...state,
+                loading: action.payload,
+            };
         },
-        loginSuccess(state, action) {
-            state.loading = false;
-            state.currentUser.id = action.payload.id;
-            state.currentUser.name = action.payload.name;
+        setUser(state, action: PayloadAction<User>) {
+            return {
+                ...state,
+                currentUser: action.payload,
+            };
         },
-        loginFailed(state) {
-            state.loading = false;
-            state.currentUser = { id: '', name: '' };
-        },
-        register: {
-            reducer: (state, action) => {
-                state.loading = true;
-                state.currentUser.id = action.payload.id;
-                state.currentUser.name = action.payload.name;
-            },
-            prepare: (id, name, history) => {
-                return { payload: { id, name, history } };
-            },
-        },
-        registerSuccess(state, action) {
-            state.loading = false;
-            state.currentUser.id = action.payload.id;
-            state.currentUser.name = action.payload.name;
-        },
-        registerFailed(state) {
-            state.loading = false;
-            state.currentUser = { id: '', name: '' };
-        },
-        logout: {
-            reducer: state => {
-                state.loading = false;
-                state.currentUser = { id: '', name: '' };
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
+        clearUser() {
+            return initialState;
         },
     },
 });

@@ -7,11 +7,9 @@ import Link from '@material-ui/core/Link';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { authSaga } from 'auth/saga';
-import { sliceKey, reducer, actions } from 'auth/slice';
-import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
 
 const useStyles = makeStyles(theme => ({
     title: {
@@ -33,19 +31,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const LoginForm = () => {
-    // hooks
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: authSaga });
+    const { login } = useAuth();
     const history = useHistory();
-    const dispatch = useDispatch();
     const [playerID, setPlayerID] = useState('');
 
     // event handlers
-    const onSubmitLoginForm = event => {
+    const onSubmitLoginForm = async (event: React.FormEvent) => {
         event.preventDefault();
-        dispatch(actions.login(playerID, history));
+        await login(playerID);
+        history.push('/home');
     };
-    const onInputChange = event => {
+    const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPlayerID(event.target.value);
     };
 
@@ -83,7 +79,7 @@ const LoginForm = () => {
                     </Button>
                 </form>
                 <Link href='/register' variant='body2'>
-                    {`Don't have an account? Register here`}
+                    Don&apos;t have an account? Register here
                 </Link>
             </div>
         </Container>

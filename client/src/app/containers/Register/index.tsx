@@ -7,11 +7,9 @@ import Link from '@material-ui/core/Link';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { authSaga } from 'auth/saga';
-import { sliceKey, reducer, actions } from 'auth/slice';
-import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
 
 const useStyles = makeStyles(theme => ({
     title: {
@@ -33,19 +31,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const RegisterForm = () => {
-    // hooks
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: authSaga });
+    const { register } = useAuth();
     const history = useHistory();
-    const dispatch = useDispatch();
     const [formData, setFormData] = useState({ id: '', name: '' });
 
     // event handlers
-    const onSubmitForm = event => {
+    const onSubmitForm = async (event: React.FormEvent) => {
         event.preventDefault();
-        dispatch(actions.register(formData.id, formData.name, history));
+        await register(formData.name, formData.id);
+        history.push('/home');
     };
-    const onInputChange = event =>
+    const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) =>
         setFormData({ ...formData, [event.target.name]: event.target.value });
 
     const classes = useStyles();
