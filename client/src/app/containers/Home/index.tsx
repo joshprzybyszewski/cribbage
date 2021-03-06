@@ -1,20 +1,18 @@
 import React, { useEffect } from 'react';
 
-import ActiveGamesTable from 'app/containers/Home/ActiveGamesTable';
-import { actions as homeActions } from 'app/containers/Home/slice';
-import { selectCurrentUser } from 'auth/selectors';
-import { useSelector, useDispatch } from 'react-redux';
+import { useAuth } from '../../../auth/useAuth';
+import ActiveGamesTable from './ActiveGamesTable';
+import { useActiveGames } from './useActiveGames';
 
 const Home = () => {
-    const dispatch = useDispatch();
-
-    const currentUser = useSelector(selectCurrentUser);
+    const { currentUser } = useAuth();
+    const { refreshGames } = useActiveGames();
 
     // because we pass nothing as an effect dependency (the second arg),
     // this will run once when we first render Home
     useEffect(() => {
-        dispatch(homeActions.refreshActiveGames({ id: currentUser.id }));
-    }, [dispatch, currentUser.id]);
+        refreshGames();
+    }, []);
 
     return (
         <div>

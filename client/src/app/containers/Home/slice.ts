@@ -1,6 +1,24 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const initialState = {
+import { User } from '../../../auth/slice';
+
+interface Player extends User {
+    color: string;
+}
+
+export interface ActiveGame {
+    gameID: string;
+    players: Player[];
+    created: Date;
+    lastMove: Date;
+}
+
+interface HomeState {
+    activeGamesPlayerID: string;
+    activeGames: ActiveGame[];
+}
+
+export const initialState: HomeState = {
     activeGamesPlayerID: '',
     activeGames: [],
 };
@@ -9,15 +27,17 @@ const homeSlice = createSlice({
     name: 'home',
     initialState,
     reducers: {
-        refreshActiveGames(state, action) {
-            if (!action.payload.id) {
-                // what should we do when refreshing with an ID we do not expect?
-                throw Error(`requires a playerID: got "${action.payload.id}"`);
-            }
+        setActiveGamesPlayerID(state, action: PayloadAction<string>) {
+            return {
+                ...state,
+                activeGamesPlayerID: action.payload,
+            };
         },
-        gotActiveGames(state, action) {
-            state.activeGamesPlayerID = action.payload.player.id;
-            state.activeGames = action.payload.activeGames;
+        setActiveGames(state, action: PayloadAction<ActiveGame[]>) {
+            return {
+                ...state,
+                activeGames: action.payload,
+            };
         },
     },
 });

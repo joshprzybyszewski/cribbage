@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export const initialState = {
     currentGameID: '',
@@ -16,6 +16,12 @@ const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
+        setGameID(state, action: PayloadAction<string>) {
+            return {
+                ...state,
+                currentGameID: action.payload,
+            };
+        },
         goToGame: {
             reducer: (state, action) => {
                 state.loading = true;
@@ -68,7 +74,7 @@ const gameSlice = createSlice({
         selectCard: {
             reducer: (state, action) => {
                 // Nothing here?
-                const card = action.payload.card;
+                const { card } = action.payload;
                 if (!card) {
                     return;
                 }
@@ -110,9 +116,11 @@ const gameSlice = createSlice({
                 const newPerc = action.payload.perc;
                 if (!newPerc) {
                     return;
-                } else if (newPerc > 100) {
+                }
+                if (newPerc > 100) {
                     return;
-                } else if (newPerc >= 1) {
+                }
+                if (newPerc >= 1) {
                     state.currentAction.percCut = newPerc / 100;
                     return;
                 }
@@ -141,7 +149,7 @@ const gameSlice = createSlice({
         },
         claimPoints: {
             reducer: (state, action) => {
-                const points = action.payload.points;
+                const { points } = action.payload;
                 if (!points) {
                     return;
                 }
