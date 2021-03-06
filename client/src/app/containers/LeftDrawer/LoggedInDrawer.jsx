@@ -6,6 +6,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import SearchIcon from '@material-ui/icons/Search';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
@@ -43,6 +44,12 @@ const LoggedInDrawer = () => {
             <PersonIcon />
           </ListItemIcon>
           <ListItemText primary='My Account' />
+        </ListItem>
+        <ListItem button onClick={() => history.push('/suggestions')}>
+          <ListItemIcon>
+            <SearchIcon />
+          </ListItemIcon>
+          <ListItemText primary='Suggestions' />
         </ListItem>
       </List>
       <Divider />

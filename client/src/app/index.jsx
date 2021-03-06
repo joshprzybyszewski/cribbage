@@ -8,6 +8,7 @@ import Login from 'app/containers/Login';
 import NewGameForm from 'app/containers/NewGameForm';
 import PrivateRoute from 'app/containers/PrivateRoute';
 import Register from 'app/containers/Register';
+import Suggestions from 'app/containers/Suggestions';
 import { Switch, Route } from 'react-router-dom';
 import { BrowserRouter } from 'react-router-dom';
 import 'styles.css';
@@ -23,6 +24,7 @@ export const App = () => {
           <PrivateRoute exact path='/newgame' component={NewGameForm} />
           <PrivateRoute exact path='/account' component={Account} />
           <PrivateRoute exact path='/game' component={Game} />
+          <PrivateRoute exact path='/suggestions' component={Suggestions} />
         </Switch>
       </Layout>
     </BrowserRouter>
