@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Grid from '@material-ui/core/Grid';
+import GridList from '@material-ui/core/GridList';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -7,6 +9,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import ChoosingCard from 'app/containers/Suggestions/ChoosingCard';
 
 import { selectSuggestions } from 'app/containers/Suggestions/selectors';
 import { sliceKey, reducer } from 'app/containers/Suggestions/slice';
@@ -51,7 +54,21 @@ const SuggestionsTable = () => {
                     {sug.cribPts.median}
                   </TableCell>
                   <TableCell>
-                    {sug.throw}
+                    <Grid
+                      item
+                      container
+                      spacing={1}
+                    >
+                      <GridList>
+                      {sug.throw.map((card, index) => (
+                        <ChoosingCard
+                          key={`throwcard${index}`}
+                          card={card}
+                          notEditable
+                        />
+                      ))}
+                      </GridList>
+                    </Grid>
                   </TableCell>
                 </TableRow>
               );

@@ -54,7 +54,7 @@ function getValue(card) {
   return card.substr(0, card.length-1)
 }
 
-const ChoosingCard = ({ card }) => {
+const ChoosingCard = ({ card, notEditable }) => {
   useInjectReducer({ key: sliceKey, reducer: reducer });
   const classes = useStyles();
 
@@ -62,8 +62,21 @@ const ChoosingCard = ({ card }) => {
   const value = getValue(card);
   const useRed = !['Spades', 'Clubs'].includes(suit);
 
+  const updateValue=(_) => {
+    // TODO figure out how to get scroll capturing to work
+    // TODO update the value of this card in the state
+    console.log(`scrolled: ${card}`);
+  };
+  const updateSuit=(_) => {
+    // TODO update the state so that this card increments suits
+    console.log(`clicked: ${card}`);
+  };
+
     return (
-      <Card className={classes.root}>
+      <Card 
+      onScroll={updateValue}
+      onClick={updateSuit}
+      className={classes.root}>
         <CardContent>
           <Typography
             className={classes.value}
@@ -90,6 +103,7 @@ const ChoosingCard = ({ card }) => {
 
 ChoosingCard.propTypes = {
   card: PropTypes.string.isRequired,
+  notEditable: PropTypes.bool,
 };
 
 export default ChoosingCard;
