@@ -16,8 +16,8 @@
   "rules": {
     // Make prettier code formatting suggestions more verbose.
     "prettier/prettier": ["warn"],
-    // Disable <Fragment> => <> replacement. Feel free to change
-    "react/jsx-fragments": "off",
+    // we use typescript for prop types
+    "react/prop-types": "off",
     // Disable prefer default export
     "import/prefer-default-export": "off",
     "import/order": [

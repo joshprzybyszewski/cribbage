@@ -13,6 +13,7 @@
         "@types/node": "^14.14.31",
         "@types/react": "^17.0.2",
         "@types/react-dom": "^17.0.1",
+        "@types/react-redux": "^7.1.16",
         "@typescript-eslint/eslint-plugin": "4.8.1",
         "@typescript-eslint/parser": "4.8.1",
         "autoprefixer": "^9.8.6",
@@ -41,7 +42,7 @@
     "scripts": {
         "build": "npx tailwindcss build src/tailwind.css -o src/styles.css && react-scripts build",
         "client": "react-scripts start",
-        "lint": "npx eslint src --ext .js,.jsx --max-warnings 0"
+        "lint": "eslint src --ext .ts,.tsx --max-warnings 0"
     },
     "eslintConfig": {
         "extends": "react-app"
