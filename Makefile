@@ -42,8 +42,11 @@ client: tailwind ## Sets up the react client
 	cd client/ && npm run client
 
 .PHONY: serve
+serve: DSN_USER ?= root
+serve: DSN_PW ?= ""
+serve: DSN_HOST ?= "127.0.0.1"
 serve: ## Sets up the server locally with default options
-	go run main.go
+	go run main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
 .PHONY: dockerbuild
 dockerbuild: ## Builds the docker image
