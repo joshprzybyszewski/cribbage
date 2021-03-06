@@ -6,7 +6,6 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
-import PropTypes from 'prop-types';
 
 const useStyles = makeStyles(theme => ({
     menuButton: {
@@ -17,7 +16,11 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Navbar = ({ handleDrawerOpen }) => {
+interface Props {
+    handleDrawerOpen: () => void;
+}
+
+const Navbar: React.FunctionComponent<Props> = ({ handleDrawerOpen }) => {
     const classes = useStyles();
 
     return (
@@ -38,10 +41,6 @@ const Navbar = ({ handleDrawerOpen }) => {
             </Toolbar>
         </AppBar>
     );
-};
-
-Navbar.propTypes = {
-    handleDrawerOpen: PropTypes.func.isRequired,
 };
 
 export default Navbar;

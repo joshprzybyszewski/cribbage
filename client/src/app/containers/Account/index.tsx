@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Account = () => {
+const Account: React.FunctionComponent = () => {
     return <div>Edit your account here</div>;
 };
 
