@@ -9,22 +9,15 @@ import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
-import { authSaga } from 'auth/saga';
-import { sliceKey, reducer, actions } from 'auth/slice';
-import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
 
 const LoggedInDrawer = () => {
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: authSaga });
+    const { logout } = useAuth();
     const history = useHistory();
-    const dispatch = useDispatch();
-    const onClickLogout = () => {
-        dispatch(actions.logout(history));
-    };
     return (
-        <React.Fragment>
+        <>
             <List>
                 <ListItem button onClick={() => history.push('/home')}>
                     <ListItemIcon>
@@ -47,14 +40,14 @@ const LoggedInDrawer = () => {
             </List>
             <Divider />
             <List>
-                <ListItem button onClick={onClickLogout}>
+                <ListItem button onClick={logout}>
                     <ListItemIcon>
                         <CancelIcon />
                     </ListItemIcon>
                     <ListItemText primary='Logout' />
                 </ListItem>
             </List>
-        </React.Fragment>
+        </>
     );
 };
 

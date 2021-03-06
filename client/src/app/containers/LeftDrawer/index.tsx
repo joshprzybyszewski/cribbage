@@ -9,12 +9,8 @@ import makeStyles from '@material-ui/core/styles/makeStyles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
-import { authSaga } from 'auth/saga';
-import { sliceKey, reducer, actions } from 'auth/slice';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
 
 const useStyles = makeStyles(theme => ({
     loggedOutLink: {
@@ -33,14 +29,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Navbar = ({ loggedIn, handleDrawerOpen }) => {
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: authSaga });
-    const history = useHistory();
-    const dispatch = useDispatch();
-    const onClickLogout = () => {
-        dispatch(actions.logout(history));
-    };
+interface Props {
+    handleDrawerOpen: () => void;
+}
+
+const Navbar: React.FunctionComponent<Props> = ({ handleDrawerOpen }) => {
+    const { isLoggedIn, logout } = useAuth();
 
     const classes = useStyles();
 
@@ -59,11 +53,8 @@ const Navbar = ({ loggedIn, handleDrawerOpen }) => {
                 <Typography variant='h6' className={classes.title}>
                     Cribbage
                 </Typography>
-                {loggedIn ? (
-                    <Button
-                        onClick={onClickLogout}
-                        className={classes.logoutButton}
-                    >
+                {isLoggedIn ? (
+                    <Button onClick={logout} className={classes.logoutButton}>
                         Logout
                     </Button>
                 ) : (
@@ -82,11 +73,6 @@ const Navbar = ({ loggedIn, handleDrawerOpen }) => {
             </Toolbar>
         </AppBar>
     );
-};
-
-Navbar.propTypes = {
-    loggedIn: PropTypes.bool.isRequired,
-    handleDrawerOpen: PropTypes.func.isRequired,
 };
 
 export default Navbar;
