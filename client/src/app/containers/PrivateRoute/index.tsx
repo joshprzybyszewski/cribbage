@@ -1,24 +1,17 @@
 import React from 'react';
 
-import { selectLoggedIn } from 'auth/selectors';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, RouteProps } from 'react-router-dom';
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
-    const loggedIn = useSelector(selectLoggedIn);
-    return (
-        <Route
-            {...rest}
-            render={props =>
-                loggedIn ? <Component {...props} /> : <Redirect to='/' />
-            }
-        />
-    );
-};
+import { useAuth } from '../../../auth/useAuth';
 
-PrivateRoute.propTypes = {
-    component: PropTypes.node.isRequired,
+interface Props extends RouteProps {}
+
+const PrivateRoute: React.FunctionComponent<Props> = props => {
+    const { isLoggedIn } = useAuth();
+    if (!isLoggedIn) {
+        return <Redirect to='/' />;
+    }
+    return <Route {...props} />;
 };
 
 export default PrivateRoute;
