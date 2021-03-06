@@ -7,7 +7,14 @@ export const initialState = {
     ],
     suggestedHands: [{
         hand: ['AH', 'KH', '5H', 'JH', ],
-        result: { avg: 5, median: 10 },
+        throw: ['8C', '3D', ],
+        handPts: { avg: 5, median: 10 },
+        cribPts: { avg: 2, median: 8 },
+    }, {
+        hand: ['AH', 'KH', '8C', '3D', ],
+        throw: ['5H', 'JH', ],
+        handPts: { avg: 7, median: 15 },
+        cribPts: { avg: 4, median: 6 },
     }]
 };
 
