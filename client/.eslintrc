@@ -18,6 +18,7 @@
     "prettier/prettier": ["warn"],
     // we use typescript for prop types
     "react/prop-types": "off",
+    "react/jsx-props-no-spreading": "off",
     // Disable prefer default export
     "import/prefer-default-export": "off",
     "import/order": [
