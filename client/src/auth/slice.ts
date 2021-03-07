@@ -8,6 +8,7 @@ export interface User {
 interface AuthState {
     currentUser: User;
     loading: boolean;
+    isLoggedIn: boolean;
 }
 
 export const initialState: AuthState = {
@@ -16,6 +17,7 @@ export const initialState: AuthState = {
         name: '',
     },
     loading: false,
+    isLoggedIn: false,
 };
 
 const authSlice = createSlice({
@@ -32,6 +34,7 @@ const authSlice = createSlice({
             return {
                 ...state,
                 currentUser: action.payload,
+                isLoggedIn: true,
             };
         },
         clearUser() {

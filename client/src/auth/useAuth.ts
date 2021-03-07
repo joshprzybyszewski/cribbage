@@ -1,10 +1,7 @@
-import { useState } from 'react';
-
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { useAlert } from '../app/containers/Alert/useAlert';
-import { actions as homeActions } from '../app/containers/Home/slice';
 import { RootState } from '../store/store';
 import { actions, User } from './slice';
 
@@ -27,8 +24,9 @@ interface RegisterRequest {
 export function useAuth(): ReturnType {
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
-    const { currentUser } = useSelector((state: RootState) => state.auth);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { currentUser, isLoggedIn } = useSelector(
+        (state: RootState) => state.auth,
+    );
 
     return {
         currentUser,
@@ -38,11 +36,6 @@ export function useAuth(): ReturnType {
             try {
                 const res = await axios.get<UserResponse>(`/player/${id}`);
                 dispatch(actions.setUser(res.data.player));
-                // TODO this'll get updated later
-                dispatch(
-                    homeActions.refreshActiveGames({ id: currentUser.id }),
-                );
-                setIsLoggedIn(true);
             } catch (err) {
                 dispatch(actions.clearUser());
                 setAlert(err.response.data, 'error');
