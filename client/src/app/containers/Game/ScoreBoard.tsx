@@ -1,38 +1,33 @@
 import React from 'react';
 
-import blue from '@material-ui/core/colors/blue';
-import green from '@material-ui/core/colors/green';
-import grey from '@material-ui/core/colors/grey';
-import red from '@material-ui/core/colors/red';
-import Container from '@material-ui/core/Container';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import {
+    Container,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+} from '@material-ui/core';
 import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
-import PropTypes from 'prop-types';
 
-// TODO import from a utils instead of redeclaring
-// or even make an "atom" that is the icon
-const myColorToHue = color => {
-    return color
-        ? color.includes('red')
-            ? red[800]
-            : color.includes('blue')
-            ? blue[800]
-            : color.includes('green')
-            ? green[800]
-            : grey[400]
-        : grey[400];
-};
+import { colorToHue } from '../../../utils/colorToHue';
+import { Team } from './models';
 
-const ScoreBoard = ({ current_dealer, teams }) => {
+// TODO abstract network models from the models we use so we can fix naming
+interface Props {
+    current_dealer: string;
+    teams: Team[];
+}
+
+const ScoreBoard: React.FunctionComponent<Props> = ({
+    current_dealer,
+    teams,
+}) => {
     return (
-        <Container fixed width='35px' size='small'>
-            <TableContainer component={Paper} size='small'>
+        <Container fixed maxWidth='xs'>
+            <TableContainer component={Paper}>
                 <Table
                     stickyHeader
                     size='small'
@@ -54,7 +49,7 @@ const ScoreBoard = ({ current_dealer, teams }) => {
                                     <TableCell>
                                         <PersonPinCircleIcon
                                             style={{
-                                                color: myColorToHue(t.color),
+                                                color: colorToHue(t.color),
                                             }}
                                         />
                                     </TableCell>
@@ -84,11 +79,6 @@ const ScoreBoard = ({ current_dealer, teams }) => {
             </TableContainer>
         </Container>
     );
-};
-
-ScoreBoard.propTypes = {
-    current_dealer: PropTypes.string.isRequired,
-    teams: PropTypes.array.isRequired,
 };
 
 export default ScoreBoard;

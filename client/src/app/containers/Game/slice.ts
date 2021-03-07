@@ -1,8 +1,63 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const initialState = {
-    currentGameID: '',
-    currentGame: {},
+import { Card, Game } from './models';
+
+export interface DealAction {
+    numShuffles: number;
+}
+
+export interface SelectCardsAction {
+    selectedCards: Card[];
+}
+
+export type CribAction = SelectCardsAction;
+export type PegAction = SelectCardsAction;
+
+export interface CutAction {
+    percCut: number;
+}
+
+export interface CountAction {
+    points: number;
+}
+export type CountHandAction = CountAction;
+export type CountCribAction = CountAction;
+
+export type GameAction =
+    | DealAction
+    | CribAction
+    | PegAction
+    | CutAction
+    | CountHandAction
+    | CountCribAction;
+
+export interface GameState {
+    currentGameID: number;
+    currentGame: Game;
+    selectedCards: Card[];
+    currentAction: GameAction;
+    loading: boolean;
+}
+
+export const initialState: GameState = {
+    currentGameID: 0,
+    currentGame: {
+        id: 0,
+        teams: [],
+        phase: 'unknownPhase',
+        current_peg: 0,
+        blocking_players: {},
+        current_dealer: '',
+        cut_card: {
+            name: 'ac',
+            value: 1,
+            suit: 'Clubs',
+        },
+        hands: {},
+        pegged_cards: [],
+        crib: [],
+    },
+    selectedCards: [],
     currentAction: {
         numShuffles: 0,
         selectedCards: [],
@@ -16,165 +71,44 @@ const gameSlice = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        setGameID(state, action: PayloadAction<string>) {
+        setLoading(state, action: PayloadAction<boolean>) {
+            return {
+                ...state,
+                loading: action.payload,
+            };
+        },
+        setGameID(state, action: PayloadAction<number>) {
             return {
                 ...state,
                 currentGameID: action.payload,
             };
         },
-        goToGame: {
-            reducer: (state, action) => {
-                state.loading = true;
-                state.currentGameID = action.payload.id;
-            },
-            prepare: (id, history) => {
-                return { payload: { id, history } };
-            },
+        setGame(state, action: PayloadAction<Game>) {
+            return {
+                ...state,
+                currentGame: action.payload,
+                currentGameID: action.payload.id,
+            };
         },
-        gameRetrieved(state, action) {
-            state.loading = false;
-            state.currentGame = action.payload.data;
-            state.currentAction = initialState.currentAction;
-            switch (state.currentGame.phase) {
-                case `Deal`:
-                    // TODO leave numShuffles
-                    break;
-                default:
-                    // TODO here too
-                    break;
+        exitGame() {
+            return initialState;
+        },
+        toggleSelectedCard(state, action: PayloadAction<Card>) {
+            const card = action.payload;
+            const cardsAreEqual = (c1: Card, c2: Card) =>
+                c1.suit === c2.suit && c1.value === c2.value;
+            if (state.selectedCards.some(c => cardsAreEqual(c, card))) {
+                return {
+                    ...state,
+                    selectedCards: state.selectedCards.filter(
+                        c => !cardsAreEqual(c, card),
+                    ),
+                };
             }
-        },
-        exitGame: {
-            reducer: state => {
-                state.loading = false;
-                state.currentGameID = '';
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        refreshGame: {
-            reducer: (state, action) => {
-                if (state.currentGameID !== action.payload.id) {
-                    throw Error(
-                        `bad game id: expected "${state.currentGameID}", got "${action.payload.id}"`,
-                    );
-                }
-            },
-            prepare: gameID => {
-                return { payload: { id: gameID } };
-            },
-        },
-        shuffleDeck(state) {
-            isNaN(state.currentAction.numShuffles)
-                ? (state.currentAction.numShuffles = 1)
-                : (state.currentAction.numShuffles =
-                      state.currentAction.numShuffles + 1);
-        },
-        selectCard: {
-            reducer: (state, action) => {
-                // Nothing here?
-                const { card } = action.payload;
-                if (!card) {
-                    return;
-                }
-
-                const currentIndex = state.currentAction.selectedCards.findIndex(
-                    c => c.name === card.name,
-                );
-                const newSelected = [...state.currentAction.selectedCards];
-
-                if (currentIndex === -1) {
-                    newSelected.push(card);
-                } else {
-                    newSelected.splice(currentIndex, 1);
-                }
-                state.currentAction.selectedCards = newSelected;
-            },
-            prepare: (card, history) => {
-                return { payload: { card, history } };
-            },
-        },
-        dealCards: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        buildCrib: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        chooseCut: {
-            reducer: (state, action) => {
-                const newPerc = action.payload.perc;
-                if (!newPerc) {
-                    return;
-                }
-                if (newPerc > 100) {
-                    return;
-                }
-                if (newPerc >= 1) {
-                    state.currentAction.percCut = newPerc / 100;
-                    return;
-                }
-
-                state.currentAction.percCut = newPerc;
-            },
-            prepare: (perc, history) => {
-                return { payload: { perc, history } };
-            },
-        },
-        cutDeck: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        pegCard: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        claimPoints: {
-            reducer: (state, action) => {
-                const { points } = action.payload;
-                if (!points) {
-                    return;
-                }
-
-                state.currentAction.points = points;
-            },
-            prepare: (points, history) => {
-                return { payload: { points, history } };
-            },
-        },
-        countHand: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
-        },
-        countCrib: {
-            reducer: () => {
-                // Nothing here?
-            },
-            prepare: history => {
-                return { payload: { history } };
-            },
+            return {
+                ...state,
+                selectedCards: [...state.selectedCards, card],
+            };
         },
     },
 });

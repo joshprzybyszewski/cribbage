@@ -4,8 +4,12 @@ import { useDispatch } from 'react-redux';
 import { actions } from './slice';
 import { AlertType } from './types';
 
+export interface AlertSetter {
+    (message: string, type: AlertType): string;
+}
+
 interface ReturnType {
-    setAlert: (message: string, type: AlertType) => string;
+    setAlert: AlertSetter;
     removeAlert: (id: string) => void;
 }
 

@@ -1,15 +1,16 @@
 import React from 'react';
 
-import Account from 'app/containers/Account';
-import Game from 'app/containers/Game';
-import Home from 'app/containers/Home';
-import Layout from 'app/containers/Layout';
-import Login from 'app/containers/Login';
-import NewGameForm from 'app/containers/NewGameForm';
-import PrivateRoute from 'app/containers/PrivateRoute';
-import Register from 'app/containers/Register';
-import { Switch, Route } from 'react-router-dom';
-import { BrowserRouter } from 'react-router-dom';
+import { Switch, Route, BrowserRouter } from 'react-router-dom';
+
+import Account from './containers/Account';
+import Game from './containers/Game';
+import Home from './containers/Home';
+import Layout from './containers/Layout';
+import Login from './containers/Login';
+import NewGameForm from './containers/NewGameForm';
+import PrivateRoute from './containers/PrivateRoute';
+import Register from './containers/Register';
+
 import 'styles.css';
 
 export const App = () => {

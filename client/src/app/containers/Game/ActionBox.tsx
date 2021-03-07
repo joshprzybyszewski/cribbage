@@ -1,18 +1,20 @@
 import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
-import CountCribAction from 'app/containers/Game/CountCribAction';
-import CountHandAction from 'app/containers/Game/CountHandAction';
-import CribAction from 'app/containers/Game/CribAction';
-import CutAction from 'app/containers/Game/CutAction';
-import DealAction from 'app/containers/Game/DealAction';
-import PegAction from 'app/containers/Game/PegAction';
-import { gameSaga } from 'app/containers/Game/saga';
-import { sliceKey, reducer } from 'app/containers/Game/slice';
-import PropTypes from 'prop-types';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const Action = ({ phase, isBlocking }) => {
+import CountAction from './CountAction';
+import CribAction from './CribAction';
+import CutAction from './CutAction';
+import DealAction from './DealAction';
+import PegAction from './PegAction';
+import { Phase } from './slice';
+
+interface Props {
+    phase: Phase;
+    isBlocking: boolean;
+}
+
+const Action: React.FunctionComponent<Props> = ({ phase, isBlocking }) => {
     switch (phase) {
         case 'Deal':
             return <DealAction isBlocking={isBlocking} />;
@@ -23,28 +25,20 @@ const Action = ({ phase, isBlocking }) => {
         case 'Pegging':
             return <PegAction isBlocking={isBlocking} />;
         case 'Counting':
-            return <CountHandAction isBlocking={isBlocking} />;
+            return <CountAction isBlocking={isBlocking} isCrib={false} />;
         case 'CribCounting':
-            return <CountCribAction isBlocking={isBlocking} />;
+            return <CountAction isBlocking={isBlocking} isCrib />;
         default:
-            return 'dev error!';
+            return null;
     }
 };
 
-const ActionBox = ({ phase, isBlocking }) => {
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: gameSaga });
-
+const ActionBox: React.FunctionComponent<Props> = ({ phase, isBlocking }) => {
     return (
         <Grid item container justify='center' spacing={1}>
             <Action phase={phase} isBlocking={isBlocking} />
         </Grid>
     );
-};
-
-ActionBox.propTypes = {
-    phase: PropTypes.string.isRequired,
-    isBlocking: PropTypes.bool.isRequired,
 };
 
 export default ActionBox;

@@ -1,24 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import SendIcon from '@material-ui/icons/Send';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
-import { gameSaga } from 'app/containers/Game/saga';
-import { selectCurrentAction } from 'app/containers/Game/selectors';
-import { sliceKey, reducer, actions } from 'app/containers/Game/slice';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const DealAction = ({ isBlocking }) => {
-    useInjectReducer({ key: sliceKey, reducer: reducer });
-    useInjectSaga({ key: sliceKey, saga: gameSaga });
+import { ActionInputProps } from './types';
+import { useGame } from './useGame';
 
-    const dispatch = useDispatch();
-
-    const currentAction = useSelector(selectCurrentAction);
-
+const DealAction: React.FunctionComponent<ActionInputProps> = ({
+    isBlocking,
+}) => {
+    const { submitDealAction } = useGame();
+    const [numShuffles, setNumShuffles] = useState(0);
     return (
         <Grid item container spacing={2}>
             <Button
@@ -26,29 +20,21 @@ const DealAction = ({ isBlocking }) => {
                 variant='contained'
                 color='secondary'
                 endIcon={<ShuffleIcon />}
-                onClick={() => {
-                    dispatch(actions.shuffleDeck());
-                }}
+                onClick={() => setNumShuffles(prev => prev + 1)}
             >
                 Shuffle
             </Button>
             <Button
-                disabled={!isBlocking || currentAction.numShuffles <= 0}
+                disabled={!isBlocking || numShuffles <= 0}
                 variant='contained'
                 color='primary'
                 endIcon={<SendIcon />}
-                onClick={() => {
-                    dispatch(actions.dealCards());
-                }}
+                onClick={() => submitDealAction({ numShuffles })}
             >
                 Deal
             </Button>
         </Grid>
     );
-};
-
-DealAction.propTypes = {
-    isBlocking: PropTypes.bool.isRequired,
 };
 
 export default DealAction;

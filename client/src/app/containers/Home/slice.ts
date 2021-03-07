@@ -6,6 +6,39 @@ interface Player extends User {
     color: string;
 }
 
+/*
+{
+    "player": {
+        "id": "123",
+        "name": "abc"
+    },
+    "activeGames": [
+        {
+            "gameID": 3735260247,
+            "players": [
+                {
+                    "id": "123",
+                    "name": "abc",
+                    "color": "blue"
+                },
+                {
+                    "id": "124",
+                    "name": "abc",
+                    "color": "red"
+                }
+            ],
+            "created": "0001-01-01T00:00:00Z",
+            "lastMove": "0001-01-01T00:00:00Z"
+        }
+    ]
+}
+*/
+
+export interface ActiveGameResponse {
+    player: User;
+    activeGames: ActiveGame[];
+}
+
 export interface ActiveGame {
     gameID: string;
     players: Player[];
@@ -13,13 +46,11 @@ export interface ActiveGame {
     lastMove: Date;
 }
 
-interface HomeState {
-    activeGamesPlayerID: string;
-    activeGames: ActiveGame[];
-}
-
-export const initialState: HomeState = {
-    activeGamesPlayerID: '',
+export const initialState: ActiveGameResponse = {
+    player: {
+        id: '',
+        name: '',
+    },
     activeGames: [],
 };
 
@@ -30,7 +61,7 @@ const homeSlice = createSlice({
         setActiveGamesPlayerID(state, action: PayloadAction<string>) {
             return {
                 ...state,
-                activeGamesPlayerID: action.payload,
+                player: { id: action.payload, name: '' },
             };
         },
         setActiveGames(state, action: PayloadAction<ActiveGame[]>) {

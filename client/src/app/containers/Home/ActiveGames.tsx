@@ -1,25 +1,12 @@
 import React from 'react';
 
 import { IconButton, TableCell, TableRow } from '@material-ui/core';
-import { blue, green, grey, red } from '@material-ui/core/colors';
 import PersonPinCircleIcon from '@material-ui/icons/PersonPinCircle';
 import SportsEsportsIcon from '@material-ui/icons/SportsEsports';
 
 import { User } from '../../../auth/slice';
+import { colorToHue } from '../../../utils/colorToHue';
 import { ActiveGame } from './slice';
-
-const colorToHue = (color: string) => {
-    if (color.includes('red')) {
-        return red[800];
-    }
-    if (color.includes('green')) {
-        return green[800];
-    }
-    if (color.includes('blue')) {
-        return blue[800];
-    }
-    return grey[400];
-};
 
 const getHueForPlayerInGame = (player: User, game: ActiveGame) => {
     const color = game.players.find(p => p.id === player.id)?.color;

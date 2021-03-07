@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { RootState } from '../../../store/reducers';
+import { RootState } from '../../../store/store';
 
 const Alert: React.FunctionComponent = () => {
     const alerts = useSelector((state: RootState) => state.alerts);

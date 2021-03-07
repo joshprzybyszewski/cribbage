@@ -2,14 +2,27 @@ import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
-import PlayingCard from 'app/containers/Game/PlayingCard';
-import PropTypes from 'prop-types';
 
-const showOpponentsHand = phase => {
-    return phase !== 'Deal';
-};
+import { Card, PeggedCard, Phase } from './models';
+import PlayingCard from './PlayingCard';
 
-const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
+const showOpponentsHand = (phase: Phase) => phase !== 'Deal';
+
+interface Props {
+    hand: Card[];
+    phase: Phase;
+    side?: boolean;
+    pegged: PeggedCard[];
+    mine?: boolean;
+}
+
+const PlayerHand: React.FunctionComponent<Props> = ({
+    hand,
+    phase,
+    side,
+    pegged,
+    mine,
+}) => {
     if (!hand || !showOpponentsHand(phase)) {
         return null;
     }
@@ -23,9 +36,9 @@ const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
             spacing={1}
         >
             <GridList>
-                {hand.map((card, index) => (
+                {hand.map(card => (
                     <PlayingCard
-                        key={`handcard${index}`}
+                        key={`handcard-${card.name}`}
                         card={card}
                         mine={mine}
                         disabled={
@@ -40,12 +53,9 @@ const PlayerHand = ({ hand, phase, side, pegged, mine }) => {
     );
 };
 
-PlayerHand.propTypes = {
-    hand: PropTypes.array.isRequired,
-    phase: PropTypes.string.isRequired,
-    side: PropTypes.string.isRequired,
-    pegged: PropTypes.array.isRequired,
-    mine: PropTypes.bool.isRequired,
+PlayerHand.defaultProps = {
+    mine: false,
+    side: false,
 };
 
 export default PlayerHand;

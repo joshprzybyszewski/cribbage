@@ -13,7 +13,6 @@ import LoggedOutDrawer from 'app/containers/LeftDrawer/LoggedOutDrawer';
 import { selectLoggedIn } from 'auth/selectors';
 import { sliceKey, reducer } from 'auth/slice';
 import clsx from 'clsx';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useInjectReducer } from 'redux-injectors';
 
@@ -56,8 +55,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Layout = props => {
-    useInjectReducer({ key: sliceKey, reducer: reducer });
+const Layout: React.FunctionComponent = ({ children }) => {
+    useInjectReducer({ key: sliceKey, reducer });
     const loggedIn = useSelector(selectLoggedIn);
 
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -71,7 +70,7 @@ const Layout = props => {
     const classes = useStyles();
 
     return (
-        <React.Fragment>
+        <>
             <Navbar loggedIn={loggedIn} handleDrawerOpen={handleDrawerOpen} />
             <div className={classes.root}>
                 <Drawer
@@ -98,15 +97,11 @@ const Layout = props => {
                 >
                     <div className={classes.drawerHeader} />
                     <Alert />
-                    {props.children}
+                    {children}
                 </main>
             </div>
-        </React.Fragment>
+        </>
     );
-};
-
-Layout.propTypes = {
-    children: PropTypes.node.isRequired,
 };
 
 export default Layout;
