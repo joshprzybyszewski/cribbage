@@ -110,6 +110,12 @@ const gameSlice = createSlice({
                 selectedCards: [...state.selectedCards, card],
             };
         },
+        clearSelectedCards(state) {
+            return {
+                ...state,
+                selectedCards: [],
+            };
+        },
     },
 });
 

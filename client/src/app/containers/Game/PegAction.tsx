@@ -10,7 +10,12 @@ import { useGame } from './useGame';
 const PegAction: React.FunctionComponent<ActionInputProps> = ({
     isBlocking,
 }) => {
-    const { selectedCards, submitPegAction } = useGame();
+    const { clearSelectedCards, selectedCards, submitPegAction } = useGame();
+
+    const handleClick = async () => {
+        await submitPegAction({ selectedCards });
+        clearSelectedCards();
+    };
 
     return (
         <ButtonGroup
@@ -30,7 +35,7 @@ const PegAction: React.FunctionComponent<ActionInputProps> = ({
                 disabled={!isBlocking || selectedCards.length !== 1}
                 color='primary'
                 endIcon={<SendIcon />}
-                onClick={() => submitPegAction({ selectedCards })}
+                onClick={handleClick}
             >
                 Peg
             </Button>

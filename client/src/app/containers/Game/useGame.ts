@@ -15,12 +15,16 @@ import {
     GameAction,
     PegAction,
 } from './slice';
+import { CreateGameResponse } from './types';
 
 interface Result {
     game: Game;
     selectedCards: Card[];
+    createGame: (playerIDs: string[]) => Promise<void>;
+    getGame: (id: number) => Promise<void>;
     refreshGame: () => Promise<void>;
     toggleSelectedCard: (c: Card) => void;
+    clearSelectedCards: () => void;
     submitDealAction: (a: DealAction) => Promise<void>;
     submitBuildCribAction: (a: CribAction) => Promise<void>;
     submitCutDeckAction: (a: CutAction) => Promise<void>;
@@ -142,18 +146,54 @@ export function useGame(): Result {
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
 
-    const refreshGame = async () => {
+    const fetchGame = async (id: number) => {
+        const response = await axios.get<Game>(
+            `/game/${id}?player=${currentUser.id}`,
+        );
+        return response.data;
+    };
+
+    const getGame = async (id: number) => {
         try {
-            const res = await axios.get<Game>(
-                `/game/${gameState.currentGameID}?player=${currentUser.id}`,
-            );
-            dispatch(actions.setGame(res.data));
+            const game = await fetchGame(id);
+            dispatch(actions.setGame(game));
         } catch (err) {
             setAlert(err.response.data, 'error');
         }
     };
 
+    const refreshGame = async () => {
+        dispatch(actions.setLoading(true));
+        try {
+            const game = await fetchGame(gameState.currentGameID);
+            dispatch(actions.setGame(game));
+        } catch (err) {
+            setAlert(err.response.data, 'error');
+        }
+        dispatch(actions.setLoading(false));
+    };
+
+    const createGame = async (playerIDs: string[]) => {
+        dispatch(actions.setLoading(true));
+        try {
+            const createResult = await axios.post<CreateGameResponse>(
+                `/create/game`,
+                {
+                    playerIDs,
+                },
+            );
+            const getResult = await axios.get<Game>(
+                `/game/${createResult.data.id}`,
+            );
+            dispatch(actions.setGame(getResult.data));
+        } catch (err) {
+            setAlert(err.response.data, 'error');
+        }
+        dispatch(actions.setLoading(false));
+    };
+
     const createActionHandler = (phase: Phase) => async (a: GameAction) => {
+        dispatch(actions.setLoading(true));
         try {
             const request = getPlayerAction(
                 currentUser.id,
@@ -171,6 +211,7 @@ export function useGame(): Result {
                 'error',
             );
         }
+        dispatch(actions.setLoading(false));
     };
 
     return {
@@ -178,9 +219,12 @@ export function useGame(): Result {
         selectedCards: useSelector(
             (state: RootState) => state.game.selectedCards,
         ),
+        createGame,
+        getGame,
         refreshGame,
         toggleSelectedCard: (c: Card) =>
             dispatch(actions.toggleSelectedCard(c)),
+        clearSelectedCards: () => dispatch(actions.clearSelectedCards()),
         submitDealAction: createActionHandler('Deal'),
         submitBuildCribAction: createActionHandler('BuildCrib'),
         submitCutDeckAction: createActionHandler('Cut'),

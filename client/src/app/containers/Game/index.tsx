@@ -30,25 +30,25 @@ const handForPlayer = (
             const secondPlayerID = game.teams.filter(
                 t => !t.players.some(p => p.id === myID),
             )[1].players[0].id;
-            return game.hands[secondPlayerID];
+            return game.hands[secondPlayerID] ?? [];
         }
         if (isFourPlayer) {
             const partnerID = game.teams
                 .filter(t => t.players.some(p => p.id === myID))[0]
                 .players.filter(p => p.id !== myID)[0].id;
-            return game.hands[partnerID];
+            return game.hands[partnerID] ?? [];
         }
         const opponentID = game.teams.filter(
             t => !t.players.some(p => p.id === myID),
         )[0].players[0].id;
-        return game.hands[opponentID];
+        return game.hands[opponentID] ?? [];
     }
     if (position === 'right') {
         if (isFourPlayer) {
             const rightID = game.teams
                 .filter(t => t.players.some(p => p.id !== myID))[0]
                 .players.filter(p => p.id !== myID)[1].id;
-            return game.hands[rightID];
+            return game.hands[rightID] ?? [];
         }
         // nothing!
         return [];
@@ -60,7 +60,7 @@ const handForPlayer = (
     const leftID = game.teams
         .filter(t => t.players.some(p => p.id !== myID))[0]
         .players.filter(p => p.id !== myID)[0].id;
-    return game.hands[leftID];
+    return game.hands[leftID] ?? [];
 };
 
 const GamePage: React.FunctionComponent = () => {

@@ -6,11 +6,10 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import axios from 'axios';
 import { useHistory } from 'react-router-dom';
 
 import { useAuth } from '../../../auth/useAuth';
-import { useAlert } from '../Alert/useAlert';
+import { useGame } from '../Game/useGame';
 
 const useStyles = makeStyles(theme => ({
     title: {
@@ -38,7 +37,7 @@ interface FormData {
 const NewGameForm: React.FunctionComponent = () => {
     const history = useHistory();
     const { currentUser } = useAuth();
-    const { setAlert } = useAlert();
+    const { createGame } = useGame();
 
     // event handlers
     const [formData, setFormData] = useState<FormData>({
@@ -46,31 +45,19 @@ const NewGameForm: React.FunctionComponent = () => {
         id2: '',
         teammateID: '',
     });
+    const onFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    const onSubmitLoginForm = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    const handleCreateGame = async () => {
         const playerIDs = [
             currentUser.id,
             ...Object.keys(formData)
                 .map(k => formData[k])
                 .filter(id => id.length > 0),
         ];
-        try {
-            await axios.post(`/create/game`, {
-                playerIDs,
-            });
-            // const { id } = res.data;
-            // TODO load the new game up into state
-            // yield put(gameActions.goToGame(id, history));
-        } catch (err) {
-            setAlert(err.response.data, 'error');
-        }
-    };
-    const onFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-    const onSubmitLoginForm = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await handleCreateGame();
+        await createGame(playerIDs);
         history.push('/game');
     };
 

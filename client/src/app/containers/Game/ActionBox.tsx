@@ -6,8 +6,8 @@ import CountAction from './CountAction';
 import CribAction from './CribAction';
 import CutAction from './CutAction';
 import DealAction from './DealAction';
+import { Phase } from './models';
 import PegAction from './PegAction';
-import { Phase } from './slice';
 
 interface Props {
     phase: Phase;

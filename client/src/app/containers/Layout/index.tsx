@@ -5,16 +5,13 @@ import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import Navbar from 'app/components/Navbar';
-import Alert from 'app/containers/Alert';
-// TODO fix this - should only have to import drawer?
-import LoggedInDrawer from 'app/containers/LeftDrawer/LoggedInDrawer';
-import LoggedOutDrawer from 'app/containers/LeftDrawer/LoggedOutDrawer';
-import { selectLoggedIn } from 'auth/selectors';
-import { sliceKey, reducer } from 'auth/slice';
 import clsx from 'clsx';
-import { useSelector } from 'react-redux';
-import { useInjectReducer } from 'redux-injectors';
+
+import { useAuth } from '../../../auth/useAuth';
+import Navbar from '../../components/Navbar';
+import Alert from '../Alert';
+import LoggedInDrawer from '../LeftDrawer/LoggedInDrawer';
+import LoggedOutDrawer from '../LeftDrawer/LoggedOutDrawer';
 
 const drawerWidth = 240;
 
@@ -56,8 +53,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Layout: React.FunctionComponent = ({ children }) => {
-    useInjectReducer({ key: sliceKey, reducer });
-    const loggedIn = useSelector(selectLoggedIn);
+    const { isLoggedIn } = useAuth();
 
     const [drawerOpen, setDrawerOpen] = useState(false);
     const handleDrawerOpen = () => {
@@ -71,7 +67,7 @@ const Layout: React.FunctionComponent = ({ children }) => {
 
     return (
         <>
-            <Navbar loggedIn={loggedIn} handleDrawerOpen={handleDrawerOpen} />
+            <Navbar handleDrawerOpen={handleDrawerOpen} />
             <div className={classes.root}>
                 <Drawer
                     className={classes.drawer}
@@ -88,7 +84,7 @@ const Layout: React.FunctionComponent = ({ children }) => {
                         </IconButton>
                     </div>
                     <Divider />
-                    {loggedIn ? <LoggedInDrawer /> : <LoggedOutDrawer />}
+                    {isLoggedIn ? <LoggedInDrawer /> : <LoggedOutDrawer />}
                 </Drawer>
                 <main
                     className={clsx(classes.content, {

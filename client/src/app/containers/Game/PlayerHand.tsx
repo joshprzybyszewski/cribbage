@@ -2,6 +2,7 @@ import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
+import { nanoid } from '@reduxjs/toolkit';
 
 import { Card, PeggedCard, Phase } from './models';
 import PlayingCard from './PlayingCard';
@@ -38,7 +39,11 @@ const PlayerHand: React.FunctionComponent<Props> = ({
             <GridList>
                 {hand.map(card => (
                     <PlayingCard
-                        key={`handcard-${card.name}`}
+                        key={
+                            card.name === 'unknown'
+                                ? `handcard-unknown-${nanoid()}`
+                                : `handcard-${card.name}`
+                        }
                         card={card}
                         mine={mine}
                         disabled={

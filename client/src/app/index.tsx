@@ -11,7 +11,7 @@ import NewGameForm from './containers/NewGameForm';
 import PrivateRoute from './containers/PrivateRoute';
 import Register from './containers/Register';
 
-import 'styles.css';
+import '../styles.css';
 
 export const App = () => {
     return (

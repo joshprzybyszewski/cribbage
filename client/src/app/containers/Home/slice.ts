@@ -6,41 +6,13 @@ interface Player extends User {
     color: string;
 }
 
-/*
-{
-    "player": {
-        "id": "123",
-        "name": "abc"
-    },
-    "activeGames": [
-        {
-            "gameID": 3735260247,
-            "players": [
-                {
-                    "id": "123",
-                    "name": "abc",
-                    "color": "blue"
-                },
-                {
-                    "id": "124",
-                    "name": "abc",
-                    "color": "red"
-                }
-            ],
-            "created": "0001-01-01T00:00:00Z",
-            "lastMove": "0001-01-01T00:00:00Z"
-        }
-    ]
-}
-*/
-
 export interface ActiveGameResponse {
     player: User;
     activeGames: ActiveGame[];
 }
 
 export interface ActiveGame {
-    gameID: string;
+    gameID: number;
     players: Player[];
     created: Date;
     lastMove: Date;
