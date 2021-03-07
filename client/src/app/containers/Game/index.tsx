@@ -15,11 +15,17 @@ import { useGame } from './useGame';
 const showCutCard = (phase: Phase) =>
     !['Deal', 'BuildCrib', 'Cut'].includes(phase);
 
+const handsExist = (phase: Phase) =>
+    !['unknownPhase', 'Deal', 'DealingReady'].includes(phase);
+
 const handForPlayer = (
     game: Game,
     myID: string,
     position: 'across' | 'right' | 'left',
 ) => {
+    if (!handsExist(game.phase)) {
+        return [];
+    }
     const numPlayers = game.teams.reduce(
         (prev, team) => prev + team.players.length,
         0,
@@ -66,6 +72,7 @@ const handForPlayer = (
 const GamePage: React.FunctionComponent = () => {
     const { game, refreshGame } = useGame();
     const { currentUser } = useAuth();
+    const myHand = handsExist(game.phase) ? game.hands[currentUser.id] : [];
 
     return (
         <Grid container xl spacing={1} direction='row' justify='space-between'>
@@ -121,7 +128,7 @@ const GamePage: React.FunctionComponent = () => {
                     <PlayerHand
                         mine
                         phase={game.phase}
-                        hand={game.hands[currentUser.id]}
+                        hand={myHand}
                         pegged={game.pegged_cards}
                     />
                 </Grid>
