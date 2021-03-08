@@ -6,15 +6,20 @@ import { makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
-import { sliceKey, reducer } from 'app/containers/Suggestions/slice';
+import {
+  sliceKey,
+  reducer,
+  actions as sugActions,
+} from 'app/containers/Suggestions/slice';
 import PropTypes from 'prop-types';
 import { useInjectReducer } from 'redux-injectors';
+import { useDispatch } from 'react-redux';
 
 const useStyles = makeStyles({
   root: {
     width: 120,
     height: 160,
-    // display: 'flex',
+    display: 'flex',
   },
   value: {
     fontSize: 14,
@@ -25,23 +30,106 @@ const useStyles = makeStyles({
     verticalAlign: 'center',
     textAlign: 'center',
   },
-  // fauxCardWrapper: {
-  //   display: 'flex',
-  //   flexDirection: 'column',
-  // },
-  // fauxCard: {
-  //   flex: '1 0 auto',
-  // },
-  valueSlider: {
-    // width: '5%',
-    // height: '100%',
-    width: '100%',
+  fauxCardWrapper: {
+    flexGrow: '1',
     height: '100%',
-    position: 'relative',
-    top: '0',
-    left: '0',
+  },
+  valueSlider: {
+    flexBasis: '10%',
+    height: '50%',
+    marginTop: '10%',
   }
 });
+
+
+function ValueLabelComponent(props) {
+  const { children, open, value } = props;
+
+  return (
+    <Tooltip open={open} enterTouchDelay={0} placement="top" title={getValueString(value)}>
+      {children}
+    </Tooltip>
+  );
+}
+
+const ChoosingCard = ({ card, notEditable }) => {
+  useInjectReducer({ key: sliceKey, reducer: reducer });
+  const dispatch = useDispatch();
+
+  const classes = useStyles();
+  const value = getValue(card.toUpperCase());
+  const suitVal = getSuitValue(card.toUpperCase());
+
+  const useRed = suitVal > 2;
+
+  const updateValue = (v) => {
+    dispatch(sugActions.updateCard({
+      card: card,
+      newCard: getUpdatedValue(card, v),
+    }));
+  }
+  const updateSuit = (_) => {
+    dispatch(sugActions.updateCard({
+      card: card,
+      newCard: getUpdatedSuit(card),
+    }));
+  };
+
+  return (
+    <div
+      className={classes.root}
+    >
+      <div
+        className={classes.fauxCardWrapper}
+      >
+        <Card>
+          <CardContent
+            className={classes.fauxCard}
+            onClick={updateSuit}
+          >
+            <Typography
+              className={classes.value}
+              color={useRed ? 'red' : 'black'}
+              gutterBottom
+            >
+              {getValueString(value)}
+            </Typography>
+            <Typography className={classes.suit}>
+              {getSuitEmoji(card)}
+            </Typography>
+          </CardContent>
+        </Card>
+      </div>
+      {
+        !notEditable &&
+        <div
+          className={classes.valueSlider}
+        >
+          <Slider
+            orientation='vertical'
+            defaultValue={value}
+            ValueLabelComponent={ValueLabelComponent}
+            getAriaValueText={v => getValueString(v)}
+            aria-labelledby="discrete-value-slider"
+            valueLabelDisplay="auto"
+            step={1}
+            marks
+            min={1}
+            max={13}
+            onChangeCommitted={(_, v) => updateValue(v)}
+          />
+        </div>
+      }
+    </div>
+  );
+};
+
+ChoosingCard.propTypes = {
+  card: PropTypes.string.isRequired,
+  notEditable: PropTypes.bool,
+};
+
+export default ChoosingCard;
 
 function getSuitValue(card) {
   if (card.includes('C')) {
@@ -55,6 +143,17 @@ function getSuitValue(card) {
   }
 
   return 0;
+}
+
+function getUpdatedSuit(card) {
+  if (card.includes('S')) {
+    return card.replace('S', 'C');
+  } else if (card.includes('C')) {
+    return card.replace('C', 'D');
+  } else if (card.includes('D')) {
+    return card.replace('D', 'H');
+  }
+  return card.replace('H', 'S');
 }
 
 function getSuitEmoji(card) {
@@ -101,98 +200,14 @@ function getValueString(val) {
   return `${val}`;
 }
 
-function ValueLabelComponent(props) {
-  const { children, open, value } = props;
-
-  return (
-    <Tooltip open={open} enterTouchDelay={0} placement="top" title={getValueString(value)}>
-      {children}
-    </Tooltip>
-  );
-}
-
-const ChoosingCard = ({ card, notEditable }) => {
-  useInjectReducer({ key: sliceKey, reducer: reducer });
-
-  const classes = useStyles();
-  const value = getValue(card.toUpperCase());
-  const [curVal, setCurVal] = useState(value);
-
-  const suitVal = getSuitValue(card.toUpperCase());
-  const [curSuit, setCurSuit] = useState(suitVal);
-
-
-  const useRed = card.toUpperCase().includes('H') || card.toUpperCase().includes('D');
-
-  const updateValue = () => {
-    // TODO update the state so that this card increments suits
-    console.log(`updateValue: ${notEditable} ${card}, ${curVal}`);
-    setCurVal(prev => (prev % 13) + 1);
+function getUpdatedValue(card, val) {
+  if (card.includes('S')) {
+    return getValueString(val) + 'S';
+  } else if (card.includes('C')) {
+    return getValueString(val) + 'C';
+  } else if (card.includes('D')) {
+    return getValueString(val) + 'D';
   }
-  const updateSuit = (_) => {
-    // TODO update the state so that this card increments suits
-    console.log(`updateSuit: ${notEditable} ${card}, ${curSuit}`);
-    setCurSuit(prev => (prev % 4) + 1);
-  };
 
-  return (
-    <Card
-      className={classes.root}>
-      <div
-        className={classes.fauxCardWrapper}
-      >
-        <CardContent
-        className={classes.fauxCard}
-          onClick={updateSuit}
-        >
-          <Typography
-            className={classes.value}
-            color={useRed ? 'red' : 'black'}
-            gutterBottom
-          >
-            {getValueString(value)}
-          </Typography>
-          <Typography className={classes.suit}>
-            {getSuitEmoji(card)}
-          </Typography>
-        </CardContent>
-      {
-        !notEditable &&
-        <div
-          className={classes.valueSlider}
-        >
-          <CardContent>
-            <Slider
-              orientation='vertical'
-              defaultValue={curVal}
-              ValueLabelComponent={ValueLabelComponent}
-              getAriaValueText={v => {
-                console.log(`getAriaValueText: ${v}`);
-                getValueString(v);
-              }
-              }
-              aria-labelledby="discrete-slider"
-              valueLabelDisplay="auto"
-              step={1}
-              marks
-              min={1}
-              max={13}
-              onChange={event => {
-                console.log(`onChange: ${event.target.value}`);
-                // dispatch(actions.claimPoints(Number(event.target.value) / 100));
-              }}
-            />
-          </CardContent>
-        </div>
-      }
-      </div>
-    </Card>
-  );
-};
-
-ChoosingCard.propTypes = {
-  card: PropTypes.string.isRequired,
-  notEditable: PropTypes.bool,
-};
-
-export default ChoosingCard;
+  return getValueString(val) + 'H';
+}

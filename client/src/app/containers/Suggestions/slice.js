@@ -27,6 +27,23 @@ const suggestionsSlice = createSlice({
                 state.suggestedHands = action.payload.suggestions;
             },
         },
+        updateCard: {
+            reducer: (state, action) => {
+                const selCard = action.payload.card;
+                if (!state.handCards.includes(selCard)) {
+                    throw `hand doesn't include card: ${selCard}`;
+                }
+                if (!action.payload.newCard) {
+                    throw `needs newCard`;
+                }
+                let cpy = [...state.handCards];
+                cpy.splice(
+                    cpy.indexOf(selCard),
+                    1,
+                    action.payload.newCard);
+                state.handCards = cpy;
+            },
+        },
     },
 });
 

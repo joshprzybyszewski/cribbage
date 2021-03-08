@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
 import SuggestionsTable from 'app/containers/Suggestions/SuggestionsTable';
@@ -30,7 +31,17 @@ const Suggestions = () => {
           ))}
         </GridList>
       </Grid>
-      <SuggestionsTable/>
+      <Button
+        color='primary'
+        variant='outlined'
+        onClick={() => {
+          console.log(`clicked calculate`);
+          // TODO emit an event to make the network request with the current handCards
+        }}
+      >
+        Calculate
+      </Button>
+      <SuggestionsTable />
     </div>
   );
 };
