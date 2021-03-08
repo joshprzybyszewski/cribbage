@@ -63,16 +63,18 @@ const ChoosingCard = ({ card, notEditable }) => {
   const useRed = suitVal > 2;
 
   const updateValue = (v) => {
-    dispatch(sugActions.updateCard({
-      card: card,
-      newCard: getUpdatedValue(card, v),
-    }));
+    !notEditable &&
+      dispatch(sugActions.updateCard({
+        card: card,
+        newCard: getUpdatedValue(card, v),
+      }));
   }
   const updateSuit = (_) => {
-    dispatch(sugActions.updateCard({
-      card: card,
-      newCard: getUpdatedSuit(card),
-    }));
+    !notEditable &&
+      dispatch(sugActions.updateCard({
+        card: card,
+        newCard: getUpdatedSuit(card),
+      }));
   };
 
   return (

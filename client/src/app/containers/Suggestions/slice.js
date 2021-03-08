@@ -5,6 +5,7 @@ export const initialState = {
     handCards: [
         'AH', 'KH', '5H', 'JH', '8C', '3D',
     ],
+    loading: false,
     suggestedHands: [{
         hand: ['AH', 'KH', '5H', 'JH', ],
         throw: ['8C', '3D', ],
@@ -22,6 +23,11 @@ const suggestionsSlice = createSlice({
     name: 'suggestions',
     initialState,
     reducers: {
+        getHandSuggestion: {
+            reducer: (state, action) => {
+                state.loading = true;
+            },
+        },
         setSuggestionResult: {
             reducer: (state, action) => {
                 state.suggestedHands = action.payload.suggestions;

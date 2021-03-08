@@ -6,13 +6,16 @@ import GridList from '@material-ui/core/GridList';
 import SuggestionsTable from 'app/containers/Suggestions/SuggestionsTable';
 import ChoosingCard from 'app/containers/Suggestions/ChoosingCard';
 
-import { selectHandCards } from 'app/containers/Suggestions/selectors';
-import { sliceKey, reducer } from 'app/containers/Suggestions/slice';
-import { useSelector } from 'react-redux';
+import { selectHandCards, getHandSuggestion } from 'app/containers/Suggestions/selectors';
+import { suggestionsSaga } from 'app/containers/Suggestions/saga';
+import { sliceKey, reducer, actions as sugActions, } from 'app/containers/Suggestions/slice';
+import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
 const Suggestions = () => {
+  useInjectSaga({ key: sliceKey, saga: suggestionsSaga });
   useInjectReducer({ key: sliceKey, reducer });
+  const dispatch = useDispatch();
 
   const handCards = useSelector(selectHandCards);
 
@@ -35,8 +38,7 @@ const Suggestions = () => {
         color='primary'
         variant='outlined'
         onClick={() => {
-          console.log(`clicked calculate`);
-          // TODO emit an event to make the network request with the current handCards
+          dispatch(sugActions.getHandSuggestion());
         }}
       >
         Calculate
