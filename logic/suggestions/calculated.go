@@ -8,6 +8,7 @@ import (
 )
 
 type TossSummary struct {
+	Kept   []model.Card
 	Tossed []model.Card
 
 	HandStats *TossStats
@@ -76,6 +77,7 @@ func GetAllTosses(
 		handStats, cribStats := getStatsForHand(h, tossed)
 
 		sums = append(sums, TossSummary{
+			Kept:      h,
 			Tossed:    tossed,
 			HandStats: handStats,
 			CribStats: cribStats,
