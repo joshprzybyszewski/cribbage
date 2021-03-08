@@ -4,7 +4,7 @@ const selectDomain = state => state.suggestions;
 
 export const selectSuggestions = createSelector(
     [selectDomain],
-    s => s.suggestedHands,
+    s => !s.loading && s.suggestedHands,
 );
 
 export const selectHandCards = createSelector(

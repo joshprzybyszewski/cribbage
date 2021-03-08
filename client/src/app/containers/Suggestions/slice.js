@@ -8,12 +8,12 @@ export const initialState = {
     loading: false,
     suggestedHands: [{
         hand: ['AH', 'KH', '5H', 'JH', ],
-        throw: ['8C', '3D', ],
+        toss: ['8C', '3D', ],
         handPts: { avg: 5, median: 10 },
         cribPts: { avg: 2, median: 8 },
     }, {
         hand: ['AH', 'KH', '8C', '3D', ],
-        throw: ['5H', 'JH', ],
+        toss: ['5H', 'JH', ],
         handPts: { avg: 7, median: 15 },
         cribPts: { avg: 4, median: 6 },
     }]
@@ -30,7 +30,8 @@ const suggestionsSlice = createSlice({
         },
         setSuggestionResult: {
             reducer: (state, action) => {
-                state.suggestedHands = action.payload.suggestions;
+                state.loading = false;
+                state.suggestedHands = action.payload.data;
             },
         },
         updateCard: {

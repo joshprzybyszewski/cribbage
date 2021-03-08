@@ -11,6 +11,9 @@ export function* handleSuggestHandRequest() {
 
     try {
         const res = yield axios.get(`/suggest/hand?dealt=${currentHand}`);
+        console.log(`res: ${res}`);
+        console.log(`res.data: ${res.data}`);
+        res.data.map((e, index) => console.log(`index ${index}: ${e}, ${e.hand}`));
         yield put(sugActions.setSuggestionResult({ data: res.data }));
     } catch (err) {
         throw err

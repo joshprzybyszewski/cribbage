@@ -28,30 +28,38 @@ const SuggestionsTable = () => {
       <Table stickyHeader size='small' aria-label='Hand Suggestions table'>
         <TableHead>
           <TableRow>
-            <TableCell>Hand Points (avg)</TableCell>
-            <TableCell>Hand Points (median)</TableCell>
-            <TableCell>Crib Points (avg)</TableCell>
-            <TableCell>Crib Points (median)</TableCell>
-            <TableCell>Throw</TableCell>
+            <TableCell>Hand (min)</TableCell>
+            <TableCell>Hand (avg)</TableCell>
+            <TableCell>Hand (max)</TableCell>
+            <TableCell>Crib (min)</TableCell>
+            <TableCell>Crib (avg)</TableCell>
+            <TableCell>Crib (max)</TableCell>
+            <TableCell>Toss</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {sugs
-            .filter(sug => sug && sug.handPts && sug.cribPts && sug.throw)
+            .filter(sug => sug && sug.handPts && sug.cribPts && sug.toss)
             .map(sug => {
               return (
                 <TableRow hover>
                   <TableCell>
+                    {sug.handPts.min}
+                  </TableCell>
+                  <TableCell>
                     {sug.handPts.avg}
                   </TableCell>
                   <TableCell>
-                    {sug.handPts.median}
+                    {sug.handPts.max}
+                  </TableCell>
+                  <TableCell>
+                    {sug.cribPts.min}
                   </TableCell>
                   <TableCell>
                     {sug.cribPts.avg}
                   </TableCell>
                   <TableCell>
-                    {sug.cribPts.median}
+                    {sug.cribPts.max}
                   </TableCell>
                   <TableCell>
                     <Grid
@@ -60,9 +68,9 @@ const SuggestionsTable = () => {
                       spacing={1}
                     >
                       <GridList>
-                      {sug.throw.map((card, index) => (
+                      {sug.toss.map((card, index) => (
                         <ChoosingCard
-                          key={`throwcard${index}`}
+                          key={`tossCard${index}`}
                           card={card}
                           notEditable
                         />
