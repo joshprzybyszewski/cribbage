@@ -8,14 +8,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func modelCardsFromStrings(cs ...string) []model.Card {
-	hand := make([]model.Card, len(cs))
-	for i, c := range cs {
-		hand[i] = model.NewCardFromString(c)
-	}
-	return hand
-}
-
 func cardsFromStrings(cs ...string) []Card {
 	hand := make([]Card, len(cs))
 	for i, c := range cs {
@@ -143,10 +135,10 @@ func TestConvertToGetGameResponse(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
@@ -280,10 +272,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
@@ -372,10 +364,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
@@ -464,10 +456,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
@@ -586,10 +578,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 			PeggedCards: []model.PeggedCard{{
 				Card:     model.NewCardFromString(`ah`),
@@ -707,10 +699,10 @@ func TestConvertToGetGameResponseForPlayer(t *testing.T) {
 			},
 			CurrentDealer: bobID,
 			Hands: map[model.PlayerID][]model.Card{
-				aliceID: modelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
-				bobID:   modelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
+				aliceID: ModelCardsFromStrings(`ah`, `2h`, `3h`, `4h`),
+				bobID:   ModelCardsFromStrings(`as`, `2s`, `3s`, `4s`),
 			},
-			Crib:    modelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
+			Crib:    ModelCardsFromStrings(`5h`, `6h`, `5s`, `6s`),
 			CutCard: model.NewCardFromString(`5c`),
 		},
 		expResp: GetGameResponse{},

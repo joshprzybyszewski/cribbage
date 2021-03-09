@@ -1,4 +1,4 @@
-package strategy
+package suggestions
 
 import (
 	"errors"
@@ -6,17 +6,17 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
+func otherOptions(desired int, exclude map[model.Card]struct{}) [][]model.Card {
 	options := [][]model.Card{}
 
 	for o1 := 0; o1 < 52; o1++ {
 		oc1 := model.NewCardFromNumber(o1)
-		if _, ok := avoid[oc1]; ok {
+		if _, ok := exclude[oc1]; ok {
 			continue
 		}
 		for o2 := o1 + 1; o2 < 52; o2++ {
 			oc2 := model.NewCardFromNumber(o2)
-			if _, ok := avoid[oc2]; ok {
+			if _, ok := exclude[oc2]; ok {
 				continue
 			}
 
@@ -27,7 +27,7 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 
 			for o3 := o2 + 1; o3 < 52; o3++ {
 				oc3 := model.NewCardFromNumber(o3)
-				if _, ok := avoid[oc3]; ok {
+				if _, ok := exclude[oc3]; ok {
 					continue
 				}
 				options = append(options, []model.Card{oc1, oc2, oc3})
@@ -38,7 +38,7 @@ func otherOptions(desired int, avoid map[model.Card]struct{}) [][]model.Card {
 	return options
 }
 
-func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
+func chooseNFrom(k int, hand []model.Card) ([][]model.Card, error) {
 	if k < 1 || k > len(hand) {
 		return nil, errors.New(`developer error: invalid k`)
 	}
@@ -64,7 +64,7 @@ func chooseFrom(k int, hand []model.Card) ([][]model.Card, error) {
 	for i := 0; i <= len(hand)-k; i++ {
 		c := hand[i]
 		others := hand[i+1:]
-		otherSets, err := chooseFrom(k-1, others)
+		otherSets, err := chooseNFrom(k-1, others)
 		if err != nil {
 			return nil, err
 		}

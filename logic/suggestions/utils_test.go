@@ -1,4 +1,4 @@
-package strategy
+package suggestions
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/network"
 )
 
 func validateHand(superset, subset []model.Card) bool {
@@ -58,7 +59,7 @@ func generateHand(n int) []model.Card {
 	return hand
 }
 
-func TestChooseFrom(t *testing.T) {
+func TestChooseNFrom(t *testing.T) {
 	tests := []struct {
 		desc   string
 		hand   []model.Card
@@ -112,7 +113,7 @@ func TestChooseFrom(t *testing.T) {
 	}}
 	fCache := make(map[int]int)
 	for _, tc := range tests {
-		all, err := chooseFrom(tc.nCards, tc.hand)
+		all, err := chooseNFrom(tc.nCards, tc.hand)
 		if tc.expErr != `` {
 			assert.EqualError(t, err, tc.expErr)
 		} else {
@@ -126,5 +127,35 @@ func TestChooseFrom(t *testing.T) {
 				assert.True(t, ok)
 			}
 		}
+	}
+}
+
+func TestWithout(t *testing.T) {
+	tests := []struct {
+		desc   string
+		hand   []string
+		remove []string
+		exp    []string
+	}{{
+		desc:   `happy`,
+		hand:   []string{`AH`, `KS`},
+		remove: []string{`KS`},
+		exp:    []string{`AH`},
+	}, {
+		desc:   `6 cards less two`,
+		hand:   []string{`AH`, `KS`, `QH`, `JC`, `10S`, `9D`},
+		remove: []string{`10S`, `KS`},
+		exp:    []string{`AH`, `QH`, `JC`, `9D`},
+	}}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			act := without(
+				network.ModelCardsFromStrings(tc.hand...),
+				network.ModelCardsFromStrings(tc.remove...),
+			)
+			assert.Equal(t, network.ModelCardsFromStrings(tc.exp...), act)
+		})
 	}
 }
