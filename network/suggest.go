@@ -17,17 +17,18 @@ type GetSuggestHandResponse struct {
 }
 
 func ConvertToGetSuggestHandResponse(
-	sums []model.TossSummary,
+	summaries []model.TossSummary,
 ) []GetSuggestHandResponse {
 	var resp []GetSuggestHandResponse
-	for _, sum := range sums {
-		hand := make([]string, len(sum.Kept))
-		for i, c := range sum.Kept {
+	for i := range summaries {
+		summ := summaries[i]
+		hand := make([]string, len(summ.Kept))
+		for i, c := range summ.Kept {
 			hand[i] = c.String()
 		}
 
-		toss := make([]string, len(sum.Tossed))
-		for i, c := range sum.Tossed {
+		toss := make([]string, len(summ.Tossed))
+		for i, c := range summ.Tossed {
 			toss[i] = c.String()
 		}
 
@@ -35,16 +36,16 @@ func ConvertToGetSuggestHandResponse(
 			Hand: hand,
 			Toss: toss,
 			HandPts: PointStats{
-				Min:    sum.HandStats.Min(),
-				Avg:    sum.HandStats.Avg(),
-				Median: sum.HandStats.Median(),
-				Max:    sum.HandStats.Max(),
+				Min:    summ.HandStats.Min(),
+				Avg:    summ.HandStats.Avg(),
+				Median: summ.HandStats.Median(),
+				Max:    summ.HandStats.Max(),
 			},
 			CribPts: PointStats{
-				Min:    sum.CribStats.Min(),
-				Avg:    sum.CribStats.Avg(),
-				Median: sum.CribStats.Median(),
-				Max:    sum.CribStats.Max(),
+				Min:    summ.CribStats.Min(),
+				Avg:    summ.CribStats.Avg(),
+				Median: summ.CribStats.Median(),
+				Max:    summ.CribStats.Max(),
 			},
 		})
 	}
