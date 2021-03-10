@@ -55,7 +55,7 @@ func getEvaluatedHand(
 		stats := getStats(summaries[i])
 		if isBetter(prevBest, stats) {
 			bestThrow = bestThrow[:0]
-			bestThrow = append(bestThrow, s.Tossed...)
+			bestThrow = append(bestThrow, summaries[i].Tossed...)
 			prevBest = stats
 		}
 	}

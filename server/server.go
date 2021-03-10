@@ -408,7 +408,7 @@ func (cs *cribbageServer) ginGetSuggestHand(c *gin.Context) {
 
 func convertToHand(input interface{}) ([]model.Card, error) {
 	inputStr, ok := input.(string)
-	if !ok || len(inputStr) == `` {
+	if !ok || inputStr == `` {
 		return nil, errors.New(`empty dealt hand`)
 	}
 	var cards []model.Card
