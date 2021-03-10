@@ -26,7 +26,7 @@ func TestTossStatsCalculate(t *testing.T) {
 
 	ts.calculate()
 	assert.Equal(t, 1, ts.Min())
-	assert.Equal(t, float64(4), ts.Median())
-	assert.Equal(t, float64(5), ts.Avg())
+	assert.InEpsilon(t, float64(4), ts.Median(), 0.001)
+	assert.InEpsilon(t, float64(5), ts.Avg(), 0.001)
 	assert.Equal(t, 10, ts.Max())
 }

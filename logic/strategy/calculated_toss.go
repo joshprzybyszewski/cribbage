@@ -42,7 +42,7 @@ func getEvaluatedHand(
 	getStats func(model.TossSummary) model.TossStats,
 	isBetter func(old, new model.TossStats) bool,
 ) ([]model.Card, error) {
-	sums, err := suggestions.GetAllTosses(hand)
+	summaries, err := suggestions.GetAllTosses(hand)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func getEvaluatedHand(
 	bestThrow := make([]model.Card, 0, lenDeposit)
 	var prevBest model.TossStats
 
-	for _, s := range sums {
-		stats := getStats(s)
+	for i := range summaries {
+		stats := getStats(summaries[i])
 		if isBetter(prevBest, stats) {
 			bestThrow = bestThrow[:0]
 			bestThrow = append(bestThrow, s.Tossed...)

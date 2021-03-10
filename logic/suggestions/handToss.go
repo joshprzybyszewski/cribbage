@@ -10,8 +10,8 @@ import (
 func GetAllTosses(
 	hand []model.Card,
 ) ([]model.TossSummary, error) {
-	if len(hand) > 6 || len(hand) <= 4 {
-		return nil, errors.New(`hand size must be between 4 and 6`)
+	if len(hand) > 6 || len(hand) < 4 {
+		return nil, errors.New(`hand size must be either 5 or 6`)
 	}
 
 	allHands, err := chooseNFrom(4, hand)
@@ -19,13 +19,13 @@ func GetAllTosses(
 		return nil, err
 	}
 
-	sums := []model.TossSummary{}
+	summaries := []model.TossSummary{}
 
 	for _, h := range allHands {
 		tossed := without(hand, h)
 		handStats, cribStats := getStatsForHand(h, tossed)
 
-		sums = append(sums, model.TossSummary{
+		summaries = append(summaries, model.TossSummary{
 			Kept:      h,
 			Tossed:    tossed,
 			HandStats: handStats,
@@ -33,7 +33,7 @@ func GetAllTosses(
 		})
 	}
 
-	return sums, nil
+	return summaries, nil
 }
 
 func getStatsForHand(
