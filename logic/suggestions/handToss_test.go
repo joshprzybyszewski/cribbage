@@ -182,7 +182,7 @@ func TestGetAllTosses(t *testing.T) {
 				network.ModelCardsFromStrings(tc.hand...),
 			)
 			require.NoError(t, err)
-			for i   := range actSums {
+			for i := range actSums {
 				actSum := actSums[i]
 				expSum := tc.expSummaries[i]
 				assert.Equal(t, expSum.Kept, actSum.Kept)
