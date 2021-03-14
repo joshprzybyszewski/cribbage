@@ -555,3 +555,120 @@ func TestGinPostAction(t *testing.T) {
 		}
 	}
 }
+
+func TestGinGetSuggestHand(t *testing.T) {
+	testCases := []struct {
+		msg      string
+		url      string
+		expCode  int
+		expErr   string
+		expSuggs []network.GetSuggestHandResponse
+	}{{
+		msg:     `nothing dealt`,
+		url:     `/suggest/hand?dealt=`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: empty dealt hand`,
+	}, {
+		msg:     `good request`,
+		url:     `/suggest/hand?dealt=JH,KH,QH,9H,10H`,
+		expCode: http.StatusOK,
+		expErr:  ``,
+		expSuggs: []network.GetSuggestHandResponse{{
+			Hand: []string{`JH`, `QH`, `9H`, `10H`},
+			Toss: []string{`KH`},
+			HandPts: network.PointStats{
+				Min:    8,
+				Avg:    10.702127659574469,
+				Median: 10,
+				Max:    16,
+			},
+			CribPts: network.PointStats{
+				Min:    0,
+				Avg:    4.1999159027836175,
+				Median: 4,
+				Max:    28,
+			},
+		}, {
+			Hand: []string{`JH`, `KH`, `QH`, `10H`},
+			Toss: []string{`9H`},
+			HandPts: network.PointStats{
+				Min:    8,
+				Avg:    10.617021276595745,
+				Median: 9,
+				Max:    18,
+			},
+			CribPts: network.PointStats{
+				Min:    0,
+				Avg:    4.69022510021585,
+				Median: 4,
+				Max:    24,
+			},
+		}, {
+			Hand: []string{`JH`, `KH`, `9H`, `10H`},
+			Toss: []string{`QH`},
+			HandPts: network.PointStats{
+				Min:    7,
+				Avg:    9.319148936170214,
+				Median: 9,
+				Max:    15,
+			},
+			CribPts: network.PointStats{
+				Min:    0,
+				Avg:    4.337364393238584,
+				Median: 4,
+				Max:    28,
+			},
+		}, {
+			Hand: []string{`JH`, `KH`, `QH`, `9H`},
+			Toss: []string{`10H`},
+			HandPts: network.PointStats{
+				Min:    7,
+				Avg:    9.23404255319149,
+				Median: 9,
+				Max:    15,
+			},
+			CribPts: network.PointStats{
+				Min:    0,
+				Avg:    4.5008830207720125,
+				Median: 4,
+				Max:    28,
+			},
+		}, {
+			Hand: []string{`KH`, `QH`, `9H`, `10H`},
+			Toss: []string{`JH`},
+			HandPts: network.PointStats{
+				Min:    4,
+				Avg:    5.9361702127659575,
+				Median: 6,
+				Max:    11,
+			},
+			CribPts: network.PointStats{
+				Min:    0,
+				Avg:    4.641493566562946,
+				Median: 4,
+				Max:    29,
+			},
+		}},
+	}}
+	_, router := newServerAndRouter(t)
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.msg, func(t *testing.T) {
+			// make the request
+			w, err := performRequest(router, `GET`, tc.url, nil)
+			require.NoError(t, err)
+			// verify
+			require.Equal(t, tc.expCode, w.Code)
+			if tc.expCode != http.StatusOK {
+				errMsg := readError(t, w)
+				assert.Equal(t, tc.expErr, errMsg)
+				return
+			}
+
+			var suggs []network.GetSuggestHandResponse
+			readBody(t, w.Body, &suggs)
+
+			assert.Equal(t, tc.expSuggs, suggs)
+		})
+	}
+}
