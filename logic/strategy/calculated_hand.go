@@ -4,10 +4,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 )
 
-func handStatsGetter(s model.TossSummary) model.TossStats {
-	return s.HandStats
-}
-
 var _ handEvaluator = (*highestHandEvaluator)(nil)
 
 type highestHandEvaluator struct{}
