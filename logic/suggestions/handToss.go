@@ -13,6 +13,9 @@ func GetAllTosses(
 	if len(hand) > 6 || len(hand) < 4 {
 		return nil, errors.New(`hand size must be either 5 or 6`)
 	}
+	if containsDuplicates(hand) {
+		return nil, errors.New(`hand contains duplicates`)
+	}
 
 	allHands, err := chooseNFrom(4, hand)
 	if err != nil {
@@ -69,4 +72,15 @@ func getStatsForHand(
 	}
 
 	return handStats, cribStats
+}
+
+func containsDuplicates(hand []model.Card) bool {
+	found := map[model.Card]struct{}{}
+	for _, c := range hand {
+		if _, ok := found[c]; ok {
+			return true
+		}
+		found[c] = struct{}{}
+	}
+	return false
 }

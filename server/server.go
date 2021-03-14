@@ -415,7 +415,11 @@ func convertToHand(input interface{}) ([]model.Card, error) {
 
 	cardStrs := strings.Split(inputStr, `,`)
 	for _, cs := range cardStrs {
-		cards = append(cards, model.NewCardFromString(cs))
+		c, err := model.NewCardFromExternalString(cs)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, c)
 	}
 
 	return cards, nil

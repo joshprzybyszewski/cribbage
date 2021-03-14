@@ -569,6 +569,31 @@ func TestGinGetSuggestHand(t *testing.T) {
 		expCode: http.StatusBadRequest,
 		expErr:  `Error: empty dealt hand`,
 	}, {
+		msg:     `too few cards`,
+		url:     `/suggest/hand?dealt=AH,2H,3H`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: hand size must be either 5 or 6`,
+	}, {
+		msg:     `too many cards`,
+		url:     `/suggest/hand?dealt=AH,2H,3H,4H,5H,6H,7H`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: hand size must be either 5 or 6`,
+	}, {
+		msg:     `uses duplicate cards`,
+		url:     `/suggest/hand?dealt=AH,AH,2H,3H,4H,5H`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: hand contains duplicates`,
+	}, {
+		msg:     `has invalid card`,
+		url:     `/suggest/hand?dealt=AH,15H,2H,3H,4H,5H`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: invalid card value`,
+	}, {
+		msg:     `has another invalid card`,
+		url:     `/suggest/hand?dealt=AH,123H,2H,3H,4H,5H`,
+		expCode: http.StatusBadRequest,
+		expErr:  `Error: unknown card`,
+	}, {
 		msg:     `good request`,
 		url:     `/suggest/hand?dealt=JH,KH,QH,9H,10H`,
 		expCode: http.StatusOK,
