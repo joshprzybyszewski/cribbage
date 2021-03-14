@@ -9,67 +9,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var _ model.TossStats = (*testingTossStats)(nil)
-
-type testingTossStats struct {
-	min    int
-	avg    float64
-	median float64
-	max    int
-}
-
-func (ts *testingTossStats) Min() int {
-	return ts.min
-}
-
-func (ts *testingTossStats) Median() float64 {
-	return ts.median
-}
-
-func (ts *testingTossStats) Avg() float64 {
-	return ts.avg
-}
-
-func (ts *testingTossStats) Max() int {
-	return ts.max
-}
-
 func TestGetStatsForHand(t *testing.T) {
 	tests := []struct {
 		desc         string
 		hand         []string
 		tossed       []string
-		expHandStats *testingTossStats
-		expCribStats *testingTossStats
+		expHandStats *model.TestingTossStats
+		expCribStats *model.TestingTossStats
 	}{{
 		desc:   `low pointer`,
 		hand:   []string{`AH`, `QH`, `JC`, `9D`},
 		tossed: []string{`10S`, `KS`},
-		expHandStats: &testingTossStats{
-			avg:    2.282608695652174,
-			median: 2,
-			max:    7,
-		},
-		expCribStats: &testingTossStats{
-			avg:    3.527975406236276,
-			median: 2,
-			max:    20,
-		},
+		expHandStats: model.NewTestingTossStats(
+			0,
+			2.282608695652174,
+			2,
+			7,
+		),
+		expCribStats: model.NewTestingTossStats(
+			0,
+			3.527975406236276,
+			2,
+			20,
+		),
 	}, {
 		desc:   `max pointer`,
 		hand:   []string{`5h`, `jd`, `5C`, `5s`},
 		tossed: []string{`4d`, `6d`},
-		expHandStats: &testingTossStats{
-			min:    14,
-			avg:    16.608695652173914,
-			median: 14,
-			max:    29,
-		},
-		expCribStats: &testingTossStats{
-			avg:    3.9596179183135707,
-			median: 4,
-			max:    24,
-		},
+		expHandStats: model.NewTestingTossStats(
+			14,
+			16.608695652173914,
+			14,
+			29,
+		),
+		expCribStats: model.NewTestingTossStats(
+			0,
+			3.9596179183135707,
+			4,
+			24,
+		),
 	}}
 
 	for _, tc := range tests {
@@ -102,76 +80,78 @@ func TestGetAllTosses(t *testing.T) {
 		expSummaries: []model.TossSummary{{
 			Kept:   network.ModelCardsFromStrings(`5h`, `jd`, `5C`, `5s`),
 			Tossed: network.ModelCardsFromStrings(`6d`),
-			HandStats: &testingTossStats{
-				min:    14,
-				avg:    16.574468085106382,
-				median: 14,
-				max:    29,
-			},
-			CribStats: &testingTossStats{
-				avg:    4.228551004961735,
-				median: 4,
-				max:    24,
-			},
+			HandStats: model.NewTestingTossStats(
+				14,
+				16.574468085106382,
+				14,
+				29,
+			),
+			CribStats: model.NewTestingTossStats(
+				0,
+				4.228551004961735,
+				4,
+				24,
+			),
 		}, {
 			Kept:   network.ModelCardsFromStrings(`5h`, `jd`, `5C`, `6d`),
 			Tossed: network.ModelCardsFromStrings(`5s`),
-			HandStats: &testingTossStats{
-				min:    6,
-				avg:    9.46808510638298,
-				median: 10,
-				max:    17,
-			},
-			CribStats: &testingTossStats{
-				min:    2,
-				avg:    6.144672441342191,
-				median: 6,
-				max:    24,
-			},
+			HandStats: model.NewTestingTossStats(
+				6,
+				9.46808510638298,
+				10,
+				17,
+			),
+			CribStats: model.NewTestingTossStats(
+				2,
+				6.144672441342191,
+				6,
+				24,
+			),
 		}, {
 			Kept:   network.ModelCardsFromStrings(`5h`, `jd`, `5s`, `6d`),
 			Tossed: network.ModelCardsFromStrings(`5c`),
-			HandStats: &testingTossStats{
-				min:    6,
-				avg:    9.46808510638298,
-				median: 10,
-				max:    17,
-			},
-			CribStats: &testingTossStats{
-				min:    2,
-				avg:    6.144672441342191,
-				median: 6,
-				max:    24,
-			},
+			HandStats: model.NewTestingTossStats(
+				6,
+				9.46808510638298,
+				10,
+				17,
+			),
+			CribStats: model.NewTestingTossStats(
+				2,
+				6.144672441342191,
+				6,
+				24,
+			),
 		}, {
 			Kept:   network.ModelCardsFromStrings(`5h`, `5C`, `5s`, `6d`),
 			Tossed: network.ModelCardsFromStrings(`jd`),
-			HandStats: &testingTossStats{
-				min:    8,
-				avg:    12.51063829787234,
-				median: 14,
-				max:    23,
-			},
-			CribStats: &testingTossStats{
-				avg:    4.066820844896701,
-				median: 4,
-				max:    21,
-			},
+			HandStats: model.NewTestingTossStats(
+				8,
+				12.51063829787234,
+				14,
+				23,
+			),
+			CribStats: model.NewTestingTossStats(
+				0,
+				4.066820844896701,
+				4,
+				21,
+			),
 		}, {
 			Kept:   network.ModelCardsFromStrings(`jd`, `5C`, `5s`, `6d`),
 			Tossed: network.ModelCardsFromStrings(`5h`),
-			HandStats: &testingTossStats{
-				min:    6,
-				avg:    9.46808510638298,
-				median: 10,
-				max:    17,
-			},
-			CribStats: &testingTossStats{
-				min:    2,
-				avg:    6.144672441342191,
-				median: 6,
-				max:    24,
-			},
+			HandStats: model.NewTestingTossStats(
+				6,
+				9.46808510638298,
+				10,
+				17,
+			),
+			CribStats: model.NewTestingTossStats(
+				2,
+				6.144672441342191,
+				6,
+				24,
+			),
 		}},
 	}}
 
