@@ -99,12 +99,12 @@ func TestChooseNFrom(t *testing.T) {
 		desc:   `5 choose 6`,
 		hand:   generateHand(5),
 		nCards: 6,
-		expErr: `developer error: invalid k`,
+		expErr: `developer error: invalid n`,
 	}, {
 		desc:   `choose zero cards`,
 		hand:   generateHand(5),
 		nCards: 0,
-		expErr: `developer error: invalid k`,
+		expErr: `developer error: invalid n`,
 	}, {
 		desc:   `hand too large`,
 		hand:   generateHand(7),
