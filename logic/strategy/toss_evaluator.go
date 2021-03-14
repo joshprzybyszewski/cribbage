@@ -44,30 +44,38 @@ func (te *tossEvaluator) isBetter(old, new model.TossStats) bool {
 
 	switch te.kind {
 	case highestIsBetter:
-		if differentFloats(new.Median(), old.Median()) {
-			return new.Median() > old.Median()
-		}
-		if differentFloats(new.Avg(), old.Avg()) {
-			return new.Avg() > old.Avg()
-		}
-		if new.Max() != old.Max() {
-			return new.Max() > old.Max()
-		}
-		return new.Min() > old.Min()
+		return higherStats(old, new)
 
 	case lowestIsBetter:
-		if differentFloats(new.Median(), old.Median()) {
-			return new.Median() < old.Median()
-		}
-		if differentFloats(new.Avg(), old.Avg()) {
-			return new.Avg() < old.Avg()
-		}
-		if new.Min() != old.Min() {
-			return new.Min() < old.Min()
-		}
-		return new.Max() < old.Max()
+		return lowerStats(old, new)
 	}
 	return false
+}
+
+func higherStats(old, new model.TossStats) bool {
+	if differentFloats(new.Median(), old.Median()) {
+		return new.Median() > old.Median()
+	}
+	if differentFloats(new.Avg(), old.Avg()) {
+		return new.Avg() > old.Avg()
+	}
+	if new.Max() != old.Max() {
+		return new.Max() > old.Max()
+	}
+	return new.Min() > old.Min()
+}
+
+func lowerStats(old, new model.TossStats) bool {
+	if differentFloats(new.Median(), old.Median()) {
+		return new.Median() < old.Median()
+	}
+	if differentFloats(new.Avg(), old.Avg()) {
+		return new.Avg() < old.Avg()
+	}
+	if new.Min() != old.Min() {
+		return new.Min() < old.Min()
+	}
+	return new.Max() < old.Max()
 }
 
 func differentFloats(
