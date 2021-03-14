@@ -10,15 +10,15 @@ import (
 
 func TestPlayersToDealTo(t *testing.T) {
 	alice := model.Player{
-		ID:   model.PlayerID(1),
+		ID:   model.PlayerID(`1`),
 		Name: `alice`,
 	}
 	bob := model.Player{
-		ID:   model.PlayerID(2),
+		ID:   model.PlayerID(`2`),
 		Name: `bob`,
 	}
 	charlie := model.Player{
-		ID:   model.PlayerID(3),
+		ID:   model.PlayerID(`3`),
 		Name: `charlie`,
 	}
 

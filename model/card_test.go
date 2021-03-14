@@ -80,6 +80,7 @@ func TestNewCardFromString(t *testing.T) {
 }
 
 func TestNewCardFromStringWithWeirdInput(t *testing.T) {
+	// We don't support emojis
 	testCases := []struct {
 		desc  string
 		input string
@@ -125,7 +126,7 @@ func TestPegValue(t *testing.T) {
 		expValue: 10,
 	}, {
 		desc:     `Queen of Hearts`,
-		input:    `12♥h`,
+		input:    `12h`,
 		expValue: 10,
 	}, {
 		desc:     `King of Diamonds`,

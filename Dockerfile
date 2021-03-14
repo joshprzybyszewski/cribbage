@@ -34,7 +34,7 @@ COPY server server
 COPY main.go main.go
 
 # Build the server's binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/cribbageServer main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags prod -o /bin/cribbageServer main.go
 
 # build environment
 FROM node:14.3.0-alpine as react

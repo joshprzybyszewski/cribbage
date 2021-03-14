@@ -24,6 +24,7 @@ playerlogs/
 data/
 
 .DS_Store
+.vscode/
 
 # wasm output
 assets/wasm/wa_output.wasm

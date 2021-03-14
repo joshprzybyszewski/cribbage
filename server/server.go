@@ -2,15 +2,19 @@ package server
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
+	"github.com/joshprzybyszewski/cribbage/logic/suggestions"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/network"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -53,6 +57,12 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	}
 
 	router.POST(`/action`, cs.ginPostAction)
+
+	// Simple group: suggest
+	suggest := router.Group(`/suggest`)
+	{
+		suggest.GET(`/hand`, cs.ginGetSuggestHand)
+	}
 
 	return router
 }
@@ -372,4 +382,45 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, `action handled`)
+}
+
+// GET /suggest/hand?dealt=<cards>
+func (cs *cribbageServer) ginGetSuggestHand(c *gin.Context) {
+
+	hand, err := convertToHand(c.Query(`dealt`))
+	if err != nil {
+		c.String(http.StatusBadRequest, `Error: %s`, err)
+		return
+	}
+
+	summaries, err := suggestions.GetAllTosses(hand)
+	if err != nil {
+		c.String(http.StatusBadRequest, `Error: %s`, err)
+		return
+	}
+
+	resp := network.ConvertToGetSuggestHandResponse(summaries)
+	sort.Slice(resp, func(i, j int) bool {
+		return resp[i].HandPts.Avg > resp[j].HandPts.Avg
+	})
+	c.JSON(http.StatusOK, resp)
+}
+
+func convertToHand(input interface{}) ([]model.Card, error) {
+	inputStr, ok := input.(string)
+	if !ok || inputStr == `` {
+		return nil, errors.New(`empty dealt hand`)
+	}
+	var cards []model.Card
+
+	cardStrs := strings.Split(inputStr, `,`)
+	for _, cs := range cardStrs {
+		c, err := model.NewCardFromExternalString(cs)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, c)
+	}
+
+	return cards, nil
 }
