@@ -10,38 +10,6 @@ type handEvaluator interface {
 	isBetter(old, new model.TossStats) bool
 }
 
-func willKeepLowestPotential(old, new model.TossStats) bool {
-	if old == nil {
-		return true
-	}
-	if new == nil {
-		return false
-	}
-	if new.Median() != old.Median() {
-		return new.Median() < old.Median()
-	}
-	if new.Avg() != old.Avg() {
-		return new.Avg() < old.Avg()
-	}
-	return new.Min() < old.Min()
-}
-
-func willKeepHighestPotential(old, new model.TossStats) bool {
-	if old == nil {
-		return true
-	}
-	if new == nil {
-		return false
-	}
-	if new.Median() != old.Median() {
-		return new.Median() > old.Median()
-	}
-	if new.Avg() != old.Avg() {
-		return new.Avg() > old.Avg()
-	}
-	return new.Max() > old.Max()
-}
-
 func getEvaluatedHand(
 	hand []model.Card,
 	he handEvaluator,

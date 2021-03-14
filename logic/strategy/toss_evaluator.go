@@ -35,11 +35,44 @@ func (te *tossEvaluator) getStats(ts model.TossSummary) model.TossStats {
 }
 
 func (te *tossEvaluator) isBetter(old, new model.TossStats) bool {
+	if old == nil {
+		return true
+	}
+	if new == nil {
+		return false
+	}
+
 	switch te.kind {
 	case highestIsBetter:
-		return willKeepHighestPotential(old, new)
+		if differentFloats(new.Median(), old.Median()) {
+			return new.Median() > old.Median()
+		}
+		if differentFloats(new.Avg(), old.Avg()) {
+			return new.Avg() > old.Avg()
+		}
+		if new.Max() != old.Max() {
+			return new.Max() > old.Max()
+		}
+		return new.Min() > old.Min()
+
 	case lowestIsBetter:
-		return willKeepLowestPotential(old, new)
+		if differentFloats(new.Median(), old.Median()) {
+			return new.Median() < old.Median()
+		}
+		if differentFloats(new.Avg(), old.Avg()) {
+			return new.Avg() < old.Avg()
+		}
+		if new.Min() != old.Min() {
+			return new.Min() < old.Min()
+		}
+		return new.Max() < old.Max()
 	}
 	return false
+}
+
+func differentFloats(
+	a, b float64,
+) bool {
+	epsilon := 0.001
+	return a-b > epsilon || b-a > epsilon
 }
