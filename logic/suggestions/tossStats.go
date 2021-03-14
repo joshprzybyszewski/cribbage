@@ -26,7 +26,7 @@ func (ts *tossStats) calculate() {
 		return
 	}
 
-	sort.Ints(ts.allPts) // sort the numbers
+	sort.Ints(ts.allPts)
 
 	ts.min = ts.allPts[0]
 	ts.max = ts.allPts[len(ts.allPts)-1]

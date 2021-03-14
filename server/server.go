@@ -393,13 +393,13 @@ func (cs *cribbageServer) ginGetSuggestHand(c *gin.Context) {
 		return
 	}
 
-	sums, err := suggestions.GetAllTosses(hand)
+	summaries, err := suggestions.GetAllTosses(hand)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
 	}
 
-	resp := network.ConvertToGetSuggestHandResponse(sums)
+	resp := network.ConvertToGetSuggestHandResponse(summaries)
 	sort.Slice(resp, func(i, j int) bool {
 		return resp[i].HandPts.Avg > resp[j].HandPts.Avg
 	})

@@ -80,12 +80,12 @@ func TestGetStatsForHand(t *testing.T) {
 				network.ModelCardsFromStrings(tc.tossed...),
 			)
 			assert.Equal(t, tc.expHandStats.Min(), actHand.Min())
-			assert.Equal(t, tc.expHandStats.Avg(), actHand.Avg())
-			assert.Equal(t, tc.expHandStats.Median(), actHand.Median())
+			assert.InEpsilon(t, tc.expHandStats.Avg(), actHand.Avg(), 0.001)
+			assert.InEpsilon(t, tc.expHandStats.Median(), actHand.Median(), 0.001)
 			assert.Equal(t, tc.expHandStats.Max(), actHand.Max())
 			assert.Equal(t, tc.expCribStats.Min(), actCrib.Min())
-			assert.Equal(t, tc.expCribStats.Avg(), actCrib.Avg())
-			assert.Equal(t, tc.expCribStats.Median(), actCrib.Median())
+			assert.InEpsilon(t, tc.expCribStats.Avg(), actCrib.Avg(), 0.001)
+			assert.InEpsilon(t, tc.expCribStats.Median(), actCrib.Median(), 0.001)
 			assert.Equal(t, tc.expCribStats.Max(), actCrib.Max())
 		})
 	}
@@ -178,22 +178,22 @@ func TestGetAllTosses(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
-			actSums, err := GetAllTosses(
+			actSumms, err := GetAllTosses(
 				network.ModelCardsFromStrings(tc.hand...),
 			)
 			require.NoError(t, err)
-			for i := range actSums {
-				actSum := actSums[i]
+			for i := range actSumms {
+				actSum := actSumms[i]
 				expSum := tc.expSummaries[i]
 				assert.Equal(t, expSum.Kept, actSum.Kept)
 				assert.Equal(t, expSum.Tossed, actSum.Tossed)
 				assert.Equal(t, expSum.HandStats.Min(), actSum.HandStats.Min())
-				assert.Equal(t, expSum.HandStats.Avg(), actSum.HandStats.Avg())
-				assert.Equal(t, expSum.HandStats.Median(), actSum.HandStats.Median())
+				assert.InEpsilon(t, expSum.HandStats.Avg(), actSum.HandStats.Avg(), 0.001)
+				assert.InEpsilon(t, expSum.HandStats.Median(), actSum.HandStats.Median(), 0.001)
 				assert.Equal(t, expSum.HandStats.Max(), actSum.HandStats.Max())
 				assert.Equal(t, expSum.CribStats.Min(), actSum.CribStats.Min())
-				assert.Equal(t, expSum.CribStats.Avg(), actSum.CribStats.Avg())
-				assert.Equal(t, expSum.CribStats.Median(), actSum.CribStats.Median())
+				assert.InEpsilon(t, expSum.CribStats.Avg(), actSum.CribStats.Avg(), 0.001)
+				assert.InEpsilon(t, expSum.CribStats.Median(), actSum.CribStats.Median(), 0.001)
 				assert.Equal(t, expSum.CribStats.Max(), actSum.CribStats.Max())
 			}
 

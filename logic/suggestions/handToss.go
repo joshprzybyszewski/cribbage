@@ -53,19 +53,19 @@ func getStatsForHand(
 	defer cribStats.calculate()
 
 	for i := 0; i < 52; i++ {
-		lead := model.NewCardFromNumber(i)
-		if _, ok := exclude[lead]; ok {
+		cutCard := model.NewCardFromNumber(i)
+		if _, ok := exclude[cutCard]; ok {
 			continue
 		}
 
-		handStats.add(scorer.HandPoints(lead, hand))
+		handStats.add(scorer.HandPoints(cutCard, hand))
 
-		exclude[lead] = struct{}{}
+		exclude[cutCard] = struct{}{}
 		options := otherOptions(4-len(tossed), exclude)
 		for _, o := range options {
-			cribStats.add(scorer.CribPoints(lead, append(o, tossed...)))
+			cribStats.add(scorer.CribPoints(cutCard, append(o, tossed...)))
 		}
-		delete(exclude, lead)
+		delete(exclude, cutCard)
 	}
 
 	return handStats, cribStats

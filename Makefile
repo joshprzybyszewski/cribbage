@@ -46,7 +46,7 @@ serve: DSN_USER ?= root
 serve: DSN_PW ?= ""
 serve: DSN_HOST ?= "127.0.0.1"
 serve: ## Sets up the server locally with default options
-	go run main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
+	go run -tags=prod main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
 .PHONY: dockerbuild
 dockerbuild: ## Builds the docker image
@@ -58,4 +58,4 @@ dockerrunlocal: ## Runs the latest tag of the built docker image locally on port
 
 .PHONY: wasm
 wasm: ## Builds the wasm output for the gowasm client
-	GOOS=js GOARCH=wasm go build -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+	GOOS=js GOARCH=wasm go build -tags prod -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
