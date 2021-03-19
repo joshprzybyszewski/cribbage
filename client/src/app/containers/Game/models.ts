@@ -5,9 +5,9 @@ export interface Player extends User {
 }
 
 type Suit = 'Spades' | 'Clubs' | 'Diamonds' | 'Hearts';
-type SuitLetter = 'c' | 'd' | 'h' | 's';
+type SuitLetter = 'C' | 'D' | 'H' | 'S';
 type ValueLetter =
-    | 'a'
+    | 'A'
     | '2'
     | '3'
     | '4'
@@ -17,9 +17,9 @@ type ValueLetter =
     | '8'
     | '9'
     | '10'
-    | 'j'
-    | 'q'
-    | 'k';
+    | 'J'
+    | 'Q'
+    | 'K';
 
 type Value = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
