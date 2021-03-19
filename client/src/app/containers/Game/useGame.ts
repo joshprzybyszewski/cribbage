@@ -21,7 +21,7 @@ interface Result {
     game: Game;
     selectedCards: Card[];
     createGame: (playerIDs: string[]) => Promise<void>;
-    getGame: (id: number) => Promise<void>;
+    loadActiveGame: (id: number) => Promise<void>;
     refreshGame: () => Promise<void>;
     toggleSelectedCard: (c: Card) => void;
     clearSelectedCards: () => void;
@@ -153,7 +153,7 @@ export function useGame(): Result {
         return response.data;
     };
 
-    const getGame = async (id: number) => {
+    const loadActiveGame = async (id: number) => {
         try {
             const game = await fetchGame(id);
             dispatch(actions.setGame(game));
@@ -220,7 +220,7 @@ export function useGame(): Result {
             (state: RootState) => state.game.selectedCards,
         ),
         createGame,
-        getGame,
+        loadActiveGame,
         refreshGame,
         toggleSelectedCard: (c: Card) =>
             dispatch(actions.toggleSelectedCard(c)),

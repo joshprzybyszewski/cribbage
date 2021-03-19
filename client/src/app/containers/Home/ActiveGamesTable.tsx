@@ -20,12 +20,12 @@ import { useActiveGames } from './useActiveGames';
 
 const ActiveGamesTable = () => {
     const { games, refreshGames } = useActiveGames();
-    const { getGame } = useGame();
+    const { loadActiveGame } = useGame();
     const { currentUser } = useAuth();
     const history = useHistory();
 
     const onGoToGame = async (id: number) => {
-        await getGame(id);
+        await loadActiveGame(id);
         history.push('/game');
     };
 
