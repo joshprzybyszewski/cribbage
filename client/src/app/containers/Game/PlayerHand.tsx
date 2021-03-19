@@ -21,7 +21,7 @@ const PlayerHand: React.FunctionComponent<Props> = ({ hand, side, mine }) => {
         game: { pegged_cards: peggedCards, phase },
     } = useGame();
 
-    if (!hand || !showOpponentsHand(phase)) {
+    if (!hand || (!mine && !showOpponentsHand(phase))) {
         return null;
     }
 
