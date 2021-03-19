@@ -24,18 +24,17 @@ export function useActiveGames(): ReturnType {
     return {
         games: useSelector((state: RootState) => state.home.activeGames),
         refreshGames: async () => {
-            if (currentUser.id.length > 0) {
-                try {
-                    const res = await axios.get<ActiveGamesResponse>(
-                        `/games/active?playerID=${currentUser.id}`,
-                    );
-                    dispatch(
-                        actions.setActiveGamesPlayerID(res.data.player.id),
-                    );
-                    dispatch(actions.setActiveGames(res.data.activeGames));
-                } catch (err) {
-                    dispatch(setAlert(err.response.data, 'error'));
-                }
+            if (!currentUser.id) {
+                return;
+            }
+            try {
+                const res = await axios.get<ActiveGamesResponse>(
+                    `/games/active?playerID=${currentUser.id}`,
+                );
+                dispatch(actions.setActiveGamesPlayerID(res.data.player.id));
+                dispatch(actions.setActiveGames(res.data.activeGames));
+            } catch (err) {
+                dispatch(setAlert(err.response.data, 'error'));
             }
         },
     };
