@@ -1,4 +1,4 @@
-name: client-lint
+name: build-client
 defaults:
   run:
     working-directory: ./client
@@ -10,7 +10,7 @@ on:
       - master
   pull_request:
 jobs:
-  lint:
+  build-client:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,3 +22,5 @@ jobs:
         run: npm install
       - name: Lint client
         run: npm run lint
+      - name: Build client
+        run: npm run build
