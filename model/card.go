@@ -13,19 +13,33 @@ var (
 )
 
 func NewCardFromString(card string) Card {
+	c, err := NewCardFromExternalString(card)
+	if err != nil {
+		log.Printf(`dev error: NewCardFromString invalid card (%q): %s`, card, err.Error())
+	}
+	return c
+}
+
+// NewCardFromExternalString returns a card, or an error if the input is invalid
+// Use this for external inputs (i.e. REST requests)
+func NewCardFromExternalString(card string) (Card, error) {
+	if len(card) > 3 {
+		// Cards are expected to be of the form "AH" or "13C" or "5D".
+		// Therfore, we don't support strings that have a len > 3.
+		return InvalidCard, errors.New(`unknown card`)
+	}
+
 	value, err := getCardValue(card)
 	if err != nil {
-		log.Printf(`NewCardFromString invalid value: %s`, err.Error())
-		return InvalidCard
+		return InvalidCard, err
 	}
 
 	suit, err := getSuit(card)
 	if err != nil {
-		log.Printf(`NewCardFromString invalid suit: %s`, err.Error())
-		return InvalidCard
+		return InvalidCard, err
 	}
 
-	return NewCard(suit, value)
+	return NewCard(suit, value), nil
 }
 
 func getCardValue(card string) (int, error) {
@@ -42,6 +56,9 @@ func getCardValue(card string) (int, error) {
 		// try parsing 10, 11, 12, or 13
 		value, err := strconv.Atoi(card[:2])
 		if err == nil {
+			if value > 13 {
+				return value, errors.New(`invalid card value`)
+			}
 			return value, nil
 		}
 		return 1, nil

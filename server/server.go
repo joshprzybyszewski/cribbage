@@ -393,13 +393,13 @@ func (cs *cribbageServer) ginGetSuggestHand(c *gin.Context) {
 		return
 	}
 
-	sums, err := suggestions.GetAllTosses(hand)
+	summaries, err := suggestions.GetAllTosses(hand)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
 		return
 	}
 
-	resp := network.ConvertToGetSuggestHandResponse(sums)
+	resp := network.ConvertToGetSuggestHandResponse(summaries)
 	sort.Slice(resp, func(i, j int) bool {
 		return resp[i].HandPts.Avg > resp[j].HandPts.Avg
 	})
@@ -408,14 +408,18 @@ func (cs *cribbageServer) ginGetSuggestHand(c *gin.Context) {
 
 func convertToHand(input interface{}) ([]model.Card, error) {
 	inputStr, ok := input.(string)
-	if !ok || len(inputStr) == 0 {
+	if !ok || inputStr == `` {
 		return nil, errors.New(`empty dealt hand`)
 	}
 	var cards []model.Card
 
 	cardStrs := strings.Split(inputStr, `,`)
 	for _, cs := range cardStrs {
-		cards = append(cards, model.NewCardFromString(cs))
+		c, err := model.NewCardFromExternalString(cs)
+		if err != nil {
+			return nil, err
+		}
+		cards = append(cards, c)
 	}
 
 	return cards, nil
