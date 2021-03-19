@@ -49,7 +49,7 @@ export const initialState: GameState = {
         blocking_players: {},
         current_dealer: '',
         cut_card: {
-            name: 'ac',
+            name: 'AC',
             value: 1,
             suit: 'Clubs',
         },
