@@ -31,7 +31,7 @@ const CountAction: React.FunctionComponent<Props> = ({
                     {isCrib ? 'Crib' : 'Hand'} Points
                 </InputLabel>
                 <Input
-                    disabled={!isCrib && !isBlocking}
+                    disabled={!isBlocking}
                     id={componentId}
                     type='number'
                     onChange={event => {
