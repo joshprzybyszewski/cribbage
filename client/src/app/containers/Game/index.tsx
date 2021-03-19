@@ -13,7 +13,7 @@ import ScoreBoard from './ScoreBoard';
 import { useGame } from './useGame';
 
 const showCutCard = (phase: Phase) =>
-    !['Deal', 'BuildCrib', 'Cut'].includes(phase);
+    ['Pegging', 'CountHands', 'CountCrib'].includes(phase);
 
 const handsExist = (phase: Phase) =>
     !['unknownPhase', 'Deal', 'DealingReady'].includes(phase);
