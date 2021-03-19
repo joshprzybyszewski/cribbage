@@ -3,93 +3,22 @@
 // TODO don't disable eslint. maybe use a button instead
 import React from 'react';
 
-import {
-    Card as CardComponent,
-    CardContent,
-    Typography,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
-
 import { Card } from './models';
 import { useGame } from './useGame';
-
-const useStyles = makeStyles({
-    root: {
-        width: 120,
-        height: 160,
-    },
-    value: {
-        fontSize: 14,
-    },
-    red: {
-        color: 'red',
-    },
-    black: {
-        color: 'black',
-    },
-    suit: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        verticalAlign: 'center',
-        textAlign: 'center',
-    },
-});
-
-const mapSuitToSymbol = (
-    suit: 'Spades' | 'Clubs' | 'Diamonds' | 'Hearts',
-): string => {
-    switch (suit) {
-        case 'Spades':
-            return '♠️';
-        case 'Clubs':
-            return '♣️';
-        case 'Diamonds':
-            return '♦️';
-        case 'Hearts':
-            return '♥️';
-        default:
-            return '?';
-    }
-};
 
 interface Props {
     card: Card;
     disabled: boolean;
-    experimental?: boolean;
     mine?: boolean;
 }
 
 const PlayingCard: React.FunctionComponent<Props> = ({
     card,
     disabled,
-    experimental,
     mine,
 }) => {
     const { selectedCards, toggleSelectedCard } = useGame();
-    const classes = useStyles();
     const useRed = !['Spades', 'Clubs'].includes(card.suit);
-
-    if (experimental) {
-        return (
-            <CardComponent className={classes.root}>
-                <CardContent>
-                    <Typography
-                        className={clsx(classes.value, {
-                            [classes.black]: !useRed,
-                            [classes.red]: useRed,
-                        })}
-                        gutterBottom
-                    >
-                        {card.value}
-                    </Typography>
-                    <Typography className={classes.suit}>
-                        {mapSuitToSymbol(card.suit)}
-                    </Typography>
-                </CardContent>
-            </CardComponent>
-        );
-    }
 
     if (!card) {
         return null;
@@ -126,7 +55,6 @@ const PlayingCard: React.FunctionComponent<Props> = ({
 };
 
 PlayingCard.defaultProps = {
-    experimental: false,
     mine: false,
 };
 
