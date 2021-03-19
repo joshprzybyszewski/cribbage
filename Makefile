@@ -27,6 +27,7 @@ mongo: ## Sets up the mongo database in replica mode
 install: ## Runs the install script and vendors golang dependencies
 	./scripts/install.sh
 	$(MAKE) vendor
+	cd client/ && npm install
 
 .PHONY: goclient
 goclient: ## Runs the old golang survey client to play cribbage
