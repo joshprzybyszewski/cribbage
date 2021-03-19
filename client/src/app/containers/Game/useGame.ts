@@ -32,12 +32,12 @@ interface Result {
     submitCountHandAction: (a: CountHandAction) => Promise<void>;
     submitCountCribAction: (a: CountCribAction) => Promise<void>;
 }
-// getPlayerAction returns the JSON struct which the server knows
-// how to interpret
+
 interface ServerCard {
     s: number;
     v: number;
 }
+
 interface ActionRequest {
     pID: string;
     gID: number;
@@ -74,7 +74,7 @@ const mapPhaseToOverComes = (p: Phase) => {
     return -1;
 };
 
-const cardToGolangCard = (c: Card): ServerCard => {
+const cardToServerCard = (c: Card): ServerCard => {
     const magicMap = {
         Spades: 0,
         Clubs: 1,
@@ -107,7 +107,7 @@ function getPlayerAction<T extends GameAction>(
             const cribAction = currentAction as CribAction;
             request.a = {
                 cs: cribAction.selectedCards
-                    ? cribAction.selectedCards.map(cardToGolangCard)
+                    ? cribAction.selectedCards.map(cardToServerCard)
                     : [],
             };
             break;
@@ -123,7 +123,7 @@ function getPlayerAction<T extends GameAction>(
             ) {
                 request.a = { sg: true };
             } else {
-                request.a = { c: cardToGolangCard(pegAction.selectedCards[0]) };
+                request.a = { c: cardToServerCard(pegAction.selectedCards[0]) };
             }
             break;
         }
