@@ -12,8 +12,10 @@ import PlayingCard from './PlayingCard';
 import ScoreBoard from './ScoreBoard';
 import { useGame } from './useGame';
 
-const showCutCard = (phase: Phase) =>
-    ['Pegging', 'CountHands', 'CountCrib'].includes(phase);
+const showCutCard = (phase: Phase) => {
+    const showDuring: Phase[] = ['Pegging', 'CribCounting', 'Counting'];
+    return showDuring.includes(phase);
+};
 
 const hasDealtHands = (phase: Phase) =>
     !['unknownPhase', 'Deal', 'DealingReady'].includes(phase);
