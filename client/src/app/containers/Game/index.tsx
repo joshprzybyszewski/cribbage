@@ -86,9 +86,7 @@ const GamePage: React.FunctionComponent = () => {
             >
                 <Grid item xs sm container>
                     <PlayerHand
-                        phase={game.phase}
                         hand={handForPlayer(game, currentUser.id, 'across')}
-                        pegged={game.pegged_cards}
                     />
                 </Grid>
                 <Grid
@@ -102,9 +100,7 @@ const GamePage: React.FunctionComponent = () => {
                     <Grid item>
                         <PlayerHand
                             side
-                            phase={game.phase}
                             hand={handForPlayer(game, currentUser.id, 'left')}
-                            pegged={game.pegged_cards}
                         />
                     </Grid>
                     <Grid item>
@@ -118,19 +114,12 @@ const GamePage: React.FunctionComponent = () => {
                     <Grid item>
                         <PlayerHand
                             side
-                            phase={game.phase}
                             hand={handForPlayer(game, currentUser.id, 'right')}
-                            pegged={game.pegged_cards}
                         />
                     </Grid>
                 </Grid>
                 <Grid item xs sm container>
-                    <PlayerHand
-                        mine
-                        phase={game.phase}
-                        hand={myHand}
-                        pegged={game.pegged_cards}
-                    />
+                    <PlayerHand mine hand={myHand} />
                 </Grid>
             </Grid>
             <Grid item container xs direction='column' spacing={1}>
