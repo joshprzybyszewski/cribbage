@@ -73,15 +73,9 @@ type Blocker =
 
 export type Phase =
     | 'Deal'
-    | 'BuildCribReady'
     | 'BuildCrib'
-    | 'CutReady'
     | 'Cut'
-    | 'PeggingReady'
     | 'Pegging'
-    | 'CountingReady'
     | 'Counting'
-    | 'CribCountingReady'
     | 'CribCounting'
-    | 'DealingReady'
     | 'unknownPhase';
