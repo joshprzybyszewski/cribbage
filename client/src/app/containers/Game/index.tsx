@@ -15,7 +15,7 @@ import { useGame } from './useGame';
 const showCutCard = (phase: Phase) =>
     ['Pegging', 'CountHands', 'CountCrib'].includes(phase);
 
-const handsExist = (phase: Phase) =>
+const hasDealtHands = (phase: Phase) =>
     !['unknownPhase', 'Deal', 'DealingReady'].includes(phase);
 
 const handForPlayer = (
@@ -23,7 +23,7 @@ const handForPlayer = (
     myID: string,
     position: 'across' | 'right' | 'left',
 ) => {
-    if (!handsExist(game.phase)) {
+    if (!hasDealtHands(game.phase)) {
         return [];
     }
     const numPlayers = game.teams.reduce(
@@ -72,7 +72,7 @@ const handForPlayer = (
 const GamePage: React.FunctionComponent = () => {
     const { game, refreshGame } = useGame();
     const { currentUser } = useAuth();
-    const myHand = handsExist(game.phase) ? game.hands[currentUser.id] : [];
+    const myHand = hasDealtHands(game.phase) ? game.hands[currentUser.id] : [];
 
     return (
         <Grid container xl spacing={1} direction='row' justify='space-between'>
