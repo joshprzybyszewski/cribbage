@@ -4,7 +4,7 @@ export interface Player extends User {
     color: string;
 }
 
-type Suit = 'Spades' | 'Clubs' | 'Diamonds' | 'Hearts';
+export type Suit = 'Spades' | 'Clubs' | 'Diamonds' | 'Hearts';
 type SuitLetter = 'C' | 'D' | 'H' | 'S';
 type ValueLetter =
     | 'A'
@@ -21,7 +21,7 @@ type ValueLetter =
     | 'Q'
     | 'K';
 
-type Value = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+export type Value = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
 // prettier doesn't know about this typescript syntax so we have to disable it here
 // eslint-disable-next-line prettier/prettier
@@ -32,6 +32,8 @@ export interface Card {
     suit: Suit;
     value: Value;
 }
+
+// TODO convert the name field to a method?
 
 export interface PeggedCard {
     card: Card;

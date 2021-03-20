@@ -9,10 +9,8 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import ChoosingCard from 'app/containers/Suggestions/ChoosingCard';
+import ChoosingCard from './ChoosingCard';
 
-import { selectSuggestions } from 'app/containers/Suggestions/selectors';
-import { sliceKey, reducer } from 'app/containers/Suggestions/slice';
 import { useSelector } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 

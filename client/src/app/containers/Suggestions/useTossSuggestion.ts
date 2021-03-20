@@ -11,15 +11,12 @@ import {
 export interface GetTossSuggestionResponse {
 }
 
-
-
 interface Result {
     handCards: Card[];
     isLoading: boolean;
     fetchSuggestions: () => Promise<void>;
     updateCard: (prev: Card, cur: Card) => void;
 }
-
 
 export function useTossSuggestion(): Result {
     const suggestionsState = useSelector((state: RootState) => state.suggestions);

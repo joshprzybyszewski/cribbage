@@ -10,7 +10,7 @@ import Login from './containers/Login';
 import NewGameForm from './containers/NewGameForm';
 import PrivateRoute from './containers/PrivateRoute';
 import Register from './containers/Register';
-import Suggestions from 'app/containers/Suggestions';
+import Suggestions from './containers/Suggestions';
 
 export const App = () => {
     return (
@@ -27,7 +27,7 @@ export const App = () => {
                     />
                     <PrivateRoute exact path='/account' component={Account} />
                     <PrivateRoute exact path='/game' component={Game} />
-          <PrivateRoute exact path='/suggestions' component={Suggestions} />
+                    <PrivateRoute exact path='/suggestions' component={Suggestions} />
                 </Switch>
             </Layout>
         </BrowserRouter>
