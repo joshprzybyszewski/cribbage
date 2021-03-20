@@ -9,6 +9,7 @@ import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import CancelIcon from '@material-ui/icons/Cancel';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
+import SearchIcon from '@material-ui/icons/Search';
 import { useHistory } from 'react-router-dom';
 
 import { useAuth } from '../../../auth/useAuth';
@@ -37,6 +38,12 @@ const LoggedInDrawer = () => {
                     </ListItemIcon>
                     <ListItemText primary='My Account' />
                 </ListItem>
+                <ListItem button onClick={() => history.push('/suggestions')}>
+          <ListItemIcon>
+            <SearchIcon />
+          </ListItemIcon>
+          <ListItemText primary='Suggestions' />
+        </ListItem>
             </List>
             <Divider />
             <List>
