@@ -1,11 +1,12 @@
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
-import { useAlert } from '../Alert/useAlert';
 
 import { RootState } from '../../../store/store';
-import { Card, Game, Phase } from '../Game/models';
+import { useAlert } from '../Alert/useAlert';
+import { Card } from '../Game/models';
 import {
     actions,
+    TossSuggestion,
 } from './slice';
 
 export interface GetTossSuggestionResponse {
@@ -13,6 +14,7 @@ export interface GetTossSuggestionResponse {
 
 interface Result {
     handCards: Card[];
+    suggestedHands: TossSuggestion[];
     isLoading: boolean;
     fetchSuggestions: () => Promise<void>;
     updateCard: (prev: Card, cur: Card) => void;
@@ -40,6 +42,7 @@ export function useTossSuggestion(): Result {
     return {
         handCards: suggestionsState.handCards,
         isLoading: suggestionsState.loading,
+        suggestedHands: suggestionsState.suggestedHands,
         fetchSuggestions,
         updateCard: (p: Card, c: Card) =>
             dispatch(actions.updateCard({prev: p, cur: c})),

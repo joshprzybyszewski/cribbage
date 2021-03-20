@@ -9,17 +9,14 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import ChoosingCard from './ChoosingCard';
 
-import { useSelector } from 'react-redux';
-import { useInjectReducer, useInjectSaga } from 'redux-injectors';
+import ChoosingCard from './ChoosingCard';
+import { TossSuggestion } from './slice';
+import { useTossSuggestion } from './useTossSuggestion';
+
 
 const SuggestionsTable = () => {
-  const sugs = useSelector(selectSuggestions);
-
-  if (!Array.isArray(sugs)) {
-    return (`suggestions are: ${sugs}`);
-  }
+  const { suggestedHands } = useTossSuggestion();
 
   return (
     <TableContainer component={Paper}>
@@ -36,9 +33,9 @@ const SuggestionsTable = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sugs
-            .filter(sug => sug && sug.handPts && sug.cribPts && sug.toss)
-            .map(sug => {
+          {suggestedHands
+            .filter((sug: TossSuggestion) => sug && sug.handPts && sug.cribPts && sug.toss)
+            .map((sug: TossSuggestion) => {
               return (
                 <TableRow hover>
                   <TableCell>
@@ -66,9 +63,9 @@ const SuggestionsTable = () => {
                       spacing={1}
                     >
                       <GridList>
-                      {sug.toss.map((card, index) => (
+                      {sug.toss.map((card) => (
                         <ChoosingCard
-                          key={`tossCard${index}`}
+                          key={`tossCard${card.name}`}
                           card={card}
                           notEditable
                         />

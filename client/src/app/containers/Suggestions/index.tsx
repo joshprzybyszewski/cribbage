@@ -3,9 +3,10 @@ import React from 'react';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
-import SuggestionsTable from './SuggestionsTable';
-import ChoosingCard from './ChoosingCard';
+import { nanoid } from '@reduxjs/toolkit';
 
+import ChoosingCard from './ChoosingCard';
+import SuggestionsTable from './SuggestionsTable';
 import { useTossSuggestion } from './useTossSuggestion';
 
 const Suggestions: React.FunctionComponent = () => {
@@ -18,9 +19,9 @@ const Suggestions: React.FunctionComponent = () => {
         container
         spacing={1}
       ><GridList>
-          {handCards.map((card, index) => (
+          {handCards.map((card) => (
             <ChoosingCard
-              key={`handcard${index}`}
+              key={`handcard${card.name}${nanoid()}`}
               card={card}
             />
           ))}

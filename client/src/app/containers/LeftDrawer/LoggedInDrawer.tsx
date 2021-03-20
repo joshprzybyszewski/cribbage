@@ -7,9 +7,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import CancelIcon from '@material-ui/icons/Cancel';
-import SearchIcon from '@material-ui/icons/Search';
 import HomeIcon from '@material-ui/icons/Home';
 import PersonIcon from '@material-ui/icons/Person';
+import SearchIcon from '@material-ui/icons/Search';
 import { useHistory } from 'react-router-dom';
 
 import { useAuth } from '../../../auth/useAuth';

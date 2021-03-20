@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 import { Card } from '../Game/models';
 
 export interface CardUpdate {
