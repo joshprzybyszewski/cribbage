@@ -25,10 +25,11 @@ export function useTossSuggestion(): Result {
 
     const fetchSuggestions = async () => {
         dispatch(actions.setLoading(true));
-        const currentHand = '1c,2c,3c,4c,5c,6c';
         try {
             const getResult = await axios.get<TossSuggestion[]>(
-                `/suggest/hand?dealt=${currentHand}`
+                `/suggest/hand?dealt=${suggestionsState.handCards
+                    .map(p => p.name)
+                    .join(',')}`
             );
             dispatch(actions.setSuggestionResult(getResult.data));
         } catch (err) {
@@ -43,6 +44,6 @@ export function useTossSuggestion(): Result {
         suggestedHands: suggestionsState.suggestedHands,
         fetchSuggestions,
         updateCard: (p: Card, c: Card) =>
-            dispatch(actions.updateCard({prev: p, cur: c})),
+            dispatch(actions.updateCard({ prev: p, cur: c })),
     };
 }

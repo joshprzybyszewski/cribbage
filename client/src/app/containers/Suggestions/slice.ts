@@ -32,11 +32,11 @@ export interface TossSuggestionState {
 export const initialState: TossSuggestionState = {
     handCards: [
         getCard(1, 'Clubs'),
-        getCard(1, 'Clubs'),
-        getCard(1, 'Clubs'),
-        getCard(1, 'Clubs'),
-        getCard(1, 'Clubs'),
-        getCard(1, 'Clubs'),
+        getCard(2, 'Clubs'),
+        getCard(3, 'Clubs'),
+        getCard(4, 'Clubs'),
+        getCard(5, 'Clubs'),
+        getCard(6, 'Clubs'),
     ],
     loading: false,
     suggestedHands: [],
