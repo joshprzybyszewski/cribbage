@@ -33,13 +33,8 @@ install: ## Runs the install script and vendors golang dependencies
 goclient: ## Runs the old golang survey client to play cribbage
 	go run localclient/main/main.go
 
-tailwind: client/src/styles.css
-
-client/src/styles.css: client/src/tailwind.css client/tailwind.config.js
-	cd client/ && npx tailwindcss build src/tailwind.css -o src/styles.css
-
 .PHONY: client
-client: tailwind ## Sets up the react client
+client: ## Sets up the react client
 	cd client/ && npm run client
 
 .PHONY: serve
