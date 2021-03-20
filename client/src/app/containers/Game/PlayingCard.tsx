@@ -3,8 +3,40 @@
 // TODO don't disable eslint. maybe use a button instead
 import React from 'react';
 
+import { makeStyles, Typography } from '@material-ui/core';
+import { grey, red } from '@material-ui/core/colors';
+import clsx from 'clsx';
+
+import { ReactComponent as CardBack } from './card-back.svg';
 import { Card } from './models';
 import { useGame } from './useGame';
+
+const useStyles = makeStyles(theme => ({
+    cardSize: {
+        width: theme.spacing(6),
+        height: theme.spacing(8),
+    },
+    cardBase: {
+        textAlign: 'center',
+        display: 'inline-block',
+        borderStyle: 'solid',
+        borderWidth: 2,
+        borderColor: 'black',
+        position: 'relative',
+    },
+    disabledCard: {
+        backgroundColor: grey[500],
+    },
+    redCard: {
+        color: red[700],
+    },
+    blackCard: {
+        color: 'black',
+    },
+    selected: {
+        top: -theme.spacing(1),
+    },
+}));
 
 interface Props {
     card: Card;
@@ -17,6 +49,7 @@ const PlayingCard: React.FunctionComponent<Props> = ({
     disabled,
     mine,
 }) => {
+    const classes = useStyles();
     const { selectedCards, toggleSelectedCard } = useGame();
     const useRed = !['Spades', 'Clubs'].includes(card.suit);
 
@@ -24,11 +57,7 @@ const PlayingCard: React.FunctionComponent<Props> = ({
         return null;
     }
     if (card.name === 'unknown') {
-        // Currently, this returns a grayed out box, but it should show
-        // a back of a card
-        return (
-            <div className='w-12 h-16 text-center align-middle inline-block border-2 bg-gray-800' />
-        );
+        return <CardBack className={classes.cardSize} />;
     }
 
     const chosen = selectedCards.indexOf(card) !== -1;
@@ -41,15 +70,14 @@ const PlayingCard: React.FunctionComponent<Props> = ({
     return (
         <div
             onClick={handleClick}
-            className={`w-12 h-16 text-center align-middle inline-block border-2 border-black ${
-                disabled ? 'bg-gray-500' : 'bg-white'
-            } ${useRed ? 'text-red-700' : 'text-black'}`}
-            style={{
-                position: 'relative',
-                top: chosen ? '-10px' : '',
-            }}
+            className={clsx(classes.cardBase, classes.cardSize, {
+                [classes.disabledCard]: disabled,
+                [classes.redCard]: useRed,
+                [classes.blackCard]: !useRed,
+                [classes.selected]: chosen,
+            })}
         >
-            {card.name}
+            <Typography variant='body1'>{card.name}</Typography>
         </div>
     );
 };
