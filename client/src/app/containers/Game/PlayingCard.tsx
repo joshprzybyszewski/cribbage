@@ -3,7 +3,7 @@
 // TODO don't disable eslint. maybe use a button instead
 import React from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, Typography } from '@material-ui/core';
 import { grey, red } from '@material-ui/core/colors';
 import clsx from 'clsx';
 
@@ -77,7 +77,7 @@ const PlayingCard: React.FunctionComponent<Props> = ({
                 [classes.selected]: chosen,
             })}
         >
-            {card.name}
+            <Typography variant='body1'>{card.name}</Typography>
         </div>
     );
 };
