@@ -16,7 +16,6 @@ const useStyles = makeStyles(theme => ({
         zIndex: 100,
     },
     alert: {
-        // flex items-center h-10 px-4 rounded-lg border-solid border-2;
         display: 'flex',
         alignItems: 'center',
         padding: theme.spacing(0, 0.5),
