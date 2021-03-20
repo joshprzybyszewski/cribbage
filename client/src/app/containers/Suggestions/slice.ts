@@ -63,7 +63,7 @@ const suggestionsSlice = createSlice({
             const update = action.payload;
             const cardsAreEqual = (c1: Card, c2: Card) =>
                 c1.suit === c2.suit && c1.value === c2.value;
-            if (state.handCards.some((c) => cardsAreEqual(c, update.cur)) {
+            if (state.handCards.some((c) => cardsAreEqual(c, update.cur))) {
                 // do not update if the current hand has the "update to" card in it already
                 return {
                     ...state,
