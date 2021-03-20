@@ -12,9 +12,7 @@ import { sliceKey, reducer, actions as sugActions, } from 'app/containers/Sugges
 import { useSelector, useDispatch } from 'react-redux';
 import { useInjectReducer, useInjectSaga } from 'redux-injectors';
 
-const Suggestions = () => {
-  useInjectSaga({ key: sliceKey, saga: suggestionsSaga });
-  useInjectReducer({ key: sliceKey, reducer });
+const Suggestions: React.FunctionComponent = () => {
   const dispatch = useDispatch();
 
   const handCards = useSelector(selectHandCards);
