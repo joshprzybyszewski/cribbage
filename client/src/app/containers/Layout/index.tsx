@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import { CssBaseline } from '@material-ui/core';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
@@ -67,6 +68,7 @@ const Layout: React.FunctionComponent = ({ children }) => {
 
     return (
         <>
+            <CssBaseline />
             <Navbar handleDrawerOpen={handleDrawerOpen} />
             <div className={classes.root}>
                 <Drawer
@@ -91,7 +93,6 @@ const Layout: React.FunctionComponent = ({ children }) => {
                         [classes.contentShift]: drawerOpen,
                     })}
                 >
-                    <div className={classes.drawerHeader} />
                     <Alert />
                     {children}
                 </main>
