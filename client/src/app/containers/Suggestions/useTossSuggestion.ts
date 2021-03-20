@@ -9,8 +9,6 @@ import {
     TossSuggestion,
 } from './slice';
 
-export interface GetTossSuggestionResponse {
-}
 
 interface Result {
     handCards: Card[];
@@ -29,7 +27,7 @@ export function useTossSuggestion(): Result {
         dispatch(actions.setLoading(true));
         const currentHand = '1c,2c,3c,4c,5c,6c';
         try {
-            const getResult = await axios.get<GetTossSuggestionResponse>(
+            const getResult = await axios.get<TossSuggestion[]>(
                 `/suggest/hand?dealt=${currentHand}`
             );
             dispatch(actions.setSuggestionResult(getResult.data));

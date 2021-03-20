@@ -1,7 +1,9 @@
 import React from 'react';
 
+import { ValueLabelProps } from '@material-ui/core';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import {  red } from '@material-ui/core/colors';
 import Slider from '@material-ui/core/Slider';
 import { makeStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -10,12 +12,12 @@ import clsx from 'clsx';
 
 import { 
   Card as ModelCard,
+  getCard,
   Value as ModelValue,
-  Suit as ModelSuit,
 } from '../Game/models';
 import { useTossSuggestion } from './useTossSuggestion';
 
-function getValueString(val: number): string {
+function getValueString(val: number | number[]): string {
   if (val === 13) {
     return 'K';
   }
@@ -30,14 +32,6 @@ function getValueString(val: number): string {
   }
 
   return `${val}`;
-}
-
-function getCard(val: ModelValue, s: ModelSuit): ModelCard {
-  return {
-    name: `${getValueString(val)}${s[0]}`,
-    suit: s,
-    value: val,
-  }
 }
 
 function getUpdatedSuit(card: ModelCard): ModelCard {
@@ -109,8 +103,7 @@ blackCard: {
 });
 
 
-const ValueLabelComponent: React.FunctionComponent = (props) => {
-  // function ValueLabelComponent(props) {
+const ValueLabelComponent: React.ElementType<ValueLabelProps> = (props) => {
   const { children, open, value } = props;
 
   return (
@@ -134,7 +127,7 @@ const ChoosingCard: React.FunctionComponent<Props> = ({ card, notEditable }) => 
 
   const updateValue = notEditable ?
   () => {} :
-  (v: number) => updateCard(
+  (v: number | number[]) => updateCard(
     card,
     getUpdatedValue(card, v as ModelValue),
   );

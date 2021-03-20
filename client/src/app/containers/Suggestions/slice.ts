@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { Card } from '../Game/models';
+import { 
+    Card,
+    getCard,
+} from '../Game/models';
 
 export interface CardUpdate {
     prev: Card;
@@ -26,34 +29,17 @@ export interface TossSuggestionState {
     loading: boolean;
 }
 
-export const initialState = {
-    handCards: [{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    },{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    },{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    },{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    },{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    },{
-        name: 'AC',
-        value: 1,
-        suit: 'Clubs',
-    }],
+export const initialState: TossSuggestionState = {
+    handCards: [
+        getCard(1, 'Clubs'),
+        getCard(1, 'Clubs'),
+        getCard(1, 'Clubs'),
+        getCard(1, 'Clubs'),
+        getCard(1, 'Clubs'),
+        getCard(1, 'Clubs'),
+    ],
     loading: false,
-    suggestedHands: []
+    suggestedHands: [],
 };
 
 const suggestionsSlice = createSlice({
