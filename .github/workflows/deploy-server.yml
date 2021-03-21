@@ -1,7 +1,7 @@
 name: Deploy to Amazon ECS
 
 on:
-  workflow_dispatch: # for now, manually trigger this to test
+  pull_request: # for now, trigger this on PR so I can test it before merging
 
 env:
   AWS_REGION: us-east-2 # set this to your preferred AWS region, e.g. us-west-1
