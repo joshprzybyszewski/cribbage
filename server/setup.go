@@ -57,11 +57,6 @@ type factoryConfig struct {
 }
 
 func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory, error) {
-	// I ripped out mysql to make my life simpler for now. need to find out how to stand up RDS
-	// and talk to it
-	log.Println("Creating in-memory factory")
-	return memory.NewFactory(), nil
-
 	switch *database {
 	case `mongo`:
 		log.Println("Creating mongodb factory")

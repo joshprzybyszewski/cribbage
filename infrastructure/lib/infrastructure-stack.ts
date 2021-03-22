@@ -19,6 +19,9 @@ export class InfrastructureStack extends cdk.Stack {
         //   "joshprzybyszewski/cribbage:latest"
         // ),
         containerPort: 8080,
+        environment: {
+          CRIBBAGE_DB: "memory",
+        },
       },
     });
   }
