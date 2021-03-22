@@ -14,6 +14,10 @@ export class InfrastructureStack extends cdk.Stack {
         image: ecs.ContainerImage.fromAsset("../", {
           exclude: ["infrastructure/*"],
         }),
+        // here's how we'd grab the image from docker hub:
+        // image: ecs.ContainerImage.fromRegistry(
+        //   "joshprzybyszewski/cribbage:latest"
+        // ),
         containerPort: 8080,
       },
     });
