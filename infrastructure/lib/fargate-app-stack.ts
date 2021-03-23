@@ -3,15 +3,15 @@ import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
 import * as cdk from "@aws-cdk/core";
 import * as ecs from "@aws-cdk/aws-ecs";
 
-export class InfrastructureStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+export interface FargateAppStackProps extends cdk.StackProps {
+  vpc: ec2.Vpc;
+}
+
+export class FargateAppStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props: FargateAppStackProps) {
     super(scope, id, props);
 
-    // TODO we need to figure out best practices for standing up the DB
-    // either in the same CF stack, or in a different one.
-    // what's more, we're going to need to figure out how to create users
-    // in it, and then how to get it initialized to have all of the tables
-    // created for us.
+    // TODO we need to pass these vars in as props that were created in the RDS-stack file
     // we may be able to use this dynamoDB creation example as a starter: https://github.com/aws-samples/aws-cdk-examples/blob/18f3429414cc80223a04a04d0249b12a7ae13cbb/typescript/api-cors-lambda-crud-dynamodb/index.ts#L10-L21
     var dsnUser = process.env.SECRET_DSN_USER || "TODO_setDsnUser";
     var dsnPw = process.env.SECRET_DSN_PASSWORD || "TODO_setDsnPassword";
@@ -20,9 +20,7 @@ export class InfrastructureStack extends cdk.Stack {
 
     const serverPort = 80;
 
-    const vpc = new ec2.Vpc(this, `${id}-vpc`, {
-      maxAzs: 3 // Default is all AZs in region
-    });
+    const vpc = props.vpc;
 
     const cluster = new ecs.Cluster(this, `${id}-cluster`, {
       vpc: vpc
