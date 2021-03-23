@@ -7,6 +7,17 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // TODO we need to figure out best practices for standing up the DB
+    // either in the same CF stack, or in a different one.
+    // what's more, we're going to need to figure out how to create users
+    // in it, and then how to get it initialized to have all of the tables
+    // created for us.
+    // we may be able to use this dynamoDB creation example as a starter: https://github.com/aws-samples/aws-cdk-examples/blob/18f3429414cc80223a04a04d0249b12a7ae13cbb/typescript/api-cors-lambda-crud-dynamodb/index.ts#L10-L21
+    var dsnUser = process.env.SECRET_DSN_USER || "TODO_setDsnUser";
+    var dsnPw = process.env.SECRET_DSN_PASSWORD || "TODO_setDsnPassword";
+    var dsnHost = process.env.SECRET_DSN_HOST || ""; // TODO figure out how to ref the RDS
+    var dbType = dsnHost.length > 0 ? "mysql" : "memory";
+
     const serverPort = 80;
 
     const vpc = new ec2.Vpc(this, `${id}-vpc`, {
@@ -30,12 +41,12 @@ export class InfrastructureStack extends cdk.Stack {
         ),
         containerPort: serverPort,
         environment: {
-          CRIBBAGE_DB: "memory", // TODO swap this to "mysql"
+          CRIBBAGE_DB: dbType,
           CRIBBAGE_RESTPORT: serverPort.toString(),
-          CRIBBAGE_DSN_HOST: "TODO_get_the_URL_to_the_rds",
           CRIBBAGE_DSN_PARAMS: "parseTime=true&timeout=90s&writeTimeout=90s&readTimeout=90s&tls=skip-verify&maxAllowedPacket=1000000000&rejectReadOnly=true",
-          CRIBBAGE_DSN_USER: "TODO_figure_out_my_user",
-          CRIBBAGE_DSN_PASSWORD: "TODO_give_that_user_a_pw",
+          CRIBBAGE_DSN_HOST: dsnHost?.toString() ?? "",
+          CRIBBAGE_DSN_USER: dsnUser.toString(),
+          CRIBBAGE_DSN_PASSWORD: dsnPw.toString(),
         },
       },
     });
