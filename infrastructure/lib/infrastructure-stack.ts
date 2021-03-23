@@ -6,8 +6,9 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const serverPort = 8080;
+
     new ecsPatterns.ApplicationLoadBalancedFargateService(this, `${id}-ecs`, {
-      ...props,
       memoryLimitMiB: 1024,
       cpu: 512,
       taskImageOptions: {
@@ -18,9 +19,10 @@ export class InfrastructureStack extends cdk.Stack {
         // image: ecs.ContainerImage.fromRegistry(
         //   "joshprzybyszewski/cribbage:latest"
         // ),
-        containerPort: 8080,
+        containerPort: serverPort,
         environment: {
           CRIBBAGE_DB: "memory",
+          CRIBBAGE_RESTPORT: serverPort.toString(),
         },
       },
     });
