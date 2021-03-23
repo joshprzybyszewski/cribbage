@@ -12,6 +12,8 @@ export class RDSStack extends Stack {
 
     readonly secret: ISecret;
     readonly mySQLRDSInstance: DatabaseInstance;
+    readonly dsnUser: string;
+    readonly dsnPw: string;
 
     constructor(scope: App, id: string, props: RDSStackProps) {
         super(scope, id, props);
@@ -26,18 +28,15 @@ export class RDSStack extends Stack {
     // what's more, we're going to need to figure out how to create users
     // in it, and then how to get it initialized to have all of the tables
     // created for us.
-    var dsnUser = process.env.SECRET_DSN_USER || "TODO_setDsnUser";
-    var dsnPw = process.env.SECRET_DSN_PASSWORD || "TODO_setDsnPassword";
-    var dsnHost = process.env.SECRET_DSN_HOST || ""; // TODO figure out how to ref the RDS
-    var dbType = dsnHost.length > 0 ? "mysql" : "memory";
-
+    this.dsnUser = process.env.SECRET_DSN_USER || "TODO_setDsnUser";
+    this.dsnPw = process.env.SECRET_DSN_PASSWORD || "TODO_setDsnPassword";
     
     this.mySQLRDSInstance = new DatabaseInstance(this, 'mysql-rds-instance', {
         engine: DatabaseInstanceEngine.MYSQL,
         instanceType: new InstanceType('t2.micro'),
         // instanceClass: InstanceType.of(InstanceClass.T2, InstanceSize.SMALL),
         credentials: {
-            username: dsnUser.toString(),
+            username: this.dsnUser.toString(),
             // TODO figure out the best way to get a secret here
             // password: dsnPw.toString(),
             // password: '',
