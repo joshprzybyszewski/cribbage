@@ -39,4 +39,6 @@ jobs:
 
       - name: Run CDK Stack
         run: |
-          echo "here's where we need to invoke cdk"
+          echo "here's where we need to invoke cdk" &&
+          echo "cdk synth" &&
+          echo "cdk deploy --all"

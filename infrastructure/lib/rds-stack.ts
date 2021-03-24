@@ -34,7 +34,7 @@ export class RDSStack extends Stack {
             credentials: this.creds,
             vpc: props.vpc,
             vpcSubnets: {
-                subnetType: SubnetType.ISOLATED,
+                subnetType: SubnetType.PRIVATE, // As opposed to ISOLATED
             },
             storageEncrypted: true,
             multiAz: false,

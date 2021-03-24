@@ -20,7 +20,7 @@ export class VpcStack extends Stack {
                 {
                     cidrMask: 28,
                     name: 'rds',
-                    subnetType: SubnetType.ISOLATED,
+                    subnetType: SubnetType.PRIVATE,
                 },
             ]
         });
