@@ -42,6 +42,7 @@ export class RDSStack extends Stack {
             allocatedStorage: 25, // number of GB. Default is 100
             deletionProtection: true,
             databaseName: this.dbName,
+            instanceIdentifier: 'cribbage-storage-mysql',
             port: 3306
         });
 

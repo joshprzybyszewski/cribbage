@@ -49,6 +49,7 @@ export class FargateAppStack extends cdk.Stack {
           CRIBBAGE_DSN_PASSWORD: props.dsnPassword?.toString() || 'bigbigfail',
           CRIBBAGE_MYSQL_DB: props.dbName,
           CRIBBAGE_MYSQL_CREATE_TABLES: 'true', // mysql_create_tables may or may not be a good thing...
+          deploy: 'prod',
         },
       },
     });
