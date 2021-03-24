@@ -30,13 +30,13 @@ export class RDSStack extends Stack {
             engine: DatabaseInstanceEngine.mysql({
                 version: MysqlEngineVersion.of(mysqlFullVersion, mysqlMajorVersion),
             }),
-            instanceType: new InstanceType('db.t2.micro'),
+            instanceType: new InstanceType('t2.micro'),
             credentials: this.creds,
             vpc: props.vpc,
             vpcSubnets: {
                 subnetType: SubnetType.PRIVATE, // As opposed to ISOLATED
             },
-            storageEncrypted: true,
+            storageEncrypted: false, // not supported by db.t2.micro, otherwise it'd be true
             multiAz: false,
             autoMinorVersionUpgrade: false,
             allocatedStorage: 25, // number of GB. Default is 100
