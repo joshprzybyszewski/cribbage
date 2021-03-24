@@ -21,10 +21,7 @@ console.log('building rds...Done!');
 console.log('building fargate app...');
 new FargateAppStack(app, 'cribbage-app', {
     vpc: vpcStackEntity.vpc,
-    rdsEndpoint: rdsStack.mySQLRDSInstance.dbInstanceEndpointAddress,
-    rdsDbUser: rdsStack.creds.username,
-    dsnPassword: rdsStack.creds.password,
-    dbName: rdsStack.dbName,
+    dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn,
     // subnetName: vpcStackEntity._subnetName
 });
 console.log('building fargate app...Done!');
