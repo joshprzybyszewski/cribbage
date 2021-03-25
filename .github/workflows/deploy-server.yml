@@ -1,4 +1,4 @@
-name: Deploy to Amazon ECS
+name: Deploy to AWS
 
 on:
   pull_request: # for now, trigger this on PR so I can test it before merging
@@ -54,9 +54,10 @@ jobs:
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
 
-      - name: Install CDK
+      - name: Install CDK and typescript
         run: |
-          npm install -g aws-cdk@1.94.1 typescript
+          npm install -g aws-cdk@1.94.1
+          npm install -g typescript
           
       - name: Synth CDK
         run: |
