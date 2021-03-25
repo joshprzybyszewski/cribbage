@@ -56,7 +56,7 @@ jobs:
 
       - name: Install CDK
         run: |
-          npm install -g aws-cdk@1.94.1
+          npm install -g aws-cdk@1.94.1 typescript
           
       - name: Synth CDK
         run: |
