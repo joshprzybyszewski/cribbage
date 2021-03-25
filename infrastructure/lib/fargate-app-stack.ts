@@ -1,10 +1,10 @@
-import * as ec2 from "@aws-cdk/aws-ec2";
-import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
-import * as cdk from "@aws-cdk/core";
-import * as ecs from "@aws-cdk/aws-ecs";
-import { Secret } from "@aws-cdk/aws-secretsmanager";
-import { ARecord, HostedZone, RecordTarget } from "@aws-cdk/aws-route53";
-import { LoadBalancerTarget } from "@aws-cdk/aws-route53-targets";
+import * as ec2 from '@aws-cdk/aws-ec2';
+import * as ecs_patterns from '@aws-cdk/aws-ecs-patterns';
+import * as cdk from '@aws-cdk/core';
+import * as ecs from '@aws-cdk/aws-ecs';
+import { Secret } from '@aws-cdk/aws-secretsmanager';
+import { ARecord, HostedZone, RecordTarget } from '@aws-cdk/aws-route53';
+import { LoadBalancerTarget } from '@aws-cdk/aws-route53-targets';
 
 export interface FargateAppStackProps extends cdk.StackProps {
     vpc: ec2.Vpc;
@@ -17,10 +17,10 @@ export class FargateAppStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props: FargateAppStackProps) {
         super(scope, id, props);
 
-        const dbUserSecret = Secret.fromSecretCompleteArn(this, `cribbageRDSSecret`, props.dbSecretArn ?? "badarn");
+        const dbUserSecret = Secret.fromSecretCompleteArn(this, `cribbageRDSSecret`, props.dbSecretArn ?? 'badarn');
 
-        var dsnHost = dbUserSecret.secretValueFromJson("dbname").toString();
-        var dbType = dsnHost.length > 0 ? "mysql" : "memory";
+        var dsnHost = dbUserSecret.secretValueFromJson('dbname').toString();
+        var dbType = dsnHost.length > 0 ? 'mysql' : 'memory';
 
         const serverPort = 80;
 
@@ -37,26 +37,24 @@ export class FargateAppStack extends cdk.Stack {
             desiredCount: 1, // Default is 1
             publicLoadBalancer: true, // Default is false
             taskImageOptions: {
-                image: ecs.ContainerImage.fromRegistry("joshprzybyszewski/cribbage:master"),
+                image: ecs.ContainerImage.fromRegistry('joshprzybyszewski/cribbage:master'),
                 containerPort: serverPort,
                 environment: {
                     CRIBBAGE_RESTPORT: serverPort.toString(),
                     CRIBBAGE_DB: dbType,
-                    CRIBBAGE_DSN_HOST: dbUserSecret.secretValueFromJson("host").toString(),
-                    CRIBBAGE_DSN_USER: dbUserSecret.secretValueFromJson("username").toString(),
-                    CRIBBAGE_DSN_PASSWORD: dbUserSecret.secretValueFromJson("password").toString(),
-                    CRIBBAGE_MYSQL_DB: dbUserSecret.secretValueFromJson("dbname").toString(),
-                    CRIBBAGE_MYSQL_CREATE_TABLES: "false", // mysql_create_tables may or may not be a good thing...
+                    CRIBBAGE_DSN_HOST: dbUserSecret.secretValueFromJson('host').toString(),
+                    CRIBBAGE_DSN_USER: dbUserSecret.secretValueFromJson('username').toString(),
+                    CRIBBAGE_DSN_PASSWORD: dbUserSecret.secretValueFromJson('password').toString(),
+                    CRIBBAGE_MYSQL_DB: dbUserSecret.secretValueFromJson('dbname').toString(),
+                    CRIBBAGE_MYSQL_CREATE_TABLES: 'false', // mysql_create_tables may or may not be a good thing...
                     CRIBBAGE_DSN_PARAMS:
-                        "parseTime=true&timeout=90s&writeTimeout=90s&readTimeout=90s&tls=skip-verify&maxAllowedPacket=1000000000&rejectReadOnly=true",
-                    deploy: "prod",
+                        'parseTime=true&timeout=90s&writeTimeout=90s&readTimeout=90s&tls=skip-verify&maxAllowedPacket=1000000000&rejectReadOnly=true',
+                    deploy: 'prod',
                 },
             },
         });
 
-        const zone = HostedZone.fromLookup(this, `${id}-hz`, {
-            domainName: "hobbycribbage.com",
-        });
+        const zone = HostedZone.fromHostedZoneId(this, `${id}-hz`, 'Z00553772SEUPVBDMTD1O'); // TODO don't hard code this
         new ARecord(this, `${id}-r53-arecord`, {
             zone,
             target: RecordTarget.fromAlias(new LoadBalancerTarget(this.albFargateService.loadBalancer)),
