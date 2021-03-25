@@ -2,6 +2,9 @@ name: Deploy to Amazon ECS
 
 on:
   pull_request: # for now, trigger this on PR so I can test it before merging
+  push:
+    branches:
+      - master
 
 env:
   AWS_REGION: us-east-2
@@ -28,7 +31,7 @@ jobs:
           tag_with_ref: true
           add_git_labels: true
           tag_with_sha: false
-          cache_froms: joshprzybyszewski/cribbage:latest
+          cache_froms: joshprzybyszewski/cribbage:master
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -38,7 +41,4 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Run CDK Stack
-        run: |
-          echo "here's where we need to invoke cdk" &&
-          echo "cdk synth" &&
-          echo "cdk deploy --all"
+        run: cdk deploy --all

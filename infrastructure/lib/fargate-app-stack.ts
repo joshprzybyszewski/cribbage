@@ -45,9 +45,8 @@ export class FargateAppStack extends cdk.Stack {
         desiredCount: 1, // Default is 1
         publicLoadBalancer: true, // Default is false
         taskImageOptions: {
-          // here's how we'd grab the image from dockerhub:
           image: ecs.ContainerImage.fromRegistry(
-            "joshprzybyszewski/cribbage:pr-94-merge" // TODO change this to use `master` or `latest-tag`, not `latest`.
+            "joshprzybyszewski/cribbage:master",
           ),
           containerPort: serverPort,
           environment: {
@@ -57,7 +56,7 @@ export class FargateAppStack extends cdk.Stack {
             CRIBBAGE_DSN_USER: dbUserSecret.secretValueFromJson('username').toString(),
             CRIBBAGE_DSN_PASSWORD: dbUserSecret.secretValueFromJson('password').toString(),
             CRIBBAGE_MYSQL_DB: dbUserSecret.secretValueFromJson('dbname').toString(),
-            CRIBBAGE_MYSQL_CREATE_TABLES: 'true', // mysql_create_tables may or may not be a good thing...
+            CRIBBAGE_MYSQL_CREATE_TABLES: 'false', // mysql_create_tables may or may not be a good thing...
             CRIBBAGE_DSN_PARAMS: "parseTime=true&timeout=90s&writeTimeout=90s&readTimeout=90s&tls=skip-verify&maxAllowedPacket=1000000000&rejectReadOnly=true",
             deploy: 'prod',
           },
