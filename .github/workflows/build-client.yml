@@ -1,7 +1,7 @@
 name: build-client
 defaults:
   run:
-    working-directory: ./client
+    working-directory: ./app/client
 on:
   push:
     tags:

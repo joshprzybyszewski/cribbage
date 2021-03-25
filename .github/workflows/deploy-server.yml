@@ -12,9 +12,12 @@ env:
 defaults:
   run:
     shell: bash
+    working-directory: ./infrastructure
 
 jobs:
   dockerimage:
+    defaults:
+      working-directoty: ./app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -49,22 +52,17 @@ jobs:
       - name: Install CDK and Stack Dependencies
         run: |
           sudo npm i -g aws-cdk
-          cd infrastructure
           npm install
 
       - name: Synth CDK
-        run: |
-          cd infrastructure
-          cdk synth
+        run: cdk synth
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy CDK
-        run: |
-          cd infrastructure
-          cdk deploy --require-approval never "*"
+        run: cdk deploy --require-approval never "*"
         if: github.ref == 'refs/heads/master'
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}

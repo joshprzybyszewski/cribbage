@@ -1,4 +1,7 @@
 name: golang-tests
+defaults:
+  run:
+    working-directory: ./app
 on:
   push:
     tags:

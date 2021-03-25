@@ -1,4 +1,7 @@
 name: golangci-lint
+defaults:
+  run:
+    working-directory: ./app
 on:
   push:
     tags:
