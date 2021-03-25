@@ -54,7 +54,10 @@ export class FargateAppStack extends cdk.Stack {
             },
         });
 
-        const zone = HostedZone.fromHostedZoneId(this, `${id}-hz`, 'Z00553772SEUPVBDMTD1O'); // TODO don't hard code this
+        const zone = HostedZone.fromHostedZoneAttributes(this, `${id}-hz`, {
+            zoneName: 'hobbycribbage.com',
+            hostedZoneId: 'Z00553772SEUPVBDMTD1O',
+        }); // TODO don't hard code this
         new ARecord(this, `${id}-r53-arecord`, {
             zone,
             target: RecordTarget.fromAlias(new LoadBalancerTarget(this.albFargateService.loadBalancer)),
