@@ -59,6 +59,7 @@ jobs:
           cd infrastructure
           npm install -g aws-cdk@1.94.1
           npm install -g typescript
+          npm link typescript # based on https://stackoverflow.com/questions/44611526/how-to-fix-cannot-find-module-typescript-in-angular-4
           
       - name: Synth CDK
         run: |
