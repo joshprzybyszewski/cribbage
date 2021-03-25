@@ -14,24 +14,31 @@ defaults:
     shell: bash
 
 jobs:
+  dockerimage:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+
+      - uses: docker/build-push-action@v1
+        name: Build and Push Docker image
+        with:
+          repository: joshprzybyszewski/cribbage
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tag_with_ref: true
+          add_git_labels: true
+          tag_with_sha: false
+          cache_froms: joshprzybyszewski/cribbage:master
+
   deploy:
+    needs: dockerimage
     name: Deploy
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      # - uses: docker/build-push-action@v1
-      #   name: Build and Push Docker image
-      #   with:
-      #     repository: joshprzybyszewski/cribbage
-      #     username: ${{ secrets.DOCKER_USERNAME }}
-      #     password: ${{ secrets.DOCKER_PASSWORD }}
-      #     tag_with_ref: true
-      #     add_git_labels: true
-      #     tag_with_sha: false
-      #     cache_froms: joshprzybyszewski/cribbage:master
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -39,20 +46,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      # - name: Use Node.js
-      #   uses: actions/setup-node@v1
-      #   with:
-      #     node-version: "14.x"
-
-      # - name: Cache Node.js modules
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.npm
-      #     key: ${{ runner.OS }}-node-${{ hashFiles('**/infrastructure/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.OS }}-node-
-      #       ${{ runner.OS }}-
 
       - name: Install CDK and Stack Dependencies
         run: |
@@ -73,7 +66,6 @@ jobs:
         run: |
           cd infrastructure
           cdk deploy --require-approval never "*"
-        if: github.ref == 'refs/heads/master'
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
