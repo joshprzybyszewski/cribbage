@@ -56,6 +56,7 @@ jobs:
 
       - name: Install CDK and typescript
         run: |
+          cd infrastructure
           npm install -g aws-cdk@1.94.1
           npm install -g typescript
           
