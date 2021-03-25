@@ -32,7 +32,7 @@ export class FargateAppStack extends cdk.Stack {
     const cluster = new ecs.Cluster(this,
       `${id}-cluster`,
       {
-        vpc: vpc
+        vpc: vpc,
       },
     );
 
