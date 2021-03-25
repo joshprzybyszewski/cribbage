@@ -1,5 +1,5 @@
 import { App, Stack, StackProps } from '@aws-cdk/core';
-import { SubnetType, Vpc } from '@aws-cdk/aws-ec2'
+import { SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 
 export class VpcStack extends Stack {
     readonly vpc: Vpc;
@@ -23,7 +23,7 @@ export class VpcStack extends Stack {
                     name: 'rds',
                     subnetType: SubnetType.PRIVATE,
                 },
-            ]
+            ],
         });
 
         this.rdsPort = 3306;

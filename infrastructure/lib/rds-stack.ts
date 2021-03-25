@@ -1,4 +1,4 @@
-import { App, Stack, StackProps } from "@aws-cdk/core";
+import { App, Stack, StackProps } from '@aws-cdk/core';
 import {
     Credentials,
     DatabaseInstance,
@@ -7,14 +7,7 @@ import {
     OptionGroup,
     StorageType,
 } from '@aws-cdk/aws-rds';
-import {
-    InstanceType,
-    ISecurityGroup,
-    Peer,
-    Port,
-    SecurityGroup,
-    Vpc,
-} from "@aws-cdk/aws-ec2";
+import { InstanceType, ISecurityGroup, Peer, Port, SecurityGroup, Vpc } from '@aws-cdk/aws-ec2';
 
 export interface RDSStackProps extends StackProps {
     vpc: Vpc;
@@ -22,7 +15,6 @@ export interface RDSStackProps extends StackProps {
 }
 
 export class RDSStack extends Stack {
-
     readonly mySQLRDSInstance: DatabaseInstance;
     readonly creds: Credentials;
     readonly dbName: string;
@@ -31,10 +23,7 @@ export class RDSStack extends Stack {
         super(scope, id, props);
 
         this.dbName = 'cribbage';
-        this.creds = Credentials.fromGeneratedSecret(
-            'cribbageApp',
-            {},
-        );
+        this.creds = Credentials.fromGeneratedSecret('cribbageApp', {});
 
         const mysqlFullVersion = '8.0.19'; // matches the version in CI and install.sh
         const mysqlMajorVersion = '8.0';
