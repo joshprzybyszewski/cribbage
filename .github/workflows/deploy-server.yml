@@ -17,7 +17,8 @@ defaults:
 jobs:
   dockerimage:
     defaults:
-      working-directory: ./app
+      run:
+        working-directory: ./app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
