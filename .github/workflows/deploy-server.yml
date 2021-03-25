@@ -40,33 +40,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Use Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '14.x'
+      # - name: Use Node.js
+      #   uses: actions/setup-node@v1
+      #   with:
+      #     node-version: "14.x"
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-node-${{ hashFiles('**/infrastructure/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-node-
-            ${{ runner.OS }}-
+      # - name: Cache Node.js modules
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.OS }}-node-${{ hashFiles('**/infrastructure/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.OS }}-node-
+      #       ${{ runner.OS }}-
 
-      - name: Install CDK and typescript
+      - name: Install CDK
         run: |
           cd infrastructure
-          npm install -g aws-cdk@1.94.1
-          npm install -g typescript
-          npm link typescript # based on https://stackoverflow.com/questions/44611526/how-to-fix-cannot-find-module-typescript-in-angular-4
-          npm install @aws-cdk/core @aws-cdk/aws-ec2 @aws-cdk/aws-ecs @aws-cdk/aws-ecs-patterns @aws-cdk/aws-secretsmanager @aws-cdk/aws-rds
-          
+          npm install
+
       - name: Synth CDK
         run: |
           cd infrastructure
-          cdk synth \
-          --output build/cdk.out
+          cdk synth
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -75,7 +71,7 @@ jobs:
       - name: Deploy CDK
         run: |
           cd infrastructure
-          cdk deploy --app ./build/cdk.out --require-approval never "*"
+          cdk deploy --require-approval never "*"
         if: github.ref == 'refs/heads/master'
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
