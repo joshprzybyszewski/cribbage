@@ -5,6 +5,7 @@ import { VpcStack } from '../lib/vpc-stack';
 import { FargateAppStack } from '../lib/fargate-app-stack';
 import { RDSStack } from '../lib/rds-stack';
 import { Port } from '@aws-cdk/aws-ec2';
+import { DNSStack } from '../lib/dns-stack';
 
 const app = new cdk.App();
 
@@ -25,6 +26,12 @@ const fargateStack = new FargateAppStack(app, 'cribbage-app', {
     dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn,
 });
 console.log('building fargate app...Done!');
+
+console.log('building dns...');
+new DNSStack(app, 'cribbage-dns', {
+    loadBalancer: fargateStack.albFargateService.loadBalancer,
+});
+console.log('building dns...Done!');
 
 // I read the following doc which recommended peering two constructs using connections in python: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_ec2/SecurityGroup.html
 console.log('Allowing connections between constructs...');
