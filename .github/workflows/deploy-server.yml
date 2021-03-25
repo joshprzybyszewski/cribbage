@@ -56,7 +56,7 @@ jobs:
 
       - name: Install CDK and Stack Dependencies
         run: |
-          npm i -g aws-cdk
+          sudo npm i -g aws-cdk
           cd infrastructure
           npm install
 
