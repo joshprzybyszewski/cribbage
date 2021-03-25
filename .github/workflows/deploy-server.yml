@@ -60,8 +60,8 @@ jobs:
           
       - name: Synth CDK
         run: |
+          cd infrastructure
           cdk synth \
-          --app '-region ${{ env.AWS_REGION }} ' \
           --output build/cdk.out
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
@@ -70,6 +70,7 @@ jobs:
 
       - name: Deploy CDK
         run: |
+          cd infrastructure
           cdk deploy --app ./build/cdk.out --require-approval never "*"
         if: github.ref == 'refs/heads/master'
         env:
