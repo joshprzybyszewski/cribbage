@@ -6,17 +6,21 @@ import { FargateAppStack } from '../lib/fargate-app-stack';
 import { RDSStack } from '../lib/rds-stack';
 import { Port } from '@aws-cdk/aws-ec2';
 import { DNSStack } from '../lib/dns-stack';
+import { Environment } from '@aws-cdk/core';
+
+const env: Environment = { account: process.env['AWS_ACCOUNT'], region: process.env['AWS_REGION'] };
 
 const app = new cdk.App();
 
 console.log('building vpc...');
-const vpcStackEntity = new VpcStack(app, 'cribbage-vpc');
+const vpcStackEntity = new VpcStack(app, 'cribbage-vpc', { env });
 console.log('building vpc...Done!');
 
 console.log('building rds...');
 const rdsStack = new RDSStack(app, 'cribbage-rds', {
     vpc: vpcStackEntity.vpc,
     rdsIngressPort: vpcStackEntity.rdsPort,
+    env,
 });
 console.log('building rds...Done!');
 
@@ -24,12 +28,14 @@ console.log('building fargate app...');
 const fargateStack = new FargateAppStack(app, 'cribbage-app', {
     vpc: vpcStackEntity.vpc,
     dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn,
+    env,
 });
 console.log('building fargate app...Done!');
 
 console.log('building dns...');
 new DNSStack(app, 'cribbage-dns', {
     loadBalancer: fargateStack.albFargateService.loadBalancer,
+    env,
 });
 console.log('building dns...Done!');
 
