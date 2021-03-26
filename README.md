@@ -39,7 +39,7 @@ make serve
 make goclient
 ```
 
-    - From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).
+- From here, you should be directed through the game using [survey](https://github.com/AlecAivazis/survey).
 
 Happy Playing!
 
