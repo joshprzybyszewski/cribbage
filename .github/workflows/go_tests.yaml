@@ -1,7 +1,4 @@
 name: golang-tests
-defaults:
-  run:
-    working-directory: ./app
 on:
   push:
     tags:
@@ -40,7 +37,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
-          file: ./app/coverage.txt
+          file: ./coverage.txt
           # flags: unittests
           # env_vars: OS,PYTHON
           # name: codecov-umbrella

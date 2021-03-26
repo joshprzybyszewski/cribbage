@@ -12,32 +12,24 @@ env:
 defaults:
   run:
     shell: bash
-    working-directory: ./infrastructure
 
 jobs:
   dockerimage:
-    defaults:
-      run:
-        working-directory: ./app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         name: Check out code
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD}}
-
-      - uses: docker/build-push-action@v2
+      - uses: docker/build-push-action@v1
         name: Build and Push Docker image
         with:
           repository: joshprzybyszewski/cribbage
-          context: ./app
-          tags: joshprzybyszewski/cribbage:master
-          cache-from: type=egistry,ref=joshprzybyszewski/cribbage:master
-          cache-to: type=inline
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tag_with_ref: true
+          add_git_labels: true
+          tag_with_sha: false
+          cache_froms: joshprzybyszewski/cribbage:master
 
   deploy:
     needs: dockerimage
@@ -57,17 +49,22 @@ jobs:
       - name: Install CDK and Stack Dependencies
         run: |
           sudo npm i -g aws-cdk
+          cd infrastructure
           npm install
 
       - name: Synth CDK
-        run: cdk synth
+        run: |
+          cd infrastructure
+          cdk synth
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Deploy CDK
-        run: cdk deploy --require-approval never "*"
+        run: |
+          cd infrastructure
+          cdk deploy --require-approval never "*"
         if: github.ref == 'refs/heads/master'
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}

@@ -1,7 +1,4 @@
 name: golangci-lint
-defaults:
-  run:
-    working-directory: ./app
 on:
   push:
     tags:
@@ -19,7 +16,6 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
-          working-directory: ./app
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.29
 
