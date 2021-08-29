@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  cribbage:
+    build: .
+    env:
+      deploy: docker
+    ports:
+      - "8081:8081"
