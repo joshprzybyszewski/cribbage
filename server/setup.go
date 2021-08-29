@@ -27,8 +27,14 @@ var (
 	dsnParams   = flag.String(`dsn_params`, `parseTime=true`, `The params for the MySQL DB`)
 	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
 
-	createTables          = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
-	createTablesErrorIsOk = flag.Bool(`mysql_create_error_is_ok`, false, `Set to true when you don't care if table creation fails on startup.`)
+	createTables = flag.Bool(
+		`mysql_create_tables`, false,
+		`Set to true when you want to create tables on startup.`,
+	)
+	createTablesErrorIsOk = flag.Bool(
+		`mysql_create_error_is_ok`, false,
+		`Set to true when you don't care if table creation fails on startup.`,
+	)
 )
 
 // Setup connects to a database and starts serving requests
