@@ -1,19 +1,14 @@
-version: "3.8"
+version: "3.9"
 services:
   dynamodb-local:
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
-    image: "amazon/dynamodb-local:latest"
-    container_name: dynamodb-local
+    image: amazon/dynamodb-local:latest
     ports:
-      - "8000:8000"
-    volumes:
-      - "./docker/dynamodb:/home/dynamodblocal/data"
-    working_dir: /home/dynamodblocal
+      - "20000:20000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
   dynamoInit:
     depends_on:
       - dynamodb-local
     image: banst/awscli
-    container_name: dynamoInit
     ports:
      - "8123:8123"
     environment:
@@ -21,11 +16,14 @@ services:
       AWS_SECRET_ACCESS_KEY: 'DUMMYEXAMPLEKEY'
     command:
       dynamodb describe-limits --endpoint-url http://dynamodb-local:8000 --region us-west-2
-  cribbage:
+  cribbageServer:
+    image: cribbage
     depends_on:
       - dynamoInit
-    build: .
-    env:
+    environment:
       deploy: docker
     ports:
-      - "8081:8081"
+      - "8080:8080"
+  # cribbage:
+  #   depends_on:
+  #     - cribbageServer
