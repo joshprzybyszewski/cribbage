@@ -47,6 +47,3 @@ services:
       CRIBBAGE_MYSQL_CREATE_ERROR_IS_OK: "true"
     ports:
       - "18080:8080"
-  # cribbage:
-  #   depends_on:
-  #     - cribbageServer
