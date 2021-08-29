@@ -27,7 +27,8 @@ var (
 	dsnParams   = flag.String(`dsn_params`, `parseTime=true`, `The params for the MySQL DB`)
 	mysqlDBName = flag.String(`mysql_db`, `cribbage`, `The name of the Database to connect to in mysql`)
 
-	createTables = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
+	createTables          = flag.Bool(`mysql_create_tables`, false, `Set to true when you want to create tables on startup.`)
+	createTablesErrorIsOk = flag.Bool(`mysql_create_error_is_ok`, false, `Set to true when you don't care if table creation fails on startup.`)
 )
 
 // Setup connects to a database and starts serving requests
@@ -63,13 +64,14 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 		return mongodb.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
-			DSNUser:        *dsnUser,
-			DSNPassword:    *dsnPassword,
-			DSNHost:        *dsnHost,
-			DSNPort:        *dsnPort,
-			DatabaseName:   *mysqlDBName,
-			DSNParams:      *dsnParams,
-			RunCreateStmts: cfg.canRunCreateStmts && *createTables,
+			DSNUser:         *dsnUser,
+			DSNPassword:     *dsnPassword,
+			DSNHost:         *dsnHost,
+			DSNPort:         *dsnPort,
+			DatabaseName:    *mysqlDBName,
+			DSNParams:       *dsnParams,
+			RunCreateStmts:  cfg.canRunCreateStmts && *createTables,
+			CreateErrorIsOk: cfg.canRunCreateStmts && *createTablesErrorIsOk,
 		}
 		log.Println("Creating mysql factory")
 		log.Printf("  len(User): %d\n", len(cfg.DSNUser))
@@ -78,6 +80,8 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 		log.Printf("  Port: %d\n", cfg.DSNPort)
 		log.Printf("  DatabaseName: %s\n", cfg.DatabaseName)
 		log.Printf("  DSNParams: %s\n", cfg.DSNParams)
+		log.Printf("  RunCreateStmts: %v\n", cfg.RunCreateStmts)
+		log.Printf("  CreateErrorIsOk: %v\n", cfg.CreateErrorIsOk)
 		return mysql.NewFactory(ctx, cfg)
 	case `memory`:
 		log.Println("Creating in-memory factory")

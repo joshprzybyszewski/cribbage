@@ -30,7 +30,7 @@ services:
       timeout: 20s
       retries: 10
   cribbage-server:
-    build: .
+    image: joshprzybyszewski/cribbage:latest
     depends_on:
       dynamoInit:
         condition: service_started
@@ -43,8 +43,8 @@ services:
       CRIBBAGE_DSN_PASSWORD: flyyoufools
       CRIBBAGE_DSN_PARAMS: "parseTime=true&timeout=90s&writeTimeout=90s&readTimeout=90s&tls=skip-verify&maxAllowedPacket=1000000000&rejectReadOnly=true"
       CRIBBAGE_restPort: 8088
-      # TODO create the tables another way?
-      # CRIBBAGE_MYSQL_CREATE_TABLES: "true"
+      CRIBBAGE_MYSQL_CREATE_TABLES: "true"
+      CRIBBAGE_MYSQL_CREATE_ERROR_IS_OK: "true"
     ports:
       - "18080:8080"
   # cribbage:
