@@ -55,3 +55,7 @@ dockerrunlocal: ## Runs the latest tag of the built docker image locally on port
 .PHONY: wasm
 wasm: ## Builds the wasm output for the gowasm client
 	GOOS=js GOARCH=wasm go build -tags prod -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+
+.PHONY: localstack
+localstack: ## Runs the app as a local stack in docker-compose
+	docker-compose up -d cribbage-server
