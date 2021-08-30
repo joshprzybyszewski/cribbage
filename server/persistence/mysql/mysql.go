@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql" // nolint:golint
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -43,6 +44,10 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 		for _, createStmt := range allCreateStmts {
 			_, err := db.ExecContext(ctx, createStmt)
 			if err != nil {
+				if config.CreateErrorIsOk {
+					log.Printf("error running CREATE: %q = %v", createStmt, err)
+					continue
+				}
 				return nil, err
 			}
 		}
@@ -86,7 +91,8 @@ type Config struct {
 
 	DatabaseName string
 
-	RunCreateStmts bool
+	RunCreateStmts  bool
+	CreateErrorIsOk bool
 }
 
 var _ persistence.DB = (*mysqlWrapper)(nil)
