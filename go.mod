@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.4
+	github.com/aws/aws-sdk-go v1.40.32
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.3
 	github.com/glacjay/goini v0.0.0-20161120062552-fd3024d87ee2 // indirect

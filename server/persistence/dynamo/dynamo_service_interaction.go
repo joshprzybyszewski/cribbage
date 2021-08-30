@@ -71,6 +71,32 @@ func bsonInteractionFilter(id model.PlayerID) interface{} {
 }
 
 func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {
+	svc := dynamodb.New(session.New())
+	// I want to minimize the number of dynamo tables I use:
+	// "You should maintain as few tables as possible in a DynamoDB application."
+	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
+	dynamoGamesTableName := `cribbage`
+	input := &dynamodb.BatchGetItemInput{
+		RequestItems: map[string]*dynamodb.KeysAndAttributes{
+			dynamoGamesTableName: {
+				Keys: []map[string]*dynamodb.AttributeValue{{
+					"PlayerID": &dynamodb.AttributeValue{
+						S: aws.String(string(id)),
+					},
+					// TODO use a "sort key" that defines this as the "interaction" model for the player
+				}},
+				// TODO figure out what the projexp should be for this?
+				ProjectionExpression: aws.String("max(idk)"),
+			},
+		},
+	}
+
+	result, err := svc.BatchGetItem(input)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+
 	result := interaction.PlayerMeans{}
 	filter := bsonInteractionFilter(id)
 	err := mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {

@@ -4,12 +4,16 @@ package dynamo
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
@@ -69,9 +73,35 @@ func bsonPlayerIDFilter(id model.PlayerID) interface{} {
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
+	svc := dynamodb.New(session.New())
+	// I want to minimize the number of dynamo tables I use:
+	// "You should maintain as few tables as possible in a DynamoDB application."
+	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
+	dynamoGamesTableName := `cribbage`
+	input := &dynamodb.BatchGetItemInput{
+		RequestItems: map[string]*dynamodb.KeysAndAttributes{
+			dynamoGamesTableName: {
+				Keys: []map[string]*dynamodb.AttributeValue{{
+					"PlayerID": &dynamodb.AttributeValue{
+						S: aws.String(string(id)),
+					},
+					// TODO figure out what the getter should be to only nab the relevant info for the player?
+				}},
+				// TODO figure out what the projexp should be?
+				ProjectionExpression: aws.String("max(idk)"),
+			},
+		},
+	}
+
+	dynamoResult, err := svc.BatchGetItem(input)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(dynamoResult)
+
 	result := model.Player{}
 	filter := bsonPlayerIDFilter(id)
-	err := mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
+	err = mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
 		return ps.col.FindOne(sc, filter).Decode(&result)
 	})
 

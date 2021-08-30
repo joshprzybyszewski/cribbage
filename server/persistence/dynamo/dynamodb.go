@@ -11,6 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb/mapbson"
 )
@@ -26,20 +29,21 @@ const (
 	maxCommitTime time.Duration = 10 * time.Second // something very large for now -- this should be reduced
 )
 
-var _ persistence.DBFactory = mongoFactory{}
+var _ persistence.DBFactory = dynamoFactory{}
 
-type mongoFactory struct {
+type dynamoFactory struct {
 	uri string
 }
 
 func NewFactory(uri string) (persistence.DBFactory, error) {
-	return mongoFactory{
+	svc := dynamodb.New(session.New())
+	return dynamoFactory{
 		uri: uri,
 	}, nil
 }
 
-func (mf mongoFactory) New(ctx context.Context) (persistence.DB, error) {
-	uri := mf.uri
+func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
+	uri := df.uri
 	if uri == `` {
 		// The default URI without replicas used to be:
 		// `mongodb://localhost:27017`
@@ -80,23 +84,23 @@ func (mf mongoFactory) New(ctx context.Context) (persistence.DB, error) {
 		is,
 	)
 
-	mw := mongoWrapper{
+	dw := dynamoWrapper{
 		ServicesWrapper: sw,
 		ctx:             ctx,
 		client:          client,
 		session:         sess,
 	}
 
-	return &mw, nil
+	return &dw, nil
 }
 
-func (mf mongoFactory) Close() error {
+func (df dynamoFactory) Close() error {
 	return nil
 }
 
-var _ persistence.DB = (*mongoWrapper)(nil)
+var _ persistence.DB = (*dynamoWrapper)(nil)
 
-type mongoWrapper struct {
+type dynamoWrapper struct {
 	persistence.ServicesWrapper
 
 	ctx     context.Context
@@ -104,12 +108,12 @@ type mongoWrapper struct {
 	session mongo.Session
 }
 
-func (mw *mongoWrapper) Close() error {
-	return mw.client.Disconnect(mw.ctx)
+func (dw *dynamoWrapper) Close() error {
+	return dw.client.Disconnect(dw.ctx)
 }
 
-func (mw *mongoWrapper) Start() error {
-	if mw.session == nil {
+func (dw *dynamoWrapper) Start() error {
+	if dw.session == nil {
 		return errors.New(`no session to use`)
 	}
 
@@ -120,33 +124,33 @@ func (mw *mongoWrapper) Start() error {
 	mct := maxCommitTime
 	txOpts.SetMaxCommitTime(&mct)
 
-	return mw.session.StartTransaction(txOpts)
+	return dw.session.StartTransaction(txOpts)
 }
 
-func (mw *mongoWrapper) Commit() error {
-	return mw.finishTx(func(sc mongo.SessionContext) error {
-		return mw.session.CommitTransaction(sc)
+func (dw *dynamoWrapper) Commit() error {
+	return dw.finishTx(func(sc mongo.SessionContext) error {
+		return dw.session.CommitTransaction(sc)
 	})
 }
 
-func (mw *mongoWrapper) Rollback() error {
-	return mw.finishTx(func(sc mongo.SessionContext) error {
-		return mw.session.AbortTransaction(sc)
+func (dw *dynamoWrapper) Rollback() error {
+	return dw.finishTx(func(sc mongo.SessionContext) error {
+		return dw.session.AbortTransaction(sc)
 	})
 }
 
-func (mw *mongoWrapper) finishTx(finisher func(mongo.SessionContext) error) (err error) {
-	if mw.session == nil {
+func (dw *dynamoWrapper) finishTx(finisher func(mongo.SessionContext) error) (err error) {
+	if dw.session == nil {
 		return errors.New(`missing session`)
 	}
 
 	defer func() {
 		if err == nil {
 			// only end session if there was no error
-			mw.session.EndSession(mw.ctx)
+			dw.session.EndSession(dw.ctx)
 		}
 	}()
 
-	err = mongo.WithSession(mw.ctx, mw.session, finisher)
+	err = mongo.WithSession(dw.ctx, dw.session, finisher)
 	return err
 }

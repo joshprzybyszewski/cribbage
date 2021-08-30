@@ -5,7 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -100,7 +104,11 @@ func (gs *gameService) GetAt(id model.GameID, numActions uint) (model.Game, erro
 	})
 }
 
-func (gs *gameService) getSingleGame(id model.GameID, opts getGameOptions) (model.Game, error) {
+func (gs *gameService) getSingleGame(
+	id model.GameID,
+	opts getGameOptions,
+) (model.Game, error) {
+
 	games, err := gs.getGameStates(id, opts)
 	if err != nil {
 		return model.Game{}, err
@@ -115,7 +123,33 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 	pgl := persistedGameList{}
 	filter := bsonGameIDFilter(id)
 
-	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+	svc := dynamodb.New(session.New())
+	// I want to minimize the number of dynamo tables I use:
+	// "You should maintain as few tables as possible in a DynamoDB application."
+	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
+	dynamoGamesTableName := `cribbage`
+	input := &dynamodb.BatchGetItemInput{
+		RequestItems: map[string]*dynamodb.KeysAndAttributes{
+			dynamoGamesTableName: {
+				Keys: []map[string]*dynamodb.AttributeValue{{
+					"GameID": &dynamodb.AttributeValue{
+						S: aws.String(string(id)),
+					},
+					// TODO I don't remember right now how to get based on partition/sort key
+				}},
+				// TODO if only latest, then we can use a projexp to filter down
+				ProjectionExpression: aws.String("max(numGameActions)"),
+			},
+		},
+	}
+
+	result, err := svc.BatchGetItem(input)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+
+	err = mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
 		err := gs.col.FindOne(sc, filter).Decode(&pgl)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
