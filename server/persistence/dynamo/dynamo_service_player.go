@@ -77,13 +77,15 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	// I want to minimize the number of dynamo tables I use:
 	// "You should maintain as few tables as possible in a DynamoDB application."
 	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
-	dynamoGamesTableName := `cribbage`
 	input := &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
-			dynamoGamesTableName: {
+			dbName: {
 				Keys: []map[string]*dynamodb.AttributeValue{{
-					"PlayerID": &dynamodb.AttributeValue{
+					partitionKey: &dynamodb.AttributeValue{
 						S: aws.String(string(id)),
+					},
+					sortKey: &dynamodb.AttributeValue{
+						S: aws.String(string(dynamoPlayerServiceSortKey)),
 					},
 					// TODO figure out what the getter should be to only nab the relevant info for the player?
 				}},

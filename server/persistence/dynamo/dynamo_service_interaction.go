@@ -1,17 +1,22 @@
 //nolint:dupl
-package package dynamo
+package dynamo
 
 import (
 	"context"
 	"errors"
+	"fmt"
 
-	"github.com/joshprzybyszewski/cribbage/model"
-	"github.com/joshprzybyszewski/cribbage/server/interaction"
-	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/joshprzybyszewski/cribbage/model"
+	"github.com/joshprzybyszewski/cribbage/server/interaction"
+	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
 const (
@@ -75,13 +80,15 @@ func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, er
 	// I want to minimize the number of dynamo tables I use:
 	// "You should maintain as few tables as possible in a DynamoDB application."
 	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
-	dynamoGamesTableName := `cribbage`
 	input := &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
-			dynamoGamesTableName: {
+			dbName: {
 				Keys: []map[string]*dynamodb.AttributeValue{{
-					"PlayerID": &dynamodb.AttributeValue{
+					partitionKey: &dynamodb.AttributeValue{
 						S: aws.String(string(id)),
+					},
+					sortKey: &dynamodb.AttributeValue{
+						S: aws.String(string(dynamoInteractionServiceSortKey)),
 					},
 					// TODO use a "sort key" that defines this as the "interaction" model for the player
 				}},
@@ -91,15 +98,15 @@ func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, er
 		},
 	}
 
-	result, err := svc.BatchGetItem(input)
+	result2, err := svc.BatchGetItem(input)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(result)
+	fmt.Println(result2)
 
 	result := interaction.PlayerMeans{}
 	filter := bsonInteractionFilter(id)
-	err := mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
+	err = mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
 		err := s.col.FindOne(sc, filter).Decode(&result)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {

@@ -11,15 +11,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb/mapbson"
 )
 
 const (
-	dbName                     string = `cribbage`
+	dbName       = `cribbage`
+	partitionKey = `id`
+	sortKey      = `spec`
+
+	dynamoPlayerServiceSortKey      = `player`
+	dynamoInteractionServiceSortKey = `interaction`
+
 	gamesCollectionName        string = `games`
 	playersCollectionName      string = `players`
 	interactionsCollectionName string = `interactions`
@@ -36,7 +39,7 @@ type dynamoFactory struct {
 }
 
 func NewFactory(uri string) (persistence.DBFactory, error) {
-	svc := dynamodb.New(session.New())
+	// svc := dynamodb.New(session.New())
 	return dynamoFactory{
 		uri: uri,
 	}, nil
