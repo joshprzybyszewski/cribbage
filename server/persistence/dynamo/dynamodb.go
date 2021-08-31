@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb/mapbson"
 )
@@ -20,7 +22,7 @@ const (
 	partitionKey = `id`
 	sortKey      = `spec`
 
-	dynamoPlayerServiceSortKey      = `player`
+	dynamoPlayerServiceSortKey      = playerServiceSortKeyPrefix
 	dynamoInteractionServiceSortKey = `interaction`
 
 	gamesCollectionName        string = `games`
@@ -46,6 +48,8 @@ func NewFactory(uri string) (persistence.DBFactory, error) {
 }
 
 func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
+	svc := dynamodb.New(session.New())
+
 	uri := df.uri
 	if uri == `` {
 		// The default URI without replicas used to be:
@@ -72,7 +76,7 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	ps, err := getPlayerService(ctx, sess, mdb, customRegistry)
+	ps, err := getPlayerService(ctx, svc)
 	if err != nil {
 		return nil, err
 	}

@@ -6,77 +6,38 @@ import (
 	"errors"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
 const (
-	playerCollectionIndex string = `id`
+	playerServiceSortKeyPrefix string = `player`
+	playerServiceGameSortKey   string = playerServiceSortKeyPrefix + `Game`
 )
 
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
-	ctx     context.Context
-	session mongo.Session
-	col     *mongo.Collection
+	ctx context.Context
+
+	svc *dynamodb.DynamoDB
 }
 
 func getPlayerService(
 	ctx context.Context,
-	session mongo.Session,
-	mdb *mongo.Database,
-	r *bsoncodec.Registry,
+	svc *dynamodb.DynamoDB,
 ) (persistence.PlayerService, error) {
 
-	col := mdb.Collection(playersCollectionName, &options.CollectionOptions{
-		Registry: r,
-	})
-
-	idxs := col.Indexes()
-	hasIndex, err := hasPlayerCollectionIndex(ctx, idxs)
-	if err != nil {
-		return nil, err
-	}
-	if !hasIndex {
-		err = createPlayerCollectionIndex(ctx, idxs)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return &playerService{
-		ctx:     ctx,
-		session: session,
-		col:     col,
+		ctx: ctx,
+		svc: svc,
 	}, nil
 }
 
-func hasPlayerCollectionIndex(ctx context.Context, idxs mongo.IndexView) (bool, error) {
-	return hasCollectionIndex(ctx, idxs, playerCollectionIndex)
-}
-
-func createPlayerCollectionIndex(ctx context.Context, idxs mongo.IndexView) error {
-	return createCollectionIndex(ctx, idxs, playerCollectionIndex)
-}
-
-func bsonPlayerIDFilter(id model.PlayerID) interface{} {
-	return bson.M{playerCollectionIndex: id} // model.Player.ID
-}
-
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
-	svc := dynamodb.New(session.New())
-	// I want to minimize the number of dynamo tables I use:
-	// "You should maintain as few tables as possible in a DynamoDB application."
-	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
 	input := &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
 			dbName: {
@@ -84,8 +45,9 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 					partitionKey: &dynamodb.AttributeValue{
 						S: aws.String(string(id)),
 					},
+					// I want the sort key to be prefix-able
 					sortKey: &dynamodb.AttributeValue{
-						S: aws.String(string(dynamoPlayerServiceSortKey)),
+						S: aws.String(string(playerServiceSortKeyPrefix)),
 					},
 					// TODO figure out what the getter should be to only nab the relevant info for the player?
 				}},
@@ -95,63 +57,37 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 		},
 	}
 
-	dynamoResult, err := svc.BatchGetItem(input)
+	dynamoResult, err := ps.svc.BatchGetItem(input)
 	if err != nil {
 		fmt.Println(err)
-	}
-	fmt.Println(dynamoResult)
-
-	result := model.Player{}
-	filter := bsonPlayerIDFilter(id)
-	err = mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
-		return ps.col.FindOne(sc, filter).Decode(&result)
-	})
-
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return model.Player{}, persistence.ErrPlayerNotFound
-		}
 		return model.Player{}, err
 	}
-	return result, nil
+	fmt.Println(dynamoResult)
+	return model.Player{}, errors.New(`josh TODO`)
 }
 
 func (ps *playerService) Create(p model.Player) error {
-	// check if the player already exists
-	filter := bsonPlayerIDFilter(p.ID)
-	err := mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
-		c, err := ps.col.Find(sc, filter)
-		if err != nil {
-			return err
-		}
-		if c.Next(sc) {
-			return persistence.ErrPlayerAlreadyExists
-		}
-		return nil
-	})
+	// TODO create the player in the put item input
+	input := &dynamodb.PutItemInput{}
+
+	output, err := ps.svc.PutItem(input)
 	if err != nil {
 		return err
 	}
-
-	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
-		ior, err := ps.col.InsertOne(sc, p)
-		if err != nil {
-			return err
-		}
-		if ior.InsertedID == nil {
-			// not sure if this is the right thing to check
-			return errors.New(`game not saved`)
-		}
-
-		return nil
-	})
+	if output.Attributes != nil {
+		// TODO validate output?
+		return persistence.ErrPlayerAlreadyExists
+	}
+	return nil
 }
 
 func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
+	// TODO for each player in players, create an item that includes the game ID
 	return nil
 }
 
 func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
+	// TODO, get the pID gID combo and assign the color
 	p, err := ps.Get(pID)
 	if err != nil {
 		return err
@@ -170,13 +106,17 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 		return nil
 	}
 
-	p.Games[gID] = color
+	// TODO create the playergame in the put item input
+	// p.Games[gID] = color
+	input := &dynamodb.PutItemInput{}
 
-	filter := bsonPlayerIDFilter(pID)
-	opt := &options.FindOneAndReplaceOptions{}
-	opt.SetUpsert(true)
-	return mongo.WithSession(ps.ctx, ps.session, func(sc mongo.SessionContext) error {
-		sr := ps.col.FindOneAndReplace(sc, filter, p)
-		return sr.Err()
-	})
+	output, err := ps.svc.PutItem(input)
+	if err != nil {
+		return err
+	}
+	if output.Attributes != nil {
+		// TODO validate output?
+		return persistence.ErrPlayerAlreadyExists
+	}
+	return nil
 }
