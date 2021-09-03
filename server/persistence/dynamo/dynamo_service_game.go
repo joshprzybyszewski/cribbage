@@ -10,17 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+
+	"go.mongodb.org/mongo-driver/bson"
+
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-const (
-	gameCollectionIndex string = `gameID`
 )
 
 type gameList struct {
@@ -33,13 +28,6 @@ type persistedGameList struct {
 	TempGames []bson.M     `bson:"games,omitempty"`
 }
 
-func bsonGameIDFilter(id model.GameID) interface{} {
-	// This filter should satisfy each of these fields being set:
-	// gameList.GameID = id
-	// persistedGameList.GameID = id
-	return bson.M{gameCollectionIndex: id}
-}
-
 type getGameOptions struct {
 	latest  bool
 	all     bool
@@ -49,47 +37,20 @@ type getGameOptions struct {
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
-	ctx     context.Context
-	session mongo.Session
-	col     *mongo.Collection
+	ctx context.Context
+
+	svc *dynamodb.DynamoDB
 }
 
 func getGameService(
 	ctx context.Context,
-	session mongo.Session,
-	mdb *mongo.Database,
-	r *bsoncodec.Registry,
+	svc *dynamodb.DynamoDB,
 ) (persistence.GameService, error) {
 
-	col := mdb.Collection(gamesCollectionName, &options.CollectionOptions{
-		Registry: r,
-	})
-
-	idxs := col.Indexes()
-	hasIndex, err := hasGameCollectionIndex(ctx, idxs)
-	if err != nil {
-		return nil, err
-	}
-	if !hasIndex {
-		err = createGameCollectionIndex(ctx, idxs)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return &gameService{
-		ctx:     ctx,
-		session: session,
-		col:     col,
+		ctx: ctx,
+		svc: svc,
 	}, nil
-}
-
-func hasGameCollectionIndex(ctx context.Context, idxs mongo.IndexView) (bool, error) {
-	return hasCollectionIndex(ctx, idxs, gameCollectionIndex)
-}
-
-func createGameCollectionIndex(ctx context.Context, idxs mongo.IndexView) error {
-	return createCollectionIndex(ctx, idxs, gameCollectionIndex)
 }
 
 func (gs *gameService) Get(id model.GameID) (model.Game, error) {
@@ -121,7 +82,6 @@ func (gs *gameService) getSingleGame(
 
 func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) { // nolint:gocyclo
 	pgl := persistedGameList{}
-	filter := bsonGameIDFilter(id)
 
 	svc := dynamodb.New(session.New())
 	// I want to minimize the number of dynamo tables I use:
@@ -148,16 +108,18 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 	}
 	fmt.Println(result)
 
-	err = mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-		err := gs.col.FindOne(sc, filter).Decode(&pgl)
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				return persistence.ErrGameNotFound
+	/*
+		err = mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+			err := gs.col.FindOne(sc, filter).Decode(&pgl)
+			if err != nil {
+				if err == mongo.ErrNoDocuments {
+					return persistence.ErrGameNotFound
+				}
+				return err
 			}
-			return err
-		}
-		return nil
-	})
+			return nil
+		})
+	*/
 
 	if err != nil {
 		return nil, err
@@ -239,40 +201,43 @@ func (gs *gameService) Begin(g model.Game) error {
 
 func (gs *gameService) Save(g model.Game) error {
 	saved := gameList{}
-	filter := bsonGameIDFilter(g.ID)
+	var err error
+	/*
+		filter := bsonGameIDFilter(g.ID)
 
-	err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-		return gs.col.FindOne(sc, filter).Decode(&saved)
-	})
+		err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+			return gs.col.FindOne(sc, filter).Decode(&saved)
+		})
 
-	if err != nil {
-		// if this is the first time saving the game, then we get ErrNoDocuments
-		if err != mongo.ErrNoDocuments {
-			return err
-		}
-
-		// Since this is the first save, we should have _no_ actions
-		if len(g.Actions) != 0 {
-			return persistence.ErrGameInitialSave
-		}
-
-		saved.GameID = g.ID
-		saved.Games = []model.Game{g}
-
-		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-			var ior *mongo.InsertOneResult
-			ior, err = gs.col.InsertOne(sc, saved)
-			if err != nil {
+		if err != nil {
+			// if this is the first time saving the game, then we get ErrNoDocuments
+			if err != mongo.ErrNoDocuments {
 				return err
 			}
-			if ior.InsertedID == nil {
-				// not sure if this is the right thing to check
-				return errors.New(`game not saved`)
+
+			// Since this is the first save, we should have _no_ actions
+			if len(g.Actions) != 0 {
+				return persistence.ErrGameInitialSave
 			}
 
-			return nil
-		})
-	}
+			saved.GameID = g.ID
+			saved.Games = []model.Game{g}
+
+			return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+				var ior *mongo.InsertOneResult
+				ior, err = gs.col.InsertOne(sc, saved)
+				if err != nil {
+					return err
+				}
+				if ior.InsertedID == nil {
+					// not sure if this is the right thing to check
+					return errors.New(`game not saved`)
+				}
+
+				return nil
+			})
+		}
+	*/
 
 	if saved.GameID != g.ID {
 		return errors.New(`bad save somewhere`)
@@ -313,22 +278,25 @@ func validateGameState(savedGames []model.Game, newGameState model.Game) error {
 }
 
 func (gs *gameService) saveGameList(saved gameList) error {
-	filter := bsonGameIDFilter(saved.GameID)
-	return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-		ur, err := gs.col.ReplaceOne(sc, filter, saved)
-		if err != nil {
-			return err
-		}
+	return errors.New(`todo`)
+	/*
+		filter := bsonGameIDFilter(saved.GameID)
+		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
+			ur, err := gs.col.ReplaceOne(sc, filter, saved)
+			if err != nil {
+				return err
+			}
 
-		switch {
-		case ur.ModifiedCount > 1:
-			return errors.New(`modified too many games`)
-		case ur.MatchedCount > 1:
-			return errors.New(`matched more than one game entry`)
-		case ur.UpsertedCount > 1:
-			return errors.New(`replaced more than one game`)
-		}
+			switch {
+			case ur.ModifiedCount > 1:
+				return errors.New(`modified too many games`)
+			case ur.MatchedCount > 1:
+				return errors.New(`matched more than one game entry`)
+			case ur.UpsertedCount > 1:
+				return errors.New(`replaced more than one game`)
+			}
 
-		return nil
-	})
+			return nil
+		})
+	*/
 }

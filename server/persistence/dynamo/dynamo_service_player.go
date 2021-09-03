@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -38,6 +39,7 @@ func getPlayerService(
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
+
 	input := &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]*dynamodb.KeysAndAttributes{
 			dbName: {
@@ -52,28 +54,52 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 					// TODO figure out what the getter should be to only nab the relevant info for the player?
 				}},
 				// TODO figure out what the projexp should be?
-				ProjectionExpression: aws.String("max(idk)"),
+				// ProjectionExpression: aws.String("max(idk)"),
 			},
 		},
 	}
 
 	dynamoResult, err := ps.svc.BatchGetItem(input)
 	if err != nil {
-		fmt.Println(err)
 		return model.Player{}, err
 	}
 	fmt.Println(dynamoResult)
+	for i, resp := range dynamoResult.Responses[dbName] {
+		dp := dynamoPlayer{}
+		// TODO unmarshalling a map doesn't work (i.e. the games)
+		dynamodbattribute.UnmarshalMap(resp, &dp)
+		fmt.Printf("\ti, resp := dp\n\t%d, %+v := %+v\n\t%+v\n", i, resp, dp, dp.Player)
+	}
 	return model.Player{}, errors.New(`josh TODO`)
 }
 
+type dynamoPlayer struct {
+	ID   string `json:"DDBid"`
+	Spec string `json:"spec"`
+
+	Player model.Player `json:"serPlayer"`
+}
+
 func (ps *playerService) Create(p model.Player) error {
-	// TODO create the player in the put item input
-	input := &dynamodb.PutItemInput{}
+	av, err := dynamodbattribute.MarshalMap(dynamoPlayer{
+		ID:     string(p.ID),
+		Spec:   playerServiceSortKeyPrefix, // TODO this is going to have a game id at the end for player colors!
+		Player: p,
+	})
+	if err != nil {
+		return err
+	}
+
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(dbName),
+	}
 
 	output, err := ps.svc.PutItem(input)
 	if err != nil {
 		return err
 	}
+	// TODO find a way to discover if the player already existed.
 	if output.Attributes != nil {
 		// TODO validate output?
 		return persistence.ErrPlayerAlreadyExists
