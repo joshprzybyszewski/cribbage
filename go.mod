@@ -4,14 +4,15 @@ go 1.14
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.4
-	github.com/aws/aws-sdk-go v1.40.32
+	github.com/aws/aws-sdk-go-v2 v1.9.1-0.20210902223845-0023eb21e8b4
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.2.0
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.0
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.3
 	github.com/glacjay/goini v0.0.0-20161120062552-fd3024d87ee2 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-cmp v0.4.1 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/rakyll/globalconf v0.0.0-20180912185831-87f8127c421f

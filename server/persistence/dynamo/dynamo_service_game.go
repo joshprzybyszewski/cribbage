@@ -7,9 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -83,7 +82,6 @@ func (gs *gameService) getSingleGame(
 func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) { // nolint:gocyclo
 	pgl := persistedGameList{}
 
-	svc := dynamodb.New(session.New())
 	// I want to minimize the number of dynamo tables I use:
 	// "You should maintain as few tables as possible in a DynamoDB application."
 	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
@@ -102,7 +100,7 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 		},
 	}
 
-	result, err := svc.BatchGetItem(input)
+	result, err := gs.svc.BatchGetItem(input)
 	if err != nil {
 		fmt.Println(err)
 	}

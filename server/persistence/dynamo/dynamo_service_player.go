@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
@@ -25,12 +26,12 @@ var _ persistence.PlayerService = (*playerService)(nil)
 type playerService struct {
 	ctx context.Context
 
-	svc *dynamodb.DynamoDB
+	svc *dynamodb.Client
 }
 
 func getPlayerService(
 	ctx context.Context,
-	svc *dynamodb.DynamoDB,
+	svc *dynamodb.Client,
 ) (persistence.PlayerService, error) {
 
 	return &playerService{
@@ -46,15 +47,15 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	skName := `:sk`
 	sk := playerServiceSortKeyPrefix
 	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
-	qo, err := ps.svc.Query(&dynamodb.QueryInput{
+	qo, err := ps.svc.Query(ps.ctx, &dynamodb.QueryInput{
 		TableName:              &tableName,
 		KeyConditionExpression: &keyCondExpr,
-		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			pkName: {
-				S: &pk,
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			pkName: &types.AttributeValueMemberS{
+				Value: pk,
 			},
-			skName: {
-				S: &sk,
+			skName: &types.AttributeValueMemberS{
+				Value: sk,
 			},
 		},
 	})
@@ -67,18 +68,13 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	games := map[model.GameID]model.PlayerColor{}
 	for _, item := range qo.Items {
 		// TODO reduce the nesting...
-		if spec := *item[`spec`].S; len(spec) > len(playerServiceGameSortKey) {
-			gID, err := strconv.Atoi(spec[len(playerServiceGameSortKey):])
-			if err == nil {
-				color, err := strconv.Atoi(*item[`color`].N)
-				if err == nil {
-					games[model.GameID(gID)] = model.PlayerColor(color)
-					continue
-				}
-			}
+		gID, color, ok := getGameIDAndColor(item[`spec`], item[`color`])
+		if ok {
+			games[gID] = color
+			continue
 		}
 		dp := dynamoPlayer{}
-		err = dynamodbattribute.UnmarshalMap(item, &dp)
+		err = attributevalue.UnmarshalMap(item, &dp)
 		if err != nil {
 			return model.Player{}, err
 		}
@@ -87,6 +83,37 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	ret.Games = games
 
 	return ret, nil
+}
+
+func getGameIDAndColor(
+	specAV, colorAV types.AttributeValue,
+) (model.GameID, model.PlayerColor, bool) {
+	specAVS, ok := specAV.(*types.AttributeValueMemberS)
+	if !ok {
+		return 0, 0, false
+	}
+
+	spec := specAVS.Value
+	if len(spec) <= len(playerServiceGameSortKey) {
+		return 0, 0, false
+	}
+
+	gID, err := strconv.Atoi(spec[len(playerServiceGameSortKey):])
+	if err != nil {
+		return 0, 0, false
+	}
+
+	colorAVN, ok := colorAV.(*types.AttributeValueMemberN)
+	if !ok {
+		return 0, 0, false
+	}
+
+	color, err := strconv.Atoi(colorAVN.Value)
+	if err != nil {
+		return 0, 0, false
+	}
+
+	return model.GameID(gID), model.PlayerColor(color), true
 }
 
 type dynamoPlayer struct {
@@ -101,7 +128,7 @@ func (ps *playerService) Create(p model.Player) error {
 		return errors.New(`you cannot create a player that is _already_ in games!`)
 	}
 
-	data, err := dynamodbattribute.MarshalMap(dynamoPlayer{
+	data, err := attributevalue.MarshalMap(dynamoPlayer{
 		ID:     string(p.ID),
 		Spec:   playerServiceSortKeyPrefix,
 		Player: p,
@@ -116,14 +143,14 @@ func (ps *playerService) Create(p model.Player) error {
 	// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
 	condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
 
-	_, err = ps.svc.PutItem(&dynamodb.PutItemInput{
+	_, err = ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(dbName),
 		Item:                data,
 		ConditionExpression: &condExpr,
 	})
 	if err != nil {
 		switch err.(type) {
-		case *dynamodb.ConditionalCheckFailedException:
+		case *types.ConditionalCheckFailedException:
 			return persistence.ErrPlayerAlreadyExists
 		}
 		return err
@@ -141,20 +168,8 @@ type dynamoPlayerInGame struct {
 
 func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
 	for _, p := range players {
-		data, err := dynamodbattribute.MarshalMap(dynamoPlayerInGame{
-			ID:    string(p.ID),
-			Spec:  fmt.Sprintf("%s%d", playerServiceGameSortKey, gID),
-			Color: model.UnsetColor,
-		})
-		if err != nil {
-			return err
-		}
-
 		// TODO do these in separate goroutines (aka parallelize)
-		_, err = ps.svc.PutItem(&dynamodb.PutItemInput{
-			TableName: aws.String(dbName),
-			Item:      data,
-		})
+		err := ps.setPlayerGameColor(p.ID, gID, model.UnsetColor)
 		if err != nil {
 			return err
 		}
@@ -183,16 +198,15 @@ func (ps *playerService) UpdateGameColor(
 		return nil
 	}
 
-	return ps.updateGameColor(pID, gID, color)
+	return ps.setPlayerGameColor(pID, gID, color)
 }
 
-func (ps *playerService) updateGameColor(
+func (ps *playerService) setPlayerGameColor(
 	pID model.PlayerID,
 	gID model.GameID,
 	color model.PlayerColor,
 ) error {
-
-	data, err := dynamodbattribute.MarshalMap(dynamoPlayerInGame{
+	data, err := attributevalue.MarshalMap(dynamoPlayerInGame{
 		ID:    string(pID),
 		Spec:  fmt.Sprintf("%s%d", playerServiceGameSortKey, gID),
 		Color: color,
@@ -201,7 +215,7 @@ func (ps *playerService) updateGameColor(
 		return err
 	}
 
-	_, err = ps.svc.PutItem(&dynamodb.PutItemInput{
+	_, err = ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
 		Item:      data,
 	})

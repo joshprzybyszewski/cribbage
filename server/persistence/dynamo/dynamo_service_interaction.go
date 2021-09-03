@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"

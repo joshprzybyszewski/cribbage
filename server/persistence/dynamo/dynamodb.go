@@ -6,9 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
@@ -48,15 +47,16 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	// Initialize a session that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials
 	// and region from the shared configuration file ~/.aws/config.
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config: aws.Config{
-			Endpoint: &endpoint,
-		},
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	// sess := session.Must(session.NewSessionWithOptions(session.Options{
+	// 	Config: aws.Config{
+	// 		Endpoint: &endpoint,
+	// 	},
+	// 	SharedConfigState: session.SharedConfigEnable,
+	// }))
 
 	// Create DynamoDB client
-	svc := dynamodb.New(sess)
+	// svc := dynamodb.New(sess)
+	var svc *dynamodb.DynamoDB
 
 	tn := dbName
 	dto, err := svc.DescribeTable(&dynamodb.DescribeTableInput{
