@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.4
 	github.com/aws/aws-sdk-go-v2 v1.9.1-0.20210902223845-0023eb21e8b4
+	github.com/aws/aws-sdk-go-v2/config v1.8.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.2.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.0
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607

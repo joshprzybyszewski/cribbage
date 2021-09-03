@@ -64,23 +64,31 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	}
 	// TODO check LastEvaluatedKey to know if we need to paginate the responses
 	// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
-	var ret model.Player
-	games := map[model.GameID]model.PlayerColor{}
+	ret := model.Player{
+		ID:    id,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+	foundName := false
 	for _, item := range qo.Items {
 		// TODO reduce the nesting...
 		gID, color, ok := getGameIDAndColor(item[`spec`], item[`color`])
 		if ok {
-			games[gID] = color
+			ret.Games[gID] = color
 			continue
 		}
-		dp := dynamoPlayer{}
-		err = attributevalue.UnmarshalMap(item, &dp)
-		if err != nil {
-			return model.Player{}, err
+		name, ok := getPlayerName(item[`spec`], item[`name`])
+		if !ok {
+			return model.Player{}, errors.New(`got unexpected payload`)
+		} else if foundName {
+			return model.Player{}, errors.New(`found two names`)
 		}
-		ret = dp.Player
+		foundName = true
+		ret.Name = name
 	}
-	ret.Games = games
+
+	if !foundName {
+		return model.Player{}, persistence.ErrPlayerNotFound
+	}
 
 	return ret, nil
 }
@@ -116,11 +124,24 @@ func getGameIDAndColor(
 	return model.GameID(gID), model.PlayerColor(color), true
 }
 
-type dynamoPlayer struct {
-	ID   string `json:"DDBid"`
-	Spec string `json:"spec"`
+func getPlayerName(
+	specAV, nameAV types.AttributeValue,
+) (string, bool) {
+	specAVS, ok := specAV.(*types.AttributeValueMemberS)
+	if !ok {
+		return ``, false
+	}
 
-	Player model.Player `json:"serPlayer"`
+	spec := specAVS.Value
+	if spec != playerServiceSortKeyPrefix {
+		return ``, false
+	}
+
+	nameAVS, ok := nameAV.(*types.AttributeValueMemberS)
+	if !ok {
+		return ``, false
+	}
+	return nameAVS.Value, true
 }
 
 func (ps *playerService) Create(p model.Player) error {
@@ -128,13 +149,16 @@ func (ps *playerService) Create(p model.Player) error {
 		return errors.New(`you cannot create a player that is _already_ in games!`)
 	}
 
-	data, err := attributevalue.MarshalMap(dynamoPlayer{
-		ID:     string(p.ID),
-		Spec:   playerServiceSortKeyPrefix,
-		Player: p,
-	})
-	if err != nil {
-		return err
+	data := map[string]types.AttributeValue{
+		`DDBid`: &types.AttributeValueMemberS{
+			Value: string(p.ID),
+		},
+		`spec`: &types.AttributeValueMemberS{
+			Value: playerServiceSortKeyPrefix,
+		},
+		`name`: &types.AttributeValueMemberS{
+			Value: p.Name,
+		},
 	}
 
 	// Use a conditional expression to only write items if this
@@ -143,7 +167,9 @@ func (ps *playerService) Create(p model.Player) error {
 	// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
 	condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
 
-	_, err = ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
+	fmt.Printf("playerService.Create data = %+v\n", data)
+
+	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(dbName),
 		Item:                data,
 		ConditionExpression: &condExpr,

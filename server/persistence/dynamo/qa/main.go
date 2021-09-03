@@ -37,7 +37,7 @@ func main() {
 	fmt.Printf("calling dw.CreatePlayer(%+v)\n", p)
 	err = dw.CreatePlayer(p)
 	if err != nil {
-		log.Fatalf("dw.CreatePlayer err: %+v", err)
+		log.Printf("dw.CreatePlayer err: %+v", err)
 	}
 
 	fmt.Printf("calling dw.GetPlayer(%+v)\n", pID)

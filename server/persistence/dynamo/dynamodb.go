@@ -3,11 +3,13 @@ package dynamo
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
@@ -41,28 +43,41 @@ func NewFactory(uri string) (persistence.DBFactory, error) {
 }
 
 func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
+	// TODO figure out this junk
 	os.Setenv(`AWS_ACCESS_KEY_ID`, `DUMMYIDEXAMPLE`)
 	os.Setenv(`AWS_SECRET_ACCESS_KEY`, `DUMMYEXAMPLEKEY`)
 	endpoint := `http://localhost:18079`
+
 	// Initialize a session that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials
 	// and region from the shared configuration file ~/.aws/config.
-	// sess := session.Must(session.NewSessionWithOptions(session.Options{
-	// 	Config: aws.Config{
-	// 		Endpoint: &endpoint,
-	// 	},
-	// 	SharedConfigState: session.SharedConfigEnable,
-	// }))
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion("us-west-2"),
+	)
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
 
-	// Create DynamoDB client
-	// svc := dynamodb.New(sess)
-	var svc *dynamodb.DynamoDB
+	// Using the Config value, create the DynamoDB client
+	svc := dynamodb.NewFromConfig(
+		cfg,
+		func(o *dynamodb.Options) {
+			o.EndpointOptions = dynamodb.EndpointResolverOptions{
+				DisableHTTPS: true, // todo remove this when we deploy non-locally
+			}
+		},
+		func(o *dynamodb.Options) {
+			// TODO don't do this in non-local
+			o.EndpointResolver = dynamodb.EndpointResolverFromURL(endpoint)
+		},
+	)
 
 	tn := dbName
-	dto, err := svc.DescribeTable(&dynamodb.DescribeTableInput{
+	dto, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
 		TableName: &tn,
 	})
-	fmt.Printf("DescribeTable output, err : %+v, %+v\n", dto, err)
+	fmt.Printf("DescribeTable output, err : %#v, %+v\n", dto.Table, err)
 
 	gs, err := getGameService(ctx, svc)
 	if err != nil {
@@ -101,7 +116,7 @@ type dynamoWrapper struct {
 	persistence.ServicesWrapper
 
 	ctx context.Context
-	svc *dynamodb.DynamoDB
+	svc *dynamodb.Client
 }
 
 func (dw *dynamoWrapper) Close() error {

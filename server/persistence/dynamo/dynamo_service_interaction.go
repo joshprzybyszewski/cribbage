@@ -17,12 +17,12 @@ var _ persistence.InteractionService = (*interactionService)(nil)
 type interactionService struct {
 	ctx context.Context
 
-	svc *dynamodb.DynamoDB
+	svc *dynamodb.Client
 }
 
 func getInteractionService(
 	ctx context.Context,
-	svc *dynamodb.DynamoDB,
+	svc *dynamodb.Client,
 ) (persistence.InteractionService, error) {
 
 	return &interactionService{

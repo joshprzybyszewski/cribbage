@@ -7,14 +7,18 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+)
+
+const (
+	gameServiceSortKeyPrefix string = `game`
 )
 
 type gameList struct {
@@ -38,12 +42,12 @@ var _ persistence.GameService = (*gameService)(nil)
 type gameService struct {
 	ctx context.Context
 
-	svc *dynamodb.DynamoDB
+	svc *dynamodb.Client
 }
 
 func getGameService(
 	ctx context.Context,
-	svc *dynamodb.DynamoDB,
+	svc *dynamodb.Client,
 ) (persistence.GameService, error) {
 
 	return &gameService{
@@ -85,26 +89,46 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 	// I want to minimize the number of dynamo tables I use:
 	// "You should maintain as few tables as possible in a DynamoDB application."
 	// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
-	input := &dynamodb.BatchGetItemInput{
-		RequestItems: map[string]*dynamodb.KeysAndAttributes{
-			dbName: {
-				Keys: []map[string]*dynamodb.AttributeValue{{
-					partitionKey: &dynamodb.AttributeValue{
-						S: aws.String(string(id)),
-					},
-					// TODO I don't remember right now how to get based on partition/sort key
-				}},
-				// TODO if only latest, then we can use a projexp to filter down
-				ProjectionExpression: aws.String("max(numGameActions)"),
+	// input := &dynamodb.BatchGetItemInput{
+	// 	RequestItems: map[string]*dynamodb.KeysAndAttributes{
+	// 		dbName: {
+	// 			Keys: []map[string]*dynamodb.AttributeValue{{
+	// 				partitionKey: &dynamodb.AttributeValue{
+	// 					S: aws.String(string(id)),
+	// 				},
+	// 				// TODO I don't remember right now how to get based on partition/sort key
+	// 			}},
+	// 			// TODO if only latest, then we can use a projexp to filter down
+	// 			ProjectionExpression: aws.String("max(numGameActions)"),
+	// 		},
+	// 	},
+	// }
+
+	// result, err := gs.svc.BatchGetItem(gs.ctx, input)
+	// if err != nil {
+
+	tableName := dbName
+	pkName := `:gID`
+	pk := string(id)
+	skName := `:sk`
+	sk := gameServiceSortKeyPrefix
+	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
+	qo, err := gs.svc.Query(gs.ctx, &dynamodb.QueryInput{
+		TableName:              &tableName,
+		KeyConditionExpression: &keyCondExpr,
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			pkName: &types.AttributeValueMemberS{
+				Value: pk,
+			},
+			skName: &types.AttributeValueMemberS{
+				Value: sk,
 			},
 		},
-	}
-
-	result, err := gs.svc.BatchGetItem(input)
+	})
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(result)
+	fmt.Println(qo)
 
 	/*
 		err = mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
