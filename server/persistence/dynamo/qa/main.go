@@ -28,11 +28,6 @@ func main() {
 	p := model.Player{
 		ID:   pID,
 		Name: `jesus is king`,
-		Games: map[model.GameID]model.PlayerColor{
-			model.GameID(123): model.Blue,
-			model.GameID(456): model.Red,
-			model.GameID(789): model.Green,
-		},
 	}
 	fmt.Printf("calling dw.CreatePlayer(%+v)\n", p)
 	err = dw.CreatePlayer(p)
@@ -47,4 +42,17 @@ func main() {
 	}
 	fmt.Printf("player p2 := %+v\n", p2)
 
+	g := model.Game{}
+
+	fmt.Printf("calling dw.CreateGame(%+v)\n", g)
+	err = dw.CreateGame(g)
+	if err != nil {
+		log.Fatalf("dw.GetPlayer err: %+v", err)
+	}
+
+	// Games: map[model.GameID]model.PlayerColor{
+	// 	model.GameID(123): model.Blue,
+	// 	model.GameID(456): model.Red,
+	// 	model.GameID(789): model.Green,
+	// },
 }

@@ -81,6 +81,10 @@ type dynamoPlayer struct {
 }
 
 func (ps *playerService) Create(p model.Player) error {
+	if len(p.Games) > 0 {
+		return errors.New(`you cannot create a player that is _already_ in games!`)
+	}
+
 	av, err := dynamodbattribute.MarshalMap(dynamoPlayer{
 		ID:     string(p.ID),
 		Spec:   playerServiceSortKeyPrefix, // TODO this is going to have a game id at the end for player colors!
