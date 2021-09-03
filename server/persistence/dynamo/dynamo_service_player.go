@@ -85,7 +85,7 @@ func (ps *playerService) Create(p model.Player) error {
 		return errors.New(`you cannot create a player that is _already_ in games!`)
 	}
 
-	av, err := dynamodbattribute.MarshalMap(dynamoPlayer{
+	data, err := dynamodbattribute.MarshalMap(dynamoPlayer{
 		ID:     string(p.ID),
 		Spec:   playerServiceSortKeyPrefix, // TODO this is going to have a game id at the end for player colors!
 		Player: p,
@@ -94,12 +94,10 @@ func (ps *playerService) Create(p model.Player) error {
 		return err
 	}
 
-	input := &dynamodb.PutItemInput{
-		Item:      av,
+	output, err := ps.svc.PutItem(&dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
-	}
-
-	output, err := ps.svc.PutItem(input)
+		Item:      data,
+	})
 	if err != nil {
 		return err
 	}
@@ -111,20 +109,51 @@ func (ps *playerService) Create(p model.Player) error {
 	return nil
 }
 
+type dynamoPlayerInGame struct {
+	ID   string `json:"DDBid"`
+	Spec string `json:"spec"`
+
+	Color model.PlayerColor `json:"color"`
+}
+
 func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
-	// TODO for each player in players, create an item that includes the game ID
+	for _, p := range players {
+		data, err := dynamodbattribute.MarshalMap(dynamoPlayerInGame{
+			ID:    string(p.ID),
+			Spec:  fmt.Sprintf("%s%d", playerServiceGameSortKey, gID),
+			Color: model.UnsetColor,
+		})
+		if err != nil {
+			return err
+		}
+
+		// TODO do these in separate goroutines (aka parallelize)
+		output, err := ps.svc.PutItem(&dynamodb.PutItemInput{
+			TableName: aws.String(dbName),
+			Item:      data,
+		})
+		if err != nil {
+			return err
+		}
+		// TODO find a way to discover if the <playerID:gameID> already existed.
+		if output.Attributes != nil {
+			// TODO validate output?
+			return persistence.ErrPlayerAlreadyExists
+		}
+	}
+
 	return nil
 }
 
-func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, color model.PlayerColor) error {
-	// TODO, get the pID gID combo and assign the color
+func (ps *playerService) UpdateGameColor(
+	pID model.PlayerID,
+	gID model.GameID,
+	color model.PlayerColor,
+) error {
+
 	p, err := ps.Get(pID)
 	if err != nil {
 		return err
-	}
-
-	if p.Games == nil {
-		p.Games = make(map[model.GameID]model.PlayerColor, 1)
 	}
 
 	if c, ok := p.Games[gID]; ok {
@@ -136,11 +165,19 @@ func (ps *playerService) UpdateGameColor(pID model.PlayerID, gID model.GameID, c
 		return nil
 	}
 
-	// TODO create the playergame in the put item input
-	// p.Games[gID] = color
-	input := &dynamodb.PutItemInput{}
+	data, err := dynamodbattribute.MarshalMap(dynamoPlayerInGame{
+		ID:    string(p.ID),
+		Spec:  fmt.Sprintf("%s%d", playerServiceGameSortKey, gID),
+		Color: color,
+	})
+	if err != nil {
+		return err
+	}
 
-	output, err := ps.svc.PutItem(input)
+	output, err := ps.svc.PutItem(&dynamodb.PutItemInput{
+		TableName: aws.String(dbName),
+		Item:      data,
+	})
 	if err != nil {
 		return err
 	}
