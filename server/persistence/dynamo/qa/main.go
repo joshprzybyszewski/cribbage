@@ -24,10 +24,15 @@ func main() {
 		log.Fatalf("dbf.New(context.Background()) err: %+v", err)
 	}
 
-	pID := model.PlayerID(`joshysquashy`)
+	pID := model.PlayerID(`joshysquashy2`)
 	p := model.Player{
-		ID:   pID,
-		Name: `jesus is king`,
+		ID:    pID,
+		Name:  `jesus is king`,
+		Games: map[model.GameID]model.PlayerColor{
+			// model.GameID(123): model.Blue,
+			// model.GameID(456): model.Red,
+			// model.GameID(789): model.Green,
+		},
 	}
 	fmt.Printf("calling dw.CreatePlayer(%+v)\n", p)
 	err = dw.CreatePlayer(p)
@@ -50,9 +55,4 @@ func main() {
 		log.Fatalf("dw.GetPlayer err: %+v", err)
 	}
 
-	// Games: map[model.GameID]model.PlayerColor{
-	// 	model.GameID(123): model.Blue,
-	// 	model.GameID(456): model.Red,
-	// 	model.GameID(789): model.Green,
-	// },
 }
