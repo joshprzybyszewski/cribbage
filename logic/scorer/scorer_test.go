@@ -269,11 +269,14 @@ func TestPointsStandardFunThings(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		lead := model.NewCardFromString(tc.leadCard)
-		hand := parseHand(t, tc.hand)
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			lead := model.NewCardFromString(tc.leadCard)
+			hand := parseHand(t, tc.hand)
 
-		actPoints := HandPoints(lead, hand)
-		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
+			actPoints := HandPoints(lead, hand)
+			assert.Equal(t, tc.expPoints, actPoints)
+		})
 	}
 }
 
