@@ -146,36 +146,39 @@ func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 }
 
 func scoreRuns(values values, valuesToCounts valueToCount) (scoreType, int) {
-	usedLongest := uint8(0)
-	usedMult := uint8(1)
-	var mult uint8
-	var longest uint8
+	var (
+		mult, usedMult     uint8
+		runLen, usedRunLen uint8
+	)
 	for _, v := range values {
 		if _, ok := valuesToCounts.get(v - 1); ok {
 			// this is already part of a run; skip calculation
 			continue
 		}
-		longest = 1
+		runLen = 1
 		// we're at the potential beginning of a run
 		nextUp := v + 1
 		mult, _ = valuesToCounts.get(v)
 		for ct, ok := valuesToCounts.get(nextUp); ok; ct, ok = valuesToCounts.get(nextUp) {
 			mult *= ct
-			longest++
+			runLen++
 			nextUp++
 		}
-		if longest >= 3 && longest > usedLongest {
+		if runLen >= 3 && runLen > usedRunLen {
 			// we have a valid run!
 			usedMult = mult
-			usedLongest = longest
+			usedRunLen = runLen
 		}
 	}
-	return calculateTypeAndPoints(usedLongest, usedMult)
+	return calculateTypeAndPoints(usedRunLen, usedMult)
 }
 
 func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 	if longest < 3 {
 		return none, 0
+	}
+	if longest == 5 {
+		return run5, 5
 	}
 	// typeMap maps the run length and multiplier to a scoring type
 	typeMap := [5][5]scoreType{
