@@ -169,9 +169,6 @@ func scoreRuns(values values, valuesToCounts valueToCount) (scoreType, int) {
 			usedMult = mult
 			usedLongest = longest
 		}
-		// not a valid run, :sadge:
-		mult = 1
-		longest = 1
 	}
 	return calculateTypeAndPoints(usedLongest, usedMult)
 }
