@@ -143,6 +143,11 @@ func TestScorePairs(t *testing.T) {
 		expPoints: 6,
 		expType:   triplet,
 	}, {
+		desc:      `triplet and pair`,
+		hand:      `AC,10C,AH,10S,AD`,
+		expPoints: 8,
+		expType:   onepair | triplet,
+	}, {
 		desc:      `two pair`,
 		hand:      `AC,2C,AH,10S,10D`,
 		expPoints: 4,

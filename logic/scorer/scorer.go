@@ -126,8 +126,7 @@ func howManyAddUpTo(goal int, ptVals values, start int) uint {
 
 func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 	pairPoints := 0
-	pairType := none
-	alreadyHasPair := false
+	var pairType scoreType
 	for n, ct := range valuesToCounts {
 		if n == 0 {
 			continue
@@ -136,15 +135,18 @@ func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 		case 4:
 			return quad, 12
 		case 3:
-			return triplet, 6
+			pairType |= triplet
+			pairPoints += 6
 		case 2:
-			pairPoints = 2
-			pairType = onepair
-			if alreadyHasPair {
+			pairPoints += 2
+			if pairType&onepair > 0 {
 				return twopair, 4
 			}
-			alreadyHasPair = true
+			pairType |= onepair
 		}
+	}
+	if pairType == 0 {
+		return none, 0
 	}
 	return pairType, pairPoints
 }
