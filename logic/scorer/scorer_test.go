@@ -1,6 +1,7 @@
 package scorer
 
 import (
+	"math/rand"
 	"strings"
 	"testing"
 
@@ -9,6 +10,79 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
+
+func BenchmarkHandPoints(b *testing.B) {
+	hand := make([]model.Card, 0, 5)
+	seen := make(map[model.Card]struct{}, 5)
+	for len(hand) < 5 {
+		c := model.NewCardFromNumber(rand.Intn(52))
+		if _, ok := seen[c]; ok {
+			continue
+		}
+		hand = append(hand, c)
+		seen[c] = struct{}{}
+	}
+
+	b.Run(`scoring random hand`, func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			s := HandPoints(hand[0], hand[1:])
+			require.Less(b, s, 30)
+			require.GreaterOrEqual(b, s, 0)
+		}
+	})
+}
+
+func TestScorePairs(t *testing.T) {
+	tests := []struct {
+		desc      string
+		hand      string
+		expPoints int
+		expType   scoreType
+	}{{
+		desc:      `none`,
+		hand:      `AC,2C,3C,4C,5C`,
+		expPoints: 0,
+		expType:   none,
+	}, {
+		desc:      `none, unsorted`,
+		hand:      `AC,2C,3C,4C,5C`,
+		expPoints: 0,
+		expType:   none,
+	}, {
+		desc:      `quad`,
+		hand:      `AC,2C,AH,AS,AD`,
+		expPoints: 12,
+		expType:   quad,
+	}, {
+		desc:      `triplet`,
+		hand:      `AC,2C,AH,10S,AD`,
+		expPoints: 6,
+		expType:   triplet,
+	}, {
+		desc:      `two pair`,
+		hand:      `AC,2C,AH,10S,10D`,
+		expPoints: 4,
+		expType:   twopair,
+	}, {
+		desc:      `one pair`,
+		hand:      `3C,2C,AH,10S,10D`,
+		expPoints: 2,
+		expType:   onepair,
+	}}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			h := parseHand(t, tc.hand)
+			vals := make([]int, 5)
+			for i, c := range h {
+				vals[i] = c.Value
+			}
+			st, pts := scorePairs(vals)
+			assert.Equal(t, tc.expType, st)
+			assert.Equal(t, tc.expPoints, pts)
+		})
+	}
+}
 
 func TestPointsStandardFunThings(t *testing.T) {
 	testCases := []struct {
@@ -212,4 +286,15 @@ func TestScoringPoorlySizedHands(t *testing.T) {
 	assert.Zero(t, CribPoints(model.Card{}, make([]model.Card, 6)))
 	assert.Zero(t, HandPoints(model.Card{}, make([]model.Card, 5)))
 	assert.Zero(t, HandPoints(model.Card{}, make([]model.Card, 6)))
+}
+
+func parseHand(t *testing.T, handStr string) []model.Card {
+	strs := strings.Split(handStr, `,`)
+	hand := make([]model.Card, len(strs))
+	for i, s := range strs {
+		c, err := model.NewCardFromExternalString(strings.TrimSpace(s))
+		require.NoError(t, err)
+		hand[i] = c
+	}
+	return hand
 }

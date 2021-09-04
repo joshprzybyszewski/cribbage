@@ -108,6 +108,33 @@ func howManyAddUpTo(goal int, ptVals []int) uint {
 	return many
 }
 
+func scorePairs(values []int) (scoreType, int) {
+	valMap := make(map[int]int, 5)
+	for _, v := range values {
+		valMap[v]++
+	}
+
+	pairPoints := 0
+	pairType := none
+	alreadyHasPair := false
+	for _, n := range valMap {
+		switch n {
+		case 4:
+			return quad, 12
+		case 3:
+			return triplet, 6
+		case 2:
+			pairPoints = 2
+			pairType = onepair
+			if alreadyHasPair {
+				return twopair, 4
+			}
+			alreadyHasPair = true
+		}
+	}
+	return pairType, pairPoints
+}
+
 // Assumes input is sorted and has len 5
 func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
 	min := values[0]
