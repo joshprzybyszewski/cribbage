@@ -32,6 +32,90 @@ func BenchmarkHandPoints(b *testing.B) {
 	})
 }
 
+func TestScoreRuns(t *testing.T) {
+	tests := []struct {
+		desc      string
+		hand      string
+		expType   scoreType
+		expPoints int
+	}{{
+		desc:      `no runs`,
+		hand:      `5S,5C,5D,JH,5H`,
+		expType:   none,
+		expPoints: 0,
+	}, {
+		desc:      `triple run of 3`,
+		hand:      `9S,8C,10D,8H,8H`,
+		expType:   tripleRunOfThree,
+		expPoints: 9,
+	}, {
+		desc:      `double run of 4`,
+		hand:      `8S,8C,9D,10H,JH`,
+		expType:   doubleRunOfFour,
+		expPoints: 8,
+	}, {
+		desc:      `double double run of 3`,
+		hand:      `8S,8C,9D,10H,9H`,
+		expType:   doubleDoubleRunOfThree,
+		expPoints: 12,
+	}, {
+		desc:      `double run of 3`,
+		hand:      `8S,8C,9D,10H,KH`,
+		expType:   doubleRunOfThree,
+		expPoints: 6,
+	}, {
+		desc:      `run of 3`,
+		hand:      `8S,2C,9D,10H,KH`,
+		expType:   run3,
+		expPoints: 3,
+	}, {
+		desc:      `run of 4`,
+		hand:      `8S,JC,9D,10H,KH`,
+		expType:   run4,
+		expPoints: 4,
+	}, {
+		desc:      `run of 5`,
+		hand:      `8S,JC,9D,10H,QH`,
+		expType:   run5,
+		expPoints: 5,
+	}, {
+		desc:      `random hand I got while playing`,
+		hand:      `5H,3D,7D,7S,4C`,
+		expType:   run3,
+		expPoints: 3,
+	}, {
+		desc:      `just looking for ways to break it`,
+		hand:      `1H,5D,7D,7S,9C`,
+		expType:   none,
+		expPoints: 0,
+	}, {
+		desc:      `another hand to break it`,
+		hand:      `6D,6S,10H,9C,7H`,
+		expType:   none,
+		expPoints: 0,
+	}, {
+		desc:      `actual double run of three with a fifteen`,
+		hand:      `6D,6S,10H,8C,7H`,
+		expType:   doubleRunOfThree,
+		expPoints: 6,
+	}}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			h := parseHand(t, tc.hand)
+			vals := make([]int, 5)
+			valMap := make(map[int]int, 5)
+			for i, c := range h {
+				vals[i] = c.Value
+				valMap[c.Value]++
+			}
+			st, pts := scoreRuns(vals, valMap)
+			assert.Equal(t, tc.expType, st)
+			assert.Equal(t, tc.expPoints, pts)
+		})
+	}
+}
+
 func TestScorePairs(t *testing.T) {
 	tests := []struct {
 		desc      string
@@ -73,11 +157,11 @@ func TestScorePairs(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			h := parseHand(t, tc.hand)
-			vals := make([]int, 5)
-			for i, c := range h {
-				vals[i] = c.Value
+			valMap := make(map[int]int, 5)
+			for _, c := range h {
+				valMap[c.Value]++
 			}
-			st, pts := scorePairs(vals)
+			st, pts := scorePairs(valMap)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})

@@ -108,12 +108,7 @@ func howManyAddUpTo(goal int, ptVals []int) uint {
 	return many
 }
 
-func scorePairs(values []int) (scoreType, int) {
-	valMap := make(map[int]int, 5)
-	for _, v := range values {
-		valMap[v]++
-	}
-
+func scorePairs(valMap map[int]int) (scoreType, int) {
 	pairPoints := 0
 	pairType := none
 	alreadyHasPair := false
@@ -135,8 +130,72 @@ func scorePairs(values []int) (scoreType, int) {
 	return pairType, pairPoints
 }
 
+func scoreRuns(values []int, valMap map[int]int) (scoreType, int) {
+	usedLongest := 0
+	usedMult := 1
+	var mult int
+	var longest int
+	for _, v := range values {
+		if _, ok := valMap[v-1]; ok {
+			// this is already part of a run; skip calculation
+			continue
+		}
+		longest = 1
+		// we're at the potential beginning of a run
+		nextUp := v + 1
+		mult = valMap[v]
+		for ct, ok := valMap[nextUp]; ok; ct, ok = valMap[nextUp] {
+			mult *= ct
+			longest++
+			nextUp++
+		}
+		if longest >= 3 && longest > usedLongest {
+			// we have a valid run!
+			usedMult = mult
+			usedLongest = longest
+		}
+		// not a valid run, :sadge:
+		mult = 1
+		longest = 1
+	}
+
+	switch usedLongest {
+	case 2:
+		return none, 0
+	case 3:
+		switch usedMult {
+		case 1:
+			return run3, 3
+		case 2:
+			return doubleRunOfThree, 6
+		case 3:
+			return tripleRunOfThree, 9
+		case 4:
+			return doubleDoubleRunOfThree, 12
+		}
+	case 4:
+		switch usedMult {
+		case 1:
+			return run4, 4
+		case 2:
+			return doubleRunOfFour, 8
+		}
+	case 5:
+		return run5, 5
+	}
+	return none, 0
+}
+
 // Assumes input is sorted and has len 5
 func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo
+	valMap := make(map[int]int, 5)
+	for _, v := range values {
+		valMap[v]++
+	}
+	pairType, pairPts := scorePairs(valMap)
+	runType, runPts := scoreRuns(values, valMap)
+	return pairType | runType, pairPts + runPts
+
 	min := values[0]
 	max := values[4]
 
