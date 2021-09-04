@@ -120,7 +120,7 @@ func howManyAddUpTo(goal int, ptVals values, start int) uint {
 	return many
 }
 
-func scorePairs(values values, valuesToCounts valueToCount) (scoreType, int) {
+func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 	pairPoints := 0
 	pairType := none
 	alreadyHasPair := false
@@ -177,30 +177,12 @@ func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 	if longest < 3 {
 		return none, 0
 	}
-	st := none
-	switch longest {
-	case 3:
-		switch mult {
-		case 1:
-			st = run3
-		case 2:
-			st = doubleRunOfThree
-		case 3:
-			st = tripleRunOfThree
-		case 4:
-			st = doubleDoubleRunOfThree
-		}
-	case 4:
-		switch mult {
-		case 1:
-			st = run4
-		case 2:
-			st = doubleRunOfFour
-		}
-	case 5:
-		st = run5
+	// typeMap maps the run length and multiplier to a scoring type
+	typeMap := [5][5]scoreType{
+		3: {1: run3, 2: doubleRunOfThree, 3: tripleRunOfThree, 4: doubleDoubleRunOfThree},
+		4: {1: run4, 2: doubleRunOfFour},
 	}
-	return st, int(longest) * int(mult)
+	return typeMap[longest][mult], int(longest) * int(mult)
 }
 
 func scoreRunsAndPairsV2(values values) (scoreType, int) {
@@ -208,7 +190,7 @@ func scoreRunsAndPairsV2(values values) (scoreType, int) {
 	for _, v := range values {
 		valuesToCounts[v]++
 	}
-	pairType, pairPts := scorePairs(values, valuesToCounts)
+	pairType, pairPts := scorePairs(valuesToCounts)
 	runType, runPts := scoreRuns(values, valuesToCounts)
 	return pairType | runType, pairPts + runPts
 }
