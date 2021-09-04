@@ -2,7 +2,6 @@ package scorer
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -15,6 +14,19 @@ func CribPoints(lead model.Card, crib []model.Card) int {
 	return points(lead, crib, true)
 }
 
+const cardsPerHand = 5
+
+// map card value (1 to 13) to number of occurrences in the hand
+// we have to include index 0 and index 14 here because some calculations pass those values in
+type valueToCount [15]uint8
+
+func (vtc valueToCount) get(value int) (uint8, bool) {
+	return vtc[value], vtc[value] > 0
+}
+
+// values is used to store a card's point value or rank value without allocating
+type values [cardsPerHand]int
+
 func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	if len(hand) != 4 {
 		if LOG {
@@ -23,29 +35,25 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 		return 0
 	}
 
-	vals := make([]int, 5)
-	var nonAllocValues values
-	ptValues := make([]int, 5)
+	var (
+		vals   values
+		ptVals values
+	)
 	for i, c := range hand {
 		vals[i] = c.Value
-		nonAllocValues[i] = c.Value
-		ptValues[i] = c.PegValue()
+		ptVals[i] = c.PegValue()
 	}
-	nonAllocValues[4] = lead.Value
 	vals[4] = lead.Value
-	ptValues[4] = lead.PegValue()
-
-	sort.Ints(vals)
-	sort.Ints(ptValues)
+	ptVals[4] = lead.PegValue()
 
 	totalPoints := 0
 	var allScoreTypes scoreType
 
-	st, pts := scoreFifteens(ptValues)
+	st, pts := scoreFifteens(ptVals)
 	allScoreTypes = allScoreTypes | st
 	totalPoints += pts
 
-	st, pts = scoreRunsAndPairs(nonAllocValues)
+	st, pts = scoreRunsAndPairs(vals)
 	allScoreTypes = allScoreTypes | st
 	totalPoints += pts
 
@@ -64,7 +72,7 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 }
 
 // Assumes input is sorted and has len 5
-func scoreFifteens(ptVals []int) (scoreType, int) {
+func scoreFifteens(ptVals values) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
 		// all even numbered cards => no fifteens possible
 		return none, 0
@@ -80,8 +88,8 @@ func scoreFifteens(ptVals []int) (scoreType, int) {
 
 	var numFifteens uint
 
-	for i := 0; i < len(ptVals) && ptVals[i] < 8; i++ {
-		many := howManyAddUpTo(15-ptVals[i], ptVals[i+1:])
+	for i, v := range ptVals {
+		many := howManyAddUpTo(15-v, ptVals, i+1)
 		numFifteens += many
 	}
 
@@ -90,37 +98,27 @@ func scoreFifteens(ptVals []int) (scoreType, int) {
 	return st, int(numFifteens * 2)
 }
 
-func howManyAddUpTo(goal int, ptVals []int) uint {
-	if len(ptVals) == 0 {
+func howManyAddUpTo(goal int, ptVals values, start int) uint {
+	if start == cardsPerHand {
 		return 0
 	}
 
 	var many uint
-	for i, o := range ptVals {
+	for i := start; i < cardsPerHand; i++ {
+		o := ptVals[i]
 		if o > goal {
-			break
+			continue
 		} else if o == goal {
 			many++
 		} else {
 			// o is less than the goal. See what we can find with it
-			subWith := howManyAddUpTo(goal-o, ptVals[i+1:])
+			subWith := howManyAddUpTo(goal-o, ptVals, i+1)
 			many += subWith
 		}
 	}
 
 	return many
 }
-
-// map card value (1 to 13) to number of occurrences in the hand
-// we have to include index 0 and index 14 here because some calculations pass those values in
-type valueToCount [15]uint8
-
-func (vtc valueToCount) get(value int) (uint8, bool) {
-	return vtc[value], vtc[value] > 0
-}
-
-// there are always 5 card values
-type values [5]int
 
 func scorePairs(values values, valuesToCounts valueToCount) (scoreType, int) {
 	pairPoints := 0
@@ -208,7 +206,6 @@ func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 	return st, int(longest) * int(mult)
 }
 
-// Assumes input is sorted and has len 5
 func scoreRunsAndPairs(values values) (scoreType, int) { //nolint:gocyclo
 	var valuesToCounts valueToCount
 	for _, v := range values {

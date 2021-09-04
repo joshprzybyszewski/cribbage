@@ -312,12 +312,7 @@ func TestPointsForFifteens(t *testing.T) {
 
 	for _, tc := range testCases {
 		lead := model.NewCardFromString(tc.leadCard)
-		hand := make([]model.Card, 4)
-		cardStrs := strings.Split(tc.hand, `,`)
-		require.Len(t, cardStrs, 4)
-		for i, c := range cardStrs {
-			hand[i] = model.NewCardFromString(c)
-		}
+		hand := parseHand(t, tc.hand)
 
 		actPoints := HandPoints(lead, hand)
 		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
