@@ -39,12 +39,12 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 		vals   values
 		ptVals values
 	)
-	for i, c := range hand {
+	allCards := [5]model.Card{hand[0], hand[1], hand[2], hand[3], lead}
+	for i, c := range allCards {
+		// building up info for later
 		vals[i] = c.Value
 		ptVals[i] = c.PegValue()
 	}
-	vals[4] = lead.Value
-	ptVals[4] = lead.PegValue()
 
 	totalPoints := 0
 	var allScoreTypes scoreType
