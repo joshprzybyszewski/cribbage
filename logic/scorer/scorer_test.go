@@ -163,7 +163,7 @@ func TestScorePairs(t *testing.T) {
 				vals[i] = c.Value
 				valuesToCounts[c.Value]++
 			}
-			st, pts := scorePairs(vals, valuesToCounts)
+			st, pts := scorePairs(valuesToCounts)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})
