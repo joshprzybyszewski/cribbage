@@ -103,13 +103,13 @@ func TestScoreRuns(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			h := parseHand(t, tc.hand)
-			vals := make([]int, 5)
-			valMap := make(map[int]int, 5)
+			var vals [5]int
+			var valuesToCounts valueToCount
 			for i, c := range h {
 				vals[i] = c.Value
-				valMap[c.Value]++
+				valuesToCounts[c.Value]++
 			}
-			st, pts := scoreRuns(vals, valMap)
+			st, pts := scoreRuns(vals, valuesToCounts)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})
@@ -157,11 +157,13 @@ func TestScorePairs(t *testing.T) {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			h := parseHand(t, tc.hand)
-			valMap := make(map[int]int, 5)
-			for _, c := range h {
-				valMap[c.Value]++
+			var vals [5]int
+			var valuesToCounts valueToCount
+			for i, c := range h {
+				vals[i] = c.Value
+				valuesToCounts[c.Value]++
 			}
-			st, pts := scorePairs(valMap)
+			st, pts := scorePairs(vals, valuesToCounts)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})
@@ -268,12 +270,7 @@ func TestPointsStandardFunThings(t *testing.T) {
 
 	for _, tc := range testCases {
 		lead := model.NewCardFromString(tc.leadCard)
-		hand := make([]model.Card, 4)
-		cardStrs := strings.Split(tc.hand, `,`)
-		require.Len(t, cardStrs, 4)
-		for i, c := range cardStrs {
-			hand[i] = model.NewCardFromString(c)
-		}
+		hand := parseHand(t, tc.hand)
 
 		actPoints := HandPoints(lead, hand)
 		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
