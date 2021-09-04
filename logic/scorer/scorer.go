@@ -21,7 +21,11 @@ const cardsPerHand = 5
 type valueToCount [15]uint8
 
 func (vtc valueToCount) get(value int) (uint8, bool) {
-	return vtc[value], vtc[value] > 0
+	return vtc[value], vtc.containsKey(value)
+}
+
+func (vtc valueToCount) containsKey(key int) bool {
+	return vtc[key] > 0
 }
 
 // values is used to store a card's point value or rank value without allocating
@@ -147,8 +151,8 @@ func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 
 func scoreRuns(values values, valuesToCounts valueToCount) (scoreType, int) {
 	var (
-		mult, usedMult     uint8
-		runLen, usedRunLen uint8
+		mult   uint8
+		runLen uint8
 	)
 	for _, v := range values {
 		if _, ok := valuesToCounts.get(v - 1); ok {
@@ -156,21 +160,18 @@ func scoreRuns(values values, valuesToCounts valueToCount) (scoreType, int) {
 			continue
 		}
 		runLen = 1
-		// we're at the potential beginning of a run
-		nextUp := v + 1
 		mult, _ = valuesToCounts.get(v)
-		for ct, ok := valuesToCounts.get(nextUp); ok; ct, ok = valuesToCounts.get(nextUp) {
+		// we're at the potential beginning of a run
+		for nextUp := v + 1; valuesToCounts.containsKey(nextUp); nextUp++ {
+			ct, _ := valuesToCounts.get(nextUp)
 			mult *= ct
 			runLen++
-			nextUp++
 		}
-		if runLen >= 3 && runLen > usedRunLen {
-			// we have a valid run!
-			usedMult = mult
-			usedRunLen = runLen
+		if runLen >= 3 {
+			return calculateTypeAndPoints(runLen, mult)
 		}
 	}
-	return calculateTypeAndPoints(usedRunLen, usedMult)
+	return none, 0
 }
 
 func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
