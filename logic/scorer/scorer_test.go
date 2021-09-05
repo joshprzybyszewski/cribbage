@@ -101,17 +101,142 @@ func TestScoreRuns(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		tc := tc
+		h := parseHand(t, tc.hand)
+		var vals [5]int
+		var valuesToCounts valueToCount
+		for i, c := range h {
+			vals[i] = c.Value
+			valuesToCounts[c.Value]++
+		}
 		t.Run(tc.desc, func(t *testing.T) {
-			h := parseHand(t, tc.hand)
-			var vals [5]int
-			var valuesToCounts valueToCount
-			for i, c := range h {
-				vals[i] = c.Value
-				valuesToCounts[c.Value]++
-			}
 			st, pts := scoreRuns(vals, valuesToCounts)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
+		})
+	}
+}
+
+func TestResolveScoreType(t *testing.T) {
+	tests := []struct {
+		desc      string
+		input     scoreType
+		expOutput scoreType
+	}{{
+		desc:      `none`,
+		input:     none,
+		expOutput: none,
+	}, {
+		desc:      `triple run of three`,
+		input:     tripleRunOfThree | triplet,
+		expOutput: tripleRunOfThree,
+	}, {
+		desc:      `just a normal run`,
+		input:     run3 | none,
+		expOutput: run3,
+	}, {
+		desc:      `double double run of three`,
+		input:     doubleDoubleRunOfThree | twopair,
+		expOutput: doubleDoubleRunOfThree,
+	}}
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			output := resolveScoreType(tc.input)
+			assert.Equal(t, tc.expOutput, output)
+		})
+	}
+}
+
+func TestScoreRunsAndPairs(t *testing.T) {
+	tests := []struct {
+		desc      string
+		hand      string
+		expType   scoreType
+		expPoints int
+	}{{
+		desc:      `quad, no runs`,
+		hand:      `5S,5C,5D,JH,5H`,
+		expType:   quad,
+		expPoints: 12,
+	}, {
+		desc:      `triple run of 3`,
+		hand:      `9S,8C,10D,8H,8H`,
+		expType:   tripleRunOfThree,
+		expPoints: 15,
+	}, {
+		desc:      `double run of 4`,
+		hand:      `8S,8C,9D,10H,JH`,
+		expType:   doubleRunOfFour,
+		expPoints: 10,
+	}, {
+		desc:      `double double run of 3`,
+		hand:      `8S,8C,9D,10H,9H`,
+		expType:   doubleDoubleRunOfThree,
+		expPoints: 16,
+	}, {
+		desc:      `double run of 3`,
+		hand:      `8S,8C,9D,10H,KH`,
+		expType:   doubleRunOfThree,
+		expPoints: 8,
+	}, {
+		desc:      `run of 3`,
+		hand:      `8S,2C,9D,10H,KH`,
+		expType:   run3,
+		expPoints: 3,
+	}, {
+		desc:      `run of 4`,
+		hand:      `8S,JC,9D,10H,KH`,
+		expType:   run4,
+		expPoints: 4,
+	}, {
+		desc:      `run of 5`,
+		hand:      `8S,JC,9D,10H,QH`,
+		expType:   run5,
+		expPoints: 5,
+	}, {
+		desc:      `random hand I got while playing`,
+		hand:      `5H,3D,7D,7S,4C`,
+		expType:   run3 | onepair,
+		expPoints: 5,
+	}, {
+		desc:      `just looking for ways to break it`,
+		hand:      `1H,5D,7D,7S,9C`,
+		expType:   onepair,
+		expPoints: 2,
+	}, {
+		desc:      `another hand to break it`,
+		hand:      `6D,6S,10H,9C,7H`,
+		expType:   onepair,
+		expPoints: 2,
+	}, {
+		desc:      `actual double run of three with a fifteen`,
+		hand:      `6D,6S,10H,8C,7H`,
+		expType:   doubleRunOfThree,
+		expPoints: 8,
+	}, {
+		desc:      `triplet and pair`,
+		hand:      `AC,10C,AH,10S,AD`,
+		expPoints: 8,
+		expType:   onepair | triplet,
+	}}
+	for _, tc := range tests {
+		tc := tc
+		h := parseHand(t, tc.hand)
+		var vals [5]int
+		var valuesToCounts valueToCount
+		for i, c := range h {
+			vals[i] = c.Value
+			valuesToCounts[c.Value]++
+		}
+		t.Run(`v1: `+tc.desc, func(t *testing.T) {
+			st1, pts1 := scoreRunsAndPairs(vals[:])
+			assert.Equal(t, tc.expType, st1)
+			assert.Equal(t, tc.expPoints, pts1)
+		})
+		t.Run(`v2: `+tc.desc, func(t *testing.T) {
+			st2, pts2 := scoreRunsAndPairsV2(vals)
+			assert.Equal(t, tc.expType, st2)
+			assert.Equal(t, tc.expPoints, pts2)
 		})
 	}
 }
@@ -160,14 +285,14 @@ func TestScorePairs(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		tc := tc
+		h := parseHand(t, tc.hand)
+		var vals [5]int
+		var valuesToCounts valueToCount
+		for i, c := range h {
+			vals[i] = c.Value
+			valuesToCounts[c.Value]++
+		}
 		t.Run(tc.desc, func(t *testing.T) {
-			h := parseHand(t, tc.hand)
-			var vals [5]int
-			var valuesToCounts valueToCount
-			for i, c := range h {
-				vals[i] = c.Value
-				valuesToCounts[c.Value]++
-			}
 			st, pts := scorePairs(valuesToCounts)
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
@@ -275,10 +400,9 @@ func TestPointsStandardFunThings(t *testing.T) {
 
 	for _, tc := range testCases {
 		tc := tc
+		lead := model.NewCardFromString(tc.leadCard)
+		hand := parseHand(t, tc.hand)
 		t.Run(tc.desc, func(t *testing.T) {
-			lead := model.NewCardFromString(tc.leadCard)
-			hand := parseHand(t, tc.hand)
-
 			actPoints := HandPoints(lead, hand)
 			assert.Equal(t, tc.expPoints, actPoints)
 		})
@@ -317,13 +441,14 @@ func TestPointsForFifteens(t *testing.T) {
 		hand:      `KS,10C,QD,KH`,
 		expPoints: 2,
 	}}
-
 	for _, tc := range testCases {
+		tc := tc
 		lead := model.NewCardFromString(tc.leadCard)
 		hand := parseHand(t, tc.hand)
-
-		actPoints := HandPoints(lead, hand)
-		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
+		t.Run(tc.desc, func(t *testing.T) {
+			actPoints := HandPoints(lead, hand)
+			assert.Equal(t, tc.expPoints, actPoints)
+		})
 	}
 }
 
@@ -351,11 +476,13 @@ func TestPointsOddInteractions(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
+		tc := tc
 		lead := model.NewCardFromString(tc.leadCard)
 		hand := parseHand(t, tc.hand)
-
-		actPoints := HandPoints(lead, hand)
-		assert.Equal(t, tc.expPoints, actPoints, tc.desc)
+		t.Run(tc.desc, func(t *testing.T) {
+			actPoints := HandPoints(lead, hand)
+			assert.Equal(t, tc.expPoints, actPoints, tc.desc)
+		})
 	}
 }
 

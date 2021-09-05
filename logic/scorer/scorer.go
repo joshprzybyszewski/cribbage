@@ -2,6 +2,7 @@ package scorer
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -191,6 +192,24 @@ func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 	return typeMap[longest][mult], int(longest) * int(mult)
 }
 
+func resolveScoreType(st scoreType) scoreType {
+	// this mask is generated as following:
+	// 00011111
+	//    ^ doubleRunOfThree bit
+	// 00000011
+	//      ^ tripleRunOfThree bit (minus one to get the two bits below)
+	// 11111100 & 00011111 = 00011100, with the three bits set being the runs that include pairs
+	runsWithPairsMask := ^(tripleRunOfThree - 1) & ((doubleRunOfThree << 1) - 1)
+	if runsWithPairs := runsWithPairsMask & st; runsWithPairs > 0 {
+		// i.e. a triple run of three is scored without the triplet
+		return runsWithPairs
+	}
+	if st > none {
+		return st & ^1 // clear off the none bit if it's set
+	}
+	return none
+}
+
 func scoreRunsAndPairsV2(values values) (scoreType, int) {
 	var valuesToCounts valueToCount
 	for _, v := range values {
@@ -198,10 +217,13 @@ func scoreRunsAndPairsV2(values values) (scoreType, int) {
 	}
 	pairType, pairPts := scorePairs(valuesToCounts)
 	runType, runPts := scoreRuns(values, valuesToCounts)
-	return pairType | runType, pairPts + runPts
+	return resolveScoreType(runType | pairType), pairPts + runPts
 }
 
 func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo,go-staticcheck
+	// this logic assumes we're sorted
+	sort.Ints(values)
+
 	min := values[0]
 	max := values[4]
 
