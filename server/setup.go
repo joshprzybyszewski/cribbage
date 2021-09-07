@@ -37,8 +37,7 @@ var (
 	)
 )
 
-// Setup connects to a database and starts serving requests
-func Setup() error {
+func NewServer() (*cribbageServer, error) {
 	loadVarsFromINI()
 	log.Printf("Using %s for persistence\n", *database)
 
@@ -47,11 +46,18 @@ func Setup() error {
 		canRunCreateStmts: true,
 	})
 	if err != nil {
+		return nil, err
+	}
+	return newCribbageServer(dbFactory), nil
+}
+
+// Setup connects to a database and starts serving requests
+func Setup() error {
+	cs, err := NewServer()
+	if err != nil {
 		return err
 	}
-	cs := newCribbageServer(dbFactory)
-	err = seedNPCs(ctx, dbFactory)
-	if err != nil {
+	if err := seedNPCs(context.Background(), cs.dbFactory); err != nil {
 		return err
 	}
 	cs.Serve()
