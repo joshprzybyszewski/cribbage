@@ -1,3 +1,5 @@
+//+build !lambda
+
 package server
 
 import (
