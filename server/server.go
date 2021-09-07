@@ -34,6 +34,11 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 func (cs *cribbageServer) NewRouter() http.Handler {
 	router := gin.Default()
 
+	// health check route
+	router.GET(`/health`, func(c *gin.Context) {
+		c.String(http.StatusOK, `Healthy!`)
+	})
+
 	// Simple group: create
 	create := router.Group(`/create`)
 	{

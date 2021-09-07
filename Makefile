@@ -44,6 +44,10 @@ serve: DSN_HOST ?= "127.0.0.1"
 serve: ## Sets up the server locally with default options
 	go run -tags=prod main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
+.PHONY: lambdabuild
+lambdabuild:
+	go build -tags=prod,lambda main.go
+
 .PHONY: dockerbuild
 dockerbuild: ## Builds the docker image
 	docker build -t cribbage .
