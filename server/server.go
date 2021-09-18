@@ -34,7 +34,7 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 
 func (cs *cribbageServer) addRESTRoutes(router *gin.Engine) {
 	// health check route
-	router.GET(`/health`, func(c *gin.Context) {
+	router.GET(`/api/health`, func(c *gin.Context) {
 		c.String(http.StatusOK, `Healthy!`)
 	})
 
