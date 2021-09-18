@@ -28,7 +28,7 @@ func loadConfig() {
 }
 
 func parseConfig(confFileName string) {
-	if len(confFileName) == 0 {
+	if confFileName == `` {
 		log.Println(`parseConfig from environment only`, confFileName)
 	} else {
 		log.Printf("parseConfig from %q\n", confFileName)
