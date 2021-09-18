@@ -100,17 +100,18 @@ type serveConfig struct {
 }
 
 func (cs *cribbageServer) Serve(config serveConfig) *gin.Engine {
-	router := cs.NewRouter()
+	eng, ok := cs.NewRouter().(*gin.Engine)
+	if !ok {
+		log.Println(`router type assertion failed`)
+		return nil
+	}
+
 	if config.includeStaticResources {
-		eng, ok := router.(*gin.Engine)
-		if !ok {
-			log.Println(`router type assertion failed`)
-		}
 		cs.addWasmHandlers(eng)
 		cs.addReactHandlers(eng)
-		return eng
 	}
-	return nil
+
+	return eng
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
