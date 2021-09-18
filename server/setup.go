@@ -5,6 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strconv"
+
+	"github.com/apex/gateway"
+	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -36,6 +40,41 @@ var (
 		`Set to true when you don't care if table creation fails on startup.`,
 	)
 )
+
+// Setup connects to a database and starts serving requests
+func Setup() error {
+	loadVarsFromINI()
+	log.Printf("Using %s for persistence\n", *database)
+
+	ctx := context.Background()
+	dbFactory, err := getDBFactory(ctx, factoryConfig{
+		canRunCreateStmts: true,
+	})
+	if err != nil {
+		return err
+	}
+	cs := newCribbageServer(dbFactory)
+	err = seedNPCs(ctx, dbFactory)
+	if err != nil {
+		return err
+	}
+
+	isLambda := true // based on envvar
+	router := cs.Serve(serveConfig{
+		includeStaticResources: isLambda,
+	})
+	if isLambda {
+		// TODO use resPort here too
+		return gateway.ListenAndServe(`:8080`, router)
+	} else {
+		err := router.(*gin.Engine).Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
+		if err != nil {
+			log.Printf("router.Run errored: %+v\n", err)
+		}
+	}
+
+	return nil
+}
 
 type factoryConfig struct {
 	canRunCreateStmts bool

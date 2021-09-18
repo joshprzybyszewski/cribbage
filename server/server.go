@@ -95,19 +95,21 @@ func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 	router.Use(static.Serve(`/`, static.LocalFile(`./client/build`, true)))
 }
 
-func (cs *cribbageServer) Serve() {
-	router := cs.NewRouter()
-	eng, ok := router.(*gin.Engine)
-	if !ok {
-		log.Println(`router type assertion failed`)
-	}
-	cs.addWasmHandlers(eng)
-	cs.addReactHandlers(eng)
+type serveConfig struct {
+	includeStaticResources bool
+}
 
-	err := eng.Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
-	if err != nil {
-		log.Printf("router.Run errored: %+v\n", err)
+func (cs *cribbageServer) Serve(config serveConfig) http.Handler {
+	router := cs.NewRouter()
+	if config.includeStaticResources {
+		eng, ok := router.(*gin.Engine)
+		if !ok {
+			log.Println(`router type assertion failed`)
+		}
+		cs.addWasmHandlers(eng)
+		cs.addReactHandlers(eng)
 	}
+	return router
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {
