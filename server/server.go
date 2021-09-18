@@ -99,7 +99,7 @@ type serveConfig struct {
 	includeStaticResources bool
 }
 
-func (cs *cribbageServer) Serve(config serveConfig) http.Handler {
+func (cs *cribbageServer) Serve(config serveConfig) *gin.Engine {
 	router := cs.NewRouter()
 	if config.includeStaticResources {
 		eng, ok := router.(*gin.Engine)
@@ -108,8 +108,9 @@ func (cs *cribbageServer) Serve(config serveConfig) http.Handler {
 		}
 		cs.addWasmHandlers(eng)
 		cs.addReactHandlers(eng)
+		return eng
 	}
-	return router
+	return nil
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {

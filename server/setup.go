@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/apex/gateway"
-	"github.com/gin-gonic/gin"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -67,7 +66,7 @@ func Setup() error {
 		// TODO use resPort here too
 		return gateway.ListenAndServe(`:8080`, router)
 	} else {
-		err := router.(*gin.Engine).Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
+		err := router.Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
 		if err != nil {
 			log.Printf("router.Run errored: %+v\n", err)
 		}
