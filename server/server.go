@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -33,9 +32,7 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 	}
 }
 
-func (cs *cribbageServer) NewRouter() http.Handler {
-	router := gin.Default()
-
+func (cs *cribbageServer) addRESTRoutes(router *gin.Engine) {
 	// health check route
 	router.GET(`/health`, func(c *gin.Context) {
 		c.String(http.StatusOK, `Healthy!`)
@@ -70,8 +67,6 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	{
 		suggest.GET(`/hand`, cs.ginGetSuggestHand)
 	}
-
-	return router
 }
 
 func (cs *cribbageServer) addWasmHandlers(router *gin.Engine) {
@@ -102,20 +97,17 @@ func isLambda() bool {
 	return ok && val == `true`
 }
 
-func (cs *cribbageServer) Serve() error {
-	router := cs.NewRouter()
-	eng, ok := router.(*gin.Engine)
-	if !ok {
-		log.Println(`router type assertion failed`)
-	}
+func (cs *cribbageServer) serve() error {
+	router := gin.Default()
+	cs.addRESTRoutes(router)
 
 	if isLambda() {
 		return gateway.ListenAndServe(`:8080`, router)
 	}
 
-	cs.addWasmHandlers(eng)
-	cs.addReactHandlers(eng)
-	return eng.Run(`:` + strconv.Itoa(*restPort))
+	cs.addWasmHandlers(router)
+	cs.addReactHandlers(router)
+	return router.Run(`:` + strconv.Itoa(*restPort))
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {

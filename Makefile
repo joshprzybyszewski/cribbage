@@ -44,9 +44,9 @@ serve: DSN_HOST ?= "127.0.0.1"
 serve: ## Sets up the server locally with default options
 	go run -tags=prod main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
-.PHONY: serverless
-serverless:
-	GOOS=linux CGO_ENABLED=0 go build -o cribbage-lambda -tags=prod,lambda main.go
+.PHONY: lambda
+lambda:
+	GOOS=linux CGO_ENABLED=0 go build -o cribbage-lambda -tags=prod main.go
 	zip cribbage-lambda.zip cribbage-lambda
 	rm cribbage-lambda
 
