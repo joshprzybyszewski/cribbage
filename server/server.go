@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/apex/gateway"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
@@ -95,19 +97,25 @@ func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 	router.Use(static.Serve(`/`, static.LocalFile(`./client/build`, true)))
 }
 
-func (cs *cribbageServer) Serve() {
+func isLambda() bool {
+	val, ok := os.LookupEnv(`CRIBBAGE_LAMBDA`)
+	return ok && val == `true`
+}
+
+func (cs *cribbageServer) Serve() error {
 	router := cs.NewRouter()
 	eng, ok := router.(*gin.Engine)
 	if !ok {
 		log.Println(`router type assertion failed`)
 	}
+
+	if isLambda() {
+		return gateway.ListenAndServe(`:8080`, router)
+	}
+
 	cs.addWasmHandlers(eng)
 	cs.addReactHandlers(eng)
-
-	err := eng.Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
-	if err != nil {
-		log.Printf("router.Run errored: %+v\n", err)
-	}
+	return eng.Run(`:` + strconv.Itoa(*restPort))
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {

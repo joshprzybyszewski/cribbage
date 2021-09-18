@@ -1,5 +1,3 @@
-//+build !lambda
-
 package server
 
 import (
@@ -9,7 +7,7 @@ import (
 
 // Setup connects to a database and starts serving requests
 func Setup() error {
-	loadVarsFromINI()
+	loadConfig()
 	log.Printf("Using %s for persistence\n", *database)
 
 	ctx := context.Background()
@@ -20,11 +18,9 @@ func Setup() error {
 		return err
 	}
 	cs := newCribbageServer(dbFactory)
-	err = seedNPCs(ctx, dbFactory)
-	if err != nil {
+	if err := seedNPCs(ctx, dbFactory); err != nil {
 		return err
 	}
-	cs.Serve()
 
-	return nil
+	return cs.Serve()
 }
