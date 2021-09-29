@@ -400,7 +400,7 @@ func scoreFlushesAndNobs(lead model.Card, hand []model.Card, isCrib bool) (score
 		if c.Suit != handSuit {
 			isHandFlush = false
 		}
-		if c.Value == 11 /* Jack */ && c.Suit == lead.Suit {
+		if c.Value == model.JackValue && c.Suit == lead.Suit {
 			st = st | nobs
 			pts++
 		}
