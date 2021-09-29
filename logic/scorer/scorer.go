@@ -92,8 +92,8 @@ func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 
 	var numFifteens uint
 
-	for i, v := range ptVals {
-		many := howManyAddUpTo(15-v, ptVals, i+1)
+	for _, v := range ptVals {
+		many := howManyAddUpTo(15-v, ptVals[1:])
 		numFifteens += many
 	}
 
@@ -102,19 +102,20 @@ func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 	return st, int(numFifteens * 2)
 }
 
-func howManyAddUpTo(goal int, ptVals [numCardsToScore]int, start int) uint {
-	if start == numCardsToScore {
+func howManyAddUpTo(goal int, ptVals []int) uint {
+	if len(ptVals) == 0 {
 		return 0
 	}
 
 	var many uint
-	for i := start; i < numCardsToScore; i++ {
-		o := ptVals[i]
-		if o == goal {
+	for i, o := range ptVals {
+		if 0 > goal {
+			break
+		} else if o == goal {
 			many++
 		} else if o < goal {
 			// o is less than the goal. See what we can find with it
-			subWith := howManyAddUpTo(goal-o, ptVals, i+1)
+			subWith := howManyAddUpTo(goal-o, ptVals[i+1:])
 			many += subWith
 		}
 	}
