@@ -71,18 +71,13 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	return totalPoints
 }
 
-// Assumes input is sorted and has len 5
 func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
 		// all even numbered cards => no fifteens possible
 		return none, 0
 	}
 
-	var sum int
-	for _, v := range ptVals {
-		sum += v
-	}
-
+	sum := ptVals[0] + ptVals[1] + ptVals[2] + ptVals[3] + ptVals[4]
 	if sum == 15 {
 		// only one fifteen possible
 		return fifteen1, 2
@@ -90,28 +85,26 @@ func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 		return none, 0
 	}
 
-	var numFifteens uint
+	var numFifteens int
 
-	for _, v := range ptVals {
-		many := howManyAddUpTo(15-v, ptVals[1:])
+	for i := 0; i < len(ptVals); i++ {
+		many := howManyAddUpTo(15-ptVals[i], ptVals[i+1:])
 		numFifteens += many
 	}
 
 	st := fifteen0 << numFifteens
 
-	return st, int(numFifteens * 2)
+	return st, numFifteens * 2
 }
 
-func howManyAddUpTo(goal int, ptVals []int) uint {
+func howManyAddUpTo(goal int, ptVals []int) int {
 	if len(ptVals) == 0 {
 		return 0
 	}
 
-	var many uint
+	var many int
 	for i, o := range ptVals {
-		if 0 > goal {
-			break
-		} else if o == goal {
+		if o == goal {
 			many++
 		} else if o < goal {
 			// o is less than the goal. See what we can find with it
