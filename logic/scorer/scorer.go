@@ -15,7 +15,7 @@ func CribPoints(lead model.Card, crib []model.Card) int {
 	return points(lead, crib, true)
 }
 
-const cardsPerHand = 5
+const numCardsToScore = 5
 
 // map card value (1 to 13) to number of occurrences in the hand
 // we have to include index 0 and index 14 here because some calculations pass those values in
@@ -29,9 +29,6 @@ func (vtc valueToCount) containsKey(key int) bool {
 	return vtc[key] > 0
 }
 
-// values is used to store a card's point value or rank value without allocating
-type values [cardsPerHand]int
-
 func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	if len(hand) != 4 {
 		if LOG {
@@ -40,16 +37,14 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 		return 0
 	}
 
-	var (
-		vals   values
-		ptVals values
-	)
-	allCards := [5]model.Card{hand[0], hand[1], hand[2], hand[3], lead}
-	for i, c := range allCards {
+	var vals, ptVals [numCardsToScore]int
+	for i, c := range hand {
 		// building up info for later
 		vals[i] = c.Value
 		ptVals[i] = c.PegValue()
 	}
+	vals[4] = lead.Value
+	ptVals[4] = lead.PegValue()
 
 	totalPoints := 0
 	var allScoreTypes scoreType
@@ -77,13 +72,17 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 }
 
 // Assumes input is sorted and has len 5
-func scoreFifteens(ptVals values) (scoreType, int) {
+func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
 		// all even numbered cards => no fifteens possible
 		return none, 0
 	}
 
-	sum := ptVals[0] + ptVals[1] + ptVals[2] + ptVals[3] + ptVals[4]
+	var sum int
+	for _, v := range ptVals {
+		sum += v
+	}
+
 	if sum == 15 {
 		// only one fifteen possible
 		return fifteen1, 2
@@ -103,19 +102,17 @@ func scoreFifteens(ptVals values) (scoreType, int) {
 	return st, int(numFifteens * 2)
 }
 
-func howManyAddUpTo(goal int, ptVals values, start int) uint {
-	if start == cardsPerHand {
+func howManyAddUpTo(goal int, ptVals [numCardsToScore]int, start int) uint {
+	if start == numCardsToScore {
 		return 0
 	}
 
 	var many uint
-	for i := start; i < cardsPerHand; i++ {
+	for i := start; i < numCardsToScore; i++ {
 		o := ptVals[i]
-		if o > goal {
-			continue
-		} else if o == goal {
+		if o == goal {
 			many++
-		} else {
+		} else if o < goal {
 			// o is less than the goal. See what we can find with it
 			subWith := howManyAddUpTo(goal-o, ptVals, i+1)
 			many += subWith
@@ -152,18 +149,14 @@ func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 	return pairType, pairPoints
 }
 
-func scoreRuns(values values, valuesToCounts valueToCount) (scoreType, int) {
-	var (
-		mult   uint8
-		runLen uint8
-	)
+func scoreRuns(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
 	for _, v := range values {
 		if _, ok := valuesToCounts.get(v - 1); ok {
 			// this is already part of a run; skip calculation
 			continue
 		}
-		runLen = 1
-		mult, _ = valuesToCounts.get(v)
+		runLen := uint8(1)
+		mult, _ := valuesToCounts.get(v)
 		// we're at the potential beginning of a run
 		for nextUp := v + 1; valuesToCounts.containsKey(nextUp); nextUp++ {
 			ct, _ := valuesToCounts.get(nextUp)
@@ -210,7 +203,7 @@ func resolveScoreType(st scoreType) scoreType {
 	return none
 }
 
-func scoreRunsAndPairsV2(values values) (scoreType, int) {
+func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {
 	var valuesToCounts valueToCount
 	for _, v := range values {
 		valuesToCounts[v]++
