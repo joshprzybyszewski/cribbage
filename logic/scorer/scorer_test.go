@@ -12,17 +12,7 @@ import (
 )
 
 func BenchmarkHandPoints(b *testing.B) {
-	hand := make([]model.Card, 0, 5)
-	seen := make(map[model.Card]struct{}, 5)
-	for len(hand) < 5 {
-		c := model.NewCardFromNumber(rand.Intn(52))
-		if _, ok := seen[c]; ok {
-			continue
-		}
-		hand = append(hand, c)
-		seen[c] = struct{}{}
-	}
-
+	hand := randomHand(b, 5)
 	b.Run(`scoring random hand`, func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			s := HandPoints(hand[0], hand[1:])
@@ -501,6 +491,26 @@ func parseHand(t *testing.T, handStr string) []model.Card {
 		c, err := model.NewCardFromExternalString(strings.TrimSpace(s))
 		require.NoError(t, err)
 		hand[i] = c
+	}
+	rand.Shuffle(len(hand), func(i, j int) {
+		hand[i], hand[j] = hand[j], hand[i]
+	})
+	return hand
+}
+
+func randomHand(t testing.TB, n int) []model.Card {
+	if n > 6 {
+		t.Fatal(`you really don't need a hand with more than 6 cards, trust me`)
+	}
+	hand := make([]model.Card, 0, n)
+	seen := make(map[model.Card]struct{}, n)
+	for len(hand) < n {
+		c := model.NewCardFromNumber(rand.Intn(52))
+		if _, ok := seen[c]; ok {
+			continue
+		}
+		hand = append(hand, c)
+		seen[c] = struct{}{}
 	}
 	return hand
 }
