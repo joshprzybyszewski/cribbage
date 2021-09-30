@@ -116,14 +116,11 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 	return many
 }
 
-func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
+func scorePairs(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
 	pairPoints := 0
-	var pairType scoreType
-	for n, ct := range valuesToCounts {
-		if n == 0 {
-			continue
-		}
-		switch ct {
+	pairType := none
+	for _, v := range values {
+		switch valuesToCounts[v] {
 		case 4:
 			return quad, 12
 		case 3:
@@ -136,11 +133,12 @@ func scorePairs(valuesToCounts valueToCount) (scoreType, int) {
 			}
 			pairType |= onepair
 		}
+		valuesToCounts[v] = 0
 	}
-	if pairType == 0 {
+	if pairType == none {
 		return none, 0
 	}
-	return pairType, pairPoints
+	return pairType & ^none, pairPoints
 }
 
 func scoreRuns(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
@@ -202,7 +200,7 @@ func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {
 	for _, v := range values {
 		valuesToCounts[v]++
 	}
-	pairType, pairPts := scorePairs(valuesToCounts)
+	pairType, pairPts := scorePairs(values, valuesToCounts)
 	runType, runPts := scoreRuns(values, valuesToCounts)
 	return resolveScoreType(runType | pairType), pairPts + runPts
 }
