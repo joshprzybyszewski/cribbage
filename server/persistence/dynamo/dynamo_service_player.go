@@ -41,56 +41,82 @@ func getPlayerService(
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
+	ret := model.Player{
+		ID:    id,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
 	tableName := dbName
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
 	sk := playerServiceSortKeyPrefix
 	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
-	qo, err := ps.svc.Query(ps.ctx, &dynamodb.QueryInput{
-		TableName:              &tableName,
-		KeyConditionExpression: &keyCondExpr,
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			pkName: &types.AttributeValueMemberS{
-				Value: pk,
+
+	createQuery := func() *dynamodb.QueryInput {
+		return &dynamodb.QueryInput{
+			TableName:              &tableName,
+			KeyConditionExpression: &keyCondExpr,
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				pkName: &types.AttributeValueMemberS{
+					Value: pk,
+				},
+				skName: &types.AttributeValueMemberS{
+					Value: sk,
+				},
 			},
-			skName: &types.AttributeValueMemberS{
-				Value: sk,
-			},
-		},
-	})
-	if err != nil {
-		return model.Player{}, err
-	}
-	// TODO check LastEvaluatedKey to know if we need to paginate the responses
-	// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
-	ret := model.Player{
-		ID:    id,
-		Games: map[model.GameID]model.PlayerColor{},
-	}
-	foundName := false
-	for _, item := range qo.Items {
-		// TODO reduce the nesting...
-		gID, color, ok := getGameIDAndColor(item[`spec`], item[`color`])
-		if ok {
-			ret.Games[gID] = color
-			continue
 		}
-		name, ok := getPlayerName(item[`spec`], item[`name`])
-		if !ok {
-			return model.Player{}, errors.New(`got unexpected payload`)
-		} else if foundName {
-			return model.Player{}, errors.New(`found two names`)
+	}
+	qi := createQuery()
+
+	for {
+		qo, err := ps.svc.Query(ps.ctx, qi)
+		if err != nil {
+			return model.Player{}, err
 		}
-		foundName = true
-		ret.Name = name
+
+		err = populatePlayerFromItems(&ret, qo.Items)
+		// check LastEvaluatedKey to know if we need to paginate the responses
+		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
+		if len(qo.LastEvaluatedKey) == 0 {
+			break
+		}
+
+		qi = createQuery()
+		qi.ExclusiveStartKey = qo.LastEvaluatedKey
 	}
 
-	if !foundName {
+	if ret.Name == `` {
+		// This player _must_ have had at least a name stored, otherwise
+		// we done messed up
 		return model.Player{}, persistence.ErrPlayerNotFound
 	}
 
 	return ret, nil
+}
+
+func populatePlayerFromItems(
+	p *model.Player,
+	items []map[string]types.AttributeValue,
+) error {
+	for _, item := range items {
+		gID, color, ok := getGameIDAndColor(item[`spec`], item[`color`])
+		if ok {
+			p.Games[gID] = color
+			continue
+		}
+
+		name, ok := getPlayerName(item[`spec`], item[`name`])
+		if !ok {
+			return errors.New(`got unexpected payload`)
+		} else if p.Name != `` {
+			return errors.New(`found two names`)
+		}
+
+		p.Name = name
+	}
+
+	return nil
 }
 
 func getGameIDAndColor(

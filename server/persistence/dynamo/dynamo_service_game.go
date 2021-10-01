@@ -162,8 +162,11 @@ func (gs *gameService) Begin(g model.Game) error {
 }
 
 func (gs *gameService) Save(g model.Game) error {
+	err := persistence.ValidateLatestActionBelongs(g)
+	if err != nil {
+		return err
+	}
 
-	// TODO replace this with a getGameCurrentActionIndex
 	sg, err := gs.getGame(g.ID, getGameOptions{
 		latest: true,
 	})
@@ -171,16 +174,9 @@ func (gs *gameService) Save(g model.Game) error {
 		return err
 	}
 
-	// TODO does this still belong?
-	// err = persistence.ValidateLatestActionBelongs(g)
-	// if err != nil {
-	// 	return err
-	// }
-
 	return gs.saveGame(gameAtAction{
 		Game:        g,
 		ActionIndex: len(sg.Actions),
-		Overwrite:   true,
 	})
 }
 
@@ -221,7 +217,10 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		Item:      data,
 	}
 
-	if !gaa.Overwrite {
+	if gaa.Overwrite {
+		// we want to find out if we overwrote items, so specify ReturnValues
+		pii.ReturnValues = types.ReturnValueAllOld
+	} else {
 		// Use a conditional expression to only write items if this
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
@@ -231,7 +230,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		pii.ConditionExpression = &condExpr
 	}
 
-	_, err = gs.svc.PutItem(gs.ctx, pii)
+	pio, err := gs.svc.PutItem(gs.ctx, pii)
 	if err != nil {
 		switch err.(type) {
 		case *types.ConditionalCheckFailedException:
@@ -239,7 +238,14 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		}
 		return err
 	}
-	// TODO: if this did NOT overwrite something, then that should be an error
+
+	if gaa.Overwrite {
+		// We need to check that we actually overwrote an element
+		if _, ok := pio.Attributes[`gameBytes`]; !ok {
+			// oh no! We wanted to overwrite a game, but we didn't!
+			return persistence.ErrGameActionSave
+		}
+	}
 
 	return nil
 }
