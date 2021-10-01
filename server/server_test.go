@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -54,7 +55,8 @@ func newServerAndRouter(_ *testing.T) (*cribbageServer, http.Handler) {
 	dbf := memory.NewFactory()
 	memory.Clear()
 	cs := newCribbageServer(dbf)
-	router := cs.NewRouter()
+	router := gin.Default()
+	cs.addRESTRoutes(router)
 	return cs, router
 }
 
