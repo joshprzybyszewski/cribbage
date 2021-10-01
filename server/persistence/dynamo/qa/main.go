@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("dbf.New(context.Background()) err: %+v", err)
 	}
 
-	pID := model.PlayerID(`joshysquashy2`)
+	pID := model.PlayerID(`joshysquashy3`)
 	p := model.Player{
 		ID:    pID,
 		Name:  `jesus is king`,
@@ -47,12 +47,21 @@ func main() {
 	}
 	fmt.Printf("player p2 := %+v\n", p2)
 
-	g := model.Game{}
+	g := model.Game{
+		ID: 4,
+	}
 
 	fmt.Printf("calling dw.CreateGame(%+v)\n", g)
 	err = dw.CreateGame(g)
 	if err != nil {
-		log.Fatalf("dw.GetPlayer err: %+v", err)
+		log.Fatalf("dw.CreateGame err: %+v", err)
 	}
+
+	fmt.Printf("calling dw.CreateGame(%+v)\n", g)
+	gg, err := dw.GetGame(g.ID)
+	if err != nil {
+		log.Fatalf("dw.GetGame err: %+v", err)
+	}
+	fmt.Printf("called dw.GetGame(%+v)\n", gg)
 
 }

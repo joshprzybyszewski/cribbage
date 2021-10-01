@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-
-	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -26,9 +27,12 @@ type gameList struct {
 	Games  []model.Game `bson:"games,omitempty"`
 }
 
-type persistedGameList struct {
-	GameID    model.GameID `bson:"gameID"`
-	TempGames []bson.M     `bson:"games,omitempty"`
+func (gl *gameList) add(i int, g model.Game) {
+	// TODO
+	for i >= len(gl.Games) {
+		gl.Games = append(gl.Games, model.Game{})
+	}
+	gl.Games[i] = g
 }
 
 type getGameOptions struct {
@@ -84,7 +88,7 @@ func (gs *gameService) getSingleGame(
 }
 
 func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]model.Game, error) { // nolint:gocyclo
-	pgl := persistedGameList{}
+	gl := gameList{}
 
 	// I want to minimize the number of dynamo tables I use:
 	// "You should maintain as few tables as possible in a DynamoDB application."
@@ -109,7 +113,7 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 
 	tableName := dbName
 	pkName := `:gID`
-	pk := string(id)
+	pk := strconv.Itoa(int(id))
 	skName := `:sk`
 	sk := gameServiceSortKeyPrefix
 	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
@@ -128,53 +132,47 @@ func (gs *gameService) getGameStates(id model.GameID, opts getGameOptions) ([]mo
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(qo)
-
-	/*
-		err = mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-			err := gs.col.FindOne(sc, filter).Decode(&pgl)
-			if err != nil {
-				if err == mongo.ErrNoDocuments {
-					return persistence.ErrGameNotFound
-				}
-				return err
-			}
-			return nil
-		})
-	*/
-
-	if err != nil {
-		return nil, err
-	}
+	fmt.Printf("query for games: %+v\n", qo)
 
 	if opts.actions == nil {
 		opts.actions = make(map[int]struct{})
 	}
-	if opts.latest {
-		opts.actions[len(pgl.TempGames)-1] = struct{}{}
-	}
 
-	gl := gameList{
-		GameID: id,
-		Games:  make([]model.Game, 0, len(pgl.TempGames)),
-	}
+	var highestI int
+	var highestG model.Game
 
-	for i, tempGame := range pgl.TempGames {
+	for _, item := range qo.Items {
+		spec, ok := item[`spec`].(*types.AttributeValueMemberS)
+		if !ok {
+			return nil, persistence.ErrGameActionDecode
+		}
+		i, err := getGameActionIndexFromSpec(spec.Value)
+		if err != nil {
+			return nil, err
+		}
+
+		gb, ok := item[`gameBytes`].(*types.AttributeValueMemberB)
+		if !ok {
+			return nil, persistence.ErrGameActionDecode
+		}
+		g, err := jsonutils.UnmarshalGame(gb.Value)
+		if err != nil {
+			return nil, err
+		}
+		if i > highestI {
+			highestI = i
+			highestG = g
+		}
+
 		if _, ok := opts.actions[i]; !ok && !opts.all {
 			continue
 		}
 
-		obj, err := json.Marshal(tempGame)
-		if err != nil {
-			return nil, err
-		}
+		gl.add(i, g)
+	}
 
-		g, err := jsonutils.UnmarshalGame(obj)
-		if err != nil {
-			return nil, err
-		}
-
-		gl.Games = append(gl.Games, g)
+	if opts.latest {
+		gl.add(highestI, highestG)
 	}
 
 	return gl.Games, nil
@@ -222,85 +220,84 @@ func (gs *gameService) Begin(g model.Game) error {
 }
 
 func (gs *gameService) Save(g model.Game) error {
-	saved := gameList{}
-	var err error
-	/*
-		filter := bsonGameIDFilter(g.ID)
 
-		err := mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-			return gs.col.FindOne(sc, filter).Decode(&saved)
-		})
+	games, err := gs.getGameStates(g.ID, getGameOptions{
+		all: true,
+	})
+	if err != nil {
+		return err
+	}
 
-		if err != nil {
-			// if this is the first time saving the game, then we get ErrNoDocuments
-			if err != mongo.ErrNoDocuments {
-				return err
-			}
-
-			// Since this is the first save, we should have _no_ actions
-			if len(g.Actions) != 0 {
-				return persistence.ErrGameInitialSave
-			}
-
-			saved.GameID = g.ID
-			saved.Games = []model.Game{g}
-
-			return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {
-				var ior *mongo.InsertOneResult
-				ior, err = gs.col.InsertOne(sc, saved)
-				if err != nil {
-					return err
-				}
-				if ior.InsertedID == nil {
-					// not sure if this is the right thing to check
-					return errors.New(`game not saved`)
-				}
-
-				return nil
-			})
-		}
-	*/
-
+	saved := gameList{
+		GameID: g.ID,
+		Games:  games,
+	}
 	if saved.GameID != g.ID {
 		return errors.New(`bad save somewhere`)
 	}
-	err = validateGameState(saved.Games, g)
-	if err != nil {
-		return err
-	}
 
-	err = persistence.ValidateLatestActionBelongs(g)
-	if err != nil {
-		return err
-	}
+	// TODO does this still belong?
+	// err = persistence.ValidateLatestActionBelongs(g)
+	// if err != nil {
+	// 	return err
+	// }
 
 	saved.Games = append(saved.Games, g)
 
 	return gs.saveGameList(saved)
 }
 
-func validateGameState(savedGames []model.Game, newGameState model.Game) error {
-	if len(savedGames) != len(newGameState.Actions) {
-		return persistence.ErrGameActionsOutOfOrder
-	}
-	for i := range savedGames {
-		savedActions := savedGames[i].Actions
-		myKnownActions := newGameState.Actions[:i]
-		if len(savedActions) != len(myKnownActions) {
-			return persistence.ErrGameActionsOutOfOrder
-		}
-		for ai := range savedActions {
-			a := savedActions[ai]
-			if a.ID != myKnownActions[ai].ID || a.Overcomes != myKnownActions[ai].Overcomes {
-				return persistence.ErrGameActionsOutOfOrder
-			}
-		}
-	}
-	return nil
+func getSpecForGameActionIndex(i int) string {
+	return gameServiceSortKeyPrefix + `@` + strconv.Itoa(i)
+}
+
+func getGameActionIndexFromSpec(s string) (int, error) {
+	s = strings.TrimPrefix(s, gameServiceSortKeyPrefix+`@`)
+	return strconv.Atoi(s)
 }
 
 func (gs *gameService) saveGameList(saved gameList) error {
-	return errors.New(`todo`)
+	// craft an id that uses len(saved.Games)
+
+	obj, err := json.Marshal(saved.Games[len(saved.Games)-1])
+	if err != nil {
+		return err
+	}
+
+	data := map[string]types.AttributeValue{
+		`DDBid`: &types.AttributeValueMemberS{
+			Value: strconv.Itoa(int(saved.GameID)),
+		},
+		`spec`: &types.AttributeValueMemberS{
+			Value: gameServiceSortKeyPrefix + `@` + strconv.Itoa(len(saved.Games)),
+		},
+		`gameBytes`: &types.AttributeValueMemberB{
+			Value: obj,
+		},
+	}
+
+	// Use a conditional expression to only write items if this
+	// <HASH:RANGE> tuple doesn't already exist.
+	// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+	// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
+	condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
+
+	fmt.Printf("playerService.Create data = %+v\n", data)
+
+	_, err = gs.svc.PutItem(gs.ctx, &dynamodb.PutItemInput{
+		TableName:           aws.String(dbName),
+		Item:                data,
+		ConditionExpression: &condExpr,
+	})
+	if err != nil {
+		switch err.(type) {
+		case *types.ConditionalCheckFailedException:
+			return persistence.ErrGameActionSave
+		}
+		return err
+	}
+
+	return nil
 	/*
 		filter := bsonGameIDFilter(saved.GameID)
 		return mongo.WithSession(gs.ctx, gs.session, func(sc mongo.SessionContext) error {

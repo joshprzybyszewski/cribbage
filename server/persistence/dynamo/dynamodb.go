@@ -77,7 +77,11 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	dto, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
 		TableName: &tn,
 	})
-	fmt.Printf("DescribeTable output, err : %#v, %+v\n", dto.Table, err)
+	if err != nil || dto == nil {
+		fmt.Printf("DescribeTable output ERROR, err : %#v, %+v\n", dto, err)
+	} else {
+		fmt.Printf("DescribeTable output, err : %#v, %+v\n", dto.Table, err)
+	}
 
 	gs, err := getGameService(ctx, svc)
 	if err != nil {
