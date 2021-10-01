@@ -41,6 +41,10 @@ services:
         condition: service_healthy
     environment:
       deploy: dockercompose
+      CRIBBAGE_DB: dynamodb
+      CRIBBAGE_DBURI: http://localhost:18079
+      AWS_ACCESS_KEY_ID: 'DUMMYIDEXAMPLE'
+      AWS_SECRET_ACCESS_KEY: 'DUMMYEXAMPLEKEY'
       CRIBBAGE_DSN_HOST: mysql-database
       CRIBBAGE_DSN_USER: gandalf
       CRIBBAGE_DSN_PASSWORD: flyyoufools

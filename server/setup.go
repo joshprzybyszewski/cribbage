@@ -9,6 +9,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/dynamo"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
@@ -66,6 +67,9 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 	case `mongo`:
 		log.Println("Creating mongodb factory")
 		return mongodb.NewFactory(*dbURI)
+	case `dynamodb`:
+		log.Println("Creating dynamodb factory")
+		return dynamo.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
 			DSNUser:         *dsnUser,

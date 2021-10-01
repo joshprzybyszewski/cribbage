@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -18,41 +16,28 @@ const (
 	partitionKey = `DDBid`
 	sortKey      = `spec`
 
-	dynamoPlayerServiceSortKey      = playerServiceSortKeyPrefix
 	dynamoInteractionServiceSortKey = `interaction`
-
-	gamesCollectionName        string = `games`
-	playersCollectionName      string = `players`
-	interactionsCollectionName string = `interactions`
-)
-
-const (
-	maxCommitTime time.Duration = 10 * time.Second // something very large for now -- this should be reduced
 )
 
 var _ persistence.DBFactory = dynamoFactory{}
 
 type dynamoFactory struct {
-	uri string
+	endpoint string
 }
 
-func NewFactory(uri string) (persistence.DBFactory, error) {
+func NewFactory(endpoint string) (persistence.DBFactory, error) {
 	return dynamoFactory{
-		uri: uri,
+		endpoint: endpoint,
 	}, nil
 }
 
 func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
-	// TODO figure out this junk
-	os.Setenv(`AWS_ACCESS_KEY_ID`, `DUMMYIDEXAMPLE`)
-	os.Setenv(`AWS_SECRET_ACCESS_KEY`, `DUMMYEXAMPLEKEY`)
-	endpoint := `http://localhost:18079`
-
 	// Initialize a session that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials
 	// and region from the shared configuration file ~/.aws/config.
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
+		// TODO how should I re-set region?
 		config.WithRegion("us-west-2"),
 	)
 	if err != nil {
@@ -69,7 +54,7 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 		},
 		func(o *dynamodb.Options) {
 			// TODO don't do this in non-local
-			o.EndpointResolver = dynamodb.EndpointResolverFromURL(endpoint)
+			o.EndpointResolver = dynamodb.EndpointResolverFromURL(df.endpoint)
 		},
 	)
 
@@ -79,6 +64,7 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	})
 	if err != nil || dto == nil {
 		fmt.Printf("DescribeTable output ERROR, err : %#v, %+v\n", dto, err)
+		log.Fatalf("DescribeTable ERROR, %v", err)
 	} else {
 		fmt.Printf("DescribeTable output, err : %#v, %+v\n", dto.Table, err)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/joshprzybyszewski/cribbage/model"
@@ -11,7 +12,10 @@ import (
 )
 
 func main() {
-	dbf, err := dynamo.NewFactory(``)
+	os.Setenv(`AWS_ACCESS_KEY_ID`, `DUMMYIDEXAMPLE`)
+	os.Setenv(`AWS_SECRET_ACCESS_KEY`, `DUMMYEXAMPLEKEY`)
+
+	dbf, err := dynamo.NewFactory(`http://localhost:18079`)
 	if err != nil {
 		log.Fatalf("dynamo.NewFactory err: %+v", err)
 	}
