@@ -33,7 +33,7 @@ jobs:
       - name: Setup local DynamoDB
         run: docker run -p 18079:8000 amazon/dynamodb-local -jar DynamoDBLocal.jar -sharedDb -inMemory &
       - name: Copy over the aws creds/config
-        run: cp ./server/persistence/dynamo/.dockerComposeAWS $HOME/.aws
+        run: cp -r ./server/persistence/dynamo/.dockerComposeAWS $HOME/.aws
       - name: curl to dynamo
         run: curl http://127.0.0.1:18079
       - name: Create dynamoDB table
