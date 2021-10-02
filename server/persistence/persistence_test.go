@@ -88,13 +88,25 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame model.Game) {
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
-	if len(actGame.Crib) == 0 {
+	if len(expGame.Crib) == 0 {
 		expGame.Crib = nil
 		actGame.Crib = nil
 	}
-	if len(actGame.Actions) == 0 {
+	if len(expGame.Actions) == 0 {
 		expGame.Actions = nil
 		actGame.Actions = nil
+	}
+	if len(expGame.PlayerColors) == 0 {
+		expGame.PlayerColors = nil
+		actGame.PlayerColors = nil
+	}
+	if len(expGame.BlockingPlayers) == 0 {
+		expGame.BlockingPlayers = nil
+		actGame.BlockingPlayers = nil
+	}
+	if len(expGame.Hands) == 0 {
+		expGame.Hands = nil
+		actGame.Hands = nil
 	}
 	for i := range actGame.Actions {
 		if !(name == memoryDB || name == mongoDB) {
@@ -280,8 +292,6 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			model.NewCardFromString(`ac`),
 			model.NewCardFromString(`ad`),
 		},
-		PeggedCards: make([]model.PeggedCard, 0, 8),
-		Actions:     []model.PlayerAction{},
 	}
 	g1Copy := g1
 
