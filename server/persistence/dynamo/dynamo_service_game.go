@@ -1,4 +1,3 @@
-//nolint:dupl
 package dynamo
 
 import (
@@ -63,7 +62,7 @@ func (gs *gameService) GetAt(id model.GameID, numActions uint) (model.Game, erro
 func (gs *gameService) getGame(
 	id model.GameID,
 	opts getGameOptions,
-) (model.Game, error) { // nolint:gocyclo
+) (model.Game, error) {
 	pkName := `:gID`
 	pk := strconv.Itoa(int(id))
 	skName := `:sk`

@@ -357,6 +357,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		GameID:    g.ID,
 		Overcomes: model.DealCards,
 		Action:    model.DealAction{NumShuffles: 10},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -368,6 +369,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -379,6 +381,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -493,6 +496,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 		GameID:    g.ID,
 		Overcomes: model.DealCards,
 		Action:    model.DealAction{NumShuffles: 10},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -504,6 +508,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -515,6 +520,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 		GameID:    g.ID,
 		Overcomes: model.CribCard,
 		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -526,6 +532,7 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 		GameID:    g.ID,
 		Overcomes: model.CutCard,
 		Action:    model.CutDeckAction{Percentage: 0.600},
+		TimeStamp: time.Now(),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 

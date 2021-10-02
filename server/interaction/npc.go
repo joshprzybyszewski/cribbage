@@ -98,6 +98,7 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 		GameID:    g.ID,
 		ID:        npc.ID(),
 		Overcomes: b,
+		TimeStamp: time.Now(),
 	}
 	myHand := g.Hands[npc.ID()]
 	switch b {
