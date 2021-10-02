@@ -310,12 +310,12 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			}
 		}
 	}
+	var gCopy model.Game
+	persistenceGameCopy(&gCopy, g1)
 
 	require.NoError(t, db.CreateGame(g1))
 
-	actGame, err := db.GetGame(g1.ID)
-	require.NoError(t, err, `expected to find game with id "%d"`, g1.ID)
-	assert.Equal(t, g1Copy, actGame)
+	checkPersistedGame(t, name, db, gCopy)
 }
 
 func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
