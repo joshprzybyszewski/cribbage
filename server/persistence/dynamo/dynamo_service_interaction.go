@@ -63,6 +63,9 @@ func (is *interactionService) Get(
 		}
 	}
 	items, err := fullQuery(is.ctx, is.svc, createQuery)
+	if err != nil {
+		return interaction.PlayerMeans{}, err
+	}
 	err = is.populatePlayerMeansFromItems(&ret, items)
 	if err != nil {
 		return interaction.PlayerMeans{}, err

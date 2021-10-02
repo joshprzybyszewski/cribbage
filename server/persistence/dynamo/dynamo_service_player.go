@@ -64,6 +64,9 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 		}
 	}
 	items, err := fullQuery(ps.ctx, ps.svc, createQuery)
+	if err != nil {
+		return model.Player{}, err
+	}
 
 	err = ps.populatePlayerFromItems(&ret, items)
 	if err != nil {
