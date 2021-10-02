@@ -269,6 +269,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 			if exp.LastMove != `` {
 				assert.NotEqual(t, time.Time{}, resp.ActiveGames[i].lastMoveTime)
 				resp.ActiveGames[i].lastMoveTime = time.Time{}
+				tc.expResp.ActiveGames[i].lastMoveTime = time.Time{}
 			}
 		}
 		assert.Equal(t, tc.expResp, resp, tc.desc)

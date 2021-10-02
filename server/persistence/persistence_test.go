@@ -3,7 +3,6 @@ package persistence_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -116,10 +115,10 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 		expGame.PeggedCards = nil
 		actGame.PeggedCards = nil
 	}
-	for i := range actGame.Actions {
-		if !(name == memoryDB || name == mongoDB) {
-			// memory provider and mongodb do not have this feature implemented
-			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp())
+	if name == memoryDB || name == mongoDB {
+		// memory provider and mongodb do not have this feature implemented
+		for i := range actGame.Actions {
+			expGame.Actions[i].TimestampStr = ``
 		}
 	}
 	assert.Equal(t, expGame, actGame)
