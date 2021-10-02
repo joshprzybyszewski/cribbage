@@ -11,8 +11,7 @@ const LOG = false
 type scoreType int
 
 const (
-	none scoreType = 1 << iota
-	quad
+	quad scoreType = 1 << iota
 	triplet
 	onepair
 	twopair

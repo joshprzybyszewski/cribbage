@@ -74,7 +74,7 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 	if (ptVals[0]|ptVals[1]|ptVals[2]|ptVals[3]|ptVals[4])&1 == 0 {
 		// all even numbered cards => no fifteens possible
-		return none, 0
+		return 0, 0
 	}
 
 	sum := ptVals[0] + ptVals[1] + ptVals[2] + ptVals[3] + ptVals[4]
@@ -82,7 +82,7 @@ func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 		// only one fifteen possible
 		return fifteen1, 2
 	} else if sum < 15 || sum > 46 {
-		return none, 0
+		return 0, 0
 	}
 
 	var numFifteens int
@@ -118,7 +118,7 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 
 func scorePairs(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
 	pairPoints := 0
-	pairType := none
+	var pairType scoreType
 	for _, v := range values {
 		switch valuesToCounts[v] {
 		case 4:
@@ -135,10 +135,7 @@ func scorePairs(values [numCardsToScore]int, valuesToCounts valueToCount) (score
 		}
 		valuesToCounts[v] = 0
 	}
-	if pairType == none {
-		return none, 0
-	}
-	return pairType & ^none, pairPoints
+	return pairType, pairPoints
 }
 
 func scoreRuns(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
@@ -159,12 +156,12 @@ func scoreRuns(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreT
 			return calculateTypeAndPoints(runLen, mult)
 		}
 	}
-	return none, 0
+	return 0, 0
 }
 
 func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 	if longest < 3 {
-		return none, 0
+		return 0, 0
 	}
 	if longest == 5 {
 		return run5, 5
@@ -189,10 +186,7 @@ func resolveScoreType(st scoreType) scoreType {
 		// i.e. a triple run of three is scored without the triplet
 		return runsWithPairs
 	}
-	if st > none {
-		return st & ^1 // clear off the none bit if it's set
-	}
-	return none
+	return st
 }
 
 func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {

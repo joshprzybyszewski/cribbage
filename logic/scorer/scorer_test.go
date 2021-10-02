@@ -31,7 +31,7 @@ func TestScoreRuns(t *testing.T) {
 	}{{
 		desc:      `no runs`,
 		hand:      `5S,5C,5D,JH,5H`,
-		expType:   none,
+		expType:   0,
 		expPoints: 0,
 	}, {
 		desc:      `triple run of 3`,
@@ -76,12 +76,12 @@ func TestScoreRuns(t *testing.T) {
 	}, {
 		desc:      `just looking for ways to break it`,
 		hand:      `1H,5D,7D,7S,9C`,
-		expType:   none,
+		expType:   0,
 		expPoints: 0,
 	}, {
 		desc:      `another hand to break it`,
 		hand:      `6D,6S,10H,9C,7H`,
-		expType:   none,
+		expType:   0,
 		expPoints: 0,
 	}, {
 		desc:      `actual double run of three with a fifteen`,
@@ -113,15 +113,15 @@ func TestResolveScoreType(t *testing.T) {
 		expOutput scoreType
 	}{{
 		desc:      `none`,
-		input:     none,
-		expOutput: none,
+		input:     0,
+		expOutput: 0,
 	}, {
 		desc:      `triple run of three`,
 		input:     tripleRunOfThree | triplet,
 		expOutput: tripleRunOfThree,
 	}, {
 		desc:      `just a normal run`,
-		input:     run3 | none,
+		input:     run3,
 		expOutput: run3,
 	}, {
 		desc:      `double double run of three`,
@@ -241,12 +241,12 @@ func TestScorePairs(t *testing.T) {
 		desc:      `none`,
 		hand:      `AC,2C,3C,4C,5C`,
 		expPoints: 0,
-		expType:   none,
+		expType:   0,
 	}, {
 		desc:      `none, unsorted`,
 		hand:      `AC,2C,3C,4C,5C`,
 		expPoints: 0,
-		expType:   none,
+		expType:   0,
 	}, {
 		desc:      `quad`,
 		hand:      `AC,2C,AH,AS,AD`,
