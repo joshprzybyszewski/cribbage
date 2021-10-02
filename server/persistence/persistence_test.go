@@ -600,12 +600,13 @@ func TestTransactionality(t *testing.T) {
 
 		dbfs[mysqlDB] = mySQLDB
 
-		// TODO we'll address transactionality in dynamodb in a followup
+		/* TODO we'll address transactionality in dynamodb in a followup
 		// We assume you have dynamodb stood up locally when running without -short
-		// dynamodb, err := dynamo.NewFactory(`http://localhost:18079`)
-		// require.NoError(t, err)
+		joshy: dynamodb, err := dynamo.NewFactory(`http://localhost:18079`)
+		joshy: require.NoError(t, err)
 
-		// dbfs[dynamoDB] = dynamodb
+		joshy: dbfs[dynamoDB] = dynamodb
+		*/
 	}
 
 	txTests := map[string]txTest{
