@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -77,10 +78,10 @@ func (gs *gameService) getGame(
 	}
 	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
 
-	sif := false
+	// sif := false
 
 	qi := &dynamodb.QueryInput{
-		ScanIndexForward:       &sif,
+		// ScanIndexForward:       &sif,
 		TableName:              aws.String(dbName),
 		KeyConditionExpression: &keyCondExpr,
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -99,6 +100,15 @@ func (gs *gameService) getGame(
 	}
 	if len(qo.Items) == 0 {
 		return model.Game{}, errors.New(`unexpected number of items returned`)
+	}
+	log.Printf("qo.LastEvaluatedKey: %+v\n", qo.LastEvaluatedKey)
+
+	for i, item := range qo.Items {
+		s := ``
+		if spec, ok := item[`spec`].(*types.AttributeValueMemberS); ok {
+			s = spec.Value
+		}
+		log.Printf("items[%d] = %T{%q}\n", i, item[`spec`], s)
 	}
 
 	item := qo.Items[0]

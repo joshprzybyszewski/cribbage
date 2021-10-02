@@ -31,5 +31,17 @@ func UnmarshalGame(b []byte) (model.Game, error) {
 		game.Actions[i] = pa
 	}
 
+	if game.Hands == nil {
+		game.Hands = make(map[model.PlayerID][]model.Card, len(game.Players))
+	}
+
+	if game.BlockingPlayers == nil {
+		game.BlockingPlayers = make(map[model.PlayerID]model.Blocker, len(game.Players))
+	}
+
+	if game.PlayerColors == nil {
+		game.PlayerColors = make(map[model.PlayerID]model.PlayerColor, len(game.Players))
+	}
+
 	return game, nil
 }
