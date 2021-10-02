@@ -30,18 +30,19 @@ services:
       timeout: 20s
       retries: 10
   cribbage-server:
-    image: joshprzybyszewski/cribbage:latest
+    image: cribbage:latest
     depends_on:
       dynamoInit:
         condition: service_started
       mysql-database:
         condition: service_healthy
+    volumes:
+      - ./server/persistence/dynamo/.dockerComposeAWS:/home/.aws
     environment:
       deploy: dockercompose
       CRIBBAGE_DB: dynamodb
       CRIBBAGE_DBURI: http://dynamodb-local:8000
-      AWS_ACCESS_KEY_ID: 'DUMMYIDEXAMPLE'
-      AWS_SECRET_ACCESS_KEY: 'DUMMYEXAMPLEKEY'
+      HOME: "/home" # for aws config
       CRIBBAGE_DSN_HOST: mysql-database
       CRIBBAGE_DSN_USER: gandalf
       CRIBBAGE_DSN_PASSWORD: flyyoufools

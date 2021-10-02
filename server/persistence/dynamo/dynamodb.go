@@ -30,25 +30,31 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	// and region from the shared configuration file ~/.aws/config.
 	cfg, err := config.LoadDefaultConfig(
 		ctx,
-		// TODO how should I re-set region?
-		config.WithRegion("us-west-2"),
 	)
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
 
+	opts := make([]func(o *dynamodb.Options), 0, 2)
+	if len(df.endpoint) > 0 {
+		// there should _only_ be an endpoint specified in local dev. Otherwise,
+		// the magic aws config is supposed to figure it out.
+		opts = append(opts,
+			func(o *dynamodb.Options) {
+				o.EndpointOptions = dynamodb.EndpointResolverOptions{
+					DisableHTTPS: true,
+				}
+			},
+			func(o *dynamodb.Options) {
+				o.EndpointResolver = dynamodb.EndpointResolverFromURL(df.endpoint)
+			},
+		)
+	}
+
 	// Using the Config value, create the DynamoDB client
 	svc := dynamodb.NewFromConfig(
 		cfg,
-		func(o *dynamodb.Options) {
-			o.EndpointOptions = dynamodb.EndpointResolverOptions{
-				DisableHTTPS: true, // todo remove this when we deploy non-locally
-			}
-		},
-		func(o *dynamodb.Options) {
-			// TODO don't do this in non-local
-			o.EndpointResolver = dynamodb.EndpointResolverFromURL(df.endpoint)
-		},
+		opts...,
 	)
 
 	dto, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
