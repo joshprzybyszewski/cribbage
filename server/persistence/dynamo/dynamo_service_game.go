@@ -78,10 +78,10 @@ func (gs *gameService) getGame(
 	}
 	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
 
-	// sif := false
+	sif := false
 
 	qi := &dynamodb.QueryInput{
-		// ScanIndexForward:       &sif,
+		ScanIndexForward:       &sif,
 		TableName:              aws.String(dbName),
 		KeyConditionExpression: &keyCondExpr,
 		ExpressionAttributeValues: map[string]types.AttributeValue{
@@ -176,6 +176,7 @@ func (gs *gameService) Begin(g model.Game) error {
 func (gs *gameService) Save(g model.Game) error {
 	err := persistence.ValidateLatestActionBelongs(g)
 	if err != nil {
+		log.Printf("ValidateLatestActionBelongs error: %+v\n", err)
 		return err
 	}
 	return gs.save(saveOptions{
@@ -197,9 +198,10 @@ func (gs *gameService) save(
 			latest: true,
 		})
 		if err != nil {
+			log.Printf("getGame error: %+v\n", err)
 			return err
 		}
-		ai = len(sg.Actions)
+		ai = len(sg.Actions) + 1
 	}
 
 	return gs.saveGame(gameAtAction{
@@ -223,6 +225,7 @@ func getGameActionIndexFromSpec(s string) (int, error) {
 func (gs *gameService) saveGame(gaa gameAtAction) error {
 	obj, err := json.Marshal(gaa.Game)
 	if err != nil {
+		log.Printf("json.Marshal error: %+v\n", err)
 		return err
 	}
 
@@ -250,6 +253,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		// we want to find out if we overwrote items, so specify ReturnValues
 		pii.ReturnValues = types.ReturnValueAllOld
 	} else {
+		// TODO should this be not exists or not bgeings with?
 		// Use a conditional expression to only write items if this
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
@@ -261,6 +265,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 
 	pio, err := gs.svc.PutItem(gs.ctx, pii)
 	if err != nil {
+		log.Printf("PutItem error: %+v\n", err)
 		switch err.(type) {
 		case *types.ConditionalCheckFailedException:
 			return persistence.ErrGameActionSave
@@ -272,6 +277,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		// We need to check that we actually overwrote an element
 		if _, ok := pio.Attributes[`gameBytes`]; !ok {
 			// oh no! We wanted to overwrite a game, but we didn't!
+			log.Printf("Overwrite error: %+v\n", persistence.ErrGameActionSave)
 			return persistence.ErrGameActionSave
 		}
 	}

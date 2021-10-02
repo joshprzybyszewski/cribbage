@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -383,6 +384,7 @@ func (cs *cribbageServer) ginPostAction(c *gin.Context) {
 	err = handleAction(ctx, db, action)
 	if err != nil {
 		c.String(http.StatusBadRequest, `Error: %s`, err)
+		log.Printf("handleAction error: %+v\n", err)
 		return
 	}
 

@@ -25,21 +25,25 @@ func commitOrRollback(db persistence.DB, err *error) {
 func handleAction(_ context.Context, db persistence.DB, action model.PlayerAction) error {
 	err := db.Start()
 	if err != nil {
+		log.Printf(" db.Start() error: %+v\n", err)
 		return err
 	}
 	defer commitOrRollback(db, &err)
 
 	g, err := db.GetGame(action.GameID)
 	if err != nil {
+		log.Printf("db.GetGame error: %+v\n", err)
 		return err
 	}
 
 	pAPIs, err := getPlayerAPIs(db, g.Players)
 	if err != nil {
+		log.Printf("getPlayerAPIs error: %+v\n", err)
 		return err
 	}
 	err = play.HandleAction(&g, action, pAPIs)
 	if err != nil {
+		log.Printf("play.HandleAction error: %+v\n", err)
 		return err
 	}
 	return db.SaveGame(g)
