@@ -152,7 +152,24 @@ type PlayerAction struct {
 	ID        PlayerID    `json:"pID" bson:"pID"`
 	Overcomes Blocker     `json:"o" bson:"o"`
 	Action    interface{} `json:"a" bson:"a"`
-	TimeStamp time.Time   `json:"timestamp,omitempty" bson:"timestamp"`
+
+	TimestampStr string `json:"timestamp,omitempty" bson:"-"`
+}
+
+const (
+	playerActionLayoutString = time.RFC3339
+)
+
+func (pa *PlayerAction) SetTimeStamp(ts time.Time) {
+	pa.TimestampStr = ts.Format(playerActionLayoutString)
+}
+
+func (pa *PlayerAction) TimeStamp() time.Time {
+	ts, err := time.Parse(playerActionLayoutString, pa.TimestampStr)
+	if err != nil {
+		ts = time.Time{}
+	}
+	return ts
 }
 
 type DealAction struct {

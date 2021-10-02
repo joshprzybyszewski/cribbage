@@ -49,10 +49,12 @@ type ActiveGamePlayer struct {
 }
 
 type ActiveGame struct {
-	GameID   model.GameID       `json:"gameID"`
-	Players  []ActiveGamePlayer `json:"players"`
-	Created  time.Time          `json:"created"`
-	LastMove time.Time          `json:"lastMove"`
+	GameID  model.GameID       `json:"gameID"`
+	Players []ActiveGamePlayer `json:"players"`
+
+	Created      string `json:"created"`
+	LastMove     string `json:"lastMove"`
+	lastMoveTime time.Time
 }
 
 type GetActiveGamesForPlayerResponse struct {
@@ -84,7 +86,7 @@ func convertToParticipatingGames(
 			res = append(res, getActiveGame(mg))
 		}
 	}
-	sort.Slice(res, func(i, j int) bool { return !res[i].LastMove.Before(res[j].LastMove) })
+	sort.Slice(res, func(i, j int) bool { return !res[i].lastMoveTime.Before(res[j].lastMoveTime) })
 	return res
 }
 
@@ -93,8 +95,9 @@ func getActiveGame(mg model.Game) ActiveGame {
 		GameID: mg.ID,
 	}
 	if len(mg.Actions) > 0 {
-		ag.Created = mg.Actions[0].TimeStamp
-		ag.LastMove = mg.Actions[len(mg.Actions)-1].TimeStamp
+		ag.Created = mg.Actions[0].TimestampStr
+		ag.LastMove = mg.Actions[len(mg.Actions)-1].TimestampStr
+		ag.lastMoveTime = mg.Actions[len(mg.Actions)-1].TimeStamp()
 	}
 	ag.Players = make([]ActiveGamePlayer, len(mg.Players))
 	for i, p := range mg.Players {

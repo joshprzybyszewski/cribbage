@@ -24,7 +24,6 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 			Action: model.DealAction{
 				NumShuffles: 543,
 			},
-			TimeStamp: time.Now(),
 		},
 	}, {
 		msg: `crib`,
@@ -38,7 +37,6 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 					model.NewCardFromString(`5d`),
 				},
 			},
-			TimeStamp: time.Now(),
 		},
 	}, {
 		msg: `cut`,
@@ -59,7 +57,6 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 			Action: model.PegAction{
 				Card: model.NewCardFromString(`jh`),
 			},
-			TimeStamp: time.Now(),
 		},
 	}, {
 		msg: `peg saygo`,
@@ -70,7 +67,6 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 			Action: model.PegAction{
 				SayGo: true,
 			},
-			TimeStamp: time.Now(),
 		},
 	}, {
 		msg: `count hand`,
@@ -81,7 +77,6 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 			Action: model.CountHandAction{
 				Pts: 29,
 			},
-			TimeStamp: time.Now(),
 		},
 	}, {
 		msg: `count crib`,
@@ -92,11 +87,11 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 			Action: model.CountCribAction{
 				Pts: 12,
 			},
-			TimeStamp: time.Now(),
 		},
 	}}
 
 	for _, tc := range testCases {
+		tc.pa.SetTimeStamp(time.Now())
 		paCopy := tc.pa
 		b, err := json.Marshal(tc.pa)
 		require.NoError(t, err, tc.msg)

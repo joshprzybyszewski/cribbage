@@ -119,9 +119,8 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 	for i := range actGame.Actions {
 		if !(name == memoryDB || name == mongoDB) {
 			// memory provider and mongodb do not have this feature implemented
-			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp())
 		}
-		actGame.Actions[i].TimeStamp = time.Time{}
 	}
 	assert.Equal(t, expGame, actGame)
 }
