@@ -50,6 +50,8 @@ func getConditionExpression(
 		sb.WriteString(`attribute_not_exists(`)
 		sb.WriteString(partitionKey)
 		sb.WriteString(`)`)
+	default:
+		sb.WriteString(`unsupported pkType`)
 	}
 
 	if skType == none {
@@ -69,6 +71,8 @@ func getConditionExpression(
 		sb.WriteString(`attribute_not_exists(`)
 		sb.WriteString(sortKey)
 		sb.WriteString(`)`)
+	default:
+		sb.WriteString(`unsupported skType`)
 	}
 
 	return sb.String()
