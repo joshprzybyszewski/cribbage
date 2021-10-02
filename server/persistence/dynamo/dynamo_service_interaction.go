@@ -27,12 +27,11 @@ type interactionService struct {
 func getInteractionService(
 	ctx context.Context,
 	svc *dynamodb.Client,
-) (persistence.InteractionService, error) {
-
+) persistence.InteractionService {
 	return &interactionService{
 		ctx: ctx,
 		svc: svc,
-	}, nil
+	}
 }
 
 func (is *interactionService) Get(
@@ -93,14 +92,16 @@ func (is *interactionService) populatePlayerMeansFromItems(
 
 		mode, serInfo, err := is.getInteractionModeAndSerInfo(item[sortKey], item[is.getInfoKey()])
 		if err != nil {
-			// invalid persisted means
 			return err
 		}
 
 		m := interaction.Means{
 			Mode: mode,
 		}
-		m.AddSerializedInfo(serInfo)
+		err = m.AddSerializedInfo(serInfo)
+		if err != nil {
+			return err
+		}
 
 		pm.Interactions = append(pm.Interactions, m)
 

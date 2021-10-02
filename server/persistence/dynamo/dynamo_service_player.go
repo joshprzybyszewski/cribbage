@@ -26,12 +26,11 @@ type playerService struct {
 func getPlayerService(
 	ctx context.Context,
 	svc *dynamodb.Client,
-) (persistence.PlayerService, error) {
-
+) persistence.PlayerService {
 	return &playerService{
 		ctx: ctx,
 		svc: svc,
-	}, nil
+	}
 }
 
 func (ps *playerService) getGameSortKey() string {
@@ -95,7 +94,7 @@ func (ps *playerService) populatePlayerFromItems(
 			continue
 		}
 
-		name, ok := ps.getPlayerName(item[sortKey], item[`name`])
+		name, ok := ps.getPlayerName(item[sortKey], item[ps.getNameKey()])
 		if !ok {
 			return errors.New(`got unexpected payload`)
 		} else if p.Name != `` {
@@ -173,7 +172,7 @@ func (ps *playerService) getPlayerName(
 
 func (ps *playerService) Create(p model.Player) error {
 	if len(p.Games) > 0 {
-		return errors.New(`you cannot create a player that is _already_ in games!`)
+		return errors.New(`New players cannot already be in games`)
 	}
 
 	data := map[string]types.AttributeValue{
@@ -183,7 +182,7 @@ func (ps *playerService) Create(p model.Player) error {
 		sortKey: &types.AttributeValueMemberS{
 			Value: getSortKeyPrefix(ps),
 		},
-		`name`: &types.AttributeValueMemberS{
+		ps.getNameKey(): &types.AttributeValueMemberS{
 			Value: p.Name,
 		},
 	}
@@ -269,4 +268,8 @@ func (ps *playerService) setPlayerGameColor(
 
 func (ps *playerService) getColorKey() string {
 	return `color`
+}
+
+func (ps *playerService) getNameKey() string {
+	return `name`
 }

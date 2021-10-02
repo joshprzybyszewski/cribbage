@@ -40,12 +40,12 @@ type gameService struct {
 func getGameService(
 	ctx context.Context,
 	svc *dynamodb.Client,
-) (persistence.GameService, error) {
+) persistence.GameService {
 
 	return &gameService{
 		ctx: ctx,
 		svc: svc,
-	}, nil
+	}
 }
 
 func (gs *gameService) Get(id model.GameID) (model.Game, error) {

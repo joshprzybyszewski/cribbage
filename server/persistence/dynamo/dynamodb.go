@@ -64,18 +64,9 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 		return nil, fmt.Errorf("DescribeTable ERROR: %v", err)
 	}
 
-	gs, err := getGameService(ctx, svc)
-	if err != nil {
-		return nil, err
-	}
-	ps, err := getPlayerService(ctx, svc)
-	if err != nil {
-		return nil, err
-	}
-	is, err := getInteractionService(ctx, svc)
-	if err != nil {
-		return nil, err
-	}
+	gs := getGameService(ctx, svc)
+	ps := getPlayerService(ctx, svc)
+	is := getInteractionService(ctx, svc)
 
 	sw := persistence.NewServicesWrapper(
 		gs,
@@ -101,7 +92,7 @@ type dynamoWrapper struct {
 	persistence.ServicesWrapper
 
 	ctx context.Context
-	svc *dynamodb.Client
+	// svc *dynamodb.Client // this may need to be used?
 }
 
 func (dw *dynamoWrapper) Close() error {

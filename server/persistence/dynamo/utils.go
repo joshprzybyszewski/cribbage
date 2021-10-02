@@ -9,7 +9,7 @@ import (
 
 func fullQuery(
 	ctx context.Context,
-	svc *dynamodb.Client,
+	svc dynamodb.QueryAPIClient,
 	createQuery func() *dynamodb.QueryInput,
 ) ([]map[string]types.AttributeValue, error) {
 	qi := createQuery()
