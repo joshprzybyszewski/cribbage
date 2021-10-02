@@ -93,13 +93,13 @@ func TestScoreRuns(t *testing.T) {
 		tc := tc
 		h := parseHand(t, tc.hand)
 		var vals [5]int
-		var valuesToCounts valueToCount
+		var valuesToCounts [15]uint8
 		for i, c := range h {
 			vals[i] = c.Value
 			valuesToCounts[c.Value]++
 		}
 		t.Run(tc.desc, func(t *testing.T) {
-			st, pts := scoreRuns(vals, valuesToCounts)
+			st, pts := scoreRuns(vals, valuesToCounts[:])
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})
@@ -213,7 +213,7 @@ func TestScoreRunsAndPairs(t *testing.T) {
 		tc := tc
 		h := parseHand(t, tc.hand)
 		var vals [5]int
-		var valuesToCounts valueToCount
+		var valuesToCounts [15]uint8
 		for i, c := range h {
 			vals[i] = c.Value
 			valuesToCounts[c.Value]++
@@ -277,13 +277,13 @@ func TestScorePairs(t *testing.T) {
 		tc := tc
 		h := parseHand(t, tc.hand)
 		var vals [5]int
-		var valuesToCounts valueToCount
+		var valuesToCounts [15]uint8
 		for i, c := range h {
 			vals[i] = c.Value
 			valuesToCounts[c.Value]++
 		}
 		t.Run(tc.desc, func(t *testing.T) {
-			st, pts := scorePairs(vals, valuesToCounts)
+			st, pts := scorePairs(vals, valuesToCounts[:])
 			assert.Equal(t, tc.expType, st)
 			assert.Equal(t, tc.expPoints, pts)
 		})

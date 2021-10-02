@@ -17,18 +17,6 @@ func CribPoints(lead model.Card, crib []model.Card) int {
 
 const numCardsToScore = 5
 
-// map card value (1 to 13) to number of occurrences in the hand
-// we have to include index 0 and index 14 here because some calculations pass those values in
-type valueToCount [15]uint8
-
-func (vtc valueToCount) get(value int) (uint8, bool) {
-	return vtc[value], vtc.containsKey(value)
-}
-
-func (vtc valueToCount) containsKey(key int) bool {
-	return vtc[key] > 0
-}
-
 func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	if len(hand) != 4 {
 		if LOG {
@@ -116,7 +104,7 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 	return many
 }
 
-func scorePairs(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
+func scorePairs(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
 	pairPoints := 0
 	var pairType scoreType
 	for _, v := range values {
@@ -138,18 +126,17 @@ func scorePairs(values [numCardsToScore]int, valuesToCounts valueToCount) (score
 	return pairType, pairPoints
 }
 
-func scoreRuns(values [numCardsToScore]int, valuesToCounts valueToCount) (scoreType, int) {
+func scoreRuns(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
 	for _, v := range values {
-		if _, ok := valuesToCounts.get(v - 1); ok {
+		if valuesToCounts[v-1] > 0 {
 			// this is already part of a run; skip calculation
 			continue
 		}
 		runLen := uint8(1)
-		mult, _ := valuesToCounts.get(v)
+		mult := valuesToCounts[v]
 		// we're at the potential beginning of a run
-		for nextUp := v + 1; valuesToCounts.containsKey(nextUp); nextUp++ {
-			ct, _ := valuesToCounts.get(nextUp)
-			mult *= ct
+		for next := v + 1; valuesToCounts[next] > 0; next++ {
+			mult *= valuesToCounts[next]
 			runLen++
 		}
 		if runLen >= 3 {
@@ -190,12 +177,16 @@ func resolveScoreType(st scoreType) scoreType {
 }
 
 func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {
-	var valuesToCounts valueToCount
+	// map card value to number of occurrences for efficient runs and pairs scoring
+	// don't use a map[int]int to elide allocations
+	var valuesToCounts [15]uint8
 	for _, v := range values {
 		valuesToCounts[v]++
 	}
-	pairType, pairPts := scorePairs(values, valuesToCounts)
-	runType, runPts := scoreRuns(values, valuesToCounts)
+	// slice the map to avoid copying data
+	// we have to be careful here because scorePairs mutates valuesToCounts, so we do it second
+	runType, runPts := scoreRuns(values, valuesToCounts[:])
+	pairType, pairPts := scorePairs(values, valuesToCounts[:])
 	return resolveScoreType(runType | pairType), pairPts + runPts
 }
 
