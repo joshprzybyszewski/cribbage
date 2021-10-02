@@ -4,7 +4,6 @@ package dynamo
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -15,10 +14,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
-)
-
-const (
-	interactionServiceSortKeyPrefix = `interaction`
 )
 
 var _ persistence.InteractionService = (*interactionService)(nil)
@@ -51,8 +46,8 @@ func (is *interactionService) Get(
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
-	sk := interactionServiceSortKeyPrefix
-	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
+	sk := getSortKeyPrefix(is)
+	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
@@ -76,7 +71,7 @@ func (is *interactionService) Get(
 			return interaction.PlayerMeans{}, err
 		}
 
-		err = populatePlayerMeansFromItems(&ret, qo.Items)
+		err = is.populatePlayerMeansFromItems(&ret, qo.Items)
 		// check LastEvaluatedKey to know if we need to paginate the responses
 		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
 		if len(qo.LastEvaluatedKey) == 0 {
@@ -90,7 +85,7 @@ func (is *interactionService) Get(
 	return ret, nil
 }
 
-func populatePlayerMeansFromItems(
+func (is *interactionService) populatePlayerMeansFromItems(
 	pm *interaction.PlayerMeans,
 	items []map[string]types.AttributeValue,
 ) error {
@@ -109,7 +104,7 @@ func populatePlayerMeansFromItems(
 			continue
 		}
 
-		mode, serInfo, err := getInteractionModeAndSerInfo(item[`spec`], item[`info`])
+		mode, serInfo, err := is.getInteractionModeAndSerInfo(item[sortKey], item[is.getInfoKey()])
 		if err != nil {
 			// invalid persisted means
 			return err
@@ -127,7 +122,7 @@ func populatePlayerMeansFromItems(
 	return nil
 }
 
-func getInteractionModeAndSerInfo(
+func (is *interactionService) getInteractionModeAndSerInfo(
 	specAV, infoAV types.AttributeValue,
 ) (interaction.Mode, []byte, error) {
 	specAVS, ok := specAV.(*types.AttributeValueMemberS)
@@ -135,7 +130,7 @@ func getInteractionModeAndSerInfo(
 		return interaction.Unknown, nil, errors.New(`wrong spec`)
 	}
 
-	mode, err := getInteractionMeansModeFromSpec(specAVS.Value)
+	mode, err := is.getInteractionMeansModeFromSpec(specAVS.Value)
 	if err != nil {
 		return interaction.Unknown, nil, err
 	}
@@ -168,11 +163,11 @@ type writePlayerMeansOptions struct {
 
 func (is *interactionService) write(opts writePlayerMeansOptions) error {
 	data := map[string]types.AttributeValue{
-		`DDBid`: &types.AttributeValueMemberS{
+		partitionKey: &types.AttributeValueMemberS{
 			Value: string(opts.pm.PlayerID),
 		},
-		`spec`: &types.AttributeValueMemberS{
-			Value: interactionServiceSortKeyPrefix,
+		sortKey: &types.AttributeValueMemberS{
+			Value: getSortKeyPrefix(is),
 		},
 		`prefer`: &types.AttributeValueMemberN{
 			Value: strconv.Itoa(int(opts.pm.PreferredMode)),
@@ -192,7 +187,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
+		condExpr := getConditionExpression(notExists, ``, notExists, ``)
 		pii.ConditionExpression = &condExpr
 	}
 
@@ -214,7 +209,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 	}
 
 	for _, m := range opts.pm.Interactions {
-		pii, err = getPutItemInputForMeans(opts.pm.PlayerID, m)
+		pii, err = is.getPutItemInputForMeans(opts.pm.PlayerID, m)
 		if err != nil {
 			return err
 		}
@@ -227,7 +222,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 	return nil
 }
 
-func getPutItemInputForMeans(
+func (is *interactionService) getPutItemInputForMeans(
 	playerID model.PlayerID,
 	m interaction.Means,
 ) (*dynamodb.PutItemInput, error) {
@@ -239,30 +234,34 @@ func getPutItemInputForMeans(
 	return &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
 		Item: map[string]types.AttributeValue{
-			`DDBid`: &types.AttributeValueMemberS{
+			partitionKey: &types.AttributeValueMemberS{
 				Value: string(playerID),
 			},
-			`spec`: &types.AttributeValueMemberS{
-				Value: getSpecForInteractionMeans(m),
+			sortKey: &types.AttributeValueMemberS{
+				Value: is.getSpecForInteractionMeans(m),
 			},
-			`info`: &types.AttributeValueMemberB{
+			is.getInfoKey(): &types.AttributeValueMemberB{
 				Value: info,
 			},
 		},
 	}, nil
 }
 
-func getSpecForInteractionMeans(
+func (is *interactionService) getSpecForInteractionMeans(
 	m interaction.Means,
 ) string {
-	return interactionServiceSortKeyPrefix + `|` + strconv.Itoa(int(m.Mode))
+	return getSortKeyPrefix(is) + `|` + strconv.Itoa(int(m.Mode))
 }
 
-func getInteractionMeansModeFromSpec(s string) (interaction.Mode, error) {
-	s = strings.TrimPrefix(s, interactionServiceSortKeyPrefix+`@`)
+func (is *interactionService) getInteractionMeansModeFromSpec(s string) (interaction.Mode, error) {
+	s = strings.TrimPrefix(s, getSortKeyPrefix(is)+`@`)
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		return interaction.Unknown, err
 	}
 	return interaction.Mode(i), nil
+}
+
+func (is *interactionService) getInfoKey() string {
+	return `info`
 }

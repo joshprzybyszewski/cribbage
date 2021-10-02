@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -17,10 +16,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/jsonutils"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
-)
-
-const (
-	gameServiceSortKeyPrefix string = `game`
 )
 
 type gameAtAction struct {
@@ -72,11 +67,11 @@ func (gs *gameService) getGame(
 	pkName := `:gID`
 	pk := strconv.Itoa(int(id))
 	skName := `:sk`
-	sk := gameServiceSortKeyPrefix + `@`
+	sk := gs.getSpecForAllGameActions()
 	if !opts.latest {
-		sk = getSpecForGameActionIndex(int(opts.actionIndex))
+		sk = gs.getSpecForGameActionIndex(int(opts.actionIndex))
 	}
-	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
+	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
 	sif := false
 
@@ -101,24 +96,15 @@ func (gs *gameService) getGame(
 	if len(qo.Items) == 0 {
 		return model.Game{}, errors.New(`unexpected number of items returned`)
 	}
-	log.Printf("qo.LastEvaluatedKey: %+v\n", qo.LastEvaluatedKey)
-
-	for i, item := range qo.Items {
-		s := ``
-		if spec, ok := item[`spec`].(*types.AttributeValueMemberS); ok {
-			s = spec.Value
-		}
-		log.Printf("items[%d] = %T{%q}\n", i, item[`spec`], s)
-	}
 
 	item := qo.Items[0]
 	if !opts.latest {
 		// make sure that the index we got back matches the one we requested
-		spec, ok := item[`spec`].(*types.AttributeValueMemberS)
+		spec, ok := item[sortKey].(*types.AttributeValueMemberS)
 		if !ok {
 			return model.Game{}, persistence.ErrGameActionDecode
 		}
-		i, err := getGameActionIndexFromSpec(spec.Value)
+		i, err := gs.getGameActionIndexFromSpec(spec.Value)
 		if err != nil {
 			return model.Game{}, err
 		}
@@ -127,7 +113,7 @@ func (gs *gameService) getGame(
 		}
 	}
 
-	gb, ok := item[`gameBytes`].(*types.AttributeValueMemberB)
+	gb, ok := item[gs.getSerGameKey()].(*types.AttributeValueMemberB)
 	if !ok {
 		return model.Game{}, persistence.ErrGameActionDecode
 	}
@@ -176,7 +162,6 @@ func (gs *gameService) Begin(g model.Game) error {
 func (gs *gameService) Save(g model.Game) error {
 	err := persistence.ValidateLatestActionBelongs(g)
 	if err != nil {
-		log.Printf("ValidateLatestActionBelongs error: %+v\n", err)
 		return err
 	}
 	return gs.save(saveOptions{
@@ -198,9 +183,10 @@ func (gs *gameService) save(
 			latest: true,
 		})
 		if err != nil {
-			log.Printf("getGame error: %+v\n", err)
 			return err
 		}
+		// TODO verify that all of the previous actions appear
+		// in the same order in the opts.game
 		ai = len(sg.Actions) + 1
 	}
 
@@ -210,39 +196,39 @@ func (gs *gameService) save(
 	})
 }
 
-func getSpecForGameActionIndex(i int) string {
+func (gs *gameService) getSpecForAllGameActions() string {
+	return getSortKeyPrefix(gs) + `@`
+}
+
+func (gs *gameService) getSpecForGameActionIndex(i int) string {
 	// Since we print out leading zeros to nine places, we could
 	// have issues if our cribbage games ever take more than
 	// 999,999,999 actions
-	return gameServiceSortKeyPrefix + `@` + fmt.Sprintf("%09d", i)
+	return gs.getSpecForAllGameActions() + fmt.Sprintf(`%09d`, i)
 }
 
-func getGameActionIndexFromSpec(s string) (int, error) {
-	s = strings.TrimPrefix(s, gameServiceSortKeyPrefix+`@`)
+func (gs *gameService) getGameActionIndexFromSpec(s string) (int, error) {
+	s = strings.TrimPrefix(s, gs.getSpecForAllGameActions())
 	return strconv.Atoi(s)
 }
 
 func (gs *gameService) saveGame(gaa gameAtAction) error {
 	obj, err := json.Marshal(gaa.Game)
 	if err != nil {
-		log.Printf("json.Marshal error: %+v\n", err)
 		return err
 	}
 
 	data := map[string]types.AttributeValue{
-		`DDBid`: &types.AttributeValueMemberS{
+		partitionKey: &types.AttributeValueMemberS{
 			Value: strconv.Itoa(int(gaa.Game.ID)),
 		},
-		`spec`: &types.AttributeValueMemberS{
-			Value: getSpecForGameActionIndex(gaa.ActionIndex),
+		sortKey: &types.AttributeValueMemberS{
+			Value: gs.getSpecForGameActionIndex(gaa.ActionIndex),
 		},
-		`gameBytes`: &types.AttributeValueMemberB{
+		gs.getSerGameKey(): &types.AttributeValueMemberB{
 			Value: obj,
 		},
 	}
-
-	fmt.Printf("gameService.saveGame data = %+v\n", data)
-	fmt.Printf("gameService.saveGame gaa.Game = %#v\n", gaa.Game)
 
 	pii := &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
@@ -253,19 +239,16 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		// we want to find out if we overwrote items, so specify ReturnValues
 		pii.ReturnValues = types.ReturnValueAllOld
 	} else {
-		// TODO should this be not exists or not bgeings with?
 		// Use a conditional expression to only write items if this
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
-
+		condExpr := getConditionExpression(notExists, ``, notExists, ``)
 		pii.ConditionExpression = &condExpr
 	}
 
 	pio, err := gs.svc.PutItem(gs.ctx, pii)
 	if err != nil {
-		log.Printf("PutItem error: %+v\n", err)
 		switch err.(type) {
 		case *types.ConditionalCheckFailedException:
 			return persistence.ErrGameActionSave
@@ -275,12 +258,15 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 
 	if gaa.Overwrite {
 		// We need to check that we actually overwrote an element
-		if _, ok := pio.Attributes[`gameBytes`]; !ok {
+		if _, ok := pio.Attributes[gs.getSerGameKey()]; !ok {
 			// oh no! We wanted to overwrite a game, but we didn't!
-			log.Printf("Overwrite error: %+v\n", persistence.ErrGameActionSave)
 			return persistence.ErrGameActionSave
 		}
 	}
 
 	return nil
+}
+
+func (gs *gameService) getSerGameKey() string {
+	return `gameBytes`
 }

@@ -15,11 +15,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-const (
-	playerServiceSortKeyPrefix string = `player`
-	playerServiceGameSortKey   string = playerServiceSortKeyPrefix + `Game`
-)
-
 var _ persistence.PlayerService = (*playerService)(nil)
 
 type playerService struct {
@@ -39,6 +34,10 @@ func getPlayerService(
 	}, nil
 }
 
+func (ps *playerService) getGameSortKey() string {
+	return getSortKeyPrefix(ps) + `Game`
+}
+
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	ret := model.Player{
 		ID:    id,
@@ -48,8 +47,8 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
-	sk := playerServiceSortKeyPrefix
-	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
+	sk := getSortKeyPrefix(ps)
+	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
@@ -73,7 +72,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 			return model.Player{}, err
 		}
 
-		err = populatePlayerFromItems(&ret, qo.Items)
+		err = ps.populatePlayerFromItems(&ret, qo.Items)
 		// check LastEvaluatedKey to know if we need to paginate the responses
 		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
 		if len(qo.LastEvaluatedKey) == 0 {
@@ -93,13 +92,13 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	return ret, nil
 }
 
-func populatePlayerFromItems(
+func (ps *playerService) populatePlayerFromItems(
 	p *model.Player,
 	items []map[string]types.AttributeValue,
 ) error {
 	for _, item := range items {
-		if colorAV, ok := item[`color`]; ok {
-			gID, color, err := getGameIDAndColor(item[`spec`], colorAV)
+		if colorAV, ok := item[ps.getColorKey()]; ok {
+			gID, color, err := ps.getGameIDAndColor(item[sortKey], colorAV)
 			if err != nil {
 				return err
 			}
@@ -108,7 +107,7 @@ func populatePlayerFromItems(
 			continue
 		}
 
-		name, ok := getPlayerName(item[`spec`], item[`name`])
+		name, ok := ps.getPlayerName(item[sortKey], item[`name`])
 		if !ok {
 			return errors.New(`got unexpected payload`)
 		} else if p.Name != `` {
@@ -121,20 +120,20 @@ func populatePlayerFromItems(
 	return nil
 }
 
-func getSpecForPlayerGameColor(
+func (ps *playerService) getSpecForPlayerGameColor(
 	gID model.GameID,
 ) string {
-	return fmt.Sprintf("%s%d", playerServiceGameSortKey, gID)
+	return fmt.Sprintf(`%s%d`, ps.getGameSortKey(), gID)
 }
 
-func getPlayerGameColorFromSpec(
+func (ps *playerService) getPlayerGameColorFromSpec(
 	spec string,
 ) (model.GameID, error) {
-	if len(spec) <= len(playerServiceGameSortKey) {
+	if len(spec) <= len(ps.getGameSortKey()) {
 		return 0, errors.New(`too short`)
 	}
 
-	gID, err := strconv.Atoi(spec[len(playerServiceGameSortKey):])
+	gID, err := strconv.Atoi(spec[len(ps.getGameSortKey()):])
 	if err != nil {
 		return 0, err
 	}
@@ -142,7 +141,7 @@ func getPlayerGameColorFromSpec(
 	return model.GameID(gID), nil
 }
 
-func getGameIDAndColor(
+func (ps *playerService) getGameIDAndColor(
 	specAV, colorAV types.AttributeValue,
 ) (model.GameID, model.PlayerColor, error) {
 	specAVS, ok := specAV.(*types.AttributeValueMemberS)
@@ -150,7 +149,7 @@ func getGameIDAndColor(
 		return 0, 0, errors.New(`spec wrong type`)
 	}
 
-	gID, err := getPlayerGameColorFromSpec(specAVS.Value)
+	gID, err := ps.getPlayerGameColorFromSpec(specAVS.Value)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -164,7 +163,7 @@ func getGameIDAndColor(
 	return gID, pc, nil
 }
 
-func getPlayerName(
+func (ps *playerService) getPlayerName(
 	specAV, nameAV types.AttributeValue,
 ) (string, bool) {
 	specAVS, ok := specAV.(*types.AttributeValueMemberS)
@@ -173,7 +172,7 @@ func getPlayerName(
 	}
 
 	spec := specAVS.Value
-	if spec != playerServiceSortKeyPrefix {
+	if spec != getSortKeyPrefix(ps) {
 		return ``, false
 	}
 
@@ -190,11 +189,11 @@ func (ps *playerService) Create(p model.Player) error {
 	}
 
 	data := map[string]types.AttributeValue{
-		`DDBid`: &types.AttributeValueMemberS{
+		partitionKey: &types.AttributeValueMemberS{
 			Value: string(p.ID),
 		},
-		`spec`: &types.AttributeValueMemberS{
-			Value: playerServiceSortKeyPrefix,
+		sortKey: &types.AttributeValueMemberS{
+			Value: getSortKeyPrefix(ps),
 		},
 		`name`: &types.AttributeValueMemberS{
 			Value: p.Name,
@@ -205,9 +204,7 @@ func (ps *playerService) Create(p model.Player) error {
 	// <HASH:RANGE> tuple doesn't already exist.
 	// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 	// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-	condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
-
-	fmt.Printf("playerService.Create data = %+v\n", data)
+	condExpr := getConditionExpression(notExists, ``, notExists, ``)
 
 	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(dbName),
@@ -268,16 +265,20 @@ func (ps *playerService) setPlayerGameColor(
 	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
 		Item: map[string]types.AttributeValue{
-			`DDBid`: &types.AttributeValueMemberS{
+			partitionKey: &types.AttributeValueMemberS{
 				Value: string(pID),
 			},
-			`spec`: &types.AttributeValueMemberS{
-				Value: getSpecForPlayerGameColor(gID),
+			sortKey: &types.AttributeValueMemberS{
+				Value: ps.getSpecForPlayerGameColor(gID),
 			},
-			`color`: &types.AttributeValueMemberS{
+			ps.getColorKey(): &types.AttributeValueMemberS{
 				Value: color.String(),
 			},
 		},
 	})
 	return err
+}
+
+func (ps *playerService) getColorKey() string {
+	return `color`
 }

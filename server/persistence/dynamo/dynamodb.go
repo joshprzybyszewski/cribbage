@@ -12,12 +12,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-const (
-	dbName       = `cribbage`
-	partitionKey = `DDBid`
-	sortKey      = `spec`
-)
-
 var _ persistence.DBFactory = dynamoFactory{}
 
 type dynamoFactory struct {
