@@ -21,4 +21,5 @@ var (
 
 	ErrInteractionNotFound      error = errors.New(`interaction not found`)
 	ErrInteractionAlreadyExists error = errors.New(`interaction already exists`)
+	ErrInteractionUnexpected    error = errors.New(`unexpected interaction`)
 )

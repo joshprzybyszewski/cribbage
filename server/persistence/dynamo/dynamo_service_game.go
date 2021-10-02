@@ -68,7 +68,6 @@ func (gs *gameService) getGame(
 	id model.GameID,
 	opts getGameOptions,
 ) (model.Game, error) { // nolint:gocyclo
-	tableName := dbName
 	pkName := `:gID`
 	pk := strconv.Itoa(int(id))
 	skName := `:sk`
@@ -82,7 +81,7 @@ func (gs *gameService) getGame(
 
 	qi := &dynamodb.QueryInput{
 		ScanIndexForward:       &sif,
-		TableName:              &tableName,
+		TableName:              aws.String(dbName),
 		KeyConditionExpression: &keyCondExpr,
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			pkName: &types.AttributeValueMemberS{
@@ -158,7 +157,10 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 }
 
 func (gs *gameService) Begin(g model.Game) error {
-	return gs.Save(g)
+	return gs.save(saveOptions{
+		game:       g,
+		isCreation: true,
+	})
 }
 
 func (gs *gameService) Save(g model.Game) error {
@@ -166,17 +168,33 @@ func (gs *gameService) Save(g model.Game) error {
 	if err != nil {
 		return err
 	}
-
-	sg, err := gs.getGame(g.ID, getGameOptions{
-		latest: true,
+	return gs.save(saveOptions{
+		game: g,
 	})
-	if err != nil {
-		return err
+}
+
+type saveOptions struct {
+	game       model.Game
+	isCreation bool
+}
+
+func (gs *gameService) save(
+	opts saveOptions,
+) error {
+	ai := 0
+	if !opts.isCreation {
+		sg, err := gs.getGame(opts.game.ID, getGameOptions{
+			latest: true,
+		})
+		if err != nil {
+			return err
+		}
+		ai = len(sg.Actions)
 	}
 
 	return gs.saveGame(gameAtAction{
-		Game:        g,
-		ActionIndex: len(sg.Actions),
+		Game:        opts.game,
+		ActionIndex: ai,
 	})
 }
 
@@ -210,7 +228,8 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		},
 	}
 
-	fmt.Printf("playerService.Create data = %+v\n", data)
+	fmt.Printf("gameService.saveGame data = %+v\n", data)
+	fmt.Printf("gameService.saveGame gaa.Game = %#v\n", gaa.Game)
 
 	pii := &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),

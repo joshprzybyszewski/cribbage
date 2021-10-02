@@ -48,6 +48,7 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (model.Game, error) {
 	err := db.Start()
 	if err != nil {
+		log.Printf(" db.Start() error: %+v", err)
 		return model.Game{}, err
 	}
 	defer commitOrRollback(db, &err)
@@ -57,6 +58,7 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 	for i, id := range pIDs {
 		p, err = db.GetPlayer(id)
 		if err != nil {
+			log.Printf(" db.GetPlayer() error: %+v", err)
 			return model.Game{}, err
 		}
 		players[i] = p
@@ -64,16 +66,19 @@ func createGame(_ context.Context, db persistence.DB, pIDs []model.PlayerID) (mo
 
 	pAPIs, err := getPlayerAPIs(db, players)
 	if err != nil {
+		log.Printf("getPlayerAPIs error: %+v", err)
 		return model.Game{}, err
 	}
 
 	mg, err := play.CreateGame(players, pAPIs)
 	if err != nil {
+		log.Printf("play.CreateGame error: %+v", err)
 		return model.Game{}, err
 	}
 
 	err = db.CreateGame(mg)
 	if err != nil {
+		log.Printf("db.CreateGame error: %+v", err)
 		return model.Game{}, err
 	}
 

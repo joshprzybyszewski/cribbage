@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
@@ -46,7 +45,6 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 		Games: map[model.GameID]model.PlayerColor{},
 	}
 
-	tableName := dbName
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
@@ -55,7 +53,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
-			TableName:              &tableName,
+			TableName:              aws.String(dbName),
 			KeyConditionExpression: &keyCondExpr,
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
@@ -100,8 +98,12 @@ func populatePlayerFromItems(
 	items []map[string]types.AttributeValue,
 ) error {
 	for _, item := range items {
-		gID, color, ok := getGameIDAndColor(item[`spec`], item[`color`])
-		if ok {
+		if colorAV, ok := item[`color`]; ok {
+			gID, color, err := getGameIDAndColor(item[`spec`], colorAV)
+			if err != nil {
+				return err
+			}
+
 			p.Games[gID] = color
 			continue
 		}
@@ -119,35 +121,47 @@ func populatePlayerFromItems(
 	return nil
 }
 
-func getGameIDAndColor(
-	specAV, colorAV types.AttributeValue,
-) (model.GameID, model.PlayerColor, bool) {
-	specAVS, ok := specAV.(*types.AttributeValueMemberS)
-	if !ok {
-		return 0, 0, false
-	}
+func getSpecForPlayerGameColor(
+	gID model.GameID,
+) string {
+	return fmt.Sprintf("%s%d", playerServiceGameSortKey, gID)
+}
 
-	spec := specAVS.Value
+func getPlayerGameColorFromSpec(
+	spec string,
+) (model.GameID, error) {
 	if len(spec) <= len(playerServiceGameSortKey) {
-		return 0, 0, false
+		return 0, errors.New(`too short`)
 	}
 
 	gID, err := strconv.Atoi(spec[len(playerServiceGameSortKey):])
 	if err != nil {
-		return 0, 0, false
+		return 0, err
 	}
 
-	colorAVN, ok := colorAV.(*types.AttributeValueMemberN)
+	return model.GameID(gID), nil
+}
+
+func getGameIDAndColor(
+	specAV, colorAV types.AttributeValue,
+) (model.GameID, model.PlayerColor, error) {
+	specAVS, ok := specAV.(*types.AttributeValueMemberS)
 	if !ok {
-		return 0, 0, false
+		return 0, 0, errors.New(`spec wrong type`)
 	}
 
-	color, err := strconv.Atoi(colorAVN.Value)
+	gID, err := getPlayerGameColorFromSpec(specAVS.Value)
 	if err != nil {
-		return 0, 0, false
+		return 0, 0, err
 	}
 
-	return model.GameID(gID), model.PlayerColor(color), true
+	colorAVS, ok := colorAV.(*types.AttributeValueMemberS)
+	if !ok {
+		return 0, 0, errors.New(`color wrong type`)
+	}
+	pc := model.NewPlayerColorFromString(colorAVS.Value)
+
+	return gID, pc, nil
 }
 
 func getPlayerName(
@@ -211,13 +225,6 @@ func (ps *playerService) Create(p model.Player) error {
 	return nil
 }
 
-type dynamoPlayerInGame struct {
-	ID   string `json:"DDBid"`
-	Spec string `json:"spec"`
-
-	Color model.PlayerColor `json:"color"`
-}
-
 func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
 	for _, p := range players {
 		// TODO do these in separate goroutines (aka parallelize)
@@ -241,7 +248,7 @@ func (ps *playerService) UpdateGameColor(
 		return err
 	}
 
-	if c, ok := p.Games[gID]; ok {
+	if c, ok := p.Games[gID]; ok && c != model.UnsetColor {
 		if c != color {
 			return errors.New(`mismatched player-games color`)
 		}
@@ -258,18 +265,19 @@ func (ps *playerService) setPlayerGameColor(
 	gID model.GameID,
 	color model.PlayerColor,
 ) error {
-	data, err := attributevalue.MarshalMap(dynamoPlayerInGame{
-		ID:    string(pID),
-		Spec:  fmt.Sprintf("%s%d", playerServiceGameSortKey, gID),
-		Color: color,
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
+	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
-		Item:      data,
+		Item: map[string]types.AttributeValue{
+			`DDBid`: &types.AttributeValueMemberS{
+				Value: string(pID),
+			},
+			`spec`: &types.AttributeValueMemberS{
+				Value: getSpecForPlayerGameColor(gID),
+			},
+			`color`: &types.AttributeValueMemberS{
+				Value: color.String(),
+			},
+		},
 	})
 	return err
 }

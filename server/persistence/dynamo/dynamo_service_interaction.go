@@ -4,12 +4,21 @@ package dynamo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+)
+
+const (
+	interactionServiceSortKeyPrefix = `interaction`
 )
 
 var _ persistence.InteractionService = (*interactionService)(nil)
@@ -31,117 +40,229 @@ func getInteractionService(
 	}, nil
 }
 
-func (s *interactionService) Get(id model.PlayerID) (interaction.PlayerMeans, error) {
-	return interaction.PlayerMeans{}, errors.New(`todo`)
-	/*
-		svc := dynamodb.New(session.New())
-		// I want to minimize the number of dynamo tables I use:
-		// "You should maintain as few tables as possible in a DynamoDB application."
-		// -https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-general-nosql-design.html
-		input := &dynamodb.BatchGetItemInput{
-			RequestItems: map[string]*dynamodb.KeysAndAttributes{
-				dbName: {
-					Keys: []map[string]*dynamodb.AttributeValue{{
-						partitionKey: &dynamodb.AttributeValue{
-							S: aws.String(string(id)),
-						},
-						sortKey: &dynamodb.AttributeValue{
-							S: aws.String(string(dynamoInteractionServiceSortKey)),
-						},
-						// TODO use a "sort key" that defines this as the "interaction" model for the player
-					}},
-					// TODO figure out what the projexp should be for this?
-					ProjectionExpression: aws.String("max(idk)"),
+func (is *interactionService) Get(
+	id model.PlayerID,
+) (interaction.PlayerMeans, error) {
+	ret := interaction.PlayerMeans{
+		PlayerID:      id,
+		PreferredMode: interaction.Unknown,
+	}
+
+	pkName := `:pID`
+	pk := string(id)
+	skName := `:sk`
+	sk := interactionServiceSortKeyPrefix
+	keyCondExpr := fmt.Sprintf("DDBid = %s and begins_with(spec, %s)", pkName, skName)
+
+	createQuery := func() *dynamodb.QueryInput {
+		return &dynamodb.QueryInput{
+			TableName:              aws.String(dbName),
+			KeyConditionExpression: &keyCondExpr,
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				pkName: &types.AttributeValueMemberS{
+					Value: pk,
+				},
+				skName: &types.AttributeValueMemberS{
+					Value: sk,
 				},
 			},
 		}
+	}
+	qi := createQuery()
 
-		result2, err := svc.BatchGetItem(input)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(result2)
-
-		result := interaction.PlayerMeans{}
-		filter := bsonInteractionFilter(id)
-		err = mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-			err := s.col.FindOne(sc, filter).Decode(&result)
-			if err != nil {
-				if err == mongo.ErrNoDocuments {
-					return persistence.ErrInteractionNotFound
-				}
-				return err
-			}
-			return nil
-		})
+	for {
+		qo, err := is.svc.Query(is.ctx, qi)
 		if err != nil {
 			return interaction.PlayerMeans{}, err
 		}
 
-		return result, nil
-	*/
+		err = populatePlayerMeansFromItems(&ret, qo.Items)
+		// check LastEvaluatedKey to know if we need to paginate the responses
+		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
+		if len(qo.LastEvaluatedKey) == 0 {
+			break
+		}
+
+		qi = createQuery()
+		qi.ExclusiveStartKey = qo.LastEvaluatedKey
+	}
+
+	return ret, nil
 }
 
-func (s *interactionService) Create(pm interaction.PlayerMeans) error {
-	return errors.New(`todo`)
-	/*
-		_, err := s.Get(pm.PlayerID)
-		if err != nil && err != persistence.ErrInteractionNotFound {
+func populatePlayerMeansFromItems(
+	pm *interaction.PlayerMeans,
+	items []map[string]types.AttributeValue,
+) error {
+	for _, item := range items {
+
+		if preferAV, ok := item[`prefer`]; ok {
+			preferAVN, ok := preferAV.(*types.AttributeValueMemberN)
+			if !ok {
+				return errors.New(`wrong prefer`)
+			}
+			preferMode, err := strconv.Atoi(preferAVN.Value)
+			if err != nil {
+				return err
+			}
+			pm.PreferredMode = interaction.Mode(preferMode)
+			continue
+		}
+
+		mode, serInfo, err := getInteractionModeAndSerInfo(item[`spec`], item[`info`])
+		if err != nil {
+			// invalid persisted means
 			return err
 		}
 
-		return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-			ior, err := s.col.InsertOne(sc, pm)
-			if err != nil {
-				return err
-			}
-			if ior.InsertedID == nil {
-				// :shrug: not sure if this is the right thing to check
-				return errors.New(`interaction not created`)
-			}
+		m := interaction.Means{
+			Mode: mode,
+		}
+		m.AddSerializedInfo(serInfo)
 
-			return nil
-		})
-	*/
+		pm.Interactions = append(pm.Interactions, m)
+
+	}
+
+	return nil
 }
 
-func (s *interactionService) Update(pm interaction.PlayerMeans) error {
-	return errors.New(`todo`)
-	/*
-		if _, err := s.Get(pm.PlayerID); err == persistence.ErrInteractionNotFound {
-			return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-				ior, err := s.col.InsertOne(sc, pm)
-				if err != nil {
-					return err
-				}
-				if ior.InsertedID == nil {
-					// :shrug: not sure if this is the right thing to check
-					return errors.New(`interaction not updated`)
-				}
+func getInteractionModeAndSerInfo(
+	specAV, infoAV types.AttributeValue,
+) (interaction.Mode, []byte, error) {
+	specAVS, ok := specAV.(*types.AttributeValueMemberS)
+	if !ok {
+		return interaction.Unknown, nil, errors.New(`wrong spec`)
+	}
 
-				return nil
-			})
+	mode, err := getInteractionMeansModeFromSpec(specAVS.Value)
+	if err != nil {
+		return interaction.Unknown, nil, err
+	}
+
+	infoAVN, ok := infoAV.(*types.AttributeValueMemberB)
+	if !ok {
+		return interaction.Unknown, nil, errors.New(`wrong info type`)
+	}
+
+	return mode, infoAVN.Value, nil
+}
+
+func (is *interactionService) Create(pm interaction.PlayerMeans) error {
+	return is.write(writePlayerMeansOptions{
+		pm: pm,
+	})
+}
+
+func (is *interactionService) Update(pm interaction.PlayerMeans) error {
+	return is.write(writePlayerMeansOptions{
+		pm:        pm,
+		overwrite: true,
+	})
+}
+
+type writePlayerMeansOptions struct {
+	pm        interaction.PlayerMeans
+	overwrite bool
+}
+
+func (is *interactionService) write(opts writePlayerMeansOptions) error {
+	data := map[string]types.AttributeValue{
+		`DDBid`: &types.AttributeValueMemberS{
+			Value: string(opts.pm.PlayerID),
+		},
+		`spec`: &types.AttributeValueMemberS{
+			Value: interactionServiceSortKeyPrefix,
+		},
+		`prefer`: &types.AttributeValueMemberN{
+			Value: strconv.Itoa(int(opts.pm.PreferredMode)),
+		},
+	}
+
+	pii := &dynamodb.PutItemInput{
+		TableName: aws.String(dbName),
+		Item:      data,
+	}
+
+	if opts.overwrite {
+		// we want to find out if we overwrote items, so specify ReturnValues
+		pii.ReturnValues = types.ReturnValueAllOld
+	} else {
+		// Use a conditional expression to only write items if this
+		// <HASH:RANGE> tuple doesn't already exist.
+		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
+		condExpr := `attribute_not_exists(DDBid) AND attribute_not_exists(spec)`
+		pii.ConditionExpression = &condExpr
+	}
+
+	pio, err := is.svc.PutItem(is.ctx, pii)
+	if err != nil {
+		switch err.(type) {
+		case *types.ConditionalCheckFailedException:
+			return persistence.ErrInteractionAlreadyExists
 		}
+		return err
+	}
 
-		opt := &options.ReplaceOptions{}
-		opt.SetUpsert(true)
+	if opts.overwrite {
+		// We need to check that we actually overwrote an element
+		if _, ok := pio.Attributes[`spec`]; !ok {
+			// oh no! We wanted to overwrite a game, but we didn't!
+			return persistence.ErrInteractionUnexpected
+		}
+	}
 
-		return mongo.WithSession(s.ctx, s.session, func(sc mongo.SessionContext) error {
-			ur, err := s.col.ReplaceOne(sc, pm, opt)
-			if err != nil {
-				return err
-			}
+	for _, m := range opts.pm.Interactions {
+		pii, err = getPutItemInputForMeans(opts.pm.PlayerID, m)
+		if err != nil {
+			return err
+		}
+		_, err = is.svc.PutItem(is.ctx, pii)
+		if err != nil {
+			return err
+		}
+	}
 
-			switch {
-			case ur.ModifiedCount > 1:
-				return errors.New(`modified too many interactions`)
-			case ur.MatchedCount > 1:
-				return errors.New(`matched more than one interaction`)
-			case ur.UpsertedCount > 1:
-				return errors.New(`upserted more than one interaction`)
-			}
+	return nil
+}
 
-			return nil
-		})
-	*/
+func getPutItemInputForMeans(
+	playerID model.PlayerID,
+	m interaction.Means,
+) (*dynamodb.PutItemInput, error) {
+	info, err := m.GetSerializedInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	return &dynamodb.PutItemInput{
+		TableName: aws.String(dbName),
+		Item: map[string]types.AttributeValue{
+			`DDBid`: &types.AttributeValueMemberS{
+				Value: string(playerID),
+			},
+			`spec`: &types.AttributeValueMemberS{
+				Value: getSpecForInteractionMeans(m),
+			},
+			`info`: &types.AttributeValueMemberB{
+				Value: info,
+			},
+		},
+	}, nil
+}
+
+func getSpecForInteractionMeans(
+	m interaction.Means,
+) string {
+	return interactionServiceSortKeyPrefix + `|` + strconv.Itoa(int(m.Mode))
+}
+
+func getInteractionMeansModeFromSpec(s string) (interaction.Mode, error) {
+	s = strings.TrimPrefix(s, interactionServiceSortKeyPrefix+`@`)
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return interaction.Unknown, err
+	}
+	return interaction.Mode(i), nil
 }

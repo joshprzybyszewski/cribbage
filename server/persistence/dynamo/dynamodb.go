@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
@@ -15,8 +16,6 @@ const (
 	dbName       = `cribbage`
 	partitionKey = `DDBid`
 	sortKey      = `spec`
-
-	dynamoInteractionServiceSortKey = `interaction`
 )
 
 var _ persistence.DBFactory = dynamoFactory{}
@@ -58,9 +57,8 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 		},
 	)
 
-	tn := dbName
 	dto, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
-		TableName: &tn,
+		TableName: aws.String(dbName),
 	})
 	if err != nil || dto == nil {
 		return nil, fmt.Errorf("DescribeTable ERROR: %v", err)
