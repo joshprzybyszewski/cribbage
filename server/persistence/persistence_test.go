@@ -295,7 +295,6 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			model.NewCardFromString(`ad`),
 		},
 	}
-	g1Copy := g1
 
 	for i, p := range g1.Players {
 		require.NoError(t, db.CreatePlayer(p))
@@ -310,12 +309,12 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			}
 		}
 	}
-	var gCopy model.Game
-	persistenceGameCopy(&gCopy, g1)
+	var g1Copy model.Game
+	persistenceGameCopy(&g1Copy, g1)
 
 	require.NoError(t, db.CreateGame(g1))
 
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g1Copy)
 }
 
 func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
