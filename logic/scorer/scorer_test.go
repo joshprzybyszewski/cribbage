@@ -386,30 +386,21 @@ func TestPointsStandardFunThings(t *testing.T) {
 		leadCard:  `7H`,
 		hand:      `6D,6S,10H,8C`,
 		expPoints: 10,
-	}}
-
-	for _, tc := range testCases {
-		tc := tc
-		lead := model.NewCardFromString(tc.leadCard)
-		hand := parseHand(t, tc.hand)
-		t.Run(tc.desc, func(t *testing.T) {
-			actPoints := HandPoints(lead, hand)
-			assert.Equal(t, tc.expPoints, actPoints)
-		})
-	}
-}
-
-func TestPointsForFifteens(t *testing.T) {
-	testCases := []struct {
-		desc      string
-		leadCard  string
-		hand      string
-		expPoints int
-	}{{
-		desc:      `highest scoring hand`,
-		leadCard:  `5H`,
-		hand:      `5S,5C,5D,JH`,
-		expPoints: 29,
+	}, {
+		desc:      `flush, double run of 4, and fifteens`,
+		leadCard:  `7D`,
+		hand:      `6S,7S,8S,9S`,
+		expPoints: 20,
+	}, {
+		desc:      `triplet across lead`,
+		leadCard:  `8H`,
+		hand:      `8S,8C,QD,10H`,
+		expPoints: 6,
+	}, {
+		desc:      `run of 5 and flush`,
+		leadCard:  `AS`,
+		hand:      `3S,2S,5S,4S`,
+		expPoints: 12,
 	}, {
 		desc:      `15 for 2`,
 		leadCard:  `8H`,
@@ -431,6 +422,7 @@ func TestPointsForFifteens(t *testing.T) {
 		hand:      `KS,10C,QD,KH`,
 		expPoints: 2,
 	}}
+
 	for _, tc := range testCases {
 		tc := tc
 		lead := model.NewCardFromString(tc.leadCard)
@@ -438,40 +430,6 @@ func TestPointsForFifteens(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			actPoints := HandPoints(lead, hand)
 			assert.Equal(t, tc.expPoints, actPoints)
-		})
-	}
-}
-
-func TestPointsOddInteractions(t *testing.T) {
-	testCases := []struct {
-		desc      string
-		leadCard  string
-		hand      string
-		expPoints int
-	}{{
-		desc:      `flush, double run of 4, and fifteens`,
-		leadCard:  `7D`,
-		hand:      `6S,7S,8S,9S`,
-		expPoints: 20,
-	}, {
-		desc:      `triplet across lead`,
-		leadCard:  `8H`,
-		hand:      `8S,8C,QD,10H`,
-		expPoints: 6,
-	}, {
-		desc:      `run of 5 and flush`,
-		leadCard:  `AS`,
-		hand:      `3S,2S,5S,4S`,
-		expPoints: 12,
-	}}
-
-	for _, tc := range testCases {
-		tc := tc
-		lead := model.NewCardFromString(tc.leadCard)
-		hand := parseHand(t, tc.hand)
-		t.Run(tc.desc, func(t *testing.T) {
-			actPoints := HandPoints(lead, hand)
-			assert.Equal(t, tc.expPoints, actPoints, tc.desc)
 		})
 	}
 }
