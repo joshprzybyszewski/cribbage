@@ -15,8 +15,6 @@ func CribPoints(lead model.Card, crib []model.Card) int {
 	return points(lead, crib, true)
 }
 
-const numCardsToScore = 5
-
 func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	if len(hand) != 4 {
 		if LOG {
@@ -25,6 +23,21 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 		return 0
 	}
 
+	allScoreTypes, totalPoints := pointsWithDesc(lead, hand, isCrib)
+
+	numDescribedPoints := describePoints(lead, hand, allScoreTypes)
+	if numDescribedPoints != totalPoints && LOG {
+		fmt.Println(`error!`)
+		fmt.Printf("calced:    %d\n", totalPoints)
+		fmt.Printf("described: %d\n", numDescribedPoints)
+	}
+
+	return totalPoints
+}
+
+const numCardsToScore = 5
+
+func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType, int) {
 	var values, ptValues [numCardsToScore]int
 	for i, c := range hand {
 		// building up info for later
@@ -48,15 +61,7 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	st, pts = scoreFlushesAndNobs(lead, hand, isCrib)
 	allScoreTypes = allScoreTypes | st
 	totalPoints += pts
-
-	numDescribedPoints := describePoints(lead, hand, allScoreTypes)
-	if numDescribedPoints != totalPoints && LOG {
-		fmt.Println(`error!`)
-		fmt.Printf("calced:    %d\n", totalPoints)
-		fmt.Printf("described: %d\n", numDescribedPoints)
-	}
-
-	return totalPoints
+	return allScoreTypes, totalPoints
 }
 
 func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
@@ -80,9 +85,10 @@ func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
 		numFifteens += many
 	}
 
-	st := fifteen0 << numFifteens
-
-	return st, numFifteens * 2
+	if numFifteens > 0 {
+		return fifteen0 << numFifteens, numFifteens * 2
+	}
+	return 0, 0
 }
 
 func howManyAddUpTo(goal int, ptVals []int) int {
