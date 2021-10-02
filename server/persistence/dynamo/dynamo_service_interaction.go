@@ -63,23 +63,10 @@ func (is *interactionService) Get(
 			},
 		}
 	}
-	qi := createQuery()
-
-	for {
-		qo, err := is.svc.Query(is.ctx, qi)
-		if err != nil {
-			return interaction.PlayerMeans{}, err
-		}
-
-		err = is.populatePlayerMeansFromItems(&ret, qo.Items)
-		// check LastEvaluatedKey to know if we need to paginate the responses
-		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
-		if len(qo.LastEvaluatedKey) == 0 {
-			break
-		}
-
-		qi = createQuery()
-		qi.ExclusiveStartKey = qo.LastEvaluatedKey
+	items, err := fullQuery(is.ctx, is.svc, createQuery)
+	err = is.populatePlayerMeansFromItems(&ret, items)
+	if err != nil {
+		return interaction.PlayerMeans{}, err
 	}
 
 	return ret, nil

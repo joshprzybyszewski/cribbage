@@ -90,7 +90,6 @@ func (gs *gameService) getGame(
 	}
 	qo, err := gs.svc.Query(gs.ctx, qi)
 	if err != nil {
-		fmt.Println(err)
 		return model.Game{}, err
 	}
 	if len(qo.Items) == 0 {
@@ -117,12 +116,7 @@ func (gs *gameService) getGame(
 	if !ok {
 		return model.Game{}, persistence.ErrGameActionDecode
 	}
-	g, err := jsonutils.UnmarshalGame(gb.Value)
-	if err != nil {
-		return model.Game{}, err
-	}
-
-	return g, nil
+	return jsonutils.UnmarshalGame(gb.Value)
 }
 
 func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, color model.PlayerColor) error {

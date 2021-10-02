@@ -64,23 +64,11 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 			},
 		}
 	}
-	qi := createQuery()
+	items, err := fullQuery(ps.ctx, ps.svc, createQuery)
 
-	for {
-		qo, err := ps.svc.Query(ps.ctx, qi)
-		if err != nil {
-			return model.Player{}, err
-		}
-
-		err = ps.populatePlayerFromItems(&ret, qo.Items)
-		// check LastEvaluatedKey to know if we need to paginate the responses
-		// https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination
-		if len(qo.LastEvaluatedKey) == 0 {
-			break
-		}
-
-		qi = createQuery()
-		qi.ExclusiveStartKey = qo.LastEvaluatedKey
+	err = ps.populatePlayerFromItems(&ret, items)
+	if err != nil {
+		return model.Player{}, err
 	}
 
 	if ret.Name == `` {
