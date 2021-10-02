@@ -118,9 +118,9 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 		expGame.PeggedCards = nil
 		actGame.PeggedCards = nil
 	}
-	for i := range actGame.Actions {
-		if name == mongoDB {
-			// mongodb does not have this feature implemented
+	if name == mongoDB {
+		// mongodb does not have this feature implemented
+		for i := range actGame.Actions {
 			actGame.Actions[i].TimeStamp = expGame.Actions[i].TimeStamp
 		}
 	}
