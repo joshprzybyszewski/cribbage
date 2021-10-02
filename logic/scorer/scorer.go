@@ -37,23 +37,23 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 		return 0
 	}
 
-	var vals, ptVals [numCardsToScore]int
+	var values, ptValues [numCardsToScore]int
 	for i, c := range hand {
 		// building up info for later
-		vals[i] = c.Value
-		ptVals[i] = c.PegValue()
+		values[i] = c.Value
+		ptValues[i] = c.PegValue()
 	}
-	vals[4] = lead.Value
-	ptVals[4] = lead.PegValue()
+	values[4] = lead.Value
+	ptValues[4] = lead.PegValue()
 
 	totalPoints := 0
 	var allScoreTypes scoreType
 
-	st, pts := scoreFifteens(ptVals)
+	st, pts := scoreFifteens(ptValues)
 	allScoreTypes = allScoreTypes | st
 	totalPoints += pts
 
-	st, pts = scoreRunsAndPairsV2(vals)
+	st, pts = scoreRunsAndPairsV2(values)
 	allScoreTypes = allScoreTypes | st
 	totalPoints += pts
 
