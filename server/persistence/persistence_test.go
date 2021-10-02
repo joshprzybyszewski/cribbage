@@ -11,6 +11,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/dynamo"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
@@ -26,6 +27,7 @@ const (
 	memoryDB dbName = `memoryDB`
 	mongoDB  dbName = `mongoDB`
 	mysqlDB  dbName = `mysqlDB`
+	dynamoDB dbName = `dynamoDB`
 )
 
 var (
@@ -129,6 +131,12 @@ func TestDB(t *testing.T) {
 		require.NoError(t, err)
 
 		dbfs[mysqlDB] = mySQLDB
+
+		// We assume you have dynamodb stood up locally when running without -short
+		dynamodb, err := dynamo.NewFactory(`http://localhost:18079`)
+		require.NoError(t, err)
+
+		dbfs[dynamoDB] = dynamodb
 	}
 
 	for dbName, dbf := range dbfs {
@@ -564,6 +572,12 @@ func TestTransactionality(t *testing.T) {
 		require.NoError(t, err)
 
 		dbfs[mysqlDB] = mySQLDB
+
+		// We assume you have dynamodb stood up locally when running without -short
+		dynamodb, err := dynamo.NewFactory(`http://localhost:18079`)
+		require.NoError(t, err)
+
+		dbfs[dynamoDB] = dynamodb
 	}
 
 	txTests := map[string]txTest{
