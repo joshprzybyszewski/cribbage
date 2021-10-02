@@ -96,7 +96,7 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 		return memory.NewFactory(), nil
 	}
 
-	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
+	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "dynamodb", "mongo", "mysql", and "memory"`, *database)
 }
 
 func seedNPCs(ctx context.Context, dbFactory persistence.DBFactory) error {
