@@ -89,24 +89,34 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
 	if len(expGame.Crib) == 0 {
+		assert.Empty(t, actGame.Crib)
 		expGame.Crib = nil
 		actGame.Crib = nil
 	}
 	if len(expGame.Actions) == 0 {
+		assert.Empty(t, actGame.Actions)
 		expGame.Actions = nil
 		actGame.Actions = nil
 	}
 	if len(expGame.PlayerColors) == 0 {
+		assert.Empty(t, actGame.PlayerColors)
 		expGame.PlayerColors = nil
 		actGame.PlayerColors = nil
 	}
 	if len(expGame.BlockingPlayers) == 0 {
+		assert.Empty(t, actGame.BlockingPlayers)
 		expGame.BlockingPlayers = nil
 		actGame.BlockingPlayers = nil
 	}
 	if len(expGame.Hands) == 0 {
+		assert.Empty(t, actGame.Hands)
 		expGame.Hands = nil
 		actGame.Hands = nil
+	}
+	if len(expGame.PeggedCards) == 0 {
+		assert.Empty(t, actGame.PeggedCards)
+		expGame.PeggedCards = nil
+		actGame.PeggedCards = nil
 	}
 	for i := range actGame.Actions {
 		if !(name == memoryDB || name == mongoDB) {

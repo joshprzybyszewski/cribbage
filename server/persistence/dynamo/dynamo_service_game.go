@@ -93,7 +93,7 @@ func (gs *gameService) getGame(
 		return model.Game{}, err
 	}
 	if len(qo.Items) == 0 {
-		return model.Game{}, errors.New(`unexpected number of items returned`)
+		return model.Game{}, persistence.ErrGameNotFound
 	}
 
 	item := qo.Items[0]
