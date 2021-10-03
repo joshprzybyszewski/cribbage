@@ -110,26 +110,36 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 	return many
 }
 
-func scorePairs(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
+func scorePairs(values [numCardsToScore]int) (scoreType, int, [15]uint8) {
+	valsToCounts := [15]uint8{}
 	pairPoints := 0
-	var pairType scoreType
 	for _, v := range values {
-		switch valuesToCounts[v] {
-		case 4:
-			return quad, 12
-		case 3:
-			pairType |= triplet
-			pairPoints += 6
+		valsToCounts[v]++
+		switch valsToCounts[v] {
 		case 2:
 			pairPoints += 2
-			if pairType&onepair > 0 {
-				return twopair, 4
-			}
-			pairType |= onepair
+		case 3:
+			// we've already added 2 for this value
+			pairPoints += 4
+		case 4:
+			// we've already added 6 for this value
+			pairPoints += 6
 		}
-		valuesToCounts[v] = 0
 	}
-	return pairType, pairPoints
+	var pairType scoreType
+	switch pairPoints {
+	case 2:
+		pairType = onepair
+	case 4:
+		pairType = twopair
+	case 6:
+		pairType = triplet
+	case 8:
+		pairType = triplet | onepair
+	case 12:
+		pairType = quad
+	}
+	return pairType, pairPoints, valsToCounts
 }
 
 func scoreRuns(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
@@ -183,16 +193,8 @@ func resolveScoreType(st scoreType) scoreType {
 }
 
 func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {
-	// map card value to number of occurrences for efficient runs and pairs scoring
-	// don't use a map[int]int to elide allocations
-	var valuesToCounts [15]uint8
-	for _, v := range values {
-		valuesToCounts[v]++
-	}
-	// slice the map to avoid copying data
-	// we have to be careful here because scorePairs mutates valuesToCounts, so we do it second
-	runType, runPts := scoreRuns(values, valuesToCounts[:])
-	pairType, pairPts := scorePairs(values, valuesToCounts[:])
+	pairType, pairPts, valsToCounts := scorePairs(values)
+	runType, runPts := scoreRuns(values, valsToCounts[:])
 	return resolveScoreType(runType | pairType), pairPts + runPts
 }
 
