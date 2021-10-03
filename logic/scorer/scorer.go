@@ -38,30 +38,99 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 const numCardsToScore = 5
 
 func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType, int) {
-	var values, ptValues [numCardsToScore]int
-	for i, c := range hand {
-		// building up info for later
-		values[i] = c.Value
-		ptValues[i] = c.PegValue()
+	iterationResult := iterateHand(lead, hand, isCrib)
+
+	fSt, fPts := scoreFifteens(iterationResult.ptValues)
+	iterationResult.scoreType |= fSt
+	iterationResult.totalPoints += uint8(fPts)
+
+	rSt, rPts := scoreRuns(iterationResult.values, iterationResult.valuesToCounts[:])
+	iterationResult.scoreType |= rSt
+	iterationResult.totalPoints += uint8(rPts)
+
+	// resolve pairs/runs score types, since e.g. tripleRunOfThree includes the triplet, and the triplet bit shouldn't be set
+	iterationResult.scoreType = resolveScoreType(iterationResult.scoreType)
+
+	return iterationResult.scoreType, int(iterationResult.totalPoints)
+}
+
+type iterateHandResult struct {
+	valuesToCounts [15]uint8
+	values         [numCardsToScore]int
+	ptValues       [numCardsToScore]int
+	scoreType      scoreType
+	totalPoints    uint8
+
+	pairPoints uint8
+}
+
+// iterateHand does all the scoring possible with a single iteration through the hand
+// we can't do fifteens or runs here directly, but the information returned will aid in doing those efficiently
+func iterateHand(cut model.Card, hand []model.Card, isCrib bool) iterateHandResult {
+	res := iterateHandResult{}
+	numSuitsMatching := uint8(0)
+	hasNobs := false
+	for i, c := range [5]model.Card{hand[0], hand[1], hand[2], hand[3], cut} {
+		// pairs
+		res.valuesToCounts[c.Value]++
+		switch res.valuesToCounts[c.Value] {
+		case 2:
+			res.pairPoints += 2
+		case 3:
+			// we've already added 2 for this value
+			res.pairPoints += 4
+		case 4:
+			// we've already added 6 for this value
+			res.pairPoints += 6
+		}
+
+		// flushes
+		if c.Suit == hand[0].Suit && c != cut {
+			numSuitsMatching++
+		}
+
+		// nobs
+		if c != cut && c.Value == model.JackValue && c.Suit == cut.Suit {
+			hasNobs = true
+		}
+
+		// value set
+		res.values[i] = c.Value
+		res.ptValues[i] = c.PegValue()
 	}
-	values[4] = lead.Value
-	ptValues[4] = lead.PegValue()
 
-	totalPoints := 0
-	var allScoreTypes scoreType
+	// accumulate results
+	// nobs
+	if hasNobs {
+		res.totalPoints++
+		res.scoreType |= nobs
+	}
+	// flushes
+	if numSuitsMatching == 4 {
+		if hand[0].Suit == cut.Suit {
+			res.totalPoints += 5
+			res.scoreType |= flush5
+		} else if !isCrib {
+			res.totalPoints += 4
+			res.scoreType |= flush4
+		}
+	}
+	// pairs
+	switch res.pairPoints {
+	case 2:
+		res.scoreType |= onepair
+	case 4:
+		res.scoreType |= twopair
+	case 6:
+		res.scoreType |= triplet
+	case 8:
+		res.scoreType |= triplet | onepair
+	case 12:
+		res.scoreType |= quad
+	}
+	res.totalPoints += res.pairPoints
 
-	st, pts := scoreFifteens(ptValues)
-	allScoreTypes = allScoreTypes | st
-	totalPoints += pts
-
-	st, pts = scoreRunsAndPairsV2(values)
-	allScoreTypes = allScoreTypes | st
-	totalPoints += pts
-
-	st, pts = scoreFlushesAndNobs(lead, hand, isCrib)
-	allScoreTypes = allScoreTypes | st
-	totalPoints += pts
-	return allScoreTypes, totalPoints
+	return res
 }
 
 func scoreFifteens(ptVals [numCardsToScore]int) (scoreType, int) {
@@ -110,38 +179,6 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 	return many
 }
 
-func scorePairs(values [numCardsToScore]int) (scoreType, int, [15]uint8) {
-	valsToCounts := [15]uint8{}
-	pairPoints := 0
-	for _, v := range values {
-		valsToCounts[v]++
-		switch valsToCounts[v] {
-		case 2:
-			pairPoints += 2
-		case 3:
-			// we've already added 2 for this value
-			pairPoints += 4
-		case 4:
-			// we've already added 6 for this value
-			pairPoints += 6
-		}
-	}
-	var pairType scoreType
-	switch pairPoints {
-	case 2:
-		pairType = onepair
-	case 4:
-		pairType = twopair
-	case 6:
-		pairType = triplet
-	case 8:
-		pairType = triplet | onepair
-	case 12:
-		pairType = quad
-	}
-	return pairType, pairPoints, valsToCounts
-}
-
 func scoreRuns(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
 	for _, v := range values {
 		if valuesToCounts[v-1] > 0 {
@@ -178,24 +215,30 @@ func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 }
 
 func resolveScoreType(st scoreType) scoreType {
-	// this mask is generated as following:
+	// these masks are generated as following:
 	// 00011111
 	//    ^ doubleRunOfThree bit
 	// 00000011
 	//      ^ tripleRunOfThree bit (minus one to get the two bits below)
-	// 11111100 & 00011111 = 00011100, with the three bits set being the runs that include pairs
-	runsWithPairsMask := ^(tripleRunOfThree - 1) & ((doubleRunOfThree << 1) - 1)
+	// they include the bits set for th
+	runsWithPairsMask := generateBitMask(tripleRunOfThree, doubleRunOfThree)
 	if runsWithPairs := runsWithPairsMask & st; runsWithPairs > 0 {
-		// i.e. a triple run of three is scored without the triplet
-		return runsWithPairs
+		// we have a run that has a pair baked in, like tripleRunOfThree
+		// let's mask off quad, triplet, onepair, and twopair
+		pairsMask := generateBitMask(quad, twopair)
+		return st &^ pairsMask
 	}
 	return st
 }
 
-func scoreRunsAndPairsV2(values [numCardsToScore]int) (scoreType, int) {
-	pairType, pairPts, valsToCounts := scorePairs(values)
-	runType, runPts := scoreRuns(values, valsToCounts[:])
-	return resolveScoreType(runType | pairType), pairPts + runPts
+// generateBitMask generates a bit mask with the bits from min to max (inclusive) set and the rest unset
+func generateBitMask(min, max scoreType) scoreType {
+	// these masks are generated as following:
+	// 00011111
+	//    ^ max bit
+	// 00000011
+	//      ^ min bit (minus one to get the two bits below)
+	return ^(min - 1) & ((max << 1) - 1)
 }
 
 func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo,go-staticcheck
@@ -377,34 +420,6 @@ func scoreRunsAndPairs(values []int) (scoreType, int) { //nolint:gocyclo,go-stat
 		// we already checked for two above
 		st = st | onepair /* one pair */
 		pts += 2
-	}
-
-	return st, pts
-}
-
-func scoreFlushesAndNobs(lead model.Card, hand []model.Card, isCrib bool) (scoreType, int) {
-	var st scoreType
-	pts := 0
-	handSuit := hand[0].Suit
-	isHandFlush := true
-	for _, c := range hand {
-		if c.Suit != handSuit {
-			isHandFlush = false
-		}
-		if c.Value == model.JackValue && c.Suit == lead.Suit {
-			st = st | nobs
-			pts++
-		}
-	}
-
-	if isHandFlush {
-		if lead.Suit == handSuit {
-			st = st | flush5
-			pts += 5
-		} else if !isCrib {
-			st = st | flush4
-			pts += 4
-		}
 	}
 
 	return st, pts
