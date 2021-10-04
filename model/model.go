@@ -164,14 +164,6 @@ func (pa *PlayerAction) SetTimeStamp(ts time.Time) {
 	pa.TimestampStr = ts.Format(playerActionLayoutString)
 }
 
-func (pa *PlayerAction) TimeStamp() time.Time {
-	ts, err := time.Parse(playerActionLayoutString, pa.TimestampStr)
-	if err != nil {
-		ts = time.Time{}
-	}
-	return ts
-}
-
 type DealAction struct {
 	NumShuffles int `json:"ns" bson:"ns"`
 }
