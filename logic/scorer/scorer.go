@@ -35,8 +35,6 @@ func points(lead model.Card, hand []model.Card, isCrib bool) int {
 	return totalPoints
 }
 
-const numCardsToScore = 5
-
 func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType, int) {
 	iterationResult := iterateHand(lead, hand, isCrib)
 
@@ -54,6 +52,8 @@ func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType,
 
 	return iterationResult.scoreType, int(iterationResult.totalPoints)
 }
+
+const numCardsToScore = 5
 
 type iterateHandResult struct {
 	valuesToCounts [15]uint8
