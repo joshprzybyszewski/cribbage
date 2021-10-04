@@ -26,169 +26,169 @@ func TestPoints(t *testing.T) {
 	tests := []struct {
 		desc      string
 		hand      string
-		cut       string
-		points    int
+		leadCard  string
+		expPoints int
 		scoreType scoreType
 	}{{
 		desc:      `highest scoring hand`,
-		cut:       `5H`,
+		leadCard:  `5H`,
 		hand:      `5S,5C,5D,JH`,
-		points:    29,
+		expPoints: 29,
 		scoreType: quad | fifteen8 | nobs,
 	}, {
 		desc:      `quad`,
-		cut:       `8H`,
+		leadCard:  `8H`,
 		hand:      `8S,8C,8D,10H`,
-		points:    12,
+		expPoints: 12,
 		scoreType: quad,
 	}, {
 		desc:      `triplet`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `8S,8C,8D,10H`,
-		points:    6,
+		expPoints: 6,
 		scoreType: triplet,
 	}, {
 		desc:      `one pair`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `8S,8C,2D,10H`,
-		points:    2,
+		expPoints: 2,
 		scoreType: onepair,
 	}, {
 		desc:      `two pair`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `KS,8C,2D,8H`,
-		points:    4,
+		expPoints: 4,
 		scoreType: twopair,
 	}, {
 		desc:      `triple run of 3`,
-		cut:       `8H`,
+		leadCard:  `8H`,
 		hand:      `9S,8C,10D,8H`,
-		points:    15,
+		expPoints: 15,
 		scoreType: tripleRunOfThree,
 	}, {
 		desc:      `double run of 4`,
-		cut:       `JH`,
+		leadCard:  `JH`,
 		hand:      `8S,8C,9D,10H`,
-		points:    10,
+		expPoints: 10,
 		scoreType: doubleRunOfFour,
 	}, {
 		desc:      `double double run of 3`,
-		cut:       `9H`,
+		leadCard:  `9H`,
 		hand:      `8S,8C,9D,10H`,
-		points:    16,
+		expPoints: 16,
 		scoreType: doubleDoubleRunOfThree,
 	}, {
 		desc:      `double run of 3`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `8S,8C,9D,10H`,
-		points:    8,
+		expPoints: 8,
 		scoreType: doubleRunOfThree,
 	}, {
 		desc:      `run of 3`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `8S,2C,9D,10H`,
-		points:    3,
+		expPoints: 3,
 		scoreType: run3,
 	}, {
 		desc:      `run of 4`,
-		cut:       `KH`,
+		leadCard:  `KH`,
 		hand:      `8S,JC,9D,10H`,
-		points:    4,
+		expPoints: 4,
 		scoreType: run4,
 	}, {
 		desc:      `run of 5`,
-		cut:       `QH`,
+		leadCard:  `QH`,
 		hand:      `8S,JC,9D,10H`,
-		points:    5,
+		expPoints: 5,
 		scoreType: run5,
 	}, {
 		desc:      `only nobs`,
-		cut:       `6H`,
+		leadCard:  `6H`,
 		hand:      `JH,KC,10D,8H`,
-		points:    1,
+		expPoints: 1,
 		scoreType: nobs,
 	}, {
 		desc:      `flush`,
-		cut:       `3H`,
+		leadCard:  `3H`,
 		hand:      `8D,4D,10D,6D`,
-		points:    6,
+		expPoints: 6,
 		scoreType: flush4 | fifteen1,
 	}, {
 		desc:      `random hand I got while playing`,
-		cut:       `4C`,
+		leadCard:  `4C`,
 		hand:      `5H,3D,7D,7S`,
-		points:    9,
+		expPoints: 9,
 		scoreType: run3 | fifteen2 | onepair,
 	}, {
 		desc:      `just looking for ways to break it`,
-		cut:       `9C`,
+		leadCard:  `9C`,
 		hand:      `1H,5D,7D,7S`,
-		points:    6,
+		expPoints: 6,
 		scoreType: fifteen2 | onepair,
 	}, {
 		desc:      `another hand to break it`,
-		cut:       `7H`,
+		leadCard:  `7H`,
 		hand:      `6D,6S,10H,9C`,
-		points:    6,
+		expPoints: 6,
 		scoreType: fifteen2 | onepair,
 	}, {
 		desc:      `actual double run of three with a fifteen`,
-		cut:       `7H`,
+		leadCard:  `7H`,
 		hand:      `6D,6S,10H,8C`,
-		points:    10,
+		expPoints: 10,
 		scoreType: doubleRunOfThree | fifteen1,
 	}, {
 		desc:      `flush, double run of 4, and fifteens`,
-		cut:       `7D`,
+		leadCard:  `7D`,
 		hand:      `6S,7S,8S,9S`,
-		points:    20,
+		expPoints: 20,
 		scoreType: flush4 | doubleRunOfFour | fifteen3,
 	}, {
 		desc:      `triplet across lead`,
-		cut:       `8H`,
+		leadCard:  `8H`,
 		hand:      `8S,8C,QD,10H`,
-		points:    6,
+		expPoints: 6,
 		scoreType: triplet,
 	}, {
 		desc:      `run of 5 and flush`,
-		cut:       `AS`,
+		leadCard:  `AS`,
 		hand:      `3S,2S,5S,4S`,
-		points:    12,
+		expPoints: 12,
 		scoreType: flush5 | run5 | fifteen1,
 	}, {
 		desc:      `15 for 2`,
-		cut:       `8H`,
+		leadCard:  `8H`,
 		hand:      `7S,AC,2D,KH`,
-		points:    2,
+		expPoints: 2,
 		scoreType: fifteen1,
 	}, {
 		desc:      `run of 5 that adds up to 15`,
-		cut:       `5H`,
+		leadCard:  `5H`,
 		hand:      `AS,2C,3D,4H`,
-		points:    7,
+		expPoints: 7,
 		scoreType: run5 | fifteen1,
 	}, {
 		desc:      `cards that up to under 15`,
-		cut:       `4H`,
+		leadCard:  `4H`,
 		hand:      `AS,2C,3D,4H`,
-		points:    10,
+		expPoints: 10,
 		scoreType: doubleRunOfFour,
 	}, {
 		desc:      `cards that up to over 46`,
-		cut:       `6H`,
+		leadCard:  `6H`,
 		hand:      `KS,10C,QD,KH`,
-		points:    2,
+		expPoints: 2,
 		scoreType: onepair,
 	}}
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.desc, func(t *testing.T) {
 			h := parseHand(t, tc.hand)
-			cut := parseHand(t, tc.cut)
+			cut := parseHand(t, tc.leadCard)
 			require.Len(t, cut, 1)
 
 			actPoints := HandPoints(cut[0], h)
-			assert.Equal(t, tc.points, actPoints)
+			assert.Equal(t, tc.expPoints, actPoints)
 			desc, _ := pointsWithDesc(cut[0], h, false)
 			assert.Equal(t, tc.scoreType, desc)
 		})
