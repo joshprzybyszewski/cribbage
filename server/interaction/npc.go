@@ -95,10 +95,10 @@ func getUnpeggedCards(hand []model.Card, pc []model.PeggedCard) []model.Card {
 
 func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAction, error) {
 	pa := model.PlayerAction{
-		GameID:    g.ID,
-		ID:        npc.ID(),
-		Overcomes: b,
-		TimeStamp: time.Now(),
+		GameID:       g.ID,
+		ID:           npc.ID(),
+		Overcomes:    b,
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}
 	myHand := g.Hands[npc.ID()]
 	switch b {

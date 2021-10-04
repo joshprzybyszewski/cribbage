@@ -473,7 +473,7 @@ func (g *gameService) getActions(
 		if err != nil {
 			return nil, err
 		}
-		pa.TimeStamp = pair.timestamp
+		pa.SetTimeStamp(pair.timestamp)
 		pas[i] = pa
 	}
 

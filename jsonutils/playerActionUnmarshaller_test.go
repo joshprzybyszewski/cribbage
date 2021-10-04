@@ -97,6 +97,7 @@ func TestUnmarshalPlayerAction(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
+		tc.pa.SetTimeStamp(time.Now())
 		paCopy := tc.pa
 		b, err := json.Marshal(tc.pa)
 		require.NoError(t, err, tc.msg)
