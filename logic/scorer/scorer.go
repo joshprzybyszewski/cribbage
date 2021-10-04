@@ -48,7 +48,8 @@ func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType,
 	iterationResult.scoreType |= rSt
 	iterationResult.totalPoints += uint8(rPts)
 
-	// resolve pairs/runs score types, since e.g. tripleRunOfThree includes the triplet, and the triplet bit shouldn't be set
+	// resolve pairs/runs score types, since e.g. tripleRunOfThree includes the triplet
+	// and the triplet bit shouldn't be set
 	iterationResult.scoreType = resolveScoreType(iterationResult.scoreType)
 
 	return iterationResult.scoreType, int(iterationResult.totalPoints)
