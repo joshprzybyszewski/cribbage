@@ -121,13 +121,19 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 	if name == memoryDB {
 		t.Logf("setting games pointers on in-memory players... because memory is weird")
 		for i := range expGame.Players {
+			require.Equal(t, expGame.Players[i].ID, actGame.Players[i].ID)
 			actGame.Players[i].Games = expGame.Players[i].Games
 		}
 	}
-	if name == memoryDB || name == mongoDB {
+	if name == mongoDB {
 		// memory provider and mongodb do not have this feature implemented
 		t.Logf("clearing out the timestamps from the expected game")
 		for i := range actGame.Actions {
+			assert.Empty(
+				t,
+				actGame.Actions[i].TimestampStr,
+				`timestamp should be empty at index %d`, i,
+			)
 			expGame.Actions[i].TimestampStr = ``
 		}
 	} else if name == mysqlDB {
