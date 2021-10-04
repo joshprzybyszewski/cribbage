@@ -53,16 +53,52 @@ func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType,
 	return iterationResult.scoreType, int(iterationResult.totalPoints)
 }
 
-const numCardsToScore = 5
+const (
+	numCardsToScore      = 5
+	valuesToCountsLength = 15
+)
+
+type pairScorer struct {
+	valuesToCounts [valuesToCountsLength]uint8
+	points         uint8
+	scoreType      scoreType
+}
+
+func (ps *pairScorer) atEach(c model.Card) {
+	ps.valuesToCounts[c.Value]++
+	switch ps.valuesToCounts[c.Value] {
+	case 2:
+		ps.points += 2
+	case 3:
+		// we've already added 2 for this value
+		ps.points += 4
+	case 4:
+		// we've already added 6 for this value
+		ps.points += 6
+	}
+}
+
+func (ps *pairScorer) accumulate() {
+	switch ps.points {
+	case 2:
+		ps.scoreType |= onepair
+	case 4:
+		ps.scoreType |= twopair
+	case 6:
+		ps.scoreType |= triplet
+	case 8:
+		ps.scoreType |= triplet | onepair
+	case 12:
+		ps.scoreType |= quad
+	}
+}
 
 type iterateHandResult struct {
-	valuesToCounts [15]uint8
+	valuesToCounts [valuesToCountsLength]uint8
 	values         [numCardsToScore]int
 	ptValues       [numCardsToScore]int
 	scoreType      scoreType
 	totalPoints    uint8
-
-	pairPoints uint8
 }
 
 // iterateHand does all the scoring possible with a single iteration through the hand
@@ -71,20 +107,9 @@ func iterateHand(cut model.Card, hand []model.Card, isCrib bool) iterateHandResu
 	res := iterateHandResult{}
 	numSuitsMatching := uint8(0)
 	hasNobs := false
+	ps := &pairScorer{}
 	for i, c := range [5]model.Card{hand[0], hand[1], hand[2], hand[3], cut} {
-		// pairs
-		res.valuesToCounts[c.Value]++
-		switch res.valuesToCounts[c.Value] {
-		case 2:
-			res.pairPoints += 2
-		case 3:
-			// we've already added 2 for this value
-			res.pairPoints += 4
-		case 4:
-			// we've already added 6 for this value
-			res.pairPoints += 6
-		}
-
+		ps.atEach(c)
 		// flushes
 		if c.Suit == hand[0].Suit && c != cut {
 			numSuitsMatching++
@@ -116,20 +141,10 @@ func iterateHand(cut model.Card, hand []model.Card, isCrib bool) iterateHandResu
 			res.scoreType |= flush4
 		}
 	}
-	// pairs
-	switch res.pairPoints {
-	case 2:
-		res.scoreType |= onepair
-	case 4:
-		res.scoreType |= twopair
-	case 6:
-		res.scoreType |= triplet
-	case 8:
-		res.scoreType |= triplet | onepair
-	case 12:
-		res.scoreType |= quad
-	}
-	res.totalPoints += res.pairPoints
+	ps.accumulate()
+	res.totalPoints += ps.points
+	res.scoreType |= ps.scoreType
+	res.valuesToCounts = ps.valuesToCounts
 
 	return res
 }
