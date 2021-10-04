@@ -143,7 +143,12 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 				actGame.Actions[i].TimestampStr,
 				`timestamp should not be empty at index %d`, i,
 			)
+			// now let's clear both the expected and the actual out.
+			// The actual will get re-populated with the mysql entry
+			// so we cannot guarantee that it's exactly the same as
+			// the input timestamp.
 			actGame.Actions[i].TimestampStr = ``
+			expGame.Actions[i].TimestampStr = ``
 		}
 	}
 	assert.Equal(t, expGame, actGame)
