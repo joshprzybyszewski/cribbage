@@ -54,8 +54,10 @@ func pointsWithDesc(lead model.Card, hand []model.Card, isCrib bool) (scoreType,
 }
 
 const (
-	numCardsToScore      = 5
-	valuesToCountsLength = 15
+	numCardsToScore = 5
+	// we only need 15, but due to memory alignment, doing this actually
+	// saves us 8 bytes in iterateHandResult
+	valuesToCountsLength = 16
 )
 
 type pairScorer struct {
