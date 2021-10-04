@@ -116,6 +116,7 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 		actGame.PeggedCards = nil
 	}
 	if name == memoryDB || name == mongoDB {
+		t.Logf("clearing out the timestamps from the expected game")
 		// memory provider and mongodb do not have this feature implemented
 		for i := range actGame.Actions {
 			expGame.Actions[i].TimestampStr = ``
