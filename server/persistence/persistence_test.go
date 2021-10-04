@@ -116,10 +116,21 @@ func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame mo
 		actGame.PeggedCards = nil
 	}
 	if name == memoryDB || name == mongoDB {
-		t.Logf("clearing out the timestamps from the expected game")
 		// memory provider and mongodb do not have this feature implemented
+		t.Logf("clearing out the timestamps from the expected game")
 		for i := range actGame.Actions {
 			expGame.Actions[i].TimestampStr = ``
+		}
+	} else if name == mysqlDB {
+		// mysql DB populates this field internally, so it should always be non-empty
+		t.Logf("verifying non-empty timestamps")
+		for i := range actGame.Actions {
+			assert.NotEmpty(
+				t,
+				actGame.Actions[i].TimestampStr,
+				`timestamp should not be empty at index %d`, i,
+			)
+			actGame.Actions[i].TimestampStr = ``
 		}
 	}
 	assert.Equal(t, expGame, actGame)
