@@ -61,7 +61,6 @@ const (
 type pairScorer struct {
 	valuesToCounts [valuesToCountsLength]uint8
 	points         uint8
-	scoreType      scoreType
 }
 
 func (ps *pairScorer) atEach(c model.Card) {
@@ -78,19 +77,59 @@ func (ps *pairScorer) atEach(c model.Card) {
 	}
 }
 
-func (ps *pairScorer) accumulate() {
+func (ps *pairScorer) accumulate() (scoreType, uint8) {
+	var st scoreType
 	switch ps.points {
 	case 2:
-		ps.scoreType |= onepair
+		st = onepair
 	case 4:
-		ps.scoreType |= twopair
+		st = twopair
 	case 6:
-		ps.scoreType |= triplet
+		st = triplet
 	case 8:
-		ps.scoreType |= triplet | onepair
+		st = triplet | onepair
 	case 12:
-		ps.scoreType |= quad
+		st = quad
 	}
+	return st, ps.points
+}
+
+type flushScorer struct {
+	isHandFlush bool
+	isCrib      bool
+	firstCard   model.Card
+	leadCard    model.Card
+}
+
+func newFlushScorer(lead model.Card, hand []model.Card, isCrib bool) flushScorer {
+	return flushScorer{
+		isHandFlush: true, // innocent until proven guilty
+		isCrib:      isCrib,
+		firstCard:   hand[0],
+		leadCard:    lead,
+	}
+}
+
+func (fs *flushScorer) atEach(c model.Card) {
+	if c == fs.leadCard {
+		return
+	}
+	if c.Suit != fs.firstCard.Suit {
+		fs.isHandFlush = false
+	}
+}
+
+func (fs *flushScorer) accumulate() (scoreType, uint8) {
+	if !fs.isHandFlush {
+		return 0, 0
+	}
+	if fs.firstCard.Suit == fs.leadCard.Suit {
+		return flush5, 5
+	}
+	if fs.isCrib {
+		return 0, 0
+	}
+	return flush4, 4
 }
 
 type iterateHandResult struct {
@@ -103,47 +142,32 @@ type iterateHandResult struct {
 
 // iterateHand does all the scoring possible with a single iteration through the hand
 // we can't do fifteens or runs here directly, but the information returned will aid in doing those efficiently
-func iterateHand(cut model.Card, hand []model.Card, isCrib bool) iterateHandResult {
+func iterateHand(lead model.Card, hand []model.Card, isCrib bool) iterateHandResult {
 	res := iterateHandResult{}
-	numSuitsMatching := uint8(0)
 	hasNobs := false
 	ps := &pairScorer{}
-	for i, c := range [5]model.Card{hand[0], hand[1], hand[2], hand[3], cut} {
+	fs := newFlushScorer(lead, hand, isCrib)
+	for i, c := range [5]model.Card{hand[0], hand[1], hand[2], hand[3], lead} {
 		ps.atEach(c)
-		// flushes
-		if c.Suit == hand[0].Suit && c != cut {
-			numSuitsMatching++
-		}
-
-		// nobs
-		if c != cut && c.Value == model.JackValue && c.Suit == cut.Suit {
+		fs.atEach(c)
+		if c != lead && c.Value == model.JackValue && c.Suit == lead.Suit {
 			hasNobs = true
 		}
-
-		// value set
 		res.values[i] = c.Value
 		res.ptValues[i] = c.PegValue()
 	}
 
-	// accumulate results
-	// nobs
 	if hasNobs {
 		res.totalPoints++
 		res.scoreType |= nobs
 	}
-	// flushes
-	if numSuitsMatching == 4 {
-		if hand[0].Suit == cut.Suit {
-			res.totalPoints += 5
-			res.scoreType |= flush5
-		} else if !isCrib {
-			res.totalPoints += 4
-			res.scoreType |= flush4
-		}
-	}
-	ps.accumulate()
-	res.totalPoints += ps.points
-	res.scoreType |= ps.scoreType
+	fSt, fPts := fs.accumulate()
+	res.totalPoints += fPts
+	res.scoreType |= fSt
+
+	pSt, pPts := ps.accumulate()
+	res.totalPoints += pPts
+	res.scoreType |= pSt
 	res.valuesToCounts = ps.valuesToCounts
 
 	return res
