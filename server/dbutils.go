@@ -41,7 +41,7 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 	}
 
 	// Now that the server is handling the action, let's set the timestamp to now.
-	action.TimeStamp = time.Now()
+	action.SetTimeStamp(time.Now())
 
 	err = play.HandleAction(&g, action, pAPIs)
 	if err != nil {
