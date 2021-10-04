@@ -2,7 +2,7 @@ package network
 
 import (
 	"sort"
-	"time"
+	"strings"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 )
@@ -52,9 +52,8 @@ type ActiveGame struct {
 	GameID  model.GameID       `json:"gameID"`
 	Players []ActiveGamePlayer `json:"players"`
 
-	Created      string `json:"created"`
-	LastMove     string `json:"lastMove"`
-	lastMoveTime time.Time
+	Created  string `json:"created"`
+	LastMove string `json:"lastMove"`
 }
 
 type GetActiveGamesForPlayerResponse struct {
@@ -86,7 +85,14 @@ func convertToParticipatingGames(
 			res = append(res, getActiveGame(mg))
 		}
 	}
-	sort.Slice(res, func(i, j int) bool { return !res[i].lastMoveTime.Before(res[j].lastMoveTime) })
+	sort.Slice(res, func(i, j int) bool {
+		if res[i].LastMove == `` {
+			return false
+		} else if res[j].LastMove == `` {
+			return true
+		}
+		return strings.Compare(res[i].LastMove, res[j].LastMove) > 0
+	})
 	return res
 }
 
@@ -97,7 +103,6 @@ func getActiveGame(mg model.Game) ActiveGame {
 	if len(mg.Actions) > 0 {
 		ag.Created = mg.Actions[0].TimestampStr
 		ag.LastMove = mg.Actions[len(mg.Actions)-1].TimestampStr
-		ag.lastMoveTime = mg.Actions[len(mg.Actions)-1].TimeStamp()
 	}
 	ag.Players = make([]ActiveGamePlayer, len(mg.Players))
 	for i, p := range mg.Players {
