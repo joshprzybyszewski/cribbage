@@ -64,7 +64,7 @@ type pairScorer struct {
 	points         uint8
 }
 
-func (ps *pairScorer) atEach(c model.Card) {
+func (ps *pairScorer) processCard(c model.Card) {
 	ps.valuesToCounts[c.Value]++
 	switch ps.valuesToCounts[c.Value] {
 	case 2:
@@ -78,7 +78,7 @@ func (ps *pairScorer) atEach(c model.Card) {
 	}
 }
 
-func (ps *pairScorer) accumulate() (scoreType, uint8) {
+func (ps *pairScorer) score() (scoreType, uint8) {
 	var st scoreType
 	switch ps.points {
 	case 2:
@@ -111,7 +111,7 @@ func newFlushScorer(lead model.Card, hand []model.Card, isCrib bool) flushScorer
 	}
 }
 
-func (fs *flushScorer) atEach(c model.Card) {
+func (fs *flushScorer) processCard(c model.Card) {
 	if c == fs.leadCard {
 		return
 	}
@@ -120,7 +120,7 @@ func (fs *flushScorer) atEach(c model.Card) {
 	}
 }
 
-func (fs *flushScorer) accumulate() (scoreType, uint8) {
+func (fs *flushScorer) score() (scoreType, uint8) {
 	if !fs.isHandFlush {
 		return 0, 0
 	}
@@ -145,28 +145,24 @@ type iterateHandResult struct {
 // we can't do fifteens or runs here directly, but the information returned will aid in doing those efficiently
 func iterateHand(lead model.Card, hand []model.Card, isCrib bool) iterateHandResult {
 	res := iterateHandResult{}
-	hasNobs := false
 	ps := &pairScorer{}
 	fs := newFlushScorer(lead, hand, isCrib)
 	for i, c := range [5]model.Card{hand[0], hand[1], hand[2], hand[3], lead} {
-		ps.atEach(c)
-		fs.atEach(c)
+		ps.processCard(c)
+		fs.processCard(c)
 		if c != lead && c.Value == model.JackValue && c.Suit == lead.Suit {
-			hasNobs = true
+			res.totalPoints++
+			res.scoreType |= nobs
 		}
 		res.values[i] = c.Value
 		res.ptValues[i] = c.PegValue()
 	}
 
-	if hasNobs {
-		res.totalPoints++
-		res.scoreType |= nobs
-	}
-	fSt, fPts := fs.accumulate()
+	fSt, fPts := fs.score()
 	res.totalPoints += fPts
 	res.scoreType |= fSt
 
-	pSt, pPts := ps.accumulate()
+	pSt, pPts := ps.score()
 	res.totalPoints += pPts
 	res.scoreType |= pSt
 	res.valuesToCounts = ps.valuesToCounts
