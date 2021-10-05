@@ -219,7 +219,8 @@ func howManyAddUpTo(goal int, ptVals []int) int {
 func scoreRuns(values [numCardsToScore]int, valuesToCounts []uint8) (scoreType, int) {
 	for _, v := range values {
 		if valuesToCounts[v-1] > 0 {
-			// this is already part of a run; skip calculation
+			// this value is part of a run that starts at a lower value;
+			// the run will be scored when we encounter the lowest value in it
 			continue
 		}
 		runLen := uint8(1)

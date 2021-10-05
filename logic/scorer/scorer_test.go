@@ -12,7 +12,7 @@ import (
 )
 
 func BenchmarkHandPoints(b *testing.B) {
-	hands := make([][]model.Card, 1000)
+	hands := make([][]model.Card, 10000)
 	for i := range hands {
 		hands[i] = randomHand(b, 5)
 	}
