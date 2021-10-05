@@ -381,7 +381,7 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	persistenceGameCopy(&gCopy, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy) //
+	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:           alice.ID,
