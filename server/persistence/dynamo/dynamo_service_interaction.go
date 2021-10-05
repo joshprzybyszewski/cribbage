@@ -184,8 +184,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 
 	pio, err := is.svc.PutItem(is.ctx, pii)
 	if err != nil {
-		switch err.(type) {
-		case *types.ConditionalCheckFailedException:
+		if isConditionalError(err) {
 			return persistence.ErrInteractionAlreadyExists
 		}
 		return err

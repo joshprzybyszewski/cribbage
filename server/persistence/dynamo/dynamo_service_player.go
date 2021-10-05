@@ -202,8 +202,7 @@ func (ps *playerService) Create(p model.Player) error {
 		ConditionExpression: &condExpr,
 	})
 	if err != nil {
-		switch err.(type) {
-		case *types.ConditionalCheckFailedException:
+		if isConditionalError(err) {
 			return persistence.ErrPlayerAlreadyExists
 		}
 		return err

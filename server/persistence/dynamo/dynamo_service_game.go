@@ -242,8 +242,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 
 	pio, err := gs.svc.PutItem(gs.ctx, pii)
 	if err != nil {
-		switch err.(type) {
-		case *types.ConditionalCheckFailedException:
+		if isConditionalError(err) {
 			return persistence.ErrGameActionSave
 		}
 		return err
