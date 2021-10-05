@@ -253,28 +253,10 @@ func calculateTypeAndPoints(longest, mult uint8) (scoreType, int) {
 }
 
 func resolveScoreType(st scoreType) scoreType {
-	// these masks are generated as following:
-	// 00011111
-	//    ^ doubleRunOfThree bit
-	// 00000011
-	//      ^ tripleRunOfThree bit (minus one to get the two bits below)
-	// they include the bits set for th
-	runsWithPairsMask := generateBitMask(tripleRunOfThree, doubleRunOfThree)
-	if runsWithPairs := runsWithPairsMask & st; runsWithPairs > 0 {
+	if allRunsWithPairs&st > 0 {
 		// we have a run that has a pair baked in, like tripleRunOfThree
 		// let's mask off quad, triplet, onepair, and twopair
-		pairsMask := generateBitMask(quad, twopair)
-		return st &^ pairsMask
+		return st & ^allPairs
 	}
 	return st
-}
-
-// generateBitMask generates a bit mask with the bits from min to max (inclusive) set and the rest unset
-func generateBitMask(min, max scoreType) scoreType {
-	// these masks are generated as following:
-	// 00011111
-	//    ^ max bit
-	// 00000011
-	//      ^ min bit (minus one to get the two bits below)
-	return ^(min - 1) & ((max << 1) - 1)
 }

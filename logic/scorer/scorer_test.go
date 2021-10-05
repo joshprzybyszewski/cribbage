@@ -12,12 +12,17 @@ import (
 )
 
 func BenchmarkHandPoints(b *testing.B) {
-	hand := randomHand(b, 5)
-	b.Run(`scoring random hand`, func(b *testing.B) {
+	hands := make([][]model.Card, 1000)
+	for i := range hands {
+		hands[i] = randomHand(b, 5)
+	}
+	b.Run(`scoring many random hands`, func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			s := HandPoints(hand[0], hand[1:])
-			require.Less(b, s, 30)
-			require.GreaterOrEqual(b, s, 0)
+			for _, h := range hands {
+				s := HandPoints(h[0], h[1:])
+				require.Less(b, s, 30)
+				require.GreaterOrEqual(b, s, 0)
+			}
 		}
 	})
 }
