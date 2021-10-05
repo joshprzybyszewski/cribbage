@@ -93,7 +93,10 @@ func (is *interactionService) populatePlayerMeansFromItems(
 			continue
 		}
 
-		mode, serInfo, err := is.getInteractionModeAndSerInfo(item[sortKey], item[is.getInfoKey()])
+		mode, serInfo, err := is.getInteractionModeAndSerInfo(
+			item[sortKey],
+			item[is.getInfoKey()],
+		)
 		if err != nil {
 			return err
 		}
@@ -126,12 +129,12 @@ func (is *interactionService) getInteractionModeAndSerInfo(
 		return interaction.Unknown, nil, err
 	}
 
-	infoAVN, ok := infoAV.(*types.AttributeValueMemberB)
+	infoAVB, ok := infoAV.(*types.AttributeValueMemberB)
 	if !ok {
 		return interaction.Unknown, nil, errors.New(`wrong info type`)
 	}
 
-	return mode, infoAVN.Value, nil
+	return mode, infoAVB.Value, nil
 }
 
 func (is *interactionService) Create(pm interaction.PlayerMeans) error {
@@ -244,7 +247,7 @@ func (is *interactionService) getSpecForInteractionMeans(
 }
 
 func (is *interactionService) getInteractionMeansModeFromSpec(s string) (interaction.Mode, error) {
-	s = strings.TrimPrefix(s, getSortKeyPrefix(is)+`@`)
+	s = strings.TrimPrefix(s, getSortKeyPrefix(is)+`|`)
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		return interaction.Unknown, err

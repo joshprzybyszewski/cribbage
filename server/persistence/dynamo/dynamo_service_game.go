@@ -243,7 +243,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 	pio, err := gs.svc.PutItem(gs.ctx, pii)
 	if err != nil {
 		if isConditionalError(err) {
-			return persistence.ErrGameActionSave
+			return persistence.ErrGameActionsOutOfOrder
 		}
 		return err
 	}
@@ -252,7 +252,7 @@ func (gs *gameService) saveGame(gaa gameAtAction) error {
 		// We need to check that we actually overwrote an element
 		if _, ok := pio.Attributes[gs.getSerGameKey()]; !ok {
 			// oh no! We wanted to overwrite a game, but we didn't!
-			return persistence.ErrGameActionSave
+			return persistence.ErrGameActionsOutOfOrder
 		}
 	}
 
