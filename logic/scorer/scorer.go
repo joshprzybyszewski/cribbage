@@ -102,8 +102,8 @@ type flushScorer struct {
 	leadCard    model.Card
 }
 
-func newFlushScorer(lead model.Card, hand []model.Card, isCrib bool) flushScorer {
-	return flushScorer{
+func newFlushScorer(lead model.Card, hand []model.Card, isCrib bool) *flushScorer {
+	return &flushScorer{
 		isHandFlush: true, // innocent until proven guilty
 		isCrib:      isCrib,
 		firstCard:   hand[0],
