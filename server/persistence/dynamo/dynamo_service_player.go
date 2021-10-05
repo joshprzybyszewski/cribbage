@@ -174,10 +174,6 @@ func (ps *playerService) getPlayerName(
 }
 
 func (ps *playerService) Create(p model.Player) error {
-	if len(p.Games) > 0 {
-		return errors.New(`New players cannot already be in games`)
-	}
-
 	data := map[string]types.AttributeValue{
 		partitionKey: &types.AttributeValueMemberS{
 			Value: string(p.ID),
