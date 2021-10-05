@@ -2,6 +2,7 @@ package model
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -58,4 +59,13 @@ func TestPhaseStringConversions(t *testing.T) {
 	assert.Equal(t, `unknown`, unknownPhase.String())
 	assert.Equal(t, `unknown`, (Phase)(12).String())
 	assert.Equal(t, unknownPhase, NewPhaseFromString(`other`))
+}
+
+func TestPlayerActionTimeStamp(t *testing.T) {
+	pa := PlayerAction{}
+
+	t0 := time.Now()
+	pa.SetTimeStamp(t0)
+
+	assert.Equal(t, t0.Format(time.RFC3339), pa.TimestampStr)
 }

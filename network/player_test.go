@@ -72,8 +72,14 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 	chelseaID := model.PlayerID(`chelsea`)
 	daveID := model.PlayerID(`dave`)
 
+	pa1 := model.PlayerAction{}
+	pa2 := model.PlayerAction{}
+
 	t2 := time.Now()
 	t1 := t2.Add(-time.Minute)
+
+	pa1.SetTimeStamp(t1)
+	pa2.SetTimeStamp(t2)
 
 	tests := []struct {
 		desc       string
@@ -119,9 +125,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID:   model.Red,
 					chelseaID: model.Blue,
 				},
-				Actions: []model.PlayerAction{{
-					TimeStamp: t1,
-				}},
+				Actions: []model.PlayerAction{pa1},
 			},
 			789: {
 				ID: 789,
@@ -136,11 +140,7 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					aliceID: model.Red,
 					daveID:  model.Blue,
 				},
-				Actions: []model.PlayerAction{{
-					TimeStamp: t1,
-				}, {
-					TimeStamp: t2,
-				}},
+				Actions: []model.PlayerAction{pa1, pa2},
 			},
 		},
 		expResp: GetActiveGamesForPlayerResponse{
@@ -159,8 +159,8 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Name:  `dave`,
 					Color: `blue`,
 				}},
-				Created:  t1,
-				LastMove: t2,
+				Created:  t1.Format(time.RFC3339),
+				LastMove: t2.Format(time.RFC3339),
 			}, {
 				GameID: 456,
 				Players: []ActiveGamePlayer{{
@@ -172,8 +172,8 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Name:  `chelsea`,
 					Color: `blue`,
 				}},
-				Created:  t1,
-				LastMove: t1,
+				Created:  t1.Format(time.RFC3339),
+				LastMove: t1.Format(time.RFC3339),
 			}, {
 				GameID: 123,
 				Players: []ActiveGamePlayer{{
@@ -185,8 +185,8 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Name:  `bob`,
 					Color: `blue`,
 				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
+				Created:  ``,
+				LastMove: ``,
 			}},
 		},
 	}, {
@@ -258,8 +258,8 @@ func TestConvertToGetActiveGamesForPlayerResponse(t *testing.T) {
 					Name:  `bob`,
 					Color: `blue`,
 				}},
-				Created:  time.Time{},
-				LastMove: time.Time{},
+				Created:  ``,
+				LastMove: ``,
 			}},
 		},
 	}}
