@@ -140,7 +140,7 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 
 	return gs.writeGameAtAction(gameAtAction{
 		Game:        g,
-		ActionIndex: len(g.Actions) - 1,
+		ActionIndex: len(g.Actions),
 		Overwrite:   true,
 	})
 }
