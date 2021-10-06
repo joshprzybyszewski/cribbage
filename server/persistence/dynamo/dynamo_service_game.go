@@ -182,8 +182,8 @@ func (gs *gameService) save(
 			// The new game state can only have one additional action
 			return persistence.ErrGameActionsOutOfOrder
 		}
-		for i, expAct := range sg.Actions {
-			if !actionsAreEqual(expAct, opts.game.Actions[i]) {
+		for i := range sg.Actions {
+			if !actionsAreEqual(sg.Actions[i], opts.game.Actions[i]) {
 				return persistence.ErrGameActionsOutOfOrder
 			}
 		}
