@@ -138,7 +138,7 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	}
 	g.PlayerColors[pID] = color
 
-	return gs.saveGame(gameAtAction{
+	return gs.writeGameAtAction(gameAtAction{
 		Game:        g,
 		ActionIndex: len(g.Actions) - 1,
 		Overwrite:   true,
@@ -178,15 +178,29 @@ func (gs *gameService) save(
 		if err != nil {
 			return err
 		}
-		// TODO verify that all of the previous actions appear
-		// in the same order in the opts.game
+		if len(sg.Actions)+1 != len(opts.game.Actions) {
+			// The new game state can only have one additional action
+			return persistence.ErrGameActionsOutOfOrder
+		}
+		for i, expAct := range sg.Actions {
+			if !actionsAreEqual(expAct, opts.game.Actions[i]) {
+				return persistence.ErrGameActionsOutOfOrder
+			}
+		}
 		ai = len(sg.Actions) + 1
 	}
 
-	return gs.saveGame(gameAtAction{
+	return gs.writeGameAtAction(gameAtAction{
 		Game:        opts.game,
 		ActionIndex: ai,
 	})
+}
+
+func actionsAreEqual(a, b model.PlayerAction) bool {
+	return a.GameID == b.GameID &&
+		a.ID == b.ID &&
+		a.Overcomes == b.Overcomes &&
+		a.TimestampStr == b.TimestampStr
 }
 
 func (gs *gameService) getSpecForAllGameActions() string {
@@ -205,7 +219,9 @@ func (gs *gameService) getGameActionIndexFromSpec(s string) (int, error) {
 	return strconv.Atoi(s)
 }
 
-func (gs *gameService) saveGame(gaa gameAtAction) error {
+// writeGameAtAction will write the given game and action
+// This method assumes you've already done game state validation.
+func (gs *gameService) writeGameAtAction(gaa gameAtAction) error {
 	obj, err := json.Marshal(gaa.Game)
 	if err != nil {
 		return err
