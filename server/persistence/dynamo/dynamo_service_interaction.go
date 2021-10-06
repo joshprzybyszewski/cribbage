@@ -80,15 +80,20 @@ func (is *interactionService) populatePlayerMeansFromItems(
 ) error {
 	for _, item := range items {
 
-		if preferAV, ok := item[`prefer`]; ok {
+		if preferAV, ok := item[is.getPreferKey()]; ok {
+			if pm.PreferredMode != interaction.UnsetMode {
+				return errors.New(`preferred mode already set`)
+			}
+
 			preferAVN, ok := preferAV.(*types.AttributeValueMemberN)
 			if !ok {
-				return errors.New(`wrong prefer`)
+				return errors.New(`wrong prefer attribute type`)
 			}
 			preferMode, err := strconv.Atoi(preferAVN.Value)
 			if err != nil {
 				return err
 			}
+
 			pm.PreferredMode = interaction.Mode(preferMode)
 			continue
 		}
@@ -163,7 +168,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		sortKey: &types.AttributeValueMemberS{
 			Value: getSortKeyPrefix(is),
 		},
-		`prefer`: &types.AttributeValueMemberN{
+		is.getPreferKey(): &types.AttributeValueMemberN{
 			Value: strconv.Itoa(int(opts.pm.PreferredMode)),
 		},
 	}
@@ -195,8 +200,8 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 
 	if opts.overwrite {
 		// We need to check that we actually overwrote an element
-		if _, ok := pio.Attributes[`spec`]; !ok {
-			// oh no! We wanted to overwrite a game, but we didn't!
+		if _, ok := pio.Attributes[is.getPreferKey()]; !ok {
+			// oh no! We wanted to overwrite a preferred interaction, but we didn't!
 			return persistence.ErrInteractionUnexpected
 		}
 	}
@@ -257,4 +262,8 @@ func (is *interactionService) getInteractionMeansModeFromSpec(s string) (interac
 
 func (is *interactionService) getInfoKey() string {
 	return `info`
+}
+
+func (is *interactionService) getPreferKey() string {
+	return `prefer`
 }
