@@ -474,7 +474,6 @@ func testAddPlayerColorToGame(t *testing.T, name dbName, db persistence.DB) {
 	g.PlayerColors = nil
 
 	require.NoError(t, db.CreateGame(g))
-	<-time.After(time.Second)
 
 	for _, pID := range []model.PlayerID{alice.ID, bob.ID} {
 		require.NoError(t, db.AddPlayerColorToGame(pID, playerColors[pID], g.ID))
