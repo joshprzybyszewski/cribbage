@@ -23,12 +23,12 @@ func fullQuery(
 		}
 		items = append(items, qo.Items...)
 
-		// if len(qo.LastEvaluatedKey) == 0 {
-		break
-		// }
+		if len(qo.LastEvaluatedKey) == 0 {
+			break
+		}
 
-		// qi = createQuery()
-		// qi.ExclusiveStartKey = qo.LastEvaluatedKey
+		qi = createQuery()
+		qi.ExclusiveStartKey = qo.LastEvaluatedKey
 	}
 
 	return items, nil
