@@ -79,9 +79,8 @@ func (is *interactionService) populatePlayerMeansFromItems(
 	items []map[string]types.AttributeValue,
 ) error {
 	for _, item := range items {
-
 		if preferAV, ok := item[is.getPreferKey()]; ok {
-			if pm.PreferredMode != interaction.UnsetMode {
+			if pm.PreferredMode != interaction.Unknown {
 				return errors.New(`preferred mode already set`)
 			}
 
@@ -144,20 +143,20 @@ func (is *interactionService) getInteractionModeAndSerInfo(
 
 func (is *interactionService) Create(pm interaction.PlayerMeans) error {
 	return is.write(writePlayerMeansOptions{
-		pm: pm,
+		pm:         pm,
+		isCreation: true,
 	})
 }
 
 func (is *interactionService) Update(pm interaction.PlayerMeans) error {
 	return is.write(writePlayerMeansOptions{
-		pm:        pm,
-		overwrite: true,
+		pm: pm,
 	})
 }
 
 type writePlayerMeansOptions struct {
-	pm        interaction.PlayerMeans
-	overwrite bool
+	pm         interaction.PlayerMeans
+	isCreation bool
 }
 
 func (is *interactionService) write(opts writePlayerMeansOptions) error {
@@ -178,10 +177,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		Item:      data,
 	}
 
-	if opts.overwrite {
-		// we want to find out if we overwrote items, so specify ReturnValues
-		pii.ReturnValues = types.ReturnValueAllOld
-	} else {
+	if opts.isCreation {
 		// Use a conditional expression to only write items if this
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
@@ -190,20 +186,12 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		pii.ConditionExpression = &condExpr
 	}
 
-	pio, err := is.svc.PutItem(is.ctx, pii)
+	_, err := is.svc.PutItem(is.ctx, pii)
 	if err != nil {
 		if isConditionalError(err) {
 			return persistence.ErrInteractionAlreadyExists
 		}
 		return err
-	}
-
-	if opts.overwrite {
-		// We need to check that we actually overwrote an element
-		if _, ok := pio.Attributes[is.getPreferKey()]; !ok {
-			// oh no! We wanted to overwrite a preferred interaction, but we didn't!
-			return persistence.ErrInteractionUnexpected
-		}
 	}
 
 	for _, m := range opts.pm.Interactions {
