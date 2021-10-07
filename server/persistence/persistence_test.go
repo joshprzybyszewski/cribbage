@@ -199,17 +199,20 @@ func TestDB(t *testing.T) {
 }
 
 func testCreatePlayersWithSimilarNames(t *testing.T, name dbName, db persistence.DB) {
+	suffix := rand.String(50)
+	p1Str := `alice` + suffix
+	p2Str := `Alice` + suffix
 	p1 := model.Player{
-		ID:    model.PlayerID(`alice`),
-		Name:  `alice`,
+		ID:    model.PlayerID(p1Str),
+		Name:  p1Str,
 		Games: map[model.GameID]model.PlayerColor{},
 	}
 
 	assert.NoError(t, db.CreatePlayer(p1))
 
 	p2 := model.Player{
-		ID:    model.PlayerID(`Alice`),
-		Name:  `Alice`,
+		ID:    model.PlayerID(p2Str),
+		Name:  p2Str,
 		Games: map[model.GameID]model.PlayerColor{},
 	}
 
@@ -471,6 +474,7 @@ func testAddPlayerColorToGame(t *testing.T, name dbName, db persistence.DB) {
 	g.PlayerColors = nil
 
 	require.NoError(t, db.CreateGame(g))
+	<-time.After(time.Second)
 
 	for _, pID := range []model.PlayerID{alice.ID, bob.ID} {
 		require.NoError(t, db.AddPlayerColorToGame(pID, playerColors[pID], g.ID))
