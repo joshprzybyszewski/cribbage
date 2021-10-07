@@ -7,6 +7,10 @@ import (
 )
 
 func isConditionalError(err error) bool {
+	if err == nil {
+		return false
+	}
+
 	switch err.(type) {
 	case *types.ConditionalCheckFailedException:
 		return true
