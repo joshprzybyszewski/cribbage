@@ -88,6 +88,27 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame model.Game) {
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
+	checkPersistedGameCompare(t, name, expGame, actGame)
+}
+
+func checkPersistedGameAt(
+	t *testing.T,
+	name dbName,
+	db persistence.DB,
+	expGame model.Game,
+	numPrevActions uint,
+) {
+	if name == memoryDB {
+		t.Logf("memory doesn't keep track of history")
+		return
+	}
+
+	actGame, err := db.GetGameAction(expGame.ID, numPrevActions)
+	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
+	checkPersistedGameCompare(t, name, expGame, actGame)
+}
+
+func checkPersistedGameCompare(t *testing.T, name dbName, expGame, actGame model.Game) {
 	if len(expGame.Crib) == 0 {
 		assert.Empty(t, actGame.Crib)
 		expGame.Crib = nil
@@ -375,12 +396,12 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	require.Error(t, err)
 	assert.EqualError(t, err, persistence.ErrGameNotFound.Error())
 
-	var gCopy model.Game
-	persistenceGameCopy(&gCopy, g)
+	var g0, g1, g2, g3 model.Game
+	persistenceGameCopy(&g0, g)
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g0)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:           alice.ID,
@@ -389,10 +410,10 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		Action:       model.DealAction{NumShuffles: 10},
 		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g1, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g1)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:           alice.ID,
@@ -401,10 +422,10 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
 		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g2, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g2)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:           bob.ID,
@@ -413,10 +434,15 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
 		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g3, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g3)
+
+	checkPersistedGameAt(t, name, db, g0, 0)
+	checkPersistedGameAt(t, name, db, g1, 1)
+	checkPersistedGameAt(t, name, db, g2, 2)
+	checkPersistedGameAt(t, name, db, g3, 3)
 }
 
 func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
