@@ -25,37 +25,7 @@ func NewFactory(endpoint string) (persistence.DBFactory, error) {
 }
 
 func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
-	// Initialize a session that the SDK will use to load
-	// credentials from the shared credentials file ~/.aws/credentials
-	// and region from the shared configuration file ~/.aws/config.
-	cfg, err := config.LoadDefaultConfig(
-		ctx,
-	)
-	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
-	}
-
-	opts := make([]func(o *dynamodb.Options), 0, 2)
-	if len(df.endpoint) > 0 {
-		// there should _only_ be an endpoint specified in local dev. Otherwise,
-		// the magic aws config is supposed to figure it out.
-		opts = append(opts,
-			func(o *dynamodb.Options) {
-				o.EndpointOptions = dynamodb.EndpointResolverOptions{
-					DisableHTTPS: true,
-				}
-			},
-			func(o *dynamodb.Options) {
-				o.EndpointResolver = dynamodb.EndpointResolverFromURL(df.endpoint)
-			},
-		)
-	}
-
-	// Using the Config value, create the DynamoDB client
-	svc := dynamodb.NewFromConfig(
-		cfg,
-		opts...,
-	)
+	svc := getDynamoService(ctx, df.endpoint)
 
 	dto, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
 		TableName: aws.String(dbName),
@@ -80,6 +50,43 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 	}
 
 	return &dw, nil
+}
+
+func getDynamoService(
+	ctx context.Context,
+	endpoint string,
+) *dynamodb.Client {
+	// Initialize a session that the SDK will use to load
+	// credentials from the shared credentials file ~/.aws/credentials
+	// and region from the shared configuration file ~/.aws/config.
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+	)
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
+	}
+
+	opts := make([]func(o *dynamodb.Options), 0, 2)
+	if len(endpoint) > 0 {
+		// there should _only_ be an endpoint specified in local dev. Otherwise,
+		// the magic aws config is supposed to figure it out.
+		opts = append(opts,
+			func(o *dynamodb.Options) {
+				o.EndpointOptions = dynamodb.EndpointResolverOptions{
+					DisableHTTPS: true,
+				}
+			},
+			func(o *dynamodb.Options) {
+				o.EndpointResolver = dynamodb.EndpointResolverFromURL(endpoint)
+			},
+		)
+	}
+
+	// Using the Config value, create the DynamoDB client
+	return dynamodb.NewFromConfig(
+		cfg,
+		opts...,
+	)
 }
 
 func (df dynamoFactory) Close() error {
