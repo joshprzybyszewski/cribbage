@@ -34,9 +34,9 @@ func (df dynamoFactory) New(ctx context.Context) (persistence.DB, error) {
 		return nil, fmt.Errorf("DescribeTable ERROR: %v", err)
 	}
 
-	gs := getGameService(ctx, svc)
-	ps := getPlayerService(ctx, svc)
-	is := getInteractionService(ctx, svc)
+	gs := newGameService(ctx, svc)
+	ps := newPlayerService(ctx, svc)
+	is := newInteractionService(ctx, svc)
 
 	sw := persistence.NewServicesWrapper(
 		gs,

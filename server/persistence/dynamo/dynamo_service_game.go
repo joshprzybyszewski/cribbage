@@ -17,10 +17,10 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-type gameAtAction struct {
-	Game        model.Game
-	ActionIndex int
-	Overwrite   bool
+type writeGameOptions struct {
+	game        model.Game
+	actionIndex int
+	overwrite   bool
 }
 
 type getGameOptions struct {
@@ -36,7 +36,7 @@ type gameService struct {
 	svc *dynamodb.Client
 }
 
-func getGameService(
+func newGameService(
 	ctx context.Context,
 	svc *dynamodb.Client,
 ) persistence.GameService {
@@ -138,17 +138,17 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 	}
 	g.PlayerColors[pID] = color
 
-	return gs.writeGameAtAction(gameAtAction{
-		Game:        g,
-		ActionIndex: len(g.Actions),
-		Overwrite:   true,
+	return gs.writeGame(writeGameOptions{
+		game:        g,
+		actionIndex: len(g.Actions),
+		overwrite:   true,
 	})
 }
 
 func (gs *gameService) Begin(g model.Game) error {
-	return gs.save(saveOptions{
-		game:       g,
-		isCreation: true,
+	return gs.writeGame(writeGameOptions{
+		game:        g,
+		actionIndex: 0,
 	})
 }
 
@@ -157,42 +157,28 @@ func (gs *gameService) Save(g model.Game) error {
 	if err != nil {
 		return err
 	}
-	return gs.save(saveOptions{
-		game: g,
+
+	// validate that the actions on this game are known by the previous game.
+	sg, err := gs.getGame(g.ID, getGameOptions{
+		latest: true,
 	})
-}
-
-type saveOptions struct {
-	game       model.Game
-	isCreation bool
-}
-
-func (gs *gameService) save(
-	opts saveOptions,
-) error {
-	ai := 0
-	if !opts.isCreation {
-		sg, err := gs.getGame(opts.game.ID, getGameOptions{
-			latest: true,
-		})
-		if err != nil {
-			return err
-		}
-		if len(sg.Actions)+1 != len(opts.game.Actions) {
-			// The new game state can only have one additional action
+	if err != nil {
+		return err
+	}
+	if len(sg.Actions)+1 != len(g.Actions) {
+		// The new game state can only have one additional action
+		return persistence.ErrGameActionsOutOfOrder
+	}
+	for i := range sg.Actions {
+		if !actionsAreEqual(sg.Actions[i], g.Actions[i]) {
 			return persistence.ErrGameActionsOutOfOrder
 		}
-		for i := range sg.Actions {
-			if !actionsAreEqual(sg.Actions[i], opts.game.Actions[i]) {
-				return persistence.ErrGameActionsOutOfOrder
-			}
-		}
-		ai = len(sg.Actions) + 1
 	}
+	ai := len(sg.Actions) + 1
 
-	return gs.writeGameAtAction(gameAtAction{
-		Game:        opts.game,
-		ActionIndex: ai,
+	return gs.writeGame(writeGameOptions{
+		game:        g,
+		actionIndex: ai,
 	})
 }
 
@@ -203,48 +189,30 @@ func actionsAreEqual(a, b model.PlayerAction) bool {
 		a.TimestampStr == b.TimestampStr
 }
 
-func (gs *gameService) getSpecForAllGameActions() string {
-	return getSortKeyPrefix(gs) + `@`
-}
-
-func (gs *gameService) getSpecForGameActionIndex(i int) string {
-	// Since we print out leading zeros to nine places, we could
-	// have issues if our cribbage games ever take more than
-	// 999,999,999 actions
-	return gs.getSpecForAllGameActions() + fmt.Sprintf(`%09d`, i)
-}
-
-func (gs *gameService) getGameActionIndexFromSpec(s string) (int, error) {
-	s = strings.TrimPrefix(s, gs.getSpecForAllGameActions())
-	return strconv.Atoi(s)
-}
-
-// writeGameAtAction will write the given game and action
+// writeGame will write the given game and action
 // This method assumes you've already done game state validation.
-func (gs *gameService) writeGameAtAction(gaa gameAtAction) error {
-	obj, err := json.Marshal(gaa.Game)
+func (gs *gameService) writeGame(opts writeGameOptions) error {
+	obj, err := json.Marshal(opts.game)
 	if err != nil {
 		return err
 	}
 
-	data := map[string]types.AttributeValue{
-		partitionKey: &types.AttributeValueMemberS{
-			Value: strconv.Itoa(int(gaa.Game.ID)),
-		},
-		sortKey: &types.AttributeValueMemberS{
-			Value: gs.getSpecForGameActionIndex(gaa.ActionIndex),
-		},
-		gs.getSerGameKey(): &types.AttributeValueMemberB{
-			Value: obj,
-		},
-	}
-
 	pii := &dynamodb.PutItemInput{
 		TableName: aws.String(dbName),
-		Item:      data,
+		Item: map[string]types.AttributeValue{
+			partitionKey: &types.AttributeValueMemberS{
+				Value: strconv.Itoa(int(opts.game.ID)),
+			},
+			sortKey: &types.AttributeValueMemberS{
+				Value: gs.getSpecForGameActionIndex(opts.actionIndex),
+			},
+			gs.getSerGameKey(): &types.AttributeValueMemberB{
+				Value: obj,
+			},
+		},
 	}
 
-	if gaa.Overwrite {
+	if opts.overwrite {
 		// we want to find out if we overwrote items, so specify ReturnValues
 		pii.ReturnValues = types.ReturnValueAllOld
 	} else {
@@ -264,7 +232,7 @@ func (gs *gameService) writeGameAtAction(gaa gameAtAction) error {
 		return err
 	}
 
-	if gaa.Overwrite {
+	if opts.overwrite {
 		// We need to check that we actually overwrote an element
 		if _, ok := pio.Attributes[gs.getSerGameKey()]; !ok {
 			// oh no! We wanted to overwrite a game, but we didn't!
@@ -277,4 +245,21 @@ func (gs *gameService) writeGameAtAction(gaa gameAtAction) error {
 
 func (gs *gameService) getSerGameKey() string {
 	return `gameBytes`
+}
+
+func (gs *gameService) getSpecForAllGameActions() string {
+	return getSortKeyPrefix(gs) + `@`
+}
+
+func (gs *gameService) getSpecForGameActionIndex(i int) string {
+	// Since we print out leading zeros to six places, we could
+	// have issues if our cribbage games ever take more than
+	// 999,999 actions. This is an arbitrary limit and one that
+	// we're unlikely to ever encounter.
+	return gs.getSpecForAllGameActions() + fmt.Sprintf(`%06d`, i)
+}
+
+func (gs *gameService) getGameActionIndexFromSpec(s string) (int, error) {
+	s = strings.TrimPrefix(s, gs.getSpecForAllGameActions())
+	return strconv.Atoi(s)
 }

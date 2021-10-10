@@ -24,7 +24,7 @@ type interactionService struct {
 	svc *dynamodb.Client
 }
 
-func getInteractionService(
+func newInteractionService(
 	ctx context.Context,
 	svc *dynamodb.Client,
 ) persistence.InteractionService {

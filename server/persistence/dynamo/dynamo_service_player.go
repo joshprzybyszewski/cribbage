@@ -23,7 +23,7 @@ type playerService struct {
 	svc *dynamodb.Client
 }
 
-func getPlayerService(
+func newPlayerService(
 	ctx context.Context,
 	svc *dynamodb.Client,
 ) persistence.PlayerService {
