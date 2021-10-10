@@ -1,4 +1,3 @@
-//nolint:dupl
 package dynamo
 
 import (
@@ -14,6 +13,11 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+)
+
+const (
+	interactionInfoAttributeName   = `info`
+	interactionPreferAttributeName = `prefer`
 )
 
 var _ persistence.InteractionService = (*interactionService)(nil)
@@ -249,9 +253,9 @@ func (is *interactionService) getInteractionMeansModeFromSpec(s string) (interac
 }
 
 func (is *interactionService) getInfoKey() string {
-	return `info`
+	return interactionInfoAttributeName
 }
 
 func (is *interactionService) getPreferKey() string {
-	return `prefer`
+	return interactionPreferAttributeName
 }

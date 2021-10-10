@@ -1,4 +1,3 @@
-//nolint:dupl
 package dynamo
 
 import (
@@ -13,6 +12,11 @@ import (
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+)
+
+const (
+	playerColorAttributeName = `color`
+	playerNameAttributeName  = `name`
 )
 
 var _ persistence.PlayerService = (*playerService)(nil)
@@ -209,7 +213,6 @@ func (ps *playerService) Create(p model.Player) error {
 
 func (ps *playerService) BeginGame(gID model.GameID, players []model.Player) error {
 	for _, p := range players {
-		// TODO do these in separate goroutines (aka parallelize)
 		err := ps.setPlayerGameColor(p.ID, gID, model.UnsetColor)
 		if err != nil {
 			return err
@@ -265,9 +268,9 @@ func (ps *playerService) setPlayerGameColor(
 }
 
 func (ps *playerService) getColorKey() string {
-	return `color`
+	return playerColorAttributeName
 }
 
 func (ps *playerService) getNameKey() string {
-	return `name`
+	return playerNameAttributeName
 }

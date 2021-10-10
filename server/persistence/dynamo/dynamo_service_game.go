@@ -17,6 +17,10 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
+const (
+	gameBytesAttributeName = `gameBytes`
+)
+
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
@@ -242,7 +246,7 @@ func (gs *gameService) writeGame(opts writeGameOptions) error {
 }
 
 func (gs *gameService) getSerGameKey() string {
-	return `gameBytes`
+	return gameBytesAttributeName
 }
 
 func (gs *gameService) getSpecForAllGameActions() string {
