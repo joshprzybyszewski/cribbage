@@ -16,21 +16,37 @@ console.log('building vpc...');
 const vpcStackEntity = new VpcStack(app, 'cribbage-vpc', { env });
 console.log('building vpc...Done!');
 
-console.log('building rds...');
-const rdsStack = new RDSStack(app, 'cribbage-rds', {
+console.log('building dynamodb table...');
+const rdsStack = new DynamoDBStack(app, 'cribbage-dynamodb', {
     vpc: vpcStackEntity.vpc,
-    rdsIngressPort: vpcStackEntity.rdsPort,
+    rdsIngressPort: vpcStackEntity.rdsPort, // TODO
     env,
 });
-console.log('building rds...Done!');
+console.log('building dynamodb table...Done!');
 
-console.log('building fargate app...');
-const fargateStack = new FargateAppStack(app, 'cribbage-app', {
+console.log('building lambdas...');
+const fargateStack = new LambdaStack(app, 'cribbage-lambda', {
     vpc: vpcStackEntity.vpc,
-    dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn,
+    dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn, // TODO
     env,
 });
-console.log('building fargate app...Done!');
+console.log('building lambdas...Done!');
+
+// console.log('building rds...');
+// const rdsStack = new RDSStack(app, 'cribbage-rds', {
+//     vpc: vpcStackEntity.vpc,
+//     rdsIngressPort: vpcStackEntity.rdsPort,
+//     env,
+// });
+// console.log('building rds...Done!');
+
+// console.log('building fargate app...');
+// const fargateStack = new FargateAppStack(app, 'cribbage-app', {
+//     vpc: vpcStackEntity.vpc,
+//     dbSecretArn: rdsStack.mySQLRDSInstance.secret?.secretArn,
+//     env,
+// });
+// console.log('building fargate app...Done!');
 
 console.log('building dns...');
 new DNSStack(app, 'cribbage-dns', {
@@ -39,7 +55,8 @@ new DNSStack(app, 'cribbage-dns', {
 });
 console.log('building dns...Done!');
 
-// I read the following doc which recommended peering two constructs using connections in python: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_ec2/SecurityGroup.html
+// I read the following doc which recommended peering two constructs 
+// using connections in python: https://docs.aws.amazon.com/cdk/api/latest/python/aws_cdk.aws_ec2/SecurityGroup.html
 console.log('Allowing connections between constructs...');
 fargateStack.albFargateService.service.connections.allowTo(rdsStack.mySQLRDSInstance, Port.tcp(vpcStackEntity.rdsPort));
 console.log('Allowing connections between constructs...Done!');
