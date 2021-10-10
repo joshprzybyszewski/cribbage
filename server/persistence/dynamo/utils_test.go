@@ -40,7 +40,7 @@ func TestGetConditionExpression(t *testing.T) {
 		pk:  `:pkAttrName`,
 		skt: hasPrefix,
 		sk:  `:skAttrName`,
-		exp: `DDBid = :pkAttrName and begins_with(spec, :skAttrName)`,
+		exp: `DDBid=:pkAttrName and begins_with(spec,:skAttrName)`,
 	}, {
 		pkt: notExists,
 		pk:  `:pkAttrName`,
@@ -52,7 +52,7 @@ func TestGetConditionExpression(t *testing.T) {
 		pk:  `:pkAttrName`,
 		skt: none,
 		sk:  `:skAttrName`,
-		exp: `DDBid = :pkAttrName`,
+		exp: `DDBid=:pkAttrName`,
 	}, {
 		pkt: hasPrefix,
 		pk:  `:pkAttrName`,
