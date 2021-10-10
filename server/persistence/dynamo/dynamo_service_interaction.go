@@ -38,27 +38,6 @@ func newInteractionService(
 	}
 }
 
-func getPkSkCondCreateQuery(
-	pk, pkName,
-	sk, skName,
-	cond string,
-) func() *dynamodb.QueryInput {
-	return func() *dynamodb.QueryInput {
-		return &dynamodb.QueryInput{
-			TableName:              aws.String(dbName),
-			KeyConditionExpression: &cond,
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				pkName: &types.AttributeValueMemberS{
-					Value: pk,
-				},
-				skName: &types.AttributeValueMemberS{
-					Value: sk,
-				},
-			},
-		}
-	}
-}
-
 func (is *interactionService) Get(
 	id model.PlayerID,
 ) (interaction.PlayerMeans, error) {

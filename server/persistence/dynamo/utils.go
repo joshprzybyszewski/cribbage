@@ -1,6 +1,12 @@
 package dynamo
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+)
 
 const (
 	dbName       = `cribbage`
@@ -76,4 +82,25 @@ func getConditionExpression(
 	}
 
 	return sb.String()
+}
+
+func getPkSkCondCreateQuery(
+	pk, pkName,
+	sk, skName,
+	cond string,
+) func() *dynamodb.QueryInput {
+	return func() *dynamodb.QueryInput {
+		return &dynamodb.QueryInput{
+			TableName:              aws.String(dbName),
+			KeyConditionExpression: aws.String(cond),
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				pkName: &types.AttributeValueMemberS{
+					Value: pk,
+				},
+				skName: &types.AttributeValueMemberS{
+					Value: sk,
+				},
+			},
+		}
+	}
 }

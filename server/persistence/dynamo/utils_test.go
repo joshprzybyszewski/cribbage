@@ -3,8 +3,12 @@ package dynamo
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetSortKeyPrefix(t *testing.T) {
@@ -64,5 +68,43 @@ func TestGetConditionExpression(t *testing.T) {
 	for _, tc := range testCases {
 		act := getConditionExpression(tc.pkt, tc.pk, tc.skt, tc.sk)
 		assert.Equal(t, tc.exp, act)
+	}
+}
+
+func TestGetPkSkCondCreateQuery(t *testing.T) {
+	testCases := []struct {
+		pk, pkName string
+		sk, skName string
+		cond       string
+		exp        *dynamodb.QueryInput
+	}{{
+		pk:     `is_cool`,
+		pkName: `:josh`,
+		sk:     `so_cool`,
+		skName: `:jp`,
+		cond:   `attribute_not_exists(:josh) and attribute_not_exists(:jp)`,
+		exp: &dynamodb.QueryInput{
+			TableName:              aws.String(dbName),
+			KeyConditionExpression: aws.String(`attribute_not_exists(:josh) and attribute_not_exists(:jp)`),
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				`:josh`: &types.AttributeValueMemberS{
+					Value: `is_cool`,
+				},
+				`:jp`: &types.AttributeValueMemberS{
+					Value: `so_cool`,
+				},
+			},
+		},
+	}}
+
+	for _, tc := range testCases {
+		createQuery := getPkSkCondCreateQuery(
+			tc.pk, tc.pkName,
+			tc.sk, tc.skName,
+			tc.cond,
+		)
+		require.NotNil(t, createQuery)
+		actQuery := createQuery()
+		assert.Equal(t, tc.exp, actQuery)
 	}
 }
