@@ -19,7 +19,7 @@ import (
 
 type writeGameOptions struct {
 	game        model.Game
-	actionIndex int
+	actionIndex uint
 	overwrite   bool
 }
 
@@ -68,7 +68,7 @@ func (gs *gameService) getGame(
 	skName := `:sk`
 	sk := gs.getSpecForAllGameActions()
 	if !opts.latest {
-		sk = gs.getSpecForGameActionIndex(int(opts.actionIndex))
+		sk = gs.getSpecForGameActionIndex(opts.actionIndex)
 	}
 	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
@@ -140,7 +140,7 @@ func (gs *gameService) UpdatePlayerColor(gID model.GameID, pID model.PlayerID, c
 
 	return gs.writeGame(writeGameOptions{
 		game:        g,
-		actionIndex: len(g.Actions),
+		actionIndex: uint(len(g.Actions)),
 		overwrite:   true,
 	})
 }
@@ -174,11 +174,10 @@ func (gs *gameService) Save(g model.Game) error {
 			return persistence.ErrGameActionsOutOfOrder
 		}
 	}
-	ai := len(sg.Actions) + 1
 
 	return gs.writeGame(writeGameOptions{
 		game:        g,
-		actionIndex: ai,
+		actionIndex: uint(len(sg.Actions) + 1),
 	})
 }
 
@@ -251,7 +250,7 @@ func (gs *gameService) getSpecForAllGameActions() string {
 	return getSortKeyPrefix(gs) + `@`
 }
 
-func (gs *gameService) getSpecForGameActionIndex(i int) string {
+func (gs *gameService) getSpecForGameActionIndex(i uint) string {
 	// Since we print out leading zeros to six places, we could
 	// have issues if our cribbage games ever take more than
 	// 999,999 actions. This is an arbitrary limit and one that
