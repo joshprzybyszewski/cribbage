@@ -42,11 +42,6 @@ func (ps *playerService) getGameSortKey() string {
 }
 
 func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
-	ret := model.Player{
-		ID:    id,
-		Games: map[model.GameID]model.PlayerColor{},
-	}
-
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
@@ -72,29 +67,24 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 		return model.Player{}, err
 	}
 
-	err = ps.populatePlayerFromItems(&ret, items)
-	if err != nil {
-		return model.Player{}, err
-	}
-
-	if ret.Name == `` {
-		// This player _must_ have had at least a name stored, otherwise
-		// we done messed up
-		return model.Player{}, persistence.ErrPlayerNotFound
-	}
-
-	return ret, nil
+	return ps.buildPlayerFromItems(id, items)
 }
 
-func (ps *playerService) populatePlayerFromItems(
-	p *model.Player,
+func (ps *playerService) buildPlayerFromItems(
+	id model.PlayerID,
 	items []map[string]types.AttributeValue,
-) error {
+) (model.Player, error) {
+
+	p := model.Player{
+		ID:    id,
+		Games: map[model.GameID]model.PlayerColor{},
+	}
+
 	for _, item := range items {
 		if colorAV, ok := item[ps.getColorKey()]; ok {
 			gID, color, err := ps.getGameIDAndColor(item[sortKey], colorAV)
 			if err != nil {
-				return err
+				return model.Player{}, err
 			}
 
 			p.Games[gID] = color
@@ -103,15 +93,21 @@ func (ps *playerService) populatePlayerFromItems(
 
 		name, ok := ps.getPlayerName(item[sortKey], item[ps.getNameKey()])
 		if !ok {
-			return errors.New(`got unexpected payload`)
+			return model.Player{}, errors.New(`got unexpected payload`)
 		} else if p.Name != `` {
-			return errors.New(`found two names`)
+			return model.Player{}, errors.New(`found two names`)
 		}
 
 		p.Name = name
 	}
 
-	return nil
+	if p.Name == `` {
+		// This player _must_ have had at least a name stored, otherwise
+		// we done messed up
+		return model.Player{}, persistence.ErrPlayerNotFound
+	}
+
+	return p, nil
 }
 
 func (ps *playerService) getSpecForPlayerGameColor(

@@ -41,11 +41,6 @@ func newInteractionService(
 func (is *interactionService) Get(
 	id model.PlayerID,
 ) (interaction.PlayerMeans, error) {
-	ret := interaction.PlayerMeans{
-		PlayerID:      id,
-		PreferredMode: interaction.Unknown,
-	}
-
 	pkName := `:pID`
 	pk := string(id)
 	skName := `:sk`
@@ -70,31 +65,33 @@ func (is *interactionService) Get(
 	if err != nil {
 		return interaction.PlayerMeans{}, err
 	}
-	err = is.populatePlayerMeansFromItems(&ret, items)
-	if err != nil {
-		return interaction.PlayerMeans{}, err
-	}
 
-	return ret, nil
+	return is.buildPlayerMeansFromItems(id, items)
 }
 
-func (is *interactionService) populatePlayerMeansFromItems(
-	pm *interaction.PlayerMeans,
+func (is *interactionService) buildPlayerMeansFromItems(
+	id model.PlayerID,
 	items []map[string]types.AttributeValue,
-) error {
+) (interaction.PlayerMeans, error) {
+
+	pm := interaction.PlayerMeans{
+		PlayerID:      id,
+		PreferredMode: interaction.Unknown,
+	}
+
 	for _, item := range items {
 		if preferAV, ok := item[is.getPreferKey()]; ok {
 			if pm.PreferredMode != interaction.Unknown {
-				return errors.New(`preferred mode already set`)
+				return interaction.PlayerMeans{}, errors.New(`preferred mode already set`)
 			}
 
 			preferAVN, ok := preferAV.(*types.AttributeValueMemberN)
 			if !ok {
-				return errors.New(`wrong prefer attribute type`)
+				return interaction.PlayerMeans{}, errors.New(`wrong prefer attribute type`)
 			}
 			preferMode, err := strconv.Atoi(preferAVN.Value)
 			if err != nil {
-				return err
+				return interaction.PlayerMeans{}, err
 			}
 
 			pm.PreferredMode = interaction.Mode(preferMode)
@@ -106,7 +103,7 @@ func (is *interactionService) populatePlayerMeansFromItems(
 			item[is.getInfoKey()],
 		)
 		if err != nil {
-			return err
+			return interaction.PlayerMeans{}, err
 		}
 
 		m := interaction.Means{
@@ -114,14 +111,14 @@ func (is *interactionService) populatePlayerMeansFromItems(
 		}
 		err = m.AddSerializedInfo(serInfo)
 		if err != nil {
-			return err
+			return interaction.PlayerMeans{}, err
 		}
 
 		pm.Interactions = append(pm.Interactions, m)
 
 	}
 
-	return nil
+	return pm, nil
 }
 
 func (is *interactionService) getInteractionModeAndSerInfo(
