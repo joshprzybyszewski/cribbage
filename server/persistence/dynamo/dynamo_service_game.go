@@ -17,17 +17,6 @@ import (
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
 )
 
-type writeGameOptions struct {
-	game        model.Game
-	actionIndex uint
-	overwrite   bool
-}
-
-type getGameOptions struct {
-	latest      bool
-	actionIndex uint
-}
-
 var _ persistence.GameService = (*gameService)(nil)
 
 type gameService struct {
@@ -40,7 +29,6 @@ func newGameService(
 	ctx context.Context,
 	svc *dynamodb.Client,
 ) persistence.GameService {
-
 	return &gameService{
 		ctx: ctx,
 		svc: svc,
@@ -57,6 +45,11 @@ func (gs *gameService) GetAt(id model.GameID, numActions uint) (model.Game, erro
 	return gs.getGame(id, getGameOptions{
 		actionIndex: numActions,
 	})
+}
+
+type getGameOptions struct {
+	latest      bool
+	actionIndex uint
 }
 
 func (gs *gameService) getGame(
@@ -186,6 +179,12 @@ func actionsAreEqual(a, b model.PlayerAction) bool {
 		a.ID == b.ID &&
 		a.Overcomes == b.Overcomes &&
 		a.TimestampStr == b.TimestampStr
+}
+
+type writeGameOptions struct {
+	game        model.Game
+	actionIndex uint
+	overwrite   bool
 }
 
 // writeGame will write the given game and action
