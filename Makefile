@@ -45,7 +45,7 @@ serve: ## Sets up the server locally with default options
 	go run -tags=prod main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
 .PHONY: lambda
-lambda:
+lambda: ## Builds the app so that we can serve it in a lambda
 	GOOS=linux CGO_ENABLED=0 go build -o cribbage-lambda -tags=prod main.go
 	zip cribbage-lambda.zip cribbage-lambda
 	rm cribbage-lambda
@@ -65,3 +65,8 @@ wasm: ## Builds the wasm output for the gowasm client
 .PHONY: localstack
 localstack: ## Runs the app as a local stack in docker-compose
 	docker-compose up -d cribbage-server
+
+.PHONY: cdk
+cdk: ## tries to deploy your app
+	# cdk bootstrap aws://unknown-account/unknown-region
+	cdk deploy cribbage-lambda
