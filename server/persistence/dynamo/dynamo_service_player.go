@@ -48,20 +48,7 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	sk := getSortKeyPrefix(ps)
 	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
-	createQuery := func() *dynamodb.QueryInput {
-		return &dynamodb.QueryInput{
-			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				pkName: &types.AttributeValueMemberS{
-					Value: pk,
-				},
-				skName: &types.AttributeValueMemberS{
-					Value: sk,
-				},
-			},
-		}
-	}
+	createQuery := getPkSkCondCreateQuery(pk, pkName, sk, skName, keyCondExpr)
 	items, err := fullQuery(ps.ctx, ps.svc, createQuery)
 	if err != nil {
 		return model.Player{}, err

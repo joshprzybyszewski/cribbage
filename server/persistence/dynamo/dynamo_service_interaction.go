@@ -38,19 +38,15 @@ func newInteractionService(
 	}
 }
 
-func (is *interactionService) Get(
-	id model.PlayerID,
-) (interaction.PlayerMeans, error) {
-	pkName := `:pID`
-	pk := string(id)
-	skName := `:sk`
-	sk := getSortKeyPrefix(is)
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
-
-	createQuery := func() *dynamodb.QueryInput {
+func getPkSkCondCreateQuery(
+	pk, pkName,
+	sk, skName,
+	cond string,
+) func() *dynamodb.QueryInput {
+	return func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
+			KeyConditionExpression: &cond,
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
 					Value: pk,
@@ -61,6 +57,18 @@ func (is *interactionService) Get(
 			},
 		}
 	}
+}
+
+func (is *interactionService) Get(
+	id model.PlayerID,
+) (interaction.PlayerMeans, error) {
+	pkName := `:ipID`
+	pk := string(id)
+	skName := `:sk`
+	sk := getSortKeyPrefix(is)
+	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
+
+	createQuery := getPkSkCondCreateQuery(pk, pkName, sk, skName, keyCondExpr)
 	items, err := fullQuery(is.ctx, is.svc, createQuery)
 	if err != nil {
 		return interaction.PlayerMeans{}, err
