@@ -170,8 +170,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		condExpr := getConditionExpression(notExists, ``, notExists, ``)
-		pii.ConditionExpression = &condExpr
+		pii.ConditionExpression = getConditionExpression(notExists, ``, notExists, ``)
 	}
 
 	_, err := is.svc.PutItem(is.ctx, pii)

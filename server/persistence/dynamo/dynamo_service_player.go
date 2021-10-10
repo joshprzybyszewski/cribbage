@@ -182,7 +182,7 @@ func (ps *playerService) Create(p model.Player) error {
 	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(dbName),
 		Item:                data,
-		ConditionExpression: &condExpr,
+		ConditionExpression: condExpr,
 	})
 	if err != nil {
 		if isConditionalError(err) {

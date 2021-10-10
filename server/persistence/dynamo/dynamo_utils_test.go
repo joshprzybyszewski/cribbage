@@ -67,7 +67,7 @@ func TestFullQuery(t *testing.T) {
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
+			KeyConditionExpression: keyCondExpr,
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
 					Value: hugeItemID,

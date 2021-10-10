@@ -38,31 +38,31 @@ func TestGetConditionExpression(t *testing.T) {
 	testCases := []struct {
 		pkt, skt condExprType
 		pk, sk   string
-		exp      string
+		exp      *string
 	}{{
 		pkt: equalsID,
 		pk:  `:pkAttrName`,
 		skt: hasPrefix,
 		sk:  `:skAttrName`,
-		exp: `DDBid=:pkAttrName and begins_with(spec,:skAttrName)`,
+		exp: aws.String(`DDBid=:pkAttrName and begins_with(spec,:skAttrName)`),
 	}, {
 		pkt: notExists,
 		pk:  `:pkAttrName`,
 		skt: notExists,
 		sk:  `:skAttrName`,
-		exp: `attribute_not_exists(DDBid) and attribute_not_exists(spec)`,
+		exp: aws.String(`attribute_not_exists(DDBid) and attribute_not_exists(spec)`),
 	}, {
 		pkt: equalsID,
 		pk:  `:pkAttrName`,
 		skt: none,
 		sk:  `:skAttrName`,
-		exp: `DDBid=:pkAttrName`,
+		exp: aws.String(`DDBid=:pkAttrName`),
 	}, {
 		pkt: hasPrefix,
 		pk:  `:pkAttrName`,
 		skt: equalsID,
 		sk:  `:skAttrName`,
-		exp: `unsupported pkType and unsupported skType`,
+		exp: aws.String(`unsupported pkType and unsupported skType`),
 	}}
 
 	for _, tc := range testCases {
@@ -75,14 +75,14 @@ func TestGetPkSkCondCreateQuery(t *testing.T) {
 	testCases := []struct {
 		pk, pkName string
 		sk, skName string
-		cond       string
+		cond       *string
 		exp        *dynamodb.QueryInput
 	}{{
 		pk:     `is_cool`,
 		pkName: `:josh`,
 		sk:     `so_cool`,
 		skName: `:jp`,
-		cond:   `attribute_not_exists(:josh) and attribute_not_exists(:jp)`,
+		cond:   aws.String(`attribute_not_exists(:josh) and attribute_not_exists(:jp)`),
 		exp: &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
 			KeyConditionExpression: aws.String(`attribute_not_exists(:josh) and attribute_not_exists(:jp)`),

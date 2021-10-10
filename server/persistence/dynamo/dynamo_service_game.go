@@ -74,7 +74,7 @@ func (gs *gameService) getGame(
 	qi := &dynamodb.QueryInput{
 		ScanIndexForward:       &sif,
 		TableName:              aws.String(dbName),
-		KeyConditionExpression: &keyCondExpr,
+		KeyConditionExpression: keyCondExpr,
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			pkName: &types.AttributeValueMemberS{
 				Value: pk,
@@ -222,8 +222,7 @@ func (gs *gameService) writeGame(opts writeGameOptions) error {
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		condExpr := getConditionExpression(notExists, ``, notExists, ``)
-		pii.ConditionExpression = &condExpr
+		pii.ConditionExpression = getConditionExpression(notExists, ``, notExists, ``)
 	}
 
 	pio, err := gs.svc.PutItem(gs.ctx, pii)

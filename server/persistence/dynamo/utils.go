@@ -44,7 +44,7 @@ func getConditionExpression(
 	pk string,
 	skType condExprType,
 	sk string,
-) string {
+) *string {
 	var sb strings.Builder
 
 	switch pkType {
@@ -61,7 +61,7 @@ func getConditionExpression(
 	}
 
 	if skType == none {
-		return sb.String()
+		return aws.String(sb.String())
 	}
 
 	sb.WriteString(` and `)
@@ -81,18 +81,18 @@ func getConditionExpression(
 		sb.WriteString(`unsupported skType`)
 	}
 
-	return sb.String()
+	return aws.String(sb.String())
 }
 
 func getPkSkCondCreateQuery(
 	pk, pkName,
-	sk, skName,
-	cond string,
+	sk, skName string,
+	cond *string,
 ) func() *dynamodb.QueryInput {
 	return func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: aws.String(cond),
+			KeyConditionExpression: cond,
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
 					Value: pk,
