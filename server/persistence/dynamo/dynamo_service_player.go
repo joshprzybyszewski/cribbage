@@ -48,7 +48,9 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	sk := getSortKeyPrefix(ps)
 	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
-	createQuery := getPkSkCondCreateQuery(pk, pkName, sk, skName, keyCondExpr)
+	createQuery := newQueryInputFactory(getQueryInputParams(
+		pk, pkName, sk, skName, keyCondExpr,
+	))
 	items, err := fullQuery(ps.ctx, ps.svc, createQuery)
 	if err != nil {
 		return model.Player{}, err

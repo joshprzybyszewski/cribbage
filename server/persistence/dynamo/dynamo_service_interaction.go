@@ -47,7 +47,9 @@ func (is *interactionService) Get(
 	sk := getSortKeyPrefix(is)
 	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
 
-	createQuery := getPkSkCondCreateQuery(pk, pkName, sk, skName, keyCondExpr)
+	createQuery := newQueryInputFactory(getQueryInputParams(
+		pk, pkName, sk, skName, keyCondExpr,
+	))
 	items, err := fullQuery(is.ctx, is.svc, createQuery)
 	if err != nil {
 		return interaction.PlayerMeans{}, err
@@ -85,9 +87,8 @@ func (is *interactionService) buildPlayerMeansFromItems(
 			continue
 		}
 
-		mode, serInfo, err := is.getInteractionModeAndSerInfo(
+		mode, err := is.getInteractionMode(
 			item[sortKey],
-			item[is.getInfoKey()],
 		)
 		if err != nil {
 			return interaction.PlayerMeans{}, err
@@ -95,6 +96,13 @@ func (is *interactionService) buildPlayerMeansFromItems(
 
 		m := interaction.Means{
 			Mode: mode,
+		}
+
+		serInfo, err := is.getSerInfo(
+			item[is.getInfoKey()],
+		)
+		if err != nil {
+			return interaction.PlayerMeans{}, err
 		}
 		err = m.AddSerializedInfo(serInfo)
 		if err != nil {
@@ -108,25 +116,30 @@ func (is *interactionService) buildPlayerMeansFromItems(
 	return pm, nil
 }
 
-func (is *interactionService) getInteractionModeAndSerInfo(
-	specAV, infoAV types.AttributeValue,
-) (interaction.Mode, []byte, error) {
+func (is *interactionService) getInteractionMode(
+	specAV types.AttributeValue,
+) (interaction.Mode, error) {
 	specAVS, ok := specAV.(*types.AttributeValueMemberS)
 	if !ok {
-		return interaction.Unknown, nil, errors.New(`wrong spec`)
+		return interaction.Unknown, errors.New(`wrong spec`)
 	}
 
 	mode, err := is.getInteractionMeansModeFromSpec(specAVS.Value)
 	if err != nil {
-		return interaction.Unknown, nil, err
+		return interaction.Unknown, err
 	}
+	return mode, nil
+}
 
+func (is *interactionService) getSerInfo(
+	infoAV types.AttributeValue,
+) ([]byte, error) {
 	infoAVB, ok := infoAV.(*types.AttributeValueMemberB)
 	if !ok {
-		return interaction.Unknown, nil, errors.New(`wrong info type`)
+		return nil, errors.New(`wrong info type`)
 	}
 
-	return mode, infoAVB.Value, nil
+	return infoAVB.Value, nil
 }
 
 func (is *interactionService) Create(pm interaction.PlayerMeans) error {

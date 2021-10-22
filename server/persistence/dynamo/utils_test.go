@@ -6,9 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/joshprzybyszewski/cribbage/model"
 )
 
 func TestGetSortKeyPrefix(t *testing.T) {
@@ -47,9 +48,9 @@ func TestGetConditionExpression(t *testing.T) {
 		exp: aws.String(`DDBid=:pkAttrName and begins_with(spec,:skAttrName)`),
 	}, {
 		pkt: notExists,
-		pk:  `:pkAttrName`,
+		pk:  `:pkAttrName1`,
 		skt: notExists,
-		sk:  `:skAttrName`,
+		sk:  `:skAttrName2`,
 		exp: aws.String(`attribute_not_exists(DDBid) and attribute_not_exists(spec)`),
 	}, {
 		pkt: equalsID,
@@ -71,7 +72,7 @@ func TestGetConditionExpression(t *testing.T) {
 	}
 }
 
-func TestGetPkSkCondCreateQuery(t *testing.T) {
+func TestNewQueryInputFactory(t *testing.T) {
 	testCases := []struct {
 		pk, pkName string
 		sk, skName string
@@ -98,11 +99,11 @@ func TestGetPkSkCondCreateQuery(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		createQuery := getPkSkCondCreateQuery(
+		createQuery := newQueryInputFactory(getQueryInputParams(
 			tc.pk, tc.pkName,
 			tc.sk, tc.skName,
 			tc.cond,
-		)
+		))
 		require.NotNil(t, createQuery)
 		actQuery := createQuery()
 		assert.Equal(t, tc.exp, actQuery)

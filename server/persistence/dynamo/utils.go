@@ -84,21 +84,42 @@ func getConditionExpression(
 	return aws.String(sb.String())
 }
 
-func getPkSkCondCreateQuery(
+type queryInputParams struct {
+	partitionKey     string
+	partitionKeyName string
+	sortKey          string
+	sortKeyName      string
+
+	keyConditionExpression *string
+}
+
+func getQueryInputParams(
 	pk, pkName,
 	sk, skName string,
 	cond *string,
+) queryInputParams {
+	return queryInputParams{
+		partitionKey:           pk,
+		partitionKeyName:       pkName,
+		sortKey:                sk,
+		sortKeyName:            skName,
+		keyConditionExpression: cond,
+	}
+}
+
+func newQueryInputFactory(
+	params queryInputParams,
 ) func() *dynamodb.QueryInput {
 	return func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: cond,
+			KeyConditionExpression: params.keyConditionExpression,
 			ExpressionAttributeValues: map[string]types.AttributeValue{
-				pkName: &types.AttributeValueMemberS{
-					Value: pk,
+				params.partitionKeyName: &types.AttributeValueMemberS{
+					Value: params.partitionKey,
 				},
-				skName: &types.AttributeValueMemberS{
-					Value: sk,
+				params.sortKeyName: &types.AttributeValueMemberS{
+					Value: params.sortKey,
 				},
 			},
 		}
