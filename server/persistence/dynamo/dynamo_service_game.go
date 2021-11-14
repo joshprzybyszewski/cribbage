@@ -67,7 +67,7 @@ func (gs *gameService) getGame(
 	if !opts.latest {
 		sk = gs.getSpecForGameActionIndex(opts.actionIndex)
 	}
-	kce := hasPrefix{
+	hp := hasPrefix{
 		pkName: pkName,
 		skName: skName,
 	}
@@ -77,7 +77,7 @@ func (gs *gameService) getGame(
 	qi := &dynamodb.QueryInput{
 		ScanIndexForward:       &sif,
 		TableName:              aws.String(dbName),
-		KeyConditionExpression: kce.conditionExpression(),
+		KeyConditionExpression: hp.conditionExpression(),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			pkName: &types.AttributeValueMemberS{
 				Value: pk,
