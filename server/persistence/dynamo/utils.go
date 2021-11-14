@@ -30,56 +30,43 @@ func getSortKeyPrefix(service interface{}) string {
 	return `garbage`
 }
 
-type condExprType uint8
+type hasPrefix struct {
+	pkName string
+	skName string
+}
 
-const (
-	none      condExprType = 0
-	equalsID  condExprType = 1
-	hasPrefix condExprType = 2
-	notExists condExprType = 3
-)
-
-func getConditionExpression(
-	pkType condExprType,
-	pk string,
-	skType condExprType,
-	sk string,
-) *string {
+func (hp hasPrefix) conditionExpression() *string {
 	var sb strings.Builder
 
-	switch pkType {
-	case equalsID:
-		sb.WriteString(partitionKey)
-		sb.WriteString(`=`)
-		sb.WriteString(pk)
-	case notExists:
-		sb.WriteString(`attribute_not_exists(`)
-		sb.WriteString(partitionKey)
-		sb.WriteString(`)`)
-	default:
-		sb.WriteString(`unsupported pkType`)
-	}
-
-	if skType == none {
-		return aws.String(sb.String())
-	}
+	sb.WriteString(partitionKey)
+	sb.WriteString(`=`)
+	sb.WriteString(hp.pkName)
 
 	sb.WriteString(` and `)
 
-	switch skType {
-	case hasPrefix:
-		sb.WriteString(`begins_with(`)
-		sb.WriteString(sortKey)
-		sb.WriteString(`,`)
-		sb.WriteString(sk)
-		sb.WriteString(`)`)
-	case notExists:
-		sb.WriteString(`attribute_not_exists(`)
-		sb.WriteString(sortKey)
-		sb.WriteString(`)`)
-	default:
-		sb.WriteString(`unsupported skType`)
-	}
+	sb.WriteString(`begins_with(`)
+	sb.WriteString(sortKey)
+	sb.WriteString(`,`)
+	sb.WriteString(hp.skName)
+	sb.WriteString(`)`)
+
+	return aws.String(sb.String())
+}
+
+type notExists struct{}
+
+func (notExists) conditionExpression() *string {
+	var sb strings.Builder
+
+	sb.WriteString(`attribute_not_exists(`)
+	sb.WriteString(partitionKey)
+	sb.WriteString(`)`)
+
+	sb.WriteString(` and `)
+
+	sb.WriteString(`attribute_not_exists(`)
+	sb.WriteString(sortKey)
+	sb.WriteString(`)`)
 
 	return aws.String(sb.String())
 }

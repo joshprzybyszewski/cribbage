@@ -45,10 +45,13 @@ func (is *interactionService) Get(
 	pk := string(id)
 	skName := `:sk`
 	sk := getSortKeyPrefix(is)
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
+	hp := hasPrefix{
+		pkName: pkName,
+		skName: skName,
+	}
 
 	createQuery := newQueryInputFactory(getQueryInputParams(
-		pk, pkName, sk, skName, keyCondExpr,
+		pk, pkName, sk, skName, hp.conditionExpression(),
 	))
 	items, err := fullQuery(is.ctx, is.svc, createQuery)
 	if err != nil {
@@ -183,7 +186,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		pii.ConditionExpression = getConditionExpression(notExists, ``, notExists, ``)
+		pii.ConditionExpression = notExists{}.conditionExpression()
 	}
 
 	_, err := is.svc.PutItem(is.ctx, pii)

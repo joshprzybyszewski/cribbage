@@ -63,12 +63,15 @@ func TestFullQuery(t *testing.T) {
 
 	pkName := `:pID`
 	skName := `:sk`
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
+	hp := hasPrefix{
+		pkName: pkName,
+		skName: skName,
+	}
 
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: keyCondExpr,
+			KeyConditionExpression: hp.conditionExpression(),
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
 					Value: hugeItemID,

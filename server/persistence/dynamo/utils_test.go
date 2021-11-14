@@ -37,37 +37,21 @@ func TestGetSortKeyPrefix(t *testing.T) {
 
 func TestGetConditionExpression(t *testing.T) {
 	testCases := []struct {
-		pkt, skt condExprType
-		pk, sk   string
-		exp      *string
+		get interface{ conditionExpression() *string }
+		exp *string
 	}{{
-		pkt: equalsID,
-		pk:  `:pkAttrName`,
-		skt: hasPrefix,
-		sk:  `:skAttrName`,
+		get: hasPrefix{
+			pkName: `:pkAttrName`,
+			skName: `:skAttrName`,
+		},
 		exp: aws.String(`DDBid=:pkAttrName and begins_with(spec,:skAttrName)`),
 	}, {
-		pkt: notExists,
-		pk:  `:pkAttrName1`,
-		skt: notExists,
-		sk:  `:skAttrName2`,
+		get: notExists{},
 		exp: aws.String(`attribute_not_exists(DDBid) and attribute_not_exists(spec)`),
-	}, {
-		pkt: equalsID,
-		pk:  `:pkAttrName`,
-		skt: none,
-		sk:  `:skAttrName`,
-		exp: aws.String(`DDBid=:pkAttrName`),
-	}, {
-		pkt: hasPrefix,
-		pk:  `:pkAttrName`,
-		skt: equalsID,
-		sk:  `:skAttrName`,
-		exp: aws.String(`unsupported pkType and unsupported skType`),
 	}}
 
 	for _, tc := range testCases {
-		act := getConditionExpression(tc.pkt, tc.pk, tc.skt, tc.sk)
+		act := tc.get.conditionExpression()
 		assert.Equal(t, tc.exp, act)
 	}
 }
