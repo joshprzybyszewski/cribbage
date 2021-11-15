@@ -11,6 +11,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/dynamo"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
@@ -26,6 +27,7 @@ const (
 	memoryDB dbName = `memoryDB`
 	mongoDB  dbName = `mongoDB`
 	mysqlDB  dbName = `mysqlDB`
+	dynamoDB dbName = `dynamoDB`
 )
 
 var (
@@ -86,20 +88,91 @@ func persistenceGameCopy(dst *model.Game, src model.Game) {
 func checkPersistedGame(t *testing.T, name dbName, db persistence.DB, expGame model.Game) {
 	actGame, err := db.GetGame(expGame.ID)
 	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
-	if len(actGame.Crib) == 0 {
+	checkPersistedGameCompare(t, name, expGame, actGame)
+}
+
+func checkPersistedGameAt(
+	t *testing.T,
+	name dbName,
+	db persistence.DB,
+	expGame model.Game,
+	numPrevActions uint,
+) {
+	if name == memoryDB {
+		t.Logf("memory doesn't keep track of history")
+		return
+	}
+
+	actGame, err := db.GetGameAction(expGame.ID, numPrevActions)
+	require.NoError(t, err, `expected to find game with id "%d"`, expGame.ID)
+	checkPersistedGameCompare(t, name, expGame, actGame)
+}
+
+func checkPersistedGameCompare(t *testing.T, name dbName, expGame, actGame model.Game) {
+	if len(expGame.Crib) == 0 {
+		assert.Empty(t, actGame.Crib)
 		expGame.Crib = nil
 		actGame.Crib = nil
 	}
-	if len(actGame.Actions) == 0 {
+	if len(expGame.Actions) == 0 {
+		assert.Empty(t, actGame.Actions)
 		expGame.Actions = nil
 		actGame.Actions = nil
 	}
-	for i := range actGame.Actions {
-		if !(name == memoryDB || name == mongoDB) {
-			// memory provider and mongodb do not have this feature implemented
-			assert.NotEqual(t, time.Time{}, actGame.Actions[i].TimeStamp)
+	if len(expGame.PlayerColors) == 0 {
+		assert.Empty(t, actGame.PlayerColors)
+		expGame.PlayerColors = nil
+		actGame.PlayerColors = nil
+	}
+	if len(expGame.BlockingPlayers) == 0 {
+		assert.Empty(t, actGame.BlockingPlayers)
+		expGame.BlockingPlayers = nil
+		actGame.BlockingPlayers = nil
+	}
+	if len(expGame.Hands) == 0 {
+		assert.Empty(t, actGame.Hands)
+		expGame.Hands = nil
+		actGame.Hands = nil
+	}
+	if len(expGame.PeggedCards) == 0 {
+		assert.Empty(t, actGame.PeggedCards)
+		expGame.PeggedCards = nil
+		actGame.PeggedCards = nil
+	}
+	if name == memoryDB {
+		t.Logf("setting games pointers on in-memory players... because memory is weird")
+		for i := range expGame.Players {
+			require.Equal(t, expGame.Players[i].ID, actGame.Players[i].ID)
+			actGame.Players[i].Games = expGame.Players[i].Games
 		}
-		actGame.Actions[i].TimeStamp = time.Time{}
+	}
+	if name == mongoDB {
+		// memory provider and mongodb do not have this feature implemented
+		t.Logf("clearing out the timestamps from the expected game")
+		for i := range actGame.Actions {
+			assert.Empty(
+				t,
+				actGame.Actions[i].TimestampStr,
+				`timestamp should be empty at index %d`, i,
+			)
+			expGame.Actions[i].TimestampStr = ``
+		}
+	} else if name == mysqlDB {
+		// mysql DB populates this field internally, so it should always be non-empty
+		t.Logf("verifying non-empty timestamps")
+		for i := range actGame.Actions {
+			assert.NotEmpty(
+				t,
+				actGame.Actions[i].TimestampStr,
+				`timestamp should not be empty at index %d`, i,
+			)
+			// now let's clear both the expected and the actual out.
+			// The actual will get re-populated with the mysql entry
+			// so we cannot guarantee that it's exactly the same as
+			// the input timestamp.
+			actGame.Actions[i].TimestampStr = ``
+			expGame.Actions[i].TimestampStr = ``
+		}
 	}
 	assert.Equal(t, expGame, actGame)
 }
@@ -129,6 +202,12 @@ func TestDB(t *testing.T) {
 		require.NoError(t, err)
 
 		dbfs[mysqlDB] = mySQLDB
+
+		// We assume you have dynamodb stood up locally when running without -short
+		dynamodb, err := dynamo.NewFactory(`http://localhost:18079`)
+		require.NoError(t, err)
+
+		dbfs[dynamoDB] = dynamodb
 	}
 
 	for dbName, dbf := range dbfs {
@@ -141,17 +220,20 @@ func TestDB(t *testing.T) {
 }
 
 func testCreatePlayersWithSimilarNames(t *testing.T, name dbName, db persistence.DB) {
+	suffix := rand.String(50)
+	p1Str := `alice` + suffix
+	p2Str := `Alice` + suffix
 	p1 := model.Player{
-		ID:    model.PlayerID(`alice`),
-		Name:  `alice`,
+		ID:    model.PlayerID(p1Str),
+		Name:  p1Str,
 		Games: map[model.GameID]model.PlayerColor{},
 	}
 
 	assert.NoError(t, db.CreatePlayer(p1))
 
 	p2 := model.Player{
-		ID:    model.PlayerID(`Alice`),
-		Name:  `Alice`,
+		ID:    model.PlayerID(p2Str),
+		Name:  p2Str,
 		Games: map[model.GameID]model.PlayerColor{},
 	}
 
@@ -272,10 +354,7 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			model.NewCardFromString(`ac`),
 			model.NewCardFromString(`ad`),
 		},
-		PeggedCards: make([]model.PeggedCard, 0, 8),
-		Actions:     []model.PlayerAction{},
 	}
-	g1Copy := g1
 
 	for i, p := range g1.Players {
 		require.NoError(t, db.CreatePlayer(p))
@@ -290,12 +369,12 @@ func testCreateGame(t *testing.T, name dbName, db persistence.DB) {
 			}
 		}
 	}
+	var g1Copy model.Game
+	persistenceGameCopy(&g1Copy, g1)
 
 	require.NoError(t, db.CreateGame(g1))
 
-	actGame, err := db.GetGame(g1.ID)
-	require.NoError(t, err, `expected to find game with id "%d"`, g1.ID)
-	assert.Equal(t, g1Copy, actGame)
+	checkPersistedGame(t, name, db, g1Copy)
 }
 
 func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
@@ -317,45 +396,53 @@ func testSaveGameMultipleTimes(t *testing.T, name dbName, db persistence.DB) {
 	require.Error(t, err)
 	assert.EqualError(t, err, persistence.ErrGameNotFound.Error())
 
-	var gCopy model.Game
-	persistenceGameCopy(&gCopy, g)
+	var g0, g1, g2, g3 model.Game
+	persistenceGameCopy(&g0, g)
 
 	require.NoError(t, db.CreateGame(g))
 
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g0)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.DealCards,
-		Action:    model.DealAction{NumShuffles: 10},
+		ID:           alice.ID,
+		GameID:       g.ID,
+		Overcomes:    model.DealCards,
+		Action:       model.DealAction{NumShuffles: 10},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g1, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g1)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		ID:           alice.ID,
+		GameID:       g.ID,
+		Overcomes:    model.CribCard,
+		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g2, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g2)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		ID:           bob.ID,
+		GameID:       g.ID,
+		Overcomes:    model.CribCard,
+		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
-	persistenceGameCopy(&gCopy, g)
+	persistenceGameCopy(&g3, g)
 
 	require.NoError(t, db.SaveGame(g))
-	checkPersistedGame(t, name, db, gCopy)
+	checkPersistedGame(t, name, db, g3)
+
+	checkPersistedGameAt(t, name, db, g0, 0)
+	checkPersistedGameAt(t, name, db, g1, 1)
+	checkPersistedGameAt(t, name, db, g2, 2)
+	checkPersistedGameAt(t, name, db, g3, 3)
 }
 
 func testSaveInteraction(t *testing.T, name dbName, db persistence.DB) {
@@ -461,10 +548,11 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.DealCards,
-		Action:    model.DealAction{NumShuffles: 10},
+		ID:           alice.ID,
+		GameID:       g.ID,
+		Overcomes:    model.DealCards,
+		Action:       model.DealAction{NumShuffles: 10},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -472,10 +560,11 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        alice.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		ID:           alice.ID,
+		GameID:       g.ID,
+		Overcomes:    model.CribCard,
+		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[alice.ID][0], g.Hands[alice.ID][1]}},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -483,10 +572,11 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.CribCard,
-		Action:    model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		ID:           bob.ID,
+		GameID:       g.ID,
+		Overcomes:    model.CribCard,
+		Action:       model.BuildCribAction{Cards: []model.Card{g.Hands[bob.ID][0], g.Hands[bob.ID][1]}},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -494,10 +584,11 @@ func testSaveGameWithMissingAction(t *testing.T, name dbName, db persistence.DB)
 	checkPersistedGame(t, name, db, gCopy)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
-		ID:        bob.ID,
-		GameID:    g.ID,
-		Overcomes: model.CutCard,
-		Action:    model.CutDeckAction{Percentage: 0.600},
+		ID:           bob.ID,
+		GameID:       g.ID,
+		Overcomes:    model.CutCard,
+		Action:       model.CutDeckAction{Percentage: 0.600},
+		TimestampStr: time.Now().Format(time.RFC3339),
 	}, abAPIs))
 	persistenceGameCopy(&gCopy, g)
 
@@ -564,6 +655,8 @@ func TestTransactionality(t *testing.T) {
 		require.NoError(t, err)
 
 		dbfs[mysqlDB] = mySQLDB
+
+		/* TODO we'll address transactionality of dynamodb in a followup */
 	}
 
 	txTests := map[string]txTest{
@@ -721,7 +814,6 @@ func gameTxTest(t *testing.T, databaseName dbName, db1, db2, postCommitDB persis
 			model.NewCardFromString(`ac`),
 			model.NewCardFromString(`ad`),
 		},
-		PeggedCards: make([]model.PeggedCard, 0, 8),
 	}
 	g1Copy := g1
 	for i, p := range g1Copy.Players {

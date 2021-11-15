@@ -45,6 +45,10 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 		for _, createStmt := range allCreateStmts {
 			_, err := db.ExecContext(ctx, createStmt)
 			if err != nil {
+				if config.CreateErrorIsOk {
+					log.Printf("error running CREATE: %q = %v", createStmt, err)
+					continue
+				}
 				return nil, err
 			}
 		}
@@ -89,7 +93,8 @@ type Config struct {
 
 	DatabaseName string
 
-	RunCreateStmts bool
+	RunCreateStmts  bool
+	CreateErrorIsOk bool
 }
 
 var _ persistence.DB = (*mysqlWrapper)(nil)

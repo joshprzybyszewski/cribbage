@@ -101,6 +101,20 @@ func checkMarshalUnmarshal(t *testing.T, g model.Game, msg string) {
 
 	actGame, err := UnmarshalGame(b)
 	require.NoError(t, err, msg)
+
+	if gameCopy.PlayerColors == nil {
+		assert.NotNil(t, actGame.PlayerColors)
+		actGame.PlayerColors = nil
+	}
+	if gameCopy.BlockingPlayers == nil {
+		assert.NotNil(t, actGame.BlockingPlayers)
+		actGame.BlockingPlayers = nil
+	}
+	if gameCopy.Hands == nil {
+		assert.NotNil(t, actGame.Hands)
+		actGame.Hands = nil
+	}
+
 	assert.Equal(t, gameCopy, actGame, msg)
 }
 
@@ -108,6 +122,7 @@ func TestGameAtAllStages(t *testing.T) {
 	alice, bob, pAPIs := testutils.EmptyAliceAndBob()
 	g, err := play.CreateGame([]model.Player{alice, bob}, pAPIs)
 	require.NoError(t, err)
+	checkMarshalUnmarshal(t, g, `after creation`)
 
 	require.NoError(t, play.HandleAction(&g, model.PlayerAction{
 		ID:        alice.ID,

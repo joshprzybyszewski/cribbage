@@ -1,21 +1,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/joshprzybyszewski/cribbage/server"
 )
 
 func main() {
-	err := playServer()
-	if err != nil {
-		panic(err)
+	if err := server.Setup(); err != nil {
+		log.Fatal(err)
 	}
-}
-
-func playServer() error {
-	err := server.Setup()
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

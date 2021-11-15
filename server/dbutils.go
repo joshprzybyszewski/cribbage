@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -38,6 +39,10 @@ func handleAction(_ context.Context, db persistence.DB, action model.PlayerActio
 	if err != nil {
 		return err
 	}
+
+	// Now that the server is handling the action, let's set the timestamp to now.
+	action.SetTimeStamp(time.Now())
+
 	err = play.HandleAction(&g, action, pAPIs)
 	if err != nil {
 		return err

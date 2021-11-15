@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/apex/gateway"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
@@ -31,8 +32,11 @@ func newCribbageServer(dbFactory persistence.DBFactory) *cribbageServer {
 	}
 }
 
-func (cs *cribbageServer) NewRouter() http.Handler {
-	router := gin.Default()
+func (cs *cribbageServer) addRESTRoutes(router *gin.Engine) {
+	// health check route
+	router.GET(`/api/health`, func(c *gin.Context) {
+		c.String(http.StatusOK, `Healthy!`)
+	})
 
 	// Simple group: create
 	create := router.Group(`/create`)
@@ -63,8 +67,6 @@ func (cs *cribbageServer) NewRouter() http.Handler {
 	{
 		suggest.GET(`/hand`, cs.ginGetSuggestHand)
 	}
-
-	return router
 }
 
 func (cs *cribbageServer) addWasmHandlers(router *gin.Engine) {
@@ -90,19 +92,22 @@ func (cs *cribbageServer) addReactHandlers(router *gin.Engine) {
 	router.Use(static.Serve(`/`, static.LocalFile(`./client/build`, true)))
 }
 
-func (cs *cribbageServer) Serve() {
-	router := cs.NewRouter()
-	eng, ok := router.(*gin.Engine)
-	if !ok {
-		log.Println(`router type assertion failed`)
-	}
-	cs.addWasmHandlers(eng)
-	cs.addReactHandlers(eng)
+func isLambda() bool {
+	val, ok := os.LookupEnv(`CRIBBAGE_LAMBDA`)
+	return ok && val == `true`
+}
 
-	err := eng.Run(`:` + strconv.Itoa(*restPort)) // listen and serve on 0.0.0.0:8080
-	if err != nil {
-		log.Printf("router.Run errored: %+v\n", err)
+func (cs *cribbageServer) serve() error {
+	router := gin.Default()
+	cs.addRESTRoutes(router)
+
+	if isLambda() {
+		return gateway.ListenAndServe(`:8080`, router)
 	}
+
+	cs.addWasmHandlers(router)
+	cs.addReactHandlers(router)
+	return router.Run(`:` + strconv.Itoa(*restPort))
 }
 
 func (cs *cribbageServer) ginPostCreateGame(c *gin.Context) {

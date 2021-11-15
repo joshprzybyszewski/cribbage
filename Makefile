@@ -44,6 +44,12 @@ serve: DSN_HOST ?= "127.0.0.1"
 serve: ## Sets up the server locally with default options
 	go run -tags=prod main.go --dsn_user="$(DSN_USER)" --dsn_password="$(DSN_PW)" --dsn_host="$(DSN_HOST)"
 
+.PHONY: lambda
+lambda:
+	GOOS=linux CGO_ENABLED=0 go build -o cribbage-lambda -tags=prod main.go
+	zip cribbage-lambda.zip cribbage-lambda
+	rm cribbage-lambda
+
 .PHONY: dockerbuild
 dockerbuild: ## Builds the docker image
 	docker build -t cribbage .
@@ -55,3 +61,7 @@ dockerrunlocal: ## Runs the latest tag of the built docker image locally on port
 .PHONY: wasm
 wasm: ## Builds the wasm output for the gowasm client
 	GOOS=js GOARCH=wasm go build -tags prod -o assets/wasm/wa_output.wasm github.com/joshprzybyszewski/cribbage/wasm
+
+.PHONY: localstack
+localstack: ## Runs the app as a local stack in docker-compose
+	docker-compose up -d cribbage-server

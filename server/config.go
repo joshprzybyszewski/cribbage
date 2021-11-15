@@ -10,7 +10,7 @@ import (
 	ini "gopkg.in/ini.v1"
 )
 
-// loadVarsFromINI will check the INI for the given environment and any environment variables
+// loadConfig will check the environment and the ini file for the config
 // It will give the following priority:
 // 1. Command-line value
 // 2. Environment Variable
@@ -18,13 +18,21 @@ import (
 // 4. Default value of flag
 // NOTE: All envvars need the prefix `CRIBBAGE_` and should exist in ALLCAPS.
 // NOTE: The INI file is pulled from the inis/ directory and is determined by the
-//       environment var `deploy` (set to `docker`, `prod`, etc.)
-func loadVarsFromINI() {
-	parseFlagsFromConfigFile(getConfigFile())
+// environment var `deploy` (set to `docker`, `prod`, etc.)
+func loadConfig() {
+	var confFileName string
+	if !isLambda() {
+		confFileName = getConfigFile()
+	}
+	parseConfig(confFileName)
 }
 
-func parseFlagsFromConfigFile(confFileName string) {
-	log.Printf("parseFlagsFromConfigFile from %q\n", confFileName)
+func parseConfig(confFileName string) {
+	if confFileName == `` {
+		log.Println(`parseConfig from environment only`, confFileName)
+	} else {
+		log.Printf("parseConfig from %q\n", confFileName)
+	}
 
 	options := &globalconf.Options{
 		EnvPrefix: `CRIBBAGE_`,
@@ -33,7 +41,7 @@ func parseFlagsFromConfigFile(confFileName string) {
 
 	conf, err := globalconf.NewWithOptions(options)
 	if err != nil {
-		panic(fmt.Sprintf("globalconf.NewWithOptions error (from %s): %+v", confFileName, err))
+		panic(fmt.Sprintf(`globalconf.NewWithOptions error (from %s): %+v`, confFileName, err))
 	}
 
 	conf.ParseAll()
