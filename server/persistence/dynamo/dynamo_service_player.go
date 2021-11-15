@@ -46,22 +46,14 @@ func (ps *playerService) Get(id model.PlayerID) (model.Player, error) {
 	pk := string(id)
 	skName := `:sk`
 	sk := getSortKeyPrefix(ps)
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
-
-	createQuery := func() *dynamodb.QueryInput {
-		return &dynamodb.QueryInput{
-			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				pkName: &types.AttributeValueMemberS{
-					Value: pk,
-				},
-				skName: &types.AttributeValueMemberS{
-					Value: sk,
-				},
-			},
-		}
+	hp := hasPrefix{
+		pkName: pkName,
+		skName: skName,
 	}
+
+	createQuery := newQueryInputFactory(getQueryInputParams(
+		pk, pkName, sk, skName, hp.conditionExpression(),
+	))
 	items, err := fullQuery(ps.ctx, ps.svc, createQuery)
 	if err != nil {
 		return model.Player{}, err
@@ -190,12 +182,10 @@ func (ps *playerService) Create(p model.Player) error {
 	// <HASH:RANGE> tuple doesn't already exist.
 	// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 	// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-	condExpr := getConditionExpression(notExists, ``, notExists, ``)
-
 	_, err := ps.svc.PutItem(ps.ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(dbName),
 		Item:                data,
-		ConditionExpression: &condExpr,
+		ConditionExpression: notExists{}.conditionExpression(),
 	})
 	if err != nil {
 		if isConditionalError(err) {

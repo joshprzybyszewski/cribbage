@@ -99,7 +99,6 @@ type dynamoWrapper struct {
 	persistence.ServicesWrapper
 
 	ctx context.Context
-	// svc *dynamodb.Client // this may need to be used?
 }
 
 func (dw *dynamoWrapper) Close() error {

@@ -41,26 +41,18 @@ func newInteractionService(
 func (is *interactionService) Get(
 	id model.PlayerID,
 ) (interaction.PlayerMeans, error) {
-	pkName := `:pID`
+	pkName := `:ipID`
 	pk := string(id)
 	skName := `:sk`
 	sk := getSortKeyPrefix(is)
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
-
-	createQuery := func() *dynamodb.QueryInput {
-		return &dynamodb.QueryInput{
-			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
-			ExpressionAttributeValues: map[string]types.AttributeValue{
-				pkName: &types.AttributeValueMemberS{
-					Value: pk,
-				},
-				skName: &types.AttributeValueMemberS{
-					Value: sk,
-				},
-			},
-		}
+	hp := hasPrefix{
+		pkName: pkName,
+		skName: skName,
 	}
+
+	createQuery := newQueryInputFactory(getQueryInputParams(
+		pk, pkName, sk, skName, hp.conditionExpression(),
+	))
 	items, err := fullQuery(is.ctx, is.svc, createQuery)
 	if err != nil {
 		return interaction.PlayerMeans{}, err
@@ -98,9 +90,8 @@ func (is *interactionService) buildPlayerMeansFromItems(
 			continue
 		}
 
-		mode, serInfo, err := is.getInteractionModeAndSerInfo(
+		mode, err := is.getInteractionMode(
 			item[sortKey],
-			item[is.getInfoKey()],
 		)
 		if err != nil {
 			return interaction.PlayerMeans{}, err
@@ -108,6 +99,13 @@ func (is *interactionService) buildPlayerMeansFromItems(
 
 		m := interaction.Means{
 			Mode: mode,
+		}
+
+		serInfo, err := is.getSerInfo(
+			item[is.getInfoKey()],
+		)
+		if err != nil {
+			return interaction.PlayerMeans{}, err
 		}
 		err = m.AddSerializedInfo(serInfo)
 		if err != nil {
@@ -121,25 +119,30 @@ func (is *interactionService) buildPlayerMeansFromItems(
 	return pm, nil
 }
 
-func (is *interactionService) getInteractionModeAndSerInfo(
-	specAV, infoAV types.AttributeValue,
-) (interaction.Mode, []byte, error) {
+func (is *interactionService) getInteractionMode(
+	specAV types.AttributeValue,
+) (interaction.Mode, error) {
 	specAVS, ok := specAV.(*types.AttributeValueMemberS)
 	if !ok {
-		return interaction.Unknown, nil, errors.New(`wrong spec`)
+		return interaction.Unknown, errors.New(`wrong spec`)
 	}
 
 	mode, err := is.getInteractionMeansModeFromSpec(specAVS.Value)
 	if err != nil {
-		return interaction.Unknown, nil, err
+		return interaction.Unknown, err
 	}
+	return mode, nil
+}
 
+func (is *interactionService) getSerInfo(
+	infoAV types.AttributeValue,
+) ([]byte, error) {
 	infoAVB, ok := infoAV.(*types.AttributeValueMemberB)
 	if !ok {
-		return interaction.Unknown, nil, errors.New(`wrong info type`)
+		return nil, errors.New(`wrong info type`)
 	}
 
-	return mode, infoAVB.Value, nil
+	return infoAVB.Value, nil
 }
 
 func (is *interactionService) Create(pm interaction.PlayerMeans) error {
@@ -183,8 +186,7 @@ func (is *interactionService) write(opts writePlayerMeansOptions) error {
 		// <HASH:RANGE> tuple doesn't already exist.
 		// See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
 		// and https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.OperatorsAndFunctions.html
-		condExpr := getConditionExpression(notExists, ``, notExists, ``)
-		pii.ConditionExpression = &condExpr
+		pii.ConditionExpression = notExists{}.conditionExpression()
 	}
 
 	_, err := is.svc.PutItem(is.ctx, pii)

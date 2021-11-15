@@ -32,11 +32,7 @@ func main() {
 	p := model.Player{
 		ID:    pID,
 		Name:  `jesus is king`,
-		Games: map[model.GameID]model.PlayerColor{
-			// model.GameID(123): model.Blue,
-			// model.GameID(456): model.Red,
-			// model.GameID(789): model.Green,
-		},
+		Games: map[model.GameID]model.PlayerColor{},
 	}
 	fmt.Printf("calling dw.CreatePlayer(%+v)\n", p)
 	err = dw.CreatePlayer(p)

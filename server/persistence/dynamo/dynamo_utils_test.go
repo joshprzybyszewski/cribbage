@@ -9,9 +9,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/joshprzybyszewski/cribbage/utils/rand"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/joshprzybyszewski/cribbage/utils/rand"
 )
 
 func TestIsConditionalError(t *testing.T) {
@@ -23,9 +24,8 @@ func TestIsConditionalError(t *testing.T) {
 
 func TestFullQuery(t *testing.T) {
 	if testing.Short() {
-		return
+		t.Skip()
 	}
-	var err error
 	ctx := context.Background()
 	svc := getDynamoService(ctx, `http://localhost:18079`)
 
@@ -50,6 +50,7 @@ func TestFullQuery(t *testing.T) {
 
 	numGen := 5
 
+	var err error
 	for i := 0; i < numGen; i++ {
 		data := createData(i)
 
@@ -62,12 +63,15 @@ func TestFullQuery(t *testing.T) {
 
 	pkName := `:pID`
 	skName := `:sk`
-	keyCondExpr := getConditionExpression(equalsID, pkName, hasPrefix, skName)
+	hp := hasPrefix{
+		pkName: pkName,
+		skName: skName,
+	}
 
 	createQuery := func() *dynamodb.QueryInput {
 		return &dynamodb.QueryInput{
 			TableName:              aws.String(dbName),
-			KeyConditionExpression: &keyCondExpr,
+			KeyConditionExpression: hp.conditionExpression(),
 			ExpressionAttributeValues: map[string]types.AttributeValue{
 				pkName: &types.AttributeValueMemberS{
 					Value: hugeItemID,
