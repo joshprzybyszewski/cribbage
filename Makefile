@@ -69,4 +69,4 @@ localstack: ## Runs the app as a local stack in docker-compose
 .PHONY: cdk
 cdk: ## tries to deploy your app
 	# cdk bootstrap aws://unknown-account/unknown-region
-	cdk deploy cribbage-lambda
+	cd infrastructure && cdk deploy --all

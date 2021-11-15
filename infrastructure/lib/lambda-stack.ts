@@ -17,13 +17,15 @@ export class LambdaStack extends cdk.Stack {
         super(scope, id, props);
 
         const asset = new assets.Asset(this, 'SampleAsset', {
-            path: path.join(__dirname, '../cribbage-lambda.zip'),
+            // path: path.join(__dirname, '../cribbage-lambda.zip'),
+            path: '/home/user/go/src/github.com/joshprzybyszewski/cribbage/cribbage-lambda.zip',
           });
 
         this.function = new Function(this, 'cribbage-lambda-id', {
             runtime: Runtime.GO_1_X,
             // entry: path.join(__dirname, `../cribbage-lambda.zip`),
-            code: Code.fromAsset('../cribbage-lambda.zip'),
+            // code: Code.fromAsset('../cribbage-lambda.zip'),
+            code: Code.fromBucket(asset.bucket, asset.s3ObjectKey),
             handler: 'cribbage-lambda',
             timeout: cdk.Duration.seconds(15),
             environment: {

@@ -28,6 +28,8 @@ const dynamoStack = new DynamoDBStack(app, 'cribbage-dynamodb', {
 console.log('building dynamodb table...Done!');
 
 console.log('building lambdas...');
+console.log('you might need to bootstrap');
+// cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
     table: dynamoStack.table,
     env,
@@ -35,6 +37,17 @@ const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
 console.log('building lambdas...Done!');
 
 console.log('Granting RW access to dynamo from lambdas...');
+console.log('this does not seem to be enough');
+/*
+2021/11/15 02:39:33 DescribeTable ERROR: operation error DynamoDB: 
+DescribeTable, https response error StatusCode: 400, 
+RequestID: 5Q1B31KL6H7KIMUTDPEHCJM1EVVV4KQNSO5AEMVJF66Q9ASUAAJG, 
+api error AccessDeniedException: 
+User: arn:aws:sts::971042860856:assumed-role/cribbage-lambda-cribbagelambdaidServiceRole97F1334-1JABCY835OEX/cribbage-lambda-cribbagelambdaid0ADEAD21-uOm3ajM1vXir 
+ is not authorized to perform: dynamodb:DescribeTable on 
+ resource: arn:aws:dynamodb:us-east-2:971042860856:table/cribbage
+
+*/
 dynamoStack.table.grantReadWriteData(lambdaStack.function);
 console.log('Granting RW access to dynamo from lambdas...Done!');
 
