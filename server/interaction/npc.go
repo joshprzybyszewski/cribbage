@@ -99,6 +99,9 @@ func (npc *NPCPlayer) buildAction(b model.Blocker, g model.Game) (model.PlayerAc
 		ID:        npc.ID(),
 		Overcomes: b,
 	}
+	// the NPC is building the action _now_
+	pa.SetTimeStamp(time.Now())
+
 	myHand := g.Hands[npc.ID()]
 	switch b {
 	case model.DealCards:

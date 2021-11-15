@@ -9,6 +9,7 @@ import (
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
 	"github.com/joshprzybyszewski/cribbage/server/persistence"
+	"github.com/joshprzybyszewski/cribbage/server/persistence/dynamo"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/memory"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mongodb"
 	"github.com/joshprzybyszewski/cribbage/server/persistence/mysql"
@@ -66,6 +67,9 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 	case `mongo`:
 		log.Println("Creating mongodb factory")
 		return mongodb.NewFactory(*dbURI)
+	case `dynamodb`:
+		log.Println("Creating dynamodb factory")
+		return dynamo.NewFactory(*dbURI)
 	case `mysql`:
 		cfg := mysql.Config{
 			DSNUser:         *dsnUser,
@@ -92,7 +96,11 @@ func getDBFactory(ctx context.Context, cfg factoryConfig) (persistence.DBFactory
 		return memory.NewFactory(), nil
 	}
 
-	return nil, fmt.Errorf(`db "%s" not supported. Currently supported: "mongo", "mysql", and "memory"`, *database)
+	return nil, fmt.Errorf(
+		`db %q not supported.`+
+			`Currently supported:`+
+			`"dynamodb", "mongo", "mysql", and "memory"`,
+		*database)
 }
 
 func seedNPCs(ctx context.Context, dbFactory persistence.DBFactory) error {
