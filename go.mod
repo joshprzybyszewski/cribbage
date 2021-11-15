@@ -18,9 +18,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/pretty v1.0.1 // indirect
-	github.com/xdg/stringprep v1.0.0 // indirect
-	go.mongodb.org/mongo-driver v1.3.3
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
+	go.mongodb.org/mongo-driver v1.5.1
 	gopkg.in/ini.v1 v1.57.0
 	honnef.co/go/js/dom/v2 v2.0.0-20200509013220-d4405f7ab4d8
 )
