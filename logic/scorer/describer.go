@@ -11,8 +11,7 @@ const LOG = false
 type scoreType int
 
 const (
-	none scoreType = 1 << iota
-	quad
+	quad scoreType = 1 << iota
 	triplet
 	onepair
 	twopair
@@ -36,7 +35,9 @@ const (
 	fifteen7
 	fifteen8
 
-	allFifteens = fifteen1 | fifteen2 | fifteen3 | fifteen4 | fifteen5 | fifteen6 | fifteen7 | fifteen8
+	allFifteens      = fifteen1 | fifteen2 | fifteen3 | fifteen4 | fifteen5 | fifteen6 | fifteen7 | fifteen8
+	allRunsWithPairs = tripleRunOfThree | doubleRunOfFour | doubleDoubleRunOfThree | doubleRunOfThree
+	allPairs         = quad | triplet | onepair | twopair
 )
 
 func describePoints(lead model.Card, hand []model.Card, st scoreType) int { //nolint:gocyclo
