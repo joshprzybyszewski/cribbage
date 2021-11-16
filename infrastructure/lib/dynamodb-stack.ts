@@ -5,16 +5,22 @@ export interface DynamoDBStackProps extends StackProps {
 }
 
 export class DynamoDBStack extends Stack {
-    readonly table: Table;
+  readonly table: Table;
 
-    constructor(scope: App, id: string, props: DynamoDBStackProps) {
-        super(scope, id, props);
+  constructor(scope: App, id: string, props: DynamoDBStackProps) {
+    super(scope, id, props);
 
-        this.table = new Table(this, 'cribbage', {
-          partitionKey: { name: 'DDBid', type: AttributeType.STRING },
-          sortKey: { name: 'spec', type: AttributeType.STRING },
-          billingMode: BillingMode.PAY_PER_REQUEST,
-        // --region us-west-2 
-        });
-    }
+    this.table = new Table(this, 'cribbageDynamoTableID', {
+      tableName: 'cribbage',
+      partitionKey: {
+        name: 'DDBid',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'spec',
+        type: AttributeType.STRING,
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+    });
+  }
 }

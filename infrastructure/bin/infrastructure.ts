@@ -34,12 +34,6 @@ const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
 });
 console.log('building lambdas...Done!');
 
-console.log('Granting RW access to dynamo from lambdas...');
-dynamoStack.table.grantReadWriteData(lambdaStack.function);
-// DescribeTable is not granted by default, but this should resolve it according to: https://github.com/aws/aws-cdk/issues/7633#issuecomment-621672844
-dynamoStack.table.grant(lambdaStack.function, 'dynamodb:DescribeTable');
-console.log('Granting RW access to dynamo from lambdas...Done!');
-
 // TODO createa API gateway that talks through to the lambda
 
 // TODO create a route 53 entry to pass hobbycribbage.com to the api gateway?
