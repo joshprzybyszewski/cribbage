@@ -47,7 +47,6 @@ func Setup() error {
 	ctx, fn := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer fn()
 
-	log.Printf("Fetching DB (createTables: %v)\n", *createTables)
 	dbFactory, err := getDBFactory(ctx, factoryConfig{
 		canRunCreateStmts: true,
 	})
@@ -55,16 +54,13 @@ func Setup() error {
 		return err
 	}
 
-	log.Println("Building server.")
 	cs := newCribbageServer(dbFactory)
 
-	log.Println("Seeding NPCs.")
 	err = seedNPCs(ctx, dbFactory)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Starting server...")
 	return cs.serve()
 }
 

@@ -181,6 +181,9 @@ export function useGame(): Result {
                 {
                     playerIDs,
                 },
+                // {
+                //     baseURL: `lambda.hobbycribbage.com`,
+                // },
             );
             const getResult = await axios.get<Game>(
                 `/game/${createResult.data.id}`,

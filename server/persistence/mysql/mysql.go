@@ -36,7 +36,6 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 	}
 
 	if config.RunCreateStmts {
-		log.Println("Run Create Stmts...")
 		allCreateStmts := make([]string, 0, len(gamesCreateStmts)+len(playersCreateStmts)+len(interactionCreateStmts))
 		allCreateStmts = append(allCreateStmts, gamesCreateStmts...)
 		allCreateStmts = append(allCreateStmts, playersCreateStmts...)
@@ -52,7 +51,6 @@ func NewFactory(ctx context.Context, config Config) (persistence.DBFactory, erro
 				return nil, err
 			}
 		}
-		log.Println("Run Create Stmts...Complete!")
 	}
 
 	return &mysqlDBFactory{

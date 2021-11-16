@@ -66,7 +66,3 @@ wasm: ## Builds the wasm output for the gowasm client
 .PHONY: localstack
 localstack: ## Runs the app as a local stack in docker-compose
 	docker-compose up -d cribbage-server
-
-.PHONY: cdk
-cdk: ## tries to deploy your app
-	cd infrastructure && cdk deploy --all
