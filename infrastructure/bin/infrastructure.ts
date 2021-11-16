@@ -7,8 +7,8 @@ import { DNSStack } from '../lib/dns-stack';
 import { Environment } from '@aws-cdk/core';
 
 const env: Environment = {
-    account: process.env['AWS_ACCOUNT'],
-    region: process.env['AWS_REGION'],
+    account: process.env['AWS_ACCOUNT'] || process.env['CDK_DEFAULT_ACCOUNT'],
+    region: process.env['AWS_REGION'] || process.env['CDK_DEFAULT_REGION'],
 };
 
 const app = new cdk.App();
@@ -26,10 +26,10 @@ const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
 });
 console.log('building lambdas...Done!');
 
-// TODO createa API gateway that talks through to the lambda
+console.log('Creating a DNS stack...');
 
-// TODO create a route 53 entry to pass hobbycribbage.com to the api gateway?
-
-// TODO re-architect the frontend so that the "backend" calls go to a different sub-domain to hit
-// the lambda, and all of hobbycribbage.com/ just goes to a CDN to get the page. It's a SPA, so
-// I don't want to overthink this.
+const dnsStack = new DNSStack(app, 'cribbage-dns', {
+    lambda: lambdaStack.lambda,
+    env,
+});
+console.log('Creating a DNS stack...Done!');

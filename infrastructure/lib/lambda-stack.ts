@@ -9,7 +9,9 @@ export interface LambdaStackProps extends cdk.StackProps {
 }
 
 export class LambdaStack extends cdk.Stack {
-    constructor(scope: cdk.Construct, id: string, props: LambdaStackProps) {
+  readonly lambda: Function;
+
+  constructor(scope: cdk.Construct, id: string, props: LambdaStackProps) {
         super(scope, id, props);
 
         const zipFileName = 'cribbage-lambda';
@@ -18,7 +20,7 @@ export class LambdaStack extends cdk.Stack {
             path: '../' + zipFileName + '.zip',
         });
 
-        const lambda = new Function(this, 'serverlessLambdaHandler', {
+        this.lambda = new Function(this, 'serverlessLambdaHandler', {
             runtime: Runtime.GO_1_X,
             code: Code.fromBucket(asset.bucket, asset.s3ObjectKey),
             handler: zipFileName,
@@ -31,8 +33,8 @@ export class LambdaStack extends cdk.Stack {
         })
 
 
-        props.table.grantReadWriteData(lambda);
+        props.table.grantReadWriteData(this.lambda);
         // DescribeTable is not granted by default, but this should resolve it according to: https://github.com/aws/aws-cdk/issues/7633#issuecomment-621672844
-        props.table.grant(lambda, 'dynamodb:DescribeTable');
+        props.table.grant(this.lambda, 'dynamodb:DescribeTable');
     }
 }
