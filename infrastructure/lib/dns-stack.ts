@@ -16,7 +16,9 @@ export class DNSStack extends cdk.Stack {
         });
         new ARecord(this, `${id}-r53-a-record`, {
             zone,
-            target: RecordTarget.fromAlias(new LoadBalancerTarget(props.loadBalancer)),
+            target: RecordTarget.fromAlias(
+                new LoadBalancerTarget(props.loadBalancer),
+            ),
         });
     }
 }
