@@ -28,8 +28,6 @@ const dynamoStack = new DynamoDBStack(app, 'cribbage-dynamodb', {
 console.log('building dynamodb table...Done!');
 
 console.log('building lambdas...');
-console.log('you might need to bootstrap');
-// cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
     table: dynamoStack.table,
     env,
@@ -37,19 +35,18 @@ const lambdaStack = new LambdaStack(app, 'cribbage-lambda', {
 console.log('building lambdas...Done!');
 
 console.log('Granting RW access to dynamo from lambdas...');
-console.log('this does not seem to be enough');
-/*
-2021/11/15 02:39:33 DescribeTable ERROR: operation error DynamoDB: 
-DescribeTable, https response error StatusCode: 400, 
-RequestID: 5Q1B31KL6H7KIMUTDPEHCJM1EVVV4KQNSO5AEMVJF66Q9ASUAAJG, 
-api error AccessDeniedException: 
-User: arn:aws:sts::971042860856:assumed-role/cribbage-lambda-cribbagelambdaidServiceRole97F1334-1JABCY835OEX/cribbage-lambda-cribbagelambdaid0ADEAD21-uOm3ajM1vXir 
- is not authorized to perform: dynamodb:DescribeTable on 
- resource: arn:aws:dynamodb:us-east-2:971042860856:table/cribbage
-
-*/
 dynamoStack.table.grantReadWriteData(lambdaStack.function);
+// DescribeTable is not granted by default, but this should resolve it according to: https://github.com/aws/aws-cdk/issues/7633#issuecomment-621672844
+dynamoStack.table.grant(lambdaStack.function, 'dynamodb:DescribeTable');
 console.log('Granting RW access to dynamo from lambdas...Done!');
+
+// TODO createa API gateway that talks through to the lambda
+
+// TODO create a route 53 entry to pass hobbycribbage.com to the api gateway?
+
+// TODO re-architect the frontend so that the "backend" calls go to a different sub-domain to hit
+// the lambda, and all of hobbycribbage.com/ just goes to a CDN to get the page. It's a SPA, so
+// I don't want to overthink this.
 
 // console.log('building rds...');
 // const rdsStack = new RDSStack(app, 'cribbage-rds', {

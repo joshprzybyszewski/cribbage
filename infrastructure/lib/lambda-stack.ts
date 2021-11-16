@@ -3,7 +3,6 @@ import * as cdk from '@aws-cdk/core';
 import {Code, Function, Runtime}  from '@aws-cdk/aws-lambda';
 import {  Table } from '@aws-cdk/aws-dynamodb';
 import * as assets from '@aws-cdk/aws-s3-assets';
-import * as path from 'path';
 
 export interface LambdaStackProps extends cdk.StackProps {
     readonly table: Table;
@@ -16,15 +15,12 @@ export class LambdaStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props: LambdaStackProps) {
         super(scope, id, props);
 
-        const asset = new assets.Asset(this, 'SampleAsset', {
-            // path: path.join(__dirname, '../cribbage-lambda.zip'),
-            path: '/home/user/go/src/github.com/joshprzybyszewski/cribbage/cribbage-lambda.zip',
+        const asset = new assets.Asset(this, 'CribbageZip', {
+            path: '../cribbage-lambda.zip',
           });
 
         this.function = new Function(this, 'cribbage-lambda-id', {
             runtime: Runtime.GO_1_X,
-            // entry: path.join(__dirname, `../cribbage-lambda.zip`),
-            // code: Code.fromAsset('../cribbage-lambda.zip'),
             code: Code.fromBucket(asset.bucket, asset.s3ObjectKey),
             handler: 'cribbage-lambda',
             timeout: cdk.Duration.seconds(15),
