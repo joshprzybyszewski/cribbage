@@ -10,8 +10,8 @@ type PointStats struct {
 }
 
 type GetSuggestHandResponse struct {
-	Hand    []string   `json:"hand"`
-	Toss    []string   `json:"toss"`
+	Hand    []Card   `json:"hand"`
+	Toss    []Card   `json:"toss"`
 	HandPts PointStats `json:"handPts"`
 	CribPts PointStats `json:"cribPts"`
 }
@@ -22,19 +22,10 @@ func ConvertToGetSuggestHandResponse(
 	var resp []GetSuggestHandResponse
 	for i := range summaries {
 		summ := summaries[i]
-		hand := make([]string, len(summ.Kept))
-		for i, c := range summ.Kept {
-			hand[i] = c.String()
-		}
-
-		toss := make([]string, len(summ.Tossed))
-		for i, c := range summ.Tossed {
-			toss[i] = c.String()
-		}
 
 		resp = append(resp, GetSuggestHandResponse{
-			Hand: hand,
-			Toss: toss,
+			Hand: convertToCards(summ.Kept),
+			Toss: convertToCards(summ.Tossed),
 			HandPts: PointStats{
 				Min:    summ.HandStats.Min(),
 				Avg:    summ.HandStats.Avg(),

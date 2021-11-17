@@ -4,6 +4,7 @@ import { devToolsEnhancer } from 'redux-devtools-extension';
 import { reducer as alerts } from '../app/containers/Alert/slice';
 import { reducer as game } from '../app/containers/Game/slice';
 import { reducer as home } from '../app/containers/Home/slice';
+import { reducer as suggestions } from '../app/containers/Suggestions/slice';
 import { reducer as auth } from '../auth/slice';
 
 /* Create root reducer, containing all features of the application */
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
     auth,
     home,
     game,
+    suggestions,
 });
 
 const store = createStore(
