@@ -67,5 +67,6 @@ export class DNSStack extends cdk.Stack {
             indexDoc: 'index.html',
             websiteFolder:  './' + zipFileName + '.zip',
         });
+        spaDeploy.websiteBucket.grantPublicAccess()
     }
 }
