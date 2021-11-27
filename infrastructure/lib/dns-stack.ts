@@ -61,10 +61,11 @@ export class DNSStack extends cdk.Stack {
         // the lambda, and all of hobbycribbage.com/ just goes to a CDN to get the page. It's a SPA, so
         // I don't want to overthink this.
         // https://github.com/cszczepaniak/oh-hell-scorecard/blob/7ea3b0ff4ce229d035bd5b100560399ac56be48c/infrastructure/lib/infrastructure-stack.ts#L8-L12
-        // new SPADeploy(this, id).createSiteFromHostedZone({
-        //     indexDoc: 'index.html',
-        //     websiteFolder: 'spa-bundle',
-        //     zoneName: 'hobbycribbage.com',
-        // });
+        const zipFileName = 'spa-bundle';
+        const spaDeploy = new SPADeploy(this, `spa-deploy-${id}`).createSiteFromHostedZone({
+            zoneName: 'hobbycribbage.com',
+            indexDoc: 'index.html',
+            websiteFolder:  './' + zipFileName + '.zip',
+        });
     }
 }

@@ -145,10 +145,14 @@ export function useGame(): Result {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
+    const baseURL = `lambda.hobbycribbage.com`;
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(
             `/game/${id}?player=${currentUser.id}`,
+            {
+                baseURL,
+            }
         );
         return response.data;
     };
@@ -181,12 +185,15 @@ export function useGame(): Result {
                 {
                     playerIDs,
                 },
-                // {
-                //     baseURL: `lambda.hobbycribbage.com`,
-                // },
+                {
+                    baseURL,
+                },
             );
             const getResult = await axios.get<Game>(
                 `/game/${createResult.data.id}`,
+                {
+                    baseURL,
+                },
             );
             dispatch(actions.setGame(getResult.data));
         } catch (err) {
@@ -204,7 +211,13 @@ export function useGame(): Result {
                 phase,
                 a,
             );
-            await axios.post('/action', request);
+            await axios.post(
+                '/action',
+                 request,
+                 {
+                    baseURL,
+                },
+                 );
             await refreshGame();
         } catch (err) {
             setAlert(

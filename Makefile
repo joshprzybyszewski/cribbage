@@ -69,5 +69,7 @@ localstack: ## Runs the app as a local stack in docker-compose
 
 .PHONY: spa-bundle
 spa-bundle: ## Builds the SPA bundle to deploy to AWS
+	cd client/ && npm run build && cd ..
 	mkdir -p infrastructure/spa-bundle/
-	ln -s client/ infrastructure/spa-bundle/
+	zip -r infrastructure/spa-bundle.zip client/build/
+	# ln -s client/build infrastructure/spa-bundle/
