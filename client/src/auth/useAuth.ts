@@ -28,7 +28,7 @@ export function useAuth(): ReturnType {
     const { currentUser, isLoggedIn } = useSelector(
         (state: RootState) => state.auth,
     );
-    const baseURL = `lambda.hobbycribbage.com`;
+    const base = `http://lambda.hobbycribbage.com`;
 
     return {
         currentUser,
@@ -37,10 +37,7 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.get<UserResponse>(
-                    `/player/${id}`,
-                    {
-                        baseURL,
-                    },
+                    `${base}/player/${id}`,
                     );
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
@@ -60,11 +57,8 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.post<UserResponse>(
-                    '/create/player',
+                    `${base}/create/player`,
                     request,
-                    {
-                        baseURL,
-                    },
                 );
                 dispatch(actions.setUser(res.data.player));
                 setAlert('Registration successful!', 'success');

@@ -55,11 +55,6 @@ export class DNSStack extends cdk.Stack {
             ),
         });
 
-        // TODO perhaps use https://github.com/aws-samples/aws-cdk-examples/blob/901ae3e11704fc378ade673f76f0eeae860a5daf/typescript/static-site/static-site.ts#L113-L127
-        // as an example for deploying CDN-like
-        // TODO re-architect the frontend so that the "backend" calls go to a different sub-domain to hit
-        // the lambda, and all of hobbycribbage.com/ just goes to a CDN to get the page. It's a SPA, so
-        // I don't want to overthink this.
         // https://github.com/cszczepaniak/oh-hell-scorecard/blob/7ea3b0ff4ce229d035bd5b100560399ac56be48c/infrastructure/lib/infrastructure-stack.ts#L8-L12
         const zipFileName = 'spa-bundle';
         const spaDeploy = new SPADeploy(this, `spa-deploy-${id}`).createSiteFromHostedZone({
