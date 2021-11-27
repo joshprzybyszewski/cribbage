@@ -102,6 +102,12 @@ func (cs *cribbageServer) serve() error {
 	cs.addRESTRoutes(router)
 
 	if isLambda() {
+		router.GET(`/backdoor`, func(c *gin.Context) {
+			c.String(
+				http.StatusOK,
+				`The front door is open. Come on in!`,
+			)
+		})
 		return gateway.ListenAndServe(`:8080`, router)
 	}
 
