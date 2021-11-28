@@ -21,12 +21,14 @@ interface RegisterRequest {
     player: User;
 }
 
+
 export function useAuth(): ReturnType {
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
     const { currentUser, isLoggedIn } = useSelector(
         (state: RootState) => state.auth,
     );
+    const base = `https://lambda.hobbycribbage.com`;
 
     return {
         currentUser,
@@ -34,11 +36,21 @@ export function useAuth(): ReturnType {
         login: async (id: string) => {
             dispatch(actions.setLoading(true));
             try {
-                const res = await axios.get<UserResponse>(`/player/${id}`);
+                const res = await axios.get<UserResponse>(
+                    `${base}/player/${id}`,
+                    );
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
                 dispatch(actions.clearUser());
-                setAlert(err.response.data, 'error');
+                if (err) {
+                    if (err.response) {
+                            setAlert(err.response.data, 'error');
+                    } else {
+                        setAlert(`no err.response ${err}`, 'error');
+                    }
+                } else {
+                    setAlert('no err', 'error');
+                }
             }
             dispatch(actions.setLoading(false));
         },
@@ -53,7 +65,7 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.post<UserResponse>(
-                    '/create/player',
+                    `${base}/create/player`,
                     request,
                 );
                 dispatch(actions.setUser(res.data.player));

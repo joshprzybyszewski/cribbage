@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/joshprzybyszewski/cribbage/model"
 	"github.com/joshprzybyszewski/cribbage/server/interaction"
@@ -43,15 +44,20 @@ func Setup() error {
 	loadConfig()
 	log.Printf("Using %s for persistence\n", *database)
 
-	ctx := context.Background()
+	ctx, fn := context.WithTimeout(context.Background(), 4*time.Minute)
+	defer fn()
+
 	dbFactory, err := getDBFactory(ctx, factoryConfig{
 		canRunCreateStmts: true,
 	})
 	if err != nil {
 		return err
 	}
+
 	cs := newCribbageServer(dbFactory)
-	if err := seedNPCs(ctx, dbFactory); err != nil {
+
+	err = seedNPCs(ctx, dbFactory)
+	if err != nil {
 		return err
 	}
 
@@ -116,7 +122,11 @@ func seedNPCs(ctx context.Context, dbFactory persistence.DBFactory) error {
 	}
 	defer commitOrRollback(db, &err)
 
-	npcIDs := []model.PlayerID{interaction.Dumb, interaction.Simple, interaction.Calc}
+	npcIDs := []model.PlayerID{
+		interaction.Dumb,
+		interaction.Simple,
+		interaction.Calc,
+	}
 	for _, id := range npcIDs {
 		p := model.Player{
 			ID:   id,

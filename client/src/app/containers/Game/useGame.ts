@@ -145,10 +145,11 @@ export function useGame(): Result {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
+    const base = `https://lambda.hobbycribbage.com`;
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(
-            `/game/${id}?player=${currentUser.id}`,
+            `${base}/game/${id}?player=${currentUser.id}`,
         );
         return response.data;
     };
@@ -177,13 +178,13 @@ export function useGame(): Result {
         dispatch(actions.setLoading(true));
         try {
             const createResult = await axios.post<CreateGameResponse>(
-                `/create/game`,
+                `${base}/create/game`,
                 {
                     playerIDs,
                 },
             );
             const getResult = await axios.get<Game>(
-                `/game/${createResult.data.id}`,
+                `${base}/game/${createResult.data.id}`,
             );
             dispatch(actions.setGame(getResult.data));
         } catch (err) {
@@ -201,12 +202,14 @@ export function useGame(): Result {
                 phase,
                 a,
             );
-            await axios.post('/action', request);
+            await axios.post(
+                `${base}/action`,
+                request,
+            );
             await refreshGame();
         } catch (err) {
             setAlert(
-                `handling action broke ${
-                    err.response ? err.response.data : err
+                `handling action broke ${err.response ? err.response.data : err
                 }`,
                 'error',
             );

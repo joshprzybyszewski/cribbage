@@ -99,9 +99,17 @@ func isLambda() bool {
 
 func (cs *cribbageServer) serve() error {
 	router := gin.Default()
+	addCORS(router)
+
 	cs.addRESTRoutes(router)
 
 	if isLambda() {
+		router.GET(`/backdoor`, func(c *gin.Context) {
+			c.String(
+				http.StatusOK,
+				`The front door is open. Come on in!`,
+			)
+		})
 		return gateway.ListenAndServe(`:8080`, router)
 	}
 

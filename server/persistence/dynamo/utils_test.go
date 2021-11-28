@@ -44,10 +44,10 @@ func TestGetConditionExpression(t *testing.T) {
 			pkName: `:pkAttrName`,
 			skName: `:skAttrName`,
 		},
-		exp: aws.String(`DDBid=:pkAttrName and begins_with(spec,:skAttrName)`),
+		exp: aws.String(`gamesV1=:pkAttrName and begins_with(spec,:skAttrName)`),
 	}, {
 		get: notExists{},
-		exp: aws.String(`attribute_not_exists(DDBid) and attribute_not_exists(spec)`),
+		exp: aws.String(`attribute_not_exists(gamesV1) and attribute_not_exists(spec)`),
 	}}
 
 	for _, tc := range testCases {

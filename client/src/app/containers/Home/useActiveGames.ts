@@ -21,6 +21,7 @@ export function useActiveGames(): ReturnType {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
+    const base = `https://lambda.hobbycribbage.com`;
     return {
         games: useSelector((state: RootState) => state.home.activeGames),
         refreshGames: async () => {
@@ -29,7 +30,7 @@ export function useActiveGames(): ReturnType {
             }
             try {
                 const res = await axios.get<ActiveGamesResponse>(
-                    `/games/active?playerID=${currentUser.id}`,
+                    `${base}/games/active?playerID=${currentUser.id}`,
                 );
                 dispatch(actions.setActiveGamesPlayerID(res.data.player.id));
                 dispatch(actions.setActiveGames(res.data.activeGames));
