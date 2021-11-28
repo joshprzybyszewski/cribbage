@@ -49,7 +49,6 @@ lambda: ## Builds the app so that we can serve it in a lambda
 	GOOS=linux CGO_ENABLED=0 go build -o cribbage-lambda -tags=prod main.go
 	zip cribbage-lambda.zip cribbage-lambda
 	rm cribbage-lambda
-	# chmod +r cribbage-lambda.zip
 
 .PHONY: dockerbuild
 dockerbuild: ## Builds the docker image

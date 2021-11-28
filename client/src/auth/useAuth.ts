@@ -38,13 +38,13 @@ export function useAuth(): ReturnType {
             try {
                 const res = await axios.get<UserResponse>(
                     `${base}/player/${id}`,
-                    );
+                );
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
                 dispatch(actions.clearUser());
                 if (err) {
                     if (err.response) {
-                            setAlert(err.response.data, 'error');
+                        setAlert(err.response.data, 'error');
                     } else {
                         setAlert(`no err.response ${err}`, 'error');
                     }
