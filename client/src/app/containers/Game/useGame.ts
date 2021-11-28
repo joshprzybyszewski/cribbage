@@ -202,15 +202,11 @@ export function useGame(): Result {
                 phase,
                 a,
             );
-            await axios.post(
-                `${base}/action`,
-                request,
-            );
+            await axios.post(`${base}/action`, request);
             await refreshGame();
         } catch (err) {
             setAlert(
-                `handling action broke ${err.response ? err.response.data : err
-                }`,
+                `handling action broke ${err.response ? err.response.data : err}`,
                 'error',
             );
         }
