@@ -145,7 +145,7 @@ export function useGame(): Result {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
-    const base = `http://lambda.hobbycribbage.com`;
+    const base = `https://lambda.hobbycribbage.com`;
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(
@@ -204,13 +204,12 @@ export function useGame(): Result {
             );
             await axios.post(
                 `${base}/action`,
-                 request,
-                 );
+                request,
+            );
             await refreshGame();
         } catch (err) {
             setAlert(
-                `handling action broke ${
-                    err.response ? err.response.data : err
+                `handling action broke ${err.response ? err.response.data : err
                 }`,
                 'error',
             );

@@ -28,7 +28,7 @@ export function useAuth(): ReturnType {
     const { currentUser, isLoggedIn } = useSelector(
         (state: RootState) => state.auth,
     );
-    const base = `http://lambda.hobbycribbage.com`;
+    const base = `https://lambda.hobbycribbage.com`;
 
     return {
         currentUser,
@@ -42,7 +42,15 @@ export function useAuth(): ReturnType {
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
                 dispatch(actions.clearUser());
-                setAlert(err.response.data, 'error');
+                if (err) {
+                    if (err.response) {
+                            setAlert(err.response.data, 'error');
+                    } else {
+                        setAlert(`no err.response ${err}`, 'error');
+                    }
+                } else {
+                    setAlert('no err', 'error');
+                }
             }
             dispatch(actions.setLoading(false));
         },
