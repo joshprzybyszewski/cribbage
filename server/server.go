@@ -99,6 +99,8 @@ func isLambda() bool {
 
 func (cs *cribbageServer) serve() error {
 	router := gin.Default()
+	addCORS(router)
+
 	cs.addRESTRoutes(router)
 
 	if isLambda() {
