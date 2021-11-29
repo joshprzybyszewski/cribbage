@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { gamesBaseURL } from '../utils/url';
 import { useAlert } from '../app/containers/Alert/useAlert';
 import { RootState } from '../store/store';
+import { gamesBaseURL } from '../utils/url';
 import { actions, User } from './slice';
 
 interface ReturnType {
