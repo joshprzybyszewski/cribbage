@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { User } from '../../../auth/slice';
 import { useAuth } from '../../../auth/useAuth';
 import { RootState } from '../../../store/store';
+import { gamesBaseURL } from '../../../utils/url';
 import { useAlert } from '../Alert/useAlert';
 import { actions, ActiveGame } from './slice';
 
@@ -29,7 +30,7 @@ export function useActiveGames(): ReturnType {
             }
             try {
                 const res = await axios.get<ActiveGamesResponse>(
-                    `/games/active?playerID=${currentUser.id}`,
+                    `${gamesBaseURL}/games/active?playerID=${currentUser.id}`,
                 );
                 dispatch(actions.setActiveGamesPlayerID(res.data.player.id));
                 dispatch(actions.setActiveGames(res.data.activeGames));

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/gateway"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
@@ -99,9 +100,17 @@ func isLambda() bool {
 
 func (cs *cribbageServer) serve() error {
 	router := gin.Default()
+	router.Use(cors.New(getCORSConfig()))
+
 	cs.addRESTRoutes(router)
 
 	if isLambda() {
+		router.GET(`/backdoor`, func(c *gin.Context) {
+			c.String(
+				http.StatusOK,
+				`The front door is open. Come on in!`,
+			)
+		})
 		return gateway.ListenAndServe(`:8080`, router)
 	}
 
