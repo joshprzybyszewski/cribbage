@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { User } from '../../../auth/slice';
 import { useAuth } from '../../../auth/useAuth';
 import { RootState } from '../../../store/store';
+import { gamesBaseURL } from '../../../utils/url';
 import { useAlert } from '../Alert/useAlert';
 import { actions, ActiveGame } from './slice';
-import { gamesBaseURL } from '../../../utils/url';
 
 interface ReturnType {
     games: ActiveGame[];

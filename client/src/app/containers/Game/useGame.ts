@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useAuth } from '../../../auth/useAuth';
 import { RootState } from '../../../store/store';
+import { gamesBaseURL } from '../../../utils/url';
 import { useAlert } from '../Alert/useAlert';
 import { Card, Game, Phase } from './models';
 import {
@@ -16,7 +17,6 @@ import {
     PegAction,
 } from './slice';
 import { CreateGameResponse } from './types';
-import { gamesBaseURL } from '../../../utils/url';
 
 interface Result {
     game: Game;
