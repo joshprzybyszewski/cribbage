@@ -16,6 +16,7 @@ import {
     PegAction,
 } from './slice';
 import { CreateGameResponse } from './types';
+import { gamesBaseURL } from '../../../utils/url';
 
 interface Result {
     game: Game;
@@ -145,11 +146,10 @@ export function useGame(): Result {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
-    const base = `https://lambda.hobbycribbage.com`;
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(
-            `${base}/game/${id}?player=${currentUser.id}`,
+            `${gamesBaseURL}/game/${id}?player=${currentUser.id}`,
         );
         return response.data;
     };
@@ -178,13 +178,13 @@ export function useGame(): Result {
         dispatch(actions.setLoading(true));
         try {
             const createResult = await axios.post<CreateGameResponse>(
-                `${base}/create/game`,
+                `${gamesBaseURL}/create/game`,
                 {
                     playerIDs,
                 },
             );
             const getResult = await axios.get<Game>(
-                `${base}/game/${createResult.data.id}`,
+                `${gamesBaseURL}/game/${createResult.data.id}`,
             );
             dispatch(actions.setGame(getResult.data));
         } catch (err) {
@@ -202,7 +202,7 @@ export function useGame(): Result {
                 phase,
                 a,
             );
-            await axios.post(`${base}/action`, request);
+            await axios.post(`${gamesBaseURL}/action`, request);
             await refreshGame();
         } catch (err) {
             setAlert(

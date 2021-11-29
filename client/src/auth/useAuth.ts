@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useAlert } from '../app/containers/Alert/useAlert';
 import { RootState } from '../store/store';
 import { actions, User } from './slice';
+import { gamesBaseURL } from '../utils/url';
 
 interface ReturnType {
     currentUser: User;
@@ -27,7 +28,6 @@ export function useAuth(): ReturnType {
     const { currentUser, isLoggedIn } = useSelector(
         (state: RootState) => state.auth,
     );
-    const base = `https://lambda.hobbycribbage.com`;
 
     return {
         currentUser,
@@ -36,7 +36,7 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.get<UserResponse>(
-                    `${base}/player/${id}`,
+                    `${gamesBaseURL}/player/${id}`,
                 );
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
@@ -64,7 +64,7 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.post<UserResponse>(
-                    `${base}/create/player`,
+                    `${gamesBaseURL}/create/player`,
                     request,
                 );
                 dispatch(actions.setUser(res.data.player));
