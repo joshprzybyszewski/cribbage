@@ -22,7 +22,6 @@ export function useActiveGames(): ReturnType {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
-    const base = `https://lambda.hobbycribbage.com`;
     return {
         games: useSelector((state: RootState) => state.home.activeGames),
         refreshGames: async () => {

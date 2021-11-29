@@ -146,7 +146,6 @@ export function useGame(): Result {
     const { currentUser } = useAuth();
     const { setAlert } = useAlert();
     const dispatch = useDispatch();
-    const base = `https://lambda.hobbycribbage.com`;
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(

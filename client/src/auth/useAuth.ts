@@ -29,7 +29,6 @@ export function useAuth(): ReturnType {
     const { currentUser, isLoggedIn } = useSelector(
         (state: RootState) => state.auth,
     );
-    const base = `https://lambda.hobbycribbage.com`;
 
     return {
         currentUser,
