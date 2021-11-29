@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/gateway"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
@@ -99,7 +100,7 @@ func isLambda() bool {
 
 func (cs *cribbageServer) serve() error {
 	router := gin.Default()
-	addCORS(router)
+	router.Use(cors.New(getCORSConfig()))
 
 	cs.addRESTRoutes(router)
 

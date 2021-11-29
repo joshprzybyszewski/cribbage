@@ -10,9 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.9.1-0.20210902223845-0023eb21e8b4
 	github.com/aws/aws-sdk-go-v2/config v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.0
-	github.com/aws/constructs-go/constructs/v10 v10.0.9
-	github.com/aws/constructs-go/constructs/v3 v3.3.161
-	github.com/aws/jsii-runtime-go v1.46.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.3
@@ -23,7 +20,6 @@ require (
 	github.com/rakyll/globalconf v0.0.0-20180912185831-87f8127c421f
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/gjson v1.12.0
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.3

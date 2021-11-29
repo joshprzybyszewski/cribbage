@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useAuth } from '../../../auth/useAuth';
 import { RootState } from '../../../store/store';
+import { gamesBaseURL } from '../../../utils/url';
 import { useAlert } from '../Alert/useAlert';
 import { Card, Game, Phase } from './models';
 import {
@@ -149,7 +150,7 @@ export function useGame(): Result {
 
     const fetchGame = async (id: number) => {
         const response = await axios.get<Game>(
-            `${base}/game/${id}?player=${currentUser.id}`,
+            `${gamesBaseURL}/game/${id}?player=${currentUser.id}`,
         );
         return response.data;
     };
@@ -178,13 +179,13 @@ export function useGame(): Result {
         dispatch(actions.setLoading(true));
         try {
             const createResult = await axios.post<CreateGameResponse>(
-                `${base}/create/game`,
+                `${gamesBaseURL}/create/game`,
                 {
                     playerIDs,
                 },
             );
             const getResult = await axios.get<Game>(
-                `${base}/game/${createResult.data.id}`,
+                `${gamesBaseURL}/game/${createResult.data.id}`,
             );
             dispatch(actions.setGame(getResult.data));
         } catch (err) {
@@ -202,10 +203,7 @@ export function useGame(): Result {
                 phase,
                 a,
             );
-            await axios.post(
-                `${base}/action`,
-                request,
-            );
+            await axios.post(`${gamesBaseURL}/action`, request);
             await refreshGame();
         } catch (err) {
             setAlert(

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useAlert } from '../app/containers/Alert/useAlert';
 import { RootState } from '../store/store';
+import { gamesBaseURL } from '../utils/url';
 import { actions, User } from './slice';
 
 interface ReturnType {
@@ -37,14 +38,14 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.get<UserResponse>(
-                    `${base}/player/${id}`,
-                    );
+                    `${gamesBaseURL}/player/${id}`,
+                );
                 dispatch(actions.setUser(res.data.player));
             } catch (err) {
                 dispatch(actions.clearUser());
                 if (err) {
                     if (err.response) {
-                            setAlert(err.response.data, 'error');
+                        setAlert(err.response.data, 'error');
                     } else {
                         setAlert(`no err.response ${err}`, 'error');
                     }
@@ -65,7 +66,7 @@ export function useAuth(): ReturnType {
             dispatch(actions.setLoading(true));
             try {
                 const res = await axios.post<UserResponse>(
-                    `${base}/create/player`,
+                    `${gamesBaseURL}/create/player`,
                     request,
                 );
                 dispatch(actions.setUser(res.data.player));

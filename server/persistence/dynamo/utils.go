@@ -10,7 +10,7 @@ import (
 
 const (
 	dbName       = `cribbage`
-	partitionKey = `gamesV1`
+	partitionKey = `cribbageID`
 	sortKey      = `spec`
 )
 
