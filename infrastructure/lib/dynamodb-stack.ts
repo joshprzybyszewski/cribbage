@@ -13,7 +13,7 @@ export class DynamoDBStack extends Stack {
     this.table = new Table(this, 'cribbageDynamoTableID', {
       tableName: 'cribbage',
       partitionKey: {
-        name: 'DDBid',
+        name: 'cribbageID',
         type: AttributeType.STRING,
       },
       sortKey: {
