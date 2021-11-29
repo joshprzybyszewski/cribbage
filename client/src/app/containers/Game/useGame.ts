@@ -206,7 +206,8 @@ export function useGame(): Result {
             await refreshGame();
         } catch (err) {
             setAlert(
-                `handling action broke ${err.response ? err.response.data : err
+                `handling action broke ${
+                    err.response ? err.response.data : err
                 }`,
                 'error',
             );

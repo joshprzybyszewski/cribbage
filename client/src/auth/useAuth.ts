@@ -22,7 +22,6 @@ interface RegisterRequest {
     player: User;
 }
 
-
 export function useAuth(): ReturnType {
     const { setAlert } = useAlert();
     const dispatch = useDispatch();

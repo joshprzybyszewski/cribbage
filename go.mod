@@ -5,8 +5,6 @@ go 1.14
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.4
 	github.com/apex/gateway v1.1.2
-	github.com/aws/aws-cdk-go/awscdk v1.134.0-devpreview
-	github.com/aws/aws-cdk-go/awscdk/v2 v2.0.0-rc.33
 	github.com/aws/aws-sdk-go-v2 v1.9.1-0.20210902223845-0023eb21e8b4
 	github.com/aws/aws-sdk-go-v2/config v1.8.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.0
